@@ -1,0 +1,72 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	<DotNETRoslynRoot>$(SolutionDir)..\..\dotnet\roslyn\</DotNETRoslynRoot>
+	<DotNETRoslynEngineeringDir>$(DotNETRoslynRoot)eng\</DotNETRoslynEngineeringDir>
+	<DotNETRoslynSourceDir>$(DotNETRoslynRoot)src\</DotNETRoslynSourceDir>
+  </PropertyGroup>
+  <Import Project="$(DotNETRoslynEngineeringDir)targets\GenerateCompilerExecutableBindingRedirects.targets" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+	<RootNamespace>SamLu.CodeAnalysis.Lua.CommandLine</RootNamespace>
+	<Prefer32Bit>false</Prefer32Bit>
+	<LargeAddressAware>true</LargeAddressAware>
+	<StartupObject>SamLu.CodeAnalysis.Lua.CommandLine.Program</StartupObject>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
+	<ServerGarbageCollection>true</ServerGarbageCollection>
+	<UserAppHost>false</UserAppHost>
+	<GenerateMicrosoftCodeAnalysisCommitHashAttribute>true</GenerateMicrosoftCodeAnalysisCommitHashAttribute>
+	<EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(DotNETRoslynSourceDir)Compilers\Shared\BuildClient.cs" Link="BuildClient.cs" />
+    <Compile Include="$(DotNETRoslynSourceDir)Compilers\Shared\BuildServerConnection.cs" Link="BuildServerConnection.cs" />
+    <Compile Include="$(DotNETRoslynSourceDir)Compilers\Shared\ExitingTraceListener.cs" Link="ExitingTraceListener.cs" />
+    <Compile Include="$(DotNETRoslynSourceDir)Compilers\Shared\NamedPipeUtil.cs" Link="NamedPipeUtil.cs" />
+    <Compile Include="$(DotNETRoslynSourceDir)Compilers\Shared\RuntimeHostInfo.cs" Link="RuntimeHostInfo.cs" />
+    <Compile Include="..\..\Shared\Luac.cs" Link="Luac.cs" />
+  </ItemGroup>
+  <ItemGroup>
+	  <None Include="App.config" />
+    <None Include="luac.rsp" Condition="'$(TargetFramework)' == 'net472'">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <Import Project="$(DotNETRoslynSourceDir)Compilers\Core\CommandLine\CommandLine.projitems" Label="Shared" />
+  <Import Project="$(DotNETRoslynEngineeringDir)targets\DiaSymReaderNative.targets" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0-preview1.22068.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers" Version="3.3.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.2.0-1.final">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.1.46">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Roslyn.Diagnostics.Analyzers" Version="3.3.4-beta1.22068.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+	<ProjectReference Include="..\..\Core\Portable\SamLu.CodeAnalysis.Lua.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.DiaSymReader.Native" Version="17.0.0-beta1.21524.1" />
+  </ItemGroup>
+</Project>

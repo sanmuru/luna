@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32210.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "luac", "src\Compilers\Lua\luac\luac.csproj", "{3767133E-0A7A-43A2-9B0F-6B36B2603707}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Compilers", "Compilers", "{4B7E71E9-4E0A-4DBD-BD70-2BFD5FB5C984}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lua", "Lua", "{A2DD118C-ACA3-48FB-9D72-C131D47C9857}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MoonScript", "MoonScript", "{38A42F84-9235-41A3-B6F0-B8A166EA4FB6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamLu.CodeAnalysis.Lua", "src\Compilers\Core\Portable\SamLu.CodeAnalysis.Lua.csproj", "{0E8BE691-5E70-406D-95CB-7214EA401177}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{2E4511B4-7315-4E4A-A08C-5FC93B2FAD47}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis", "..\..\dotnet\roslyn\src\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj", "{97DE19D6-FC5C-481A-8D3E-DECD61F28D11}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\..\dotnet\roslyn\src\Compilers\Core\CommandLine\CommandLine.projitems*{3767133e-0a7a-43a2-9b0f-6b36b2603707}*SharedItemsImports = 5
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3767133E-0A7A-43A2-9B0F-6B36B2603707}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3767133E-0A7A-43A2-9B0F-6B36B2603707}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3767133E-0A7A-43A2-9B0F-6B36B2603707}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3767133E-0A7A-43A2-9B0F-6B36B2603707}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E8BE691-5E70-406D-95CB-7214EA401177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E8BE691-5E70-406D-95CB-7214EA401177}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E8BE691-5E70-406D-95CB-7214EA401177}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E8BE691-5E70-406D-95CB-7214EA401177}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97DE19D6-FC5C-481A-8D3E-DECD61F28D11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97DE19D6-FC5C-481A-8D3E-DECD61F28D11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97DE19D6-FC5C-481A-8D3E-DECD61F28D11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97DE19D6-FC5C-481A-8D3E-DECD61F28D11}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3767133E-0A7A-43A2-9B0F-6B36B2603707} = {A2DD118C-ACA3-48FB-9D72-C131D47C9857}
+		{A2DD118C-ACA3-48FB-9D72-C131D47C9857} = {4B7E71E9-4E0A-4DBD-BD70-2BFD5FB5C984}
+		{38A42F84-9235-41A3-B6F0-B8A166EA4FB6} = {4B7E71E9-4E0A-4DBD-BD70-2BFD5FB5C984}
+		{0E8BE691-5E70-406D-95CB-7214EA401177} = {A2DD118C-ACA3-48FB-9D72-C131D47C9857}
+		{2E4511B4-7315-4E4A-A08C-5FC93B2FAD47} = {4B7E71E9-4E0A-4DBD-BD70-2BFD5FB5C984}
+		{97DE19D6-FC5C-481A-8D3E-DECD61F28D11} = {2E4511B4-7315-4E4A-A08C-5FC93B2FAD47}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B96293EC-4ED1-446B-9346-F73CA2D8950E}
+	EndGlobalSection
+EndGlobal
