@@ -22,7 +22,7 @@
   </ItemGroup>
   <ItemGroup>
 	  <None Include="App.config" />
-    <None Include="moonc.rsp" Condition="'$(TargetFramework)' != 'net6.0'">
+    <None Include="moonc.rsp" Condition="'$(TargetFramework)' == 'net472'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

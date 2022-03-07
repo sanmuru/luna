@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Syntax\" />
+  </ItemGroup>
+
 </Project>
