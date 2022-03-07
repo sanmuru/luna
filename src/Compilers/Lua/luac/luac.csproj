@@ -21,8 +21,8 @@
     <Compile Include="..\..\Shared\Luac.cs" Link="Luac.cs" />
   </ItemGroup>
   <ItemGroup>
-	  <None Include="App.config" />
-    <None Include="luac.rsp" Condition="'$(TargetFramework)' != 'net6.0'">
+	<None Include="App.config" />
+    <None Include="luac.rsp" Condition="'$(TargetFramework)' == 'net472'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
