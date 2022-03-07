@@ -5,9 +5,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
 using Microsoft.CodeAnalysis.ErrorReporting;
 
-namespace SamLu.CodeAnalysis.Lua.CommandLine
+namespace SamLu.CodeAnalysis.MoonScript.CommandLine
 {
-    internal sealed class Luac : Object
+    internal sealed class Moonc : Object
     {
         
     }

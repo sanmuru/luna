@@ -2,10 +2,10 @@
   <Import Project="$(RepositoryEngineeringDir)targets\GenerateCompilerExecutableBindingRedirects.targets" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-	<RootNamespace>SamLu.CodeAnalysis.Lua.CommandLine</RootNamespace>
+	<RootNamespace>SamLu.CodeAnalysis.MoonScript.CommandLine</RootNamespace>
 	<Prefer32Bit>false</Prefer32Bit>
 	<LargeAddressAware>true</LargeAddressAware>
-	<StartupObject>SamLu.CodeAnalysis.Lua.CommandLine.Program</StartupObject>
+	<StartupObject>SamLu.CodeAnalysis.MoonScript.CommandLine.Program</StartupObject>
     <TargetFrameworks>net6.0;net472</TargetFrameworks>
 	<ServerGarbageCollection>true</ServerGarbageCollection>
 	<UseAppHost>false</UseAppHost>
@@ -16,13 +16,13 @@
     <Compile Include="..\..\Shared\BuildClient.cs" Link="BuildClient.cs" />
     <Compile Include="..\..\Shared\BuildServerConnection.cs" Link="BuildServerConnection.cs" />
     <Compile Include="..\..\Shared\ExitingTraceListener.cs" Link="ExitingTraceListener.cs" />
+    <Compile Include="..\..\Shared\Moonc.cs" Link="Moonc.cs" />
     <Compile Include="..\..\Shared\NamedPipeUtil.cs" Link="NamedPipeUtil.cs" />
     <Compile Include="..\..\Shared\RuntimeHostInfo.cs" Link="RuntimeHostInfo.cs" />
-    <Compile Include="..\..\Shared\Luac.cs" Link="Luac.cs" />
   </ItemGroup>
   <ItemGroup>
 	  <None Include="App.config" />
-    <None Include="luac.rsp" Condition="'$(TargetFramework)' != 'net6.0'">
+    <None Include="moonc.rsp" Condition="'$(TargetFramework)' != 'net6.0'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
