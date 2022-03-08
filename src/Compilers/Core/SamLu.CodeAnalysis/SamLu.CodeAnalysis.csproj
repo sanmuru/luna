@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;netstandard2.0</TargetFrameworks>
@@ -10,8 +10,10 @@
 
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
+    <PackageId>SamLu.CodeAnalysis.Common</PackageId>
     <PackageDescription>
-      .NET Compiler Platform ("Luna") support for Lua, SamLu.CodeAnalysis.Lua.dll.
+      .NET编译器平台("Luna")的共享程序集。
+      请不要尝试单独安装此包，你应该通过安装其他基于它的包来安装它。
     </PackageDescription>
 
     <!-- Enable output of generated files back into our Generated directory -->
@@ -25,10 +27,15 @@
     <AssemblyVersion></AssemblyVersion>
     <FileVersion></FileVersion>
   </PropertyGroup>
-
+  <ItemGroup>
+    <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua" />
+    <InternalsVisibleTo Include="SamLu.CodeAnalysis.MoonScript" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />
-    <ProjectReference Include="..\..\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Symbols\" />
   </ItemGroup>
 
 </Project>

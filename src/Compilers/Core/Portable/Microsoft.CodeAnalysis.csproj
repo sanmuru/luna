@@ -94,6 +94,7 @@
     <InternalsVisibleTo Include="CompilerBenchmarks" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="SamLu.CodeAnalysis"/>
     <InternalsVisibleTo Include="luac"/>
     <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua"/>
     <InternalsVisibleTo Include="moonc"/>

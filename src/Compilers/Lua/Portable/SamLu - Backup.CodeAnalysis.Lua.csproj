@@ -19,16 +19,11 @@
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
     <Authors>Sam Lu</Authors>
     <Company />
-    <Copyright>© Sam Lu, All rights reserved.</Copyright>
-    <PackageTags>Luna CodeAnalysis Compiler Lua MoonScript Parser Scanner Lexer Emit CodeGeneration Metadata IL Compilation Scripting Syntax Semantics</PackageTags>
-    <NeutralLanguage>zh-CN</NeutralLanguage>
-    <AssemblyVersion></AssemblyVersion>
-    <FileVersion></FileVersion>
+    <Copyright>$(Authors)</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />
-    <ProjectReference Include="..\..\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj" />
   </ItemGroup>
 
 </Project>

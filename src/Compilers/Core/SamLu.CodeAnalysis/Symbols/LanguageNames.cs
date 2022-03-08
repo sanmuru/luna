@@ -1,0 +1,17 @@
+﻿namespace SamLu.CodeAnalysis
+{
+    /// <summary>
+    /// 提供通用语言名称常量的类。
+    /// </summary>
+    public static class LanguageNames
+    {
+        /// <summary>
+        /// Lua语言的通用名称。
+        /// </summary>
+        public const string Lua = nameof(Lua);
+        /// <summary>
+        /// MoonScript语言的通用名称。
+        /// </summary>
+        public const string MoonScript = nameof(MoonScript);
+    }
+}
