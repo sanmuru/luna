@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "moonc", "src\Compilers\Moon
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommandLine", "src\Compilers\Core\CommandLine\CommandLine.shproj", "{AD6F474E-E6D4-4217-91F3-B7AF1BE31CCC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamLu.CodeAnalysis", "src\Compilers\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj", "{7544FC9D-2246-4BF2-964A-B2ABD1E2669C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamLu.CodeAnalysis", "src\Compilers\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj", "{7544FC9D-2246-4BF2-964A-B2ABD1E2669C}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
