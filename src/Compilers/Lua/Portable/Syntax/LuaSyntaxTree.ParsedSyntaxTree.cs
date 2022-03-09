@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using SamLu.CodeAnalysis.Lua;
 
@@ -22,6 +23,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
 
             public override LuaParseOptions Options => this._options;
             public override string FilePath => this._path;
+            public override bool HasCompilationUnitRoot => this._hasCompilationUnitRoot;
             public override Encoding? Encoding => this._encoding;
             public override int Length => this._root.FullSpan.Length;
 
@@ -72,7 +74,37 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
                 return true;
             }
 
+            public override SyntaxReference GetReference(SyntaxNode node) => new SimpleSyntaxReference(node);
 
+            public override SyntaxTree WithRootAndOptions(SyntaxNode root, ParseOptions options)
+            {
+                if (object.ReferenceEquals(this._root, root) && object.ReferenceEquals(this._options, options))
+                    return this;
+                else
+                    return new ParsedSyntaxTree(
+                        text: null,
+                        encoding: this._encoding,
+                        checksumAlgorithm: this._checksumAlgorithm,
+                        path: this._path,
+                        options: (LuaParseOptions)options,
+                        root: (LuaSyntaxNode)root,
+                        cloneRoot: true);
+            }
+
+            public override SyntaxTree WithFilePath(string path)
+            {
+                if (this._path == path)
+                    return this;
+                else
+                    return new ParsedSyntaxTree(
+                        text: this._lazyText,
+                        encoding: this._encoding,
+                        checksumAlgorithm: this._checksumAlgorithm,
+                        path: path,
+                        options: this._options,
+                        root: this._root,
+                        cloneRoot: true);
+            }
         }
     }
 }
