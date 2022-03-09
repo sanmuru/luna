@@ -94,10 +94,27 @@ namespace SamLu.CodeAnalysis.Lua
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool IsValid(this LanguageVersion value) => Enum.IsDefined(typeof(LanguageVersion), value);
 
-        internal static ErrorCode GetErrorCode(this LanguageVersion version)
-        {
-            throw new NotSupportedException();
-        }
+        internal static ErrorCode GetErrorCode(this LanguageVersion version) =>
+            version switch
+            {
+                LanguageVersion.Lua1 => ErrorCode.ERR_FeatureNotAvailableInVersion1,
+                LanguageVersion.Lua1_1 => ErrorCode.ERR_FeatureNotAvailableInVersion1_1,
+                LanguageVersion.Lua2_1 => ErrorCode.ERR_FeatureNotAvailableInVersion2_1,
+                LanguageVersion.Lua2_2 => ErrorCode.ERR_FeatureNotAvailableInVersion2_2,
+                LanguageVersion.Lua2_3 => ErrorCode.ERR_FeatureNotAvailableInVersion2_3,
+                LanguageVersion.Lua2_4 => ErrorCode.ERR_FeatureNotAvailableInVersion2_4,
+                LanguageVersion.Lua2_5 => ErrorCode.ERR_FeatureNotAvailableInVersion2_5,
+                LanguageVersion.Lua3 => ErrorCode.ERR_FeatureNotAvailableInVersion3,
+                LanguageVersion.Lua3_1 => ErrorCode.ERR_FeatureNotAvailableInVersion3_1,
+                LanguageVersion.Lua3_2 => ErrorCode.ERR_FeatureNotAvailableInVersion3_2,
+                LanguageVersion.Lua4 => ErrorCode.ERR_FeatureNotAvailableInVersion4,
+                LanguageVersion.Lua5 => ErrorCode.ERR_FeatureNotAvailableInVersion5,
+                LanguageVersion.Lua5_1 => ErrorCode.ERR_FeatureNotAvailableInVersion5_1,
+                LanguageVersion.Lua5_2 => ErrorCode.ERR_FeatureNotAvailableInVersion5_2,
+                LanguageVersion.Lua5_3 => ErrorCode.ERR_FeatureNotAvailableInVersion5_3,
+                LanguageVersion.Lua5_4 => ErrorCode.ERR_FeatureNotAvailableInVersion5_4,
+                _ => throw ExceptionUtilities.UnexpectedValue(version)
+            };
     }
 
     internal class LuaRequiredLanguageVersion : RequiredLanguageVersion
@@ -111,8 +128,17 @@ namespace SamLu.CodeAnalysis.Lua
 
     public static class LanguageVersionFacts
     {
+        /// <summary>
+        /// 获取Lua的下一个版本的<see cref="LanguageVersion"/>常量。
+        /// </summary>
         internal const LanguageVersion LuaNext = LanguageVersion.Preview;
 
+        /// <summary>
+        /// 返回在控制行中（开启/langver开关）显示文本的格式一致的版本数字。
+        /// 例如："5"、"5.4"、"latest"。
+        /// </summary>
+        /// <param name="version">要获取显示文本的语言版本。</param>
+        /// <returns>语言版本的显示文本。</returns>
         public static string ToDisplayString(this LanguageVersion version) =>
             version switch
             {
@@ -139,6 +165,123 @@ namespace SamLu.CodeAnalysis.Lua
                 _ => throw ExceptionUtilities.UnexpectedValue(version)
             };
 
-#warning 未完成
+        /// <summary>
+        /// 尝试从字符串输入中分析出<see cref="LanguageVersion"/>，若<paramref name="result"/>为<see langword="null"/>时返回<see cref="LanguageVersion.Default"/>。
+        /// </summary>
+        /// <param name="version">字符串输入。</param>
+        /// <param name="result">分析出的语言版本。</param>
+        /// <returns></returns>
+        public static bool TryParse(string? version, out LanguageVersion result)
+        {
+            if (version is null)
+            {
+                result = LanguageVersion.Default;
+                return true;
+            }
+
+            switch (CaseInsensitiveComparison.ToLower(version))
+            {
+                case "default":
+                    result = LanguageVersion.Default;
+                    return true;
+                case "latest":
+                    result = LanguageVersion.Latest;
+                    return true;
+                case "latestmajor":
+                    result = LanguageVersion.LatestMajor;
+                    return true;
+                case "preview":
+                    result = LanguageVersion.Preview;
+                    return true;
+
+                case "1":
+                case "1.0":
+                    result = LanguageVersion.Lua1;
+                    return true;
+
+                case "1.1":
+                    result = LanguageVersion.Lua1_1;
+                    return true;
+
+                case "2.1":
+                    result = LanguageVersion.Lua2_1;
+                    return true;
+
+                case "2.2":
+                    result = LanguageVersion.Lua2_2;
+                    return true;
+
+                case "2.3":
+                    result = LanguageVersion.Lua2_3;
+                    return true;
+
+                case "2.4":
+                    result = LanguageVersion.Lua2_4;
+                    return true;
+
+                case "2.5":
+                    result = LanguageVersion.Lua2_5;
+                    return true;
+
+                case "3":
+                case "3.0":
+                    result = LanguageVersion.Lua3;
+                    return true;
+
+                case "3.1":
+                    result = LanguageVersion.Lua3_1;
+                    return true;
+
+                case "3.2":
+                    result = LanguageVersion.Lua3_2;
+                    return true;
+
+                case "4":
+                case "4.0":
+                    result = LanguageVersion.Lua4;
+                    return true;
+
+                case "5":
+                case "5.0":
+                    result = LanguageVersion.Lua5;
+                    return true;
+
+                case "5.1":
+                    result = LanguageVersion.Lua5_1;
+                    return true;
+
+                case "5.2":
+                    result = LanguageVersion.Lua5_2;
+                    return true;
+
+                case "5.3":
+                    result = LanguageVersion.Lua5_3;
+                    return true;
+
+                case "5.4":
+                    result = LanguageVersion.Lua5_4;
+                    return true;
+
+                default:
+                    result = LanguageVersion.Default;
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// 将一个语言版本（例如<see cref="LanguageVersion.Default"/>、<see cref="LanguageVersion.Latest"/>、LuaN）映射到一个具体的版本（LuaN）。
+        /// </summary>
+        /// <param name="version">要映射的语言版本。</param>
+        /// <returns></returns>
+        public static LanguageVersion MapSpecifiedToEffectiveVersion(this LanguageVersion version) =>
+            version switch
+            {
+                LanguageVersion.Latest or
+                LanguageVersion.Default => LanguageVersion.Lua5_4,
+                LanguageVersion.LatestMajor => LanguageVersion.Lua5,
+                _ => version
+            };
+
+        internal static LanguageVersion CurrentVersion => LanguageVersion.Lua5_4;
     }
 }
