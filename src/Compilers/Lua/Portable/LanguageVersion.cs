@@ -89,12 +89,9 @@ namespace SamLu.CodeAnalysis.Lua
         Default = 0
     }
 
-    internal static class LanguageVersionExtensionsInternal
+    internal static partial class LanguageVersionExtensionsInternal
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool IsValid(this LanguageVersion value) => Enum.IsDefined(typeof(LanguageVersion), value);
-
-        internal static ErrorCode GetErrorCode(this LanguageVersion version) =>
+        internal static partial ErrorCode GetErrorCode(this LanguageVersion version) =>
             version switch
             {
                 LanguageVersion.Lua1 => ErrorCode.ERR_FeatureNotAvailableInVersion1,
@@ -119,27 +116,17 @@ namespace SamLu.CodeAnalysis.Lua
 
     internal class LuaRequiredLanguageVersion : RequiredLanguageVersion
     {
-        internal LanguageVersion Version { get; init; }
-
-        internal LuaRequiredLanguageVersion(LanguageVersion version) => this.Version = version;
-
-        public override string ToString() => this.Version.ToDisplayString();
+        internal LuaRequiredLanguageVersion(LanguageVersion version) : base(version) { }
     }
 
-    public static class LanguageVersionFacts
+    public static partial class LanguageVersionFacts
     {
         /// <summary>
         /// 获取Lua的下一个版本的<see cref="LanguageVersion"/>常量。
         /// </summary>
         internal const LanguageVersion LuaNext = LanguageVersion.Preview;
 
-        /// <summary>
-        /// 返回在控制行中（开启/langver开关）显示文本的格式一致的版本数字。
-        /// 例如："5"、"5.4"、"latest"。
-        /// </summary>
-        /// <param name="version">要获取显示文本的语言版本。</param>
-        /// <returns>语言版本的显示文本。</returns>
-        public static string ToDisplayString(this LanguageVersion version) =>
+        public static partial string ToDisplayString(this LanguageVersion version) =>
             version switch
             {
                 LanguageVersion.Lua1 => "1.0",
@@ -165,13 +152,7 @@ namespace SamLu.CodeAnalysis.Lua
                 _ => throw ExceptionUtilities.UnexpectedValue(version)
             };
 
-        /// <summary>
-        /// 尝试从字符串输入中分析出<see cref="LanguageVersion"/>，若<paramref name="result"/>为<see langword="null"/>时返回<see cref="LanguageVersion.Default"/>。
-        /// </summary>
-        /// <param name="version">字符串输入。</param>
-        /// <param name="result">分析出的语言版本。</param>
-        /// <returns></returns>
-        public static bool TryParse(string? version, out LanguageVersion result)
+        public static partial bool TryParse(string? version, out LanguageVersion result)
         {
             if (version is null)
             {
@@ -268,12 +249,7 @@ namespace SamLu.CodeAnalysis.Lua
             }
         }
 
-        /// <summary>
-        /// 将一个语言版本（例如<see cref="LanguageVersion.Default"/>、<see cref="LanguageVersion.Latest"/>、LuaN）映射到一个具体的版本（LuaN）。
-        /// </summary>
-        /// <param name="version">要映射的语言版本。</param>
-        /// <returns></returns>
-        public static LanguageVersion MapSpecifiedToEffectiveVersion(this LanguageVersion version) =>
+        public static partial LanguageVersion MapSpecifiedToEffectiveVersion(this LanguageVersion version) =>
             version switch
             {
                 LanguageVersion.Latest or

@@ -37,13 +37,22 @@ namespace SamLu.CodeAnalysis.Lua
         /// </summary>
         public LanguageVersion SpecifiedLanguageVersion { get; init; }
 
+        [Obsolete("Lua.NET不支持预处理指令", false)]
         internal ImmutableArray<string> PreprocessorSymbols { get; init; }
 
         /// <summary>
         /// 获取已定义的解析器符号的名称。
         /// </summary>
+        [Obsolete("Lua.NET不支持预处理指令", false)]
         public override IEnumerable<string> PreprocessorSymbolNames => this.PreprocessorSymbols;
 
+        public LuaParseOptions(LanguageVersion languageVersion = LanguageVersion.Default,
+            DocumentationMode documentationMode = DocumentationMode.Parse,
+            SourceCodeKind kind = SourceCodeKind.Regular) :
+            this(languageVersion, documentationMode, kind, ImmutableArray<string>.Empty, ImmutableDictionary<string, string>.Empty)
+        { }
+
+        [Obsolete("Lua.NET不支持预处理指令", false)]
         public LuaParseOptions(
             LanguageVersion languageVersion = LanguageVersion.Default,
             DocumentationMode documentationMode = DocumentationMode.Parse,
@@ -52,6 +61,7 @@ namespace SamLu.CodeAnalysis.Lua
                 this(languageVersion, documentationMode, kind, preprocessorSymbols.ToImmutableArrayOrEmpty(), ImmutableDictionary<string, string>.Empty)
         { }
 
+        [Obsolete("Lua.NET不支持预处理指令", false)]
         internal LuaParseOptions(
             LanguageVersion languageVersion,
             DocumentationMode documentationMode,
@@ -97,10 +107,13 @@ namespace SamLu.CodeAnalysis.Lua
             };
         }
 
+        [Obsolete("Lua.NET不支持预处理指令", false)]
         public LuaParseOptions WithPreprocessorSymbols(IEnumerable<string>? preprocessorSymbols) => this.WithPreprocessorSymbols(preprocessorSymbols.AsImmutableOrNull());
 
+        [Obsolete("Lua.NET不支持预处理指令", false)]
         public LuaParseOptions WithPreprocessorSymbols(params string[]? preprocessorSymbols) => this.WithPreprocessorSymbols(preprocessorSymbols.AsImmutableOrNull());
 
+        [Obsolete("Lua.NET不支持预处理指令", false)]
         public LuaParseOptions WithPreprocessorSymbols(ImmutableArray<string> symbols)
         {
             if (symbols.IsDefault)
@@ -141,7 +154,7 @@ namespace SamLu.CodeAnalysis.Lua
             // 验证当Latest/Default被转换后，LanguageVersion不是SpecifiedLanguageVersion。
             if (!this.LanguageVersion.IsValid())
                 builder.Add(Diagnostic.Create(MessageProvider.Instance, (int)ErrorCode.ERR_BadLanguageVersion, LanguageVersion.ToString()));
-
+            
             if (!this.PreprocessorSymbols.IsDefaultOrEmpty)
             {
                 foreach (var symbol in this.PreprocessorSymbols)
