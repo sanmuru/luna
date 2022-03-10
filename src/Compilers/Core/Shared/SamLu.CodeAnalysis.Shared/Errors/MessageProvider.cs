@@ -7,10 +7,8 @@ namespace SamLu.CodeAnalysis.
     Lua
 #elif LANG_MOONSCRIPT
     MoonScript
-#else
-#error 不支持的语言
 #endif
-;
+    ;
 
 internal sealed partial class MessageProvider : CommonMessageProvider, IObjectWritable
 {

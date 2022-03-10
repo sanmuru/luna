@@ -11,5 +11,10 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Errors\MessageProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LanguageVersion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LuaParseOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxVisitor.cs" />
+    <Compile Include="..\..\Core\Shared\SamLu.CodeAnalysis.Shared\Syntax\ISyntaxVisitable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)_PREPROCESS_.cs" />
   </ItemGroup>
 </Project>

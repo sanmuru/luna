@@ -7,10 +7,8 @@ namespace SamLu.CodeAnalysis.
     Lua
 #elif LANG_MOONSCRIPT
     MoonScript
-#else
-#error 不支持的语言
 #endif
-;
+    ;
 
 internal static partial class LanguageVersionExtensionsInternal
 {
@@ -20,11 +18,23 @@ internal static partial class LanguageVersionExtensionsInternal
     internal static partial ErrorCode GetErrorCode(this LanguageVersion version);
 }
 
-internal class RequiredLanguageVersion : Microsoft.CodeAnalysis.RequiredLanguageVersion
+internal sealed partial class
+#if LANG_LUA
+    LuaRequiredLanguageVersion
+#elif LANG_MOONSCRIPT
+    MoonScriptRequiredLanguageVersion
+#endif
+    : RequiredLanguageVersion
 {
     internal LanguageVersion Version { get; init; }
 
-    internal RequiredLanguageVersion(LanguageVersion version) => this.Version = version;
+    internal
+#if LANG_LUA
+        LuaRequiredLanguageVersion
+#elif LANG_MOONSCRIPT
+        MoonScriptRequiredLanguageVersion
+#endif
+        (LanguageVersion version) => this.Version = version;
 
     public override string ToString() => this.Version.ToDisplayString();
 }

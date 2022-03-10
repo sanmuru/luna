@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using SamLu.CodeAnalysis.Lua;
 
-namespace SamLu.CodeAnalysis.Lua.Syntax
+namespace SamLu.CodeAnalysis.Lua
 {
     partial class LuaSyntaxTree
     {
@@ -47,7 +47,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
                 this._options = options;
                 this._path = path ?? String.Empty;
                 this._root = cloneRoot ? this.CloneNodeAsRoot(root) : root;
-                this._hasCompilationUnitRoot = root.Kine() == SyntaxKind.CompilationUnit;
+                this._hasCompilationUnitRoot = root.Kind() == SyntaxKind.CompilationUnit;
             }
 
             public override SourceText GetText(CancellationToken cancellationToken = default)

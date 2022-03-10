@@ -114,11 +114,6 @@ namespace SamLu.CodeAnalysis.Lua
             };
     }
 
-    internal class LuaRequiredLanguageVersion : RequiredLanguageVersion
-    {
-        internal LuaRequiredLanguageVersion(LanguageVersion version) : base(version) { }
-    }
-
     public static partial class LanguageVersionFacts
     {
         /// <summary>

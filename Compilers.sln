@@ -169,8 +169,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "moonc", "src\Compilers\Moon
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SamLu.CodeAnalysis.Shared", "src\Compilers\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.shproj", "{48CCBB50-B9E9-4A5A-AD46-91D80519B95E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamLu.CodeAnalysis.MoonScript", "src\Compilers\MoonScript\Portable\SamLu.CodeAnalysis.MoonScript.csproj", "{08179868-A6A3-4C87-A29F-276864C37186}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\Compilers\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems*{08179868-a6a3-4c87-a29f-276864c37186}*SharedItemsImports = 5
 		src\Compilers\Core\AnalyzerDriver\AnalyzerDriver.projitems*{1ee8cad3-55f9-4d91-96b2-084641da9a6c}*SharedItemsImports = 5
 		src\Dependencies\CodeAnalysis.Debugging\Microsoft.CodeAnalysis.Debugging.projitems*{1ee8cad3-55f9-4d91-96b2-084641da9a6c}*SharedItemsImports = 5
 		src\Dependencies\Collections\Microsoft.CodeAnalysis.Collections.projitems*{1ee8cad3-55f9-4d91-96b2-084641da9a6c}*SharedItemsImports = 5
@@ -462,6 +465,10 @@ Global
 		{EA28E00F-2024-42D9-A989-723E17BAB5F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA28E00F-2024-42D9-A989-723E17BAB5F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA28E00F-2024-42D9-A989-723E17BAB5F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08179868-A6A3-4C87-A29F-276864C37186}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08179868-A6A3-4C87-A29F-276864C37186}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08179868-A6A3-4C87-A29F-276864C37186}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08179868-A6A3-4C87-A29F-276864C37186}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -538,6 +545,7 @@ Global
 		{7C639DC6-0FBF-430F-BA09-24013CD10AC3} = {81BA554D-718C-4FAB-B415-3C8FA88A8B64}
 		{EA28E00F-2024-42D9-A989-723E17BAB5F2} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
 		{48CCBB50-B9E9-4A5A-AD46-91D80519B95E} = {A41D1B99-F489-4C43-BBDF-96D61B19A6B9}
+		{08179868-A6A3-4C87-A29F-276864C37186} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F599E08-A9EA-4FAA-897F-5D824B0210E6}
