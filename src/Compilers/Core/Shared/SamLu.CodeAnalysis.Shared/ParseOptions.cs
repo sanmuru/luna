@@ -3,7 +3,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
-namespace SamLu.CodeAnalysis.Lua;
+namespace SamLu.CodeAnalysis.
+#if LANG_LUA
+    Lua
+#elif LANG_MOONSCRIPT
+    MoonScript
+#endif
+    ;
 
 /// <summary>
 /// 此类型储存数个与解析有关的选项，并且提供修改这些选项的值的方法。

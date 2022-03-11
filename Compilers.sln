@@ -169,7 +169,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "moonc", "src\Compilers\Moon
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SamLu.CodeAnalysis.Shared", "src\Compilers\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.shproj", "{48CCBB50-B9E9-4A5A-AD46-91D80519B95E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamLu.CodeAnalysis.MoonScript", "src\Compilers\MoonScript\Portable\SamLu.CodeAnalysis.MoonScript.csproj", "{08179868-A6A3-4C87-A29F-276864C37186}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamLu.CodeAnalysis.MoonScript", "src\Compilers\MoonScript\Portable\SamLu.CodeAnalysis.MoonScript.csproj", "{08179868-A6A3-4C87-A29F-276864C37186}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Terra", "Terra", "{9441A984-6E6B-4D22-91F1-21402F039C4B}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

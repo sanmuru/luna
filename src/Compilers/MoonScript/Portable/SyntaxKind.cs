@@ -1,4 +1,4 @@
-﻿namespace SamLu.CodeAnalysis.Lua;
+﻿namespace SamLu.CodeAnalysis.MoonScript;
 
 public enum SyntaxKind : ushort
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
@@ -7,6 +8,7 @@ using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
 {
+    [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
     internal abstract class LuaSyntaxNode : GreenNode
     {
         internal LuaSyntaxNode(SyntaxKind kind) : base((ushort)kind) => GreenStats.NoteGreen(this);
