@@ -12,9 +12,19 @@ namespace SamLu.CodeAnalysis.
 
 internal static partial class LanguageVersionExtensionsInternal
 {
+    /// <summary>
+    /// 检查指定的值是否合法（在<see cref="LanguageVersion"/>枚举中）。
+    /// </summary>
+    /// <param name="value">指定的语言版本枚举值。</param>
+    /// <returns>指定的值是否合法。</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsValid(this LanguageVersion value) => Enum.IsDefined(typeof(LanguageVersion), value);
 
+    /// <summary>
+    /// 获取与指定<see cref="LanguageVersion"/>枚举值对应的“该特性在当前版本中不支持”的<see cref="ErrorCode"/>。
+    /// </summary>
+    /// <param name="version">指定的语言版本枚举值。</param>
+    /// <returns>对应的错误码。</returns>
     internal static partial ErrorCode GetErrorCode(this LanguageVersion version);
 }
 

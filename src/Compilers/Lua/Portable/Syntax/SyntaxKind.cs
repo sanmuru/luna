@@ -1,5 +1,8 @@
 ﻿namespace SamLu.CodeAnalysis.Lua;
 
+/// <summary>
+/// 定义Lua语言各语法部分的不同的种类。
+/// </summary>
 public enum SyntaxKind : ushort
 {
     None = 0,
@@ -74,49 +77,49 @@ public enum SyntaxKind : ushort
     #endregion
 
     #region 关键词
-    /// <summary>表示<c>and</c>关键词。</summary>
+    /// <summary>表示<see langword="and"/>关键词。</summary>
     AndKeyword = 8321,
-    /// <summary>表示<c>break</c>关键词。</summary>
+    /// <summary>表示<see langword="break"/>关键词。</summary>
     BreakKeyword,
-    /// <summary>表示<c>do</c>关键词。</summary>
+    /// <summary>表示<see langword="do"/>关键词。</summary>
     DoKeyword,
-    /// <summary>表示<c>else</c>关键词。</summary>
+    /// <summary>表示<see langword="else"/>关键词。</summary>
     ElseKeyword,
-    /// <summary>表示<c>elseif</c>关键词。</summary>
+    /// <summary>表示<see langword="elseif"/>关键词。</summary>
     ElseIfKeyword,
-    /// <summary>表示<c>end</c>关键词。</summary>
+    /// <summary>表示<see langword="end"/>关键词。</summary>
     EndKeyword,
-    /// <summary>表示<c>false</c>关键词。</summary>
+    /// <summary>表示<see langword="false"/>关键词。</summary>
     FalseKeyword,
-    /// <summary>表示<c>for</c>关键词。</summary>
+    /// <summary>表示<see langword="for"/>关键词。</summary>
     ForKeyword,
-    /// <summary>表示<c>function</c>关键词。</summary>
+    /// <summary>表示<see langword="function"/>关键词。</summary>
     FunctionKeyword,
-    /// <summary>表示<c>goto</c>关键词。</summary>
+    /// <summary>表示<see langword="goto"/>关键词。</summary>
     GotoKeyword,
-    /// <summary>表示<c>if</c>关键词。</summary>
+    /// <summary>表示<see langword="if"/>关键词。</summary>
     IfKeyword,
-    /// <summary>表示<c>in</c>关键词。</summary>
+    /// <summary>表示<see langword="in"/>关键词。</summary>
     InKeyword,
-    /// <summary>表示<c>local</c>关键词。</summary>
+    /// <summary>表示<see langword="local"/>关键词。</summary>
     LocalKeyword,
-    /// <summary>表示<c>nil</c>关键词。</summary>
+    /// <summary>表示<see langword="nil"/>关键词。</summary>
     NilKeyword,
-    /// <summary>表示<c>not</c>关键词。</summary>
+    /// <summary>表示<see langword="not"/>关键词。</summary>
     NotKeyword,
-    /// <summary>表示<c>or</c>关键词。</summary>
+    /// <summary>表示<see langword="or"/>关键词。</summary>
     OrKeyword,
-    /// <summary>表示<c>repeat</c>关键词。</summary>
+    /// <summary>表示<see langword="repeat"/>关键词。</summary>
     RepeatKeyword,
-    /// <summary>表示<c>return</c>关键词。</summary>
+    /// <summary>表示<see langword="return"/>关键词。</summary>
     ReturnKeyword,
-    /// <summary>表示<c>then</c>关键词。</summary>
+    /// <summary>表示<see langword="then"/>关键词。</summary>
     ThenKeyword,
-    /// <summary>表示<c>true</c>关键词。</summary>
+    /// <summary>表示<see langword="true"/>关键词。</summary>
     TrueKeyword,
-    /// <summary>表示<c>until</c>关键词。</summary>
+    /// <summary>表示<see langword="until"/>关键词。</summary>
     UntilKeyword,
-    /// <summary>表示<c>while</c>关键词。</summary>
+    /// <summary>表示<see langword="while"/>关键词。</summary>
     WhileKeyword,
 
     // 上下文关键词
@@ -185,19 +188,29 @@ public enum SyntaxKind : ushort
     #endregion
 
     #region 文本记号
+    /// <summary>表示不应出现在此位置的错误记号。</summary>
     BadToken = 9217,
+    /// <summary>表示标识符记号。</summary>
     IdentifierToken,
+    /// <summary>表示数字字面量记号。</summary>
     NumericLiteralToken,
+    /// <summary>表示字符串字面量记号。</summary>
     StringLiteralToken,
 
+    /// <summary>表示单行字符串字面量记号。</summary>
     SingleLineRawStringLiteralToken,
+    /// <summary>表示多行字符串字面量记号。</summary>
     MultiLineRawStringLiteralToken,
     #endregion
 
-    #region 琐碎记号
-    EndOfLingTrivia = 9249,
+    #region 琐碎内容
+    /// <summary>表示换行。</summary>
+    EndOfLineTrivia = 9249,
+    /// <summary>表示空白字符。</summary>
     WhitespaceTrivia,
+    /// <summary>表示单行注释。</summary>
     SingleLineCommentTrivia,
+    /// <summary>表示多行注释。</summary>
     MultiLineCommentTrivia,
     #endregion
 
@@ -206,79 +219,135 @@ public enum SyntaxKind : ushort
     #endregion
 
     #region 名称和类型名称
+    /// <summary>表示标识符名称。</summary>
     IdentifierName = 9473,
     #endregion
 
     #region 表达式
+    /// <summary>表示<see langword="nil"/>关键词字面量表达式。</summary>
     NilLiteralExpression = 9537,
+    /// <summary>表示<see langword="false"/>关键词字面量表达式。</summary>
     FalseLiteralExpression,
+    /// <summary>表示<see langword="true"/>关键词字面量表达式。</summary>
     TrueLiteralExpression,
+    /// <summary>表示数字字面量表达式。</summary>
     NumericLiteralExpression,
+    /// <summary>表示字符串字面量表达式。</summary>
     StringLiteralExpression,
+    /// <summary>表示可变参数列表表达式。</summary>
     VariousArgumentsExpression,
+    /// <summary>表示函数定义表达式。</summary>
     FunctionDefinitionExpression,
+    /// <summary>表示前置表达式。</summary>
     PrefixExpression,
+    /// <summary>表示表初始化表达式。</summary>
     TableConstructorExpression,
 
     // 二元运算符表达式
+    /// <summary>表示加法表达式。</summary>
     AdditionExpression = 9601,
+    /// <summary>表示减法表达式。</summary>
     SubtractionExpression,
+    /// <summary>表示乘法表达式。</summary>
     MultiplicationExpression,
+    /// <summary>表示除法表达式。</summary>
     DivisionExpression,
+    /// <summary>表示向下取整除法表达式。</summary>
     FloorDivisionExpression,
+    /// <summary>表示取幂表达式。</summary>
     ExponentiationExpression,
+    /// <summary>表示取模表达式。</summary>
     ModuloExpression,
+    /// <summary>表示按位与表达式。</summary>
     BitwiseAndExpression,
+    /// <summary>表示按位异或表达式。</summary>
     BitwiseExclusiveOrExpression,
+    /// <summary>表示按位或表达式。</summary>
     BitwiseOrExpression,
+    /// <summary>表示按位右移表达式。</summary>
     BitwiseRightShiftExpression,
+    /// <summary>表示按位左移表达式。</summary>
     BitwiseLeftShiftExpression,
+    /// <summary>表示连接表达式。</summary>
     ConcatenationExpression,
+    /// <summary>表示小于表达式。</summary>
     LessThanExpression,
+    /// <summary>表示小于等于表达式。</summary>
     LessThanOrEqualExpression,
+    /// <summary>表示大于表达式。</summary>
     GreaterThanExpression,
+    /// <summary>表示大于等于表达式。</summary>
     GreaterThanOrEqualExpression,
+    /// <summary>表示相等表达式。</summary>
     EqualExpression,
+    /// <summary>表示不等表达式。</summary>
     NotEqualExpression,
+    /// <summary>表示逻辑与表达式。</summary>
     AndExpression,
+    /// <summary>表示逻辑或表达式。</summary>
     OrExpression,
 
     // 一元运算符表达式
+    /// <summary>表示取负表达式。</summary>
     UnaryMinusExpression = 9665,
+    /// <summary>表示逻辑非表达式。</summary>
     LogicalNotExpression,
+    /// <summary>表示长度表达式。</summary>
     LengthExpression,
+    /// <summary>表示按位非表达式。</summary>
     BitwiseNotExpression,
 
     // 赋值表达式
+    /// <summary>表示一般赋值表达式。</summary>
     SimpleAssignmentExpression = 9697,
 
     // 成员操作表达式
+    /// <summary>表示一般成员操作表达式。</summary>
     SimpleMemberAccessExpression = 9729, // 使用“.”操作
+    /// <summary>表示索引成员操作表达式。</summary>
     IndexMemberAccessExpression, // 使用“[]”操作
-
     #endregion
 
     #region 语句
+    /// <summary>表示程序块（编译单元）。</summary>
     Chunk = 9761,
+    /// <summary>表示代码块。</summary>
     Block,
+    /// <summary>表示仅有分隔符（<c>;</c>）的空语句。</summary>
     ColonStatement,
+    /// <summary>表示包含表达式的语句。</summary>
     ExpressionStatement,
+    /// <summary>表示标签语句。</summary>
     LabeledStatement,
+    /// <summary>表示中断流程（<see langword="break"/>）语句。</summary>
     BreakStatement,
+    /// <summary>表示跳转标签（<see langword="goto"/>）语句。</summary>
     GotoStatement,
+    /// <summary>表示执行代码块语句。</summary>
     DoStatement,
+    /// <summary>表示<see langword="while"/>循环语句。</summary>
     WhileStatement,
+    /// <summary>表示<see langword="repeat"/>循环语句。</summary>
     RepeatStatement,
+    /// <summary>表示<see langword="if"/>条件语句。</summary>
     IfStatement,
+    /// <summary>表示<see langword="elseif"/>条件从句。</summary>
     ElseifClause,
+    /// <summary>表示<see langword="else"/>条件从句。</summary>
     ElseClause,
+    /// <summary>表示逐量<see langword="for"/>循环语句。</summary>
     ForStatement,
+    /// <summary>表示迭代<see langword="for"/>循环语句。</summary>
     ForInStatement,
+    /// <summary>表示函数定义语句。</summary>
     FunctionStatement,
+    /// <summary>表示本地函数定义语句。</summary>
     LocalFunctionStatement,
+    /// <summary>表示本地变量定义语句。</summary>
     LocalDeclarationStatement,
     #endregion
 
-    // declarations
-    CompilationUnit = 9889,
+    #region 声明
+    // = 9889,
+    #endregion
 }

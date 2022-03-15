@@ -3,6 +3,9 @@ using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua;
 
+/// <summary>
+/// 枚举Lua语言的所有版本。
+/// </summary>
 public enum LanguageVersion
 {
     /// <summary>
@@ -252,5 +255,8 @@ public static partial class LanguageVersionFacts
             _ => version
         };
 
+    /// <summary>
+    /// 获取Lua语言的当前版本。
+    /// </summary>
     internal static LanguageVersion CurrentVersion => LanguageVersion.Lua5_4;
 }

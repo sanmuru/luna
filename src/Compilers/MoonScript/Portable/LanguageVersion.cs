@@ -252,6 +252,9 @@ namespace SamLu.CodeAnalysis.MoonScript
                 _ => version
             };
 
+        /// <summary>
+        /// 获取MoonScript语言的当前版本。
+        /// </summary>
         internal static LanguageVersion CurrentVersion => LanguageVersion.Lua5_4;
     }
 }
