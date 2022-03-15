@@ -138,7 +138,7 @@ public enum SyntaxKind : ushort
     DivisionMetamethod,
     /// <summary>表示取模（<c>%</c>）元方法<c>__mod</c>。</summary>
     ModuloMetamethod,
-    /// <summary>表示取幂（<c>+</c>）元方法<c>__pow</c>。</summary>
+    /// <summary>表示取幂（<c>^</c>）元方法<c>__pow</c>。</summary>
     ExponentiationMetamethod,
     /// <summary>表示取负（一元<c>-</c>）元方法<c>__unm</c>。</summary>
     NegationMetamethod,
@@ -149,7 +149,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示按位或（<c>|</c>）元方法<c>__bor</c>。</summary>
     BitwiseOrMetamethod,
     /// <summary>表示按位异或（二元<c>~</c>）元方法<c>__bxor</c>。</summary>
-    BitwiseXorMetamethod,
+    BitwiseExclusiveOrMetamethod,
     /// <summary>表示按位取反（一元<c>~</c>）元方法<c>__bnot</c>。</summary>
     BitwiseNotMetamethod,
     /// <summary>表示按位向左位移（<c>&lt;&lt;</c>）元方法<c>__shl</c>。</summary>
@@ -201,6 +201,84 @@ public enum SyntaxKind : ushort
     MultiLineCommentTrivia,
     #endregion
 
+    #region 注释文档节点
+    // = 9345
+    #endregion
+
+    #region 名称和类型名称
+    IdentifierName = 9473,
+    #endregion
+
+    #region 表达式
+    NilLiteralExpression = 9537,
+    FalseLiteralExpression,
+    TrueLiteralExpression,
+    NumericLiteralExpression,
+    StringLiteralExpression,
+    VariousArgumentsExpression,
+    FunctionDefinitionExpression,
+    PrefixExpression,
+    TableConstructorExpression,
+
+    // 二元运算符表达式
+    AdditionExpression = 9601,
+    SubtractionExpression,
+    MultiplicationExpression,
+    DivisionExpression,
+    FloorDivisionExpression,
+    ExponentiationExpression,
+    ModuloExpression,
+    BitwiseAndExpression,
+    BitwiseExclusiveOrExpression,
+    BitwiseOrExpression,
+    BitwiseRightShiftExpression,
+    BitwiseLeftShiftExpression,
+    ConcatenationExpression,
+    LessThanExpression,
+    LessThanOrEqualExpression,
+    GreaterThanExpression,
+    GreaterThanOrEqualExpression,
+    EqualExpression,
+    NotEqualExpression,
+    AndExpression,
+    OrExpression,
+
+    // 一元运算符表达式
+    UnaryMinusExpression = 9665,
+    LogicalNotExpression,
+    LengthExpression,
+    BitwiseNotExpression,
+
+    // 赋值表达式
+    SimpleAssignmentExpression = 9697,
+
+    // 成员操作表达式
+    SimpleMemberAccessExpression = 9729, // 使用“.”操作
+    IndexMemberAccessExpression, // 使用“[]”操作
+
+    #endregion
+
+    #region 语句
+    Chunk = 9761,
+    Block,
+    ColonStatement,
+    ExpressionStatement,
+    LabeledStatement,
+    BreakStatement,
+    GotoStatement,
+    DoStatement,
+    WhileStatement,
+    RepeatStatement,
+    IfStatement,
+    ElseifClause,
+    ElseClause,
+    ForStatement,
+    ForInStatement,
+    FunctionStatement,
+    LocalFunctionStatement,
+    LocalDeclarationStatement,
+    #endregion
+
     // declarations
-    CompilationUnit = 10240,
+    CompilationUnit = 9889,
 }
