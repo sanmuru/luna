@@ -15,6 +15,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)LanguageVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxToken.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxTrivia.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxNodeRemover.cs" />

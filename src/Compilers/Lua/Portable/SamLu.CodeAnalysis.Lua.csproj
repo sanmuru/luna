@@ -49,6 +49,7 @@
 
   <ItemGroup>
     <Folder Include="Binder\" />
+    <Folder Include="Syntax\InternalSyntax\" />
   </ItemGroup>
 
   <Import Project="..\..\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems" Label="Shared" />
