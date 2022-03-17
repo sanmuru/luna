@@ -9,46 +9,101 @@ namespace SamLu.CodeAnalysis.
 #endif
     .Syntax.InternalSyntax;
 
+/// <summary>
+/// 此类型提供构造各种内部的语法节点、标识和琐碎内容的工厂方法。
+/// </summary>
 internal static partial class SyntaxFactory
 {
-    private const string CrLf = "\r\n";
-    internal static readonly SyntaxTrivia CarriageReturnLineFeed = SyntaxFactory.EndOfLine(SyntaxFactory.CrLf);
-    internal static readonly SyntaxTrivia ElasticCarriageReturnLineFeed = SyntaxFactory.EndOfLine(SyntaxFactory.CrLf, elastic: true);
+    /// <summary>表示回车符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia CarriageReturn = SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, "\r");
+    /// <summary>表示可变的回车符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia ElasticCarriageReturn = SyntaxFactory.CarriageReturn.AsElastic();
 
-    internal static readonly SyntaxTrivia LineFeed = SyntaxFactory.EndOfLine("\n");
-    internal static readonly SyntaxTrivia ElasticLineFeed = SyntaxFactory.EndOfLine("\n", elastic: true);
+    /// <summary>表示换行符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia LineFeed = SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, "\n");
+    /// <summary>表示可变的换行符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia ElasticLineFeed = SyntaxFactory.LineFeed.AsElastic();
 
-    internal static readonly SyntaxTrivia CarriageReturn = SyntaxFactory.EndOfLine("\r");
-    internal static readonly SyntaxTrivia ElasticCarriageReturn = SyntaxFactory.EndOfLine("\r", elastic: true);
+    /// <summary>表示回车换行符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia CarriageReturnLineFeed = SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, "\r\n");
+    /// <summary>表示可变的回车换行符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia ElasticCarriageReturnLineFeed = SyntaxFactory.CarriageReturnLineFeed.AsElastic();
 
-    internal static readonly SyntaxTrivia Space = SyntaxFactory.Whitespace(" ");
-    internal static readonly SyntaxTrivia ElasticSpace = SyntaxFactory.Whitespace(" ", elastic: true);
+    /// <summary>表示垂直制表符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia VerticalTab = SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, "\v");
+    /// <summary>表示可变的垂直制表符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia ElasticVerticalTab = SyntaxFactory.VerticalTab.AsElastic();
 
-    internal static readonly SyntaxTrivia Tab = SyntaxFactory.Whitespace("\r");
-    internal static readonly SyntaxTrivia ElasticTab = SyntaxFactory.Whitespace("\r", elastic: true);
+    /// <summary>表示换页符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia FormFeed = SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, "\f");
+    /// <summary>表示可变的换页符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia ElasticFormFeed = SyntaxFactory.FormFeed.AsElastic();
 
-    internal static readonly SyntaxTrivia ElasticZeroSpace = SyntaxFactory.Whitespace(string.Empty, elastic: true);
+    /// <summary>表示空格符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia Space = SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, " ");
+    /// <summary>表示可变的空格符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia ElasticSpace = SyntaxFactory.Space.AsElastic();
 
+    /// <summary>表示制表符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia Tab = SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, "\t");
+    /// <summary>表示可变的制表符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia ElasticTab = SyntaxFactory.Tab.AsElastic();
+
+    /// <summary>表示可变的零空格符的语法琐碎内容。</summary>
+    internal static readonly SyntaxTrivia ElasticZeroSpace = SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, string.Empty).AsElastic();
+
+    /// <summary>
+    /// 将语法琐碎内容转换为可变的。
+    /// </summary>
+    /// <param name="trivia">要转换的语法琐碎内容。</param>
+    /// <returns>可变的语法琐碎内容。</returns>
+    internal static SyntaxTrivia AsElastic(this SyntaxTrivia trivia) => trivia.WithAnnotationsGreen(new[] { SyntaxAnnotation.ElasticAnnotation });
+
+    /// <summary>
+    /// 构造表示行末的内部语法琐碎内容。
+    /// </summary>
+    /// <param name="text">表示行末的字符串。</param>
+    /// <param name="elastic">生成的语法琐碎内容是否为可变的。</param>
+    /// <returns>表示行末的内部语法琐碎内容。</returns>
     internal static SyntaxTrivia EndOfLine(string text, bool elastic = false) =>
         text switch
         {
             "\r" => elastic ? SyntaxFactory.ElasticCarriageReturn : SyntaxFactory.CarriageReturn,
             "\n" => elastic ? SyntaxFactory.ElasticLineFeed : SyntaxFactory.LineFeed,
-            "\r\n" => elastic ? SyntaxFactory.ElasticCarriageReturnLineFeed : SyntaxFactory.CarriageReturnLineFeed
+            "\r\n" => elastic ? SyntaxFactory.ElasticCarriageReturnLineFeed : SyntaxFactory.CarriageReturnLineFeed,
+            "\v" => elastic ? SyntaxFactory.ElasticVerticalTab : SyntaxFactory.Tab,
+            "\f" => elastic ? SyntaxFactory.ElasticFormFeed : SyntaxFactory.FormFeed,
             _ => elastic switch
             {
                 false => SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, text),
-                true => SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, text).WithAnnotationsGreen(new[] { SyntaxAnnotation.ElasticAnnotation })
+                true => SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, text).AsElastic()
             }
         };
 
+    /// <summary>
+    /// 构造表示空白内容的内部语法琐碎内容。
+    /// </summary>
+    /// <param name="text">表示空白内容的字符串。</param>
+    /// <param name="elastic">生成的语法琐碎内容是否为可变的。</param>
+    /// <returns>表示空白内容的内部语法琐碎内容。</returns>
     internal static SyntaxTrivia Whitespace(string text, bool elastic = false) =>
-        elastic switch
+        (text, elastic) switch
         {
-            false => SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, text),
-            true => SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, text).WithAnnotationsGreen(new[] { SyntaxAnnotation.ElasticAnnotation })
+            (" ", _) => elastic ? SyntaxFactory.ElasticSpace : SyntaxFactory.Space,
+            ("\t", _) => elastic ? SyntaxFactory.ElasticTab : SyntaxFactory.Tab,
+            ("", true) => SyntaxFactory.ElasticZeroSpace,
+            _ => elastic switch
+            {
+                false => SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, text),
+                true => SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, text).AsElastic()
+            }
         };
 
+    /// <summary>
+    /// 构造表示注释的内部语法琐碎内容。
+    /// </summary>
+    /// <param name="text">表示注释的字符串。</param>
+    /// <returns>表示注释的内部语法琐碎内容。</returns>
     internal static SyntaxTrivia Comment(string text)
     {
         // 检测text是否为多行注释的格式（“--[”与“[”之间间隔零个或复数个“=”）。
