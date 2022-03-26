@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 using Roslyn.Utilities;
@@ -16,7 +13,7 @@ namespace SamLu.CodeAnalysis.
     .Syntax.InternalSyntax;
 
 [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-internal abstract class
+internal abstract partial class
 #if LANG_LUA
     LuaSyntaxNode
 #elif LANG_MOONSCRIPT
@@ -46,7 +43,7 @@ internal abstract class
 #elif LANG_MOONSCRIPT
         MoonScriptSyntaxNode
 #endif
-        (SyntaxKind kind, DiagnosticInfo[] diagnostics) : base((ushort)kind, diagnostics) => GreenStats.NoteGreen(this);
+        (SyntaxKind kind, DiagnosticInfo[]? diagnostics) : base((ushort)kind, diagnostics) => GreenStats.NoteGreen(this);
 
     internal
 #if LANG_LUA
@@ -54,7 +51,7 @@ internal abstract class
 #elif LANG_MOONSCRIPT
         MoonScriptSyntaxNode
 #endif
-        (SyntaxKind kind, DiagnosticInfo[] diagnostics, int fullWidth) : base((ushort)kind, diagnostics, fullWidth) => GreenStats.NoteGreen(this);
+        (SyntaxKind kind, DiagnosticInfo[]? diagnostics, int fullWidth) : base((ushort)kind, diagnostics, fullWidth) => GreenStats.NoteGreen(this);
 
     internal
 #if LANG_LUA
@@ -62,7 +59,7 @@ internal abstract class
 #elif LANG_MOONSCRIPT
         MoonScriptSyntaxNode
 #endif
-        (SyntaxKind kind, DiagnosticInfo[] diagnostics, SyntaxAnnotation[] annotations) : base((ushort)kind, diagnostics, annotations) => GreenStats.NoteGreen(this);
+        (SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations) : base((ushort)kind, diagnostics, annotations) => GreenStats.NoteGreen(this);
 
     internal
 #if LANG_LUA
@@ -70,7 +67,7 @@ internal abstract class
 #elif LANG_MOONSCRIPT
         MoonScriptSyntaxNode
 #endif
-        (SyntaxKind kind, DiagnosticInfo[] diagnostics, SyntaxAnnotation[] annotations, int fullWidth) : base((ushort)kind, diagnostics, annotations, fullWidth) => GreenStats.NoteGreen(this);
+        (SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations, int fullWidth) : base((ushort)kind, diagnostics, annotations, fullWidth) => GreenStats.NoteGreen(this);
 
     internal
 #if LANG_LUA
@@ -84,7 +81,7 @@ internal abstract class
 #if LANG_LUA
         LanguageNames.Lua;
 #elif LANG_MOONSCRIPT
-        LanguageNames.MoonScript
+        LanguageNames.MoonScript;
 #endif
 
     public SyntaxKind Kind => (SyntaxKind)this.RawKind;
@@ -95,7 +92,7 @@ internal abstract class
 
     public override bool IsStructuredTrivia => this is StructuredTriviaSyntax;
 
-    public override bool IsDirective => this is DirectiveTriviaSyntax;
+    public override bool IsDirective => false;
 
     public override bool IsDocumentationCommentTrivia => SyntaxFacts.IsDocumentationCommentTrivia(this.Kind);
 
@@ -111,26 +108,27 @@ internal abstract class
     public virtual GreenNode? GetTrailingTrivia() => null;
     public sealed override GreenNode? GetTrailingTriviaCore() => this.GetTrailingTrivia();
 
-    public abstract TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor);
+    public abstract TResult Accept<TResult>(
+#if LANG_LUA
+        LuaSyntaxVisitor<TResult>
+#elif LANG_MOONSCRIPT
+        MoonScriptSyntaxVisitor<TResult>
+#endif
+        visitor);
 
-    public abstract void Accept(LuaSyntaxVisitor visitor);
+    public abstract void Accept(
+#if LANG_LUA
+        LuaSyntaxVisitor
+#elif LANG_MOONSCRIPT
+        MoonScriptSyntaxVisitor
+#endif
+         visitor);
 
 #warning SetFactoryContext
 
-    public override Microsoft.CodeAnalysis.SyntaxToken CreateSeparator<TNode>(SyntaxNode element) =>
-#if LANG_LUA
-        Lua.SyntaxFactory.Token(SyntaxKind.CommanToken);
-#elif LANG_MOONSCRIPT
-#error 未实现
-#endif
+    public override partial Microsoft.CodeAnalysis.SyntaxToken CreateSeparator<TNode>(SyntaxNode element);
 
-    public override bool IsTriviaWithEndOfLine() =>
-        this.Kind switch
-        {
-            SyntaxKind.EndOfLineTrivia or
-            SyntaxKind.SingleLineCommentTrivia => true,
-            _ => false
-        };
+    public override partial bool IsTriviaWithEndOfLine();
 
     /// <summary>
     /// 使用条件弱表来保存与语法节点相对应的结构语法琐碎内容的唯一实例。
@@ -180,13 +178,11 @@ internal abstract class
     /// <param name="trivia">现有的语法琐碎内容。</param>
     /// <returns>根据现有的语法琐碎内容创建的新的表示结构语法琐碎内容的语法节点。</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected SyntaxNode GetNewStructure(Microsoft.CodeAnalysis.SyntaxTrivia trivia) =>
+    protected virtual SyntaxNode GetNewStructure(Microsoft.CodeAnalysis.SyntaxTrivia trivia) =>
 #if LANG_LUA
         Lua
 #elif LANG_MOONSCRIPT
         MoonScript
 #endif
         .Syntax.StructuredTriviaSyntax.Create(trivia);
-
-#warning 未完成
 }

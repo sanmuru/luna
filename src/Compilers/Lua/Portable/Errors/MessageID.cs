@@ -27,7 +27,7 @@ internal static partial class MessageIDExtensions
         // 在语言分析器中检查特性的支持版本。
         return feature switch
         {
-            _ => throw ExceptionUtilities.UnexpectedValue(feature);
+            _ => throw ExceptionUtilities.UnexpectedValue(feature)
         };
     }
 

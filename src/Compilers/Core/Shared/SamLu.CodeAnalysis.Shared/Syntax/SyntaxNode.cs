@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
+using System.Diagnostics.CodeAnalysis;
 
 #if LANG_LUA
 using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
@@ -87,7 +88,7 @@ public abstract partial class
 #elif LANG_MOONSCRIPT
         MoonScriptSyntaxNode
 #endif
-          (InternalSyntaxNode green, int position, SyntaxTree syntaxTree) : base(green, position, syntaxTree) { }
+          (InternalSyntaxNode green, int position, SyntaxTree? syntaxTree) : base(green, position, syntaxTree) { }
 
     private static SyntaxTree ComputeSyntaxTree(ThisSyntaxNode node)
     {
@@ -148,6 +149,7 @@ public abstract partial class
     /// <returns>此节点在源代码中的位置。</returns>
     public new Location GetLocation() => new SourceLocation(this);
 
+    [return:NotNullIfNotNull("visitor")]
     public abstract TResult? Accept<TResult>(
 #if LANG_LUA
         LuaSyntaxVisitor<TResult>
@@ -229,23 +231,42 @@ public abstract partial class
         IEnumerable<SyntaxToken>? tokens = null,
         Func<SyntaxToken, SyntaxToken, SyntaxToken>? computeReplacementToken = null,
         IEnumerable<SyntaxTrivia>? trivia = null,
-        Func<SyntaxTrivia, SyntaxTrivia, SyntaxTrivia>? computeReplacementTrivia = null) =>
-        Syntax.SyntaxReplacer.Replace(this, nodes, computeReplacementNode, tokens, computeReplacementToken, trivia, computeReplacementTrivia).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        Func<SyntaxTrivia, SyntaxTrivia, SyntaxTrivia>? computeReplacementTrivia = null)
+    {
+        Trace.Assert(typeof(ThisSyntaxNode).IsAssignableFrom(typeof(TNode)), $"TNode必须继承自{typeof(ThisSyntaxNode).FullName}。");
+
+        return Syntax.SyntaxReplacer.Replace(this,
+            nodes.Cast<ThisSyntaxNode>(), computeReplacementNode is null ? null : (node, rewritten) => (ThisSyntaxNode)computeReplacementNode((node as TNode)!, (rewritten as TNode)!),
+            tokens, computeReplacementToken,
+            trivia, computeReplacementTrivia
+        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+    }
+        
 
     protected internal override SyntaxNode ReplaceNodeInListCore(
         SyntaxNode originalNode,
         IEnumerable<SyntaxNode> replacementNodes) =>
-        Syntax.SyntaxReplacer.ReplaceNodeInList(this, originalNode, replacementNodes).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        Syntax.SyntaxReplacer.ReplaceNodeInList(this,
+            (ThisSyntaxNode)originalNode,
+            replacementNodes.Cast<ThisSyntaxNode>()
+        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
-    protected internal override SyntaxNode InsertNodesInListCore(SyntaxNode nodeInList, IEnumerable<SyntaxNode> nodesToInsert, bool insertBefore) =>
-        Syntax.SyntaxReplacer.InsertNodeInList(this, nodeInList, nodesToInsert, insertBefore).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+    protected internal override SyntaxNode InsertNodesInListCore(
+        SyntaxNode nodeInList,
+        IEnumerable<SyntaxNode> nodesToInsert,
+        bool insertBefore) =>
+        Syntax.SyntaxReplacer.InsertNodeInList(
+            this,
+            (ThisSyntaxNode)nodeInList,
+            nodesToInsert.Cast<ThisSyntaxNode>(),
+            insertBefore
+        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode ReplaceTokenInListCore(SyntaxToken originalToken, IEnumerable<SyntaxToken> newTokens) =>
         Syntax.SyntaxReplacer.ReplaceTokenInList(this, originalToken, newTokens).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode InsertTokensInListCore(SyntaxToken originalToken, IEnumerable<SyntaxToken> newTokens, bool insertBefore) =>
         Syntax.SyntaxReplacer.InsertTokenList(this, originalToken, newTokens, insertBefore).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
-    }
 
     protected internal override SyntaxNode ReplaceTriviaInListCore(SyntaxTrivia originalTrivia, IEnumerable<SyntaxTrivia> newTrivia) =>
         Syntax.SyntaxReplacer.ReplaceTriviaInList(this, originalTrivia, newTrivia).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
@@ -254,7 +275,10 @@ public abstract partial class
         Syntax.SyntaxReplacer.InsertTriviaInList(this, originalTrivia, newTrivia, insertBefore).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode? RemoveNodesCore(IEnumerable<SyntaxNode> nodes, SyntaxRemoveOptions options) =>
-        Syntax.SyntaxNodeRemover.RemoveNodes(this, nodes.Cast<ThisSyntaxNode>(), options).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        Syntax.SyntaxNodeRemover.RemoveNodes(this,
+            nodes.Cast<ThisSyntaxNode>(),
+            options
+        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode NormalizeWhitespaceCore(string indentation, string eol, bool elasticTrivia) =>
         Syntax.SyntaxNormalizer.Normalize(this, indentation, eol, elasticTrivia).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);

@@ -13,4 +13,8 @@ public static class LanguageNames
     /// MoonScript语言的通用名称。
     /// </summary>
     public const string MoonScript = nameof(MoonScript);
+    /// <summary>
+    /// Terra语言的通用名称。
+    /// </summary>
+    public const string Terra = nameof(Terra);
 }

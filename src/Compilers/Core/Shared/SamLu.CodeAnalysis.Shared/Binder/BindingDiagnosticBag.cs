@@ -4,10 +4,10 @@ using Microsoft.CodeAnalysis.PooledObjects;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
-using static ThisDiagnosticInfo = SamLu.CodeAnalysis.Lua.LuaDiagnosticInfo;
+using ThisDiagnosticInfo = SamLu.CodeAnalysis.Lua.LuaDiagnosticInfo;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
-using static ThisDiagnosticInfo = SamLu.CodeAnalysis.MoonScript.MSDiagnosticInfo;
+using ThisDiagnosticInfo = SamLu.CodeAnalysis.MoonScript.MSDiagnosticInfo;
 #endif
 
 internal sealed class BindingDiagnosticBag : BindingDiagnosticBag<AssemblySymbol>
@@ -87,5 +87,4 @@ internal sealed class BindingDiagnosticBag : BindingDiagnosticBag<AssemblySymbol
     protected override bool ReportUseSiteDiagnostic(DiagnosticInfo diagnosticInfo, DiagnosticBag diagnosticBag, Location location) =>
         Symbol.ReportUseSiteDiagnostic(diagnosticInfo, diagnosticBag, location);
 
-    internal 
 }
