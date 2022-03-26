@@ -21,7 +21,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxRewriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxToken.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxToken.MissingTokenWithTrivia.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxToken.SyntaxTokenWithTrivia.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxTrivia.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.ParsedSyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\StructuredTriviaSyntax.cs" />

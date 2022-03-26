@@ -110,19 +110,19 @@ internal abstract partial class
 
     public abstract TResult Accept<TResult>(
 #if LANG_LUA
-        LuaSyntaxVisitor<TResult>
+        Syntax.InternalSyntax.LuaSyntaxVisitor<TResult>
 #elif LANG_MOONSCRIPT
-        MoonScriptSyntaxVisitor<TResult>
+        Syntax.InternalSyntax.MoonScriptSyntaxVisitor<TResult>
 #endif
         visitor);
 
     public abstract void Accept(
 #if LANG_LUA
-        LuaSyntaxVisitor
+        Syntax.InternalSyntax.LuaSyntaxVisitor
 #elif LANG_MOONSCRIPT
-        MoonScriptSyntaxVisitor
+        Syntax.InternalSyntax.MoonScriptSyntaxVisitor
 #endif
-         visitor);
+        visitor);
 
 #warning SetFactoryContext
 

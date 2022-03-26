@@ -142,5 +142,9 @@ internal static partial class SyntaxFactory
             : SyntaxToken.WithValue(kind, leading, text, valueText, trailing);
     }
 
+    internal static SyntaxToken MissingToken(SyntaxKind kind) => SyntaxToken.CreateMissing(kind, null, null);
+
+    internal static SyntaxToken MissingToken(GreenNode? leading, SyntaxKind kind, GreenNode? trailing) => SyntaxToken.CreateMissing(kind, leading, trailing);
+
 #warning 未完成
 }

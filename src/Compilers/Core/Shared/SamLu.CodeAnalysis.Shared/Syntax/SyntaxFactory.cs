@@ -56,5 +56,10 @@ public static partial class SyntaxFactory
 
     public static SyntaxToken Token(SyntaxTriviaList leading, SyntaxKind kind, SyntaxTriviaList trailing) => new(Syntax.InternalSyntax.SyntaxFactory.Token(leading.Node, kind, trailing.Node));
 
+    public static partial SyntaxToken Token(SyntaxTriviaList leading, SyntaxKind kind, string text, string valueText, SyntaxTriviaList trailing);
+
+    public static SyntaxToken MissingToken(SyntaxKind kind) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.MissingToken(SyntaxFactory.ElasticMarker.UnderlyingNode, kind, SyntaxFactory.ElasticMarker.UnderlyingNode));
+
 #warning 未完成
 }

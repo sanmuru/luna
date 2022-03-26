@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
-
 #if LANG_LUA
 using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
 

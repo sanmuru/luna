@@ -139,7 +139,7 @@ public abstract partial class
                 else return SyntaxFactory.Trivia(newStructure);
             }
         }
-        
+
         return trivia;
     }
 

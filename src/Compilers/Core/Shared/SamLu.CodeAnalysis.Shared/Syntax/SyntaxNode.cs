@@ -233,7 +233,8 @@ public abstract partial class
         IEnumerable<SyntaxTrivia>? trivia = null,
         Func<SyntaxTrivia, SyntaxTrivia, SyntaxTrivia>? computeReplacementTrivia = null)
     {
-        Trace.Assert(typeof(ThisSyntaxNode).IsAssignableFrom(typeof(TNode)), $"TNode必须继承自{typeof(ThisSyntaxNode).FullName}。");
+        if (!typeof(ThisSyntaxNode).IsAssignableFrom(typeof(TNode)))
+            throw new InvalidOperationException(string.Format(LunaResources.SyntaxNodeTypeMustBeDerivedFromCertainType, nameof(TNode), typeof(ThisSyntaxNode).FullName));
 
         return Syntax.SyntaxReplacer.Replace(this,
             nodes.Cast<ThisSyntaxNode>(), computeReplacementNode is null ? null : (node, rewritten) => (ThisSyntaxNode)computeReplacementNode((node as TNode)!, (rewritten as TNode)!),
@@ -284,7 +285,7 @@ public abstract partial class
         Syntax.SyntaxNormalizer.Normalize(this, indentation, eol, elasticTrivia).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected override bool IsEquivalentToCore(SyntaxNode node, bool topLevel = false) =>
-        Syntax.SyntaxFactory.AreEquivalent(this, (ThisSyntaxNode)node, topLevel);
+        SyntaxFactory.AreEquivalent(this, (ThisSyntaxNode)node, topLevel);
 
     internal override bool ShouldCreateWeakList()
     {
