@@ -1,13 +1,17 @@
 ﻿using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+using ThisInternalSyntaxNode = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.LuaSyntaxNode;
+
+namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 #elif LANG_MOONSCRIPT
-    MoonScript
+using ThisInternalSyntaxNode = SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax.MoonScriptSyntaxNode;
+
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
-    .Syntax.InternalSyntax;
+
+using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 
 /// <summary>
 /// 此类型提供构造各种内部的语法节点、标识和琐碎内容的工厂方法。
@@ -146,5 +150,48 @@ internal static partial class SyntaxFactory
 
     internal static SyntaxToken MissingToken(GreenNode? leading, SyntaxKind kind, GreenNode? trailing) => SyntaxToken.CreateMissing(kind, leading, trailing);
 
+    internal static SyntaxToken Identifier(string text) => SyntaxFactory.Identifier(SyntaxKind.IdentifierToken, null, text, text, null);
+
+    internal static SyntaxToken Identifier(GreenNode? leading, string text, GreenNode? trailing) => SyntaxFactory.Identifier(SyntaxKind.IdentifierToken, leading, text, text, trailing);
+
+    internal static SyntaxToken Identifier(SyntaxKind contextualKind, GreenNode? leading, string text, string valueText, GreenNode? trailing) => SyntaxToken.Identifier(contextualKind, leading, text, valueText, trailing);
+
+    internal static SyntaxToken BadToken(GreenNode? leading, string text, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.BadToken, leading, text, text, trailing);
+
+    #region SyntaxKind到SyntaxToken的转换方法
+    // 各种语法部分的转换方法在各语言的独立项目中定义
+    #endregion
+
+    #region 节点列表
+    public static SyntaxList<TNode> List<TNode>() where TNode : ThisInternalSyntaxNode => default;
+
+    public static SyntaxList<TNode> List<TNode>(TNode node) where TNode : ThisInternalSyntaxNode => new(SyntaxList.List(node));
+
+    public static SyntaxList<TNode> List<TNode>(TNode node0, TNode node1) where TNode : ThisInternalSyntaxNode => new(SyntaxList.List(node0, node1));
+
+    internal static GreenNode ListNode(ThisInternalSyntaxNode node0, ThisInternalSyntaxNode node1) => SyntaxList.List(node0, node1);
+
+    public static SyntaxList<TNode> List<TNode>(TNode node0, TNode node1, TNode node2) where TNode : ThisInternalSyntaxNode => new(SyntaxList.List(node0, node1, node2));
+
+    internal static GreenNode ListNode(ThisInternalSyntaxNode node0, ThisInternalSyntaxNode node1, ThisInternalSyntaxNode node2) => SyntaxList.List(node0, node1, node2);
+
+    public static SyntaxList<TNode> List<TNode>(params TNode[] nodes) where TNode : ThisInternalSyntaxNode => nodes is null ? default : new(SyntaxList.List(nodes));
+
+    internal static GreenNode ListNode(params ArrayElement<GreenNode>[] nodes) => SyntaxList.List(nodes);
+    #endregion
+
+    #region 间隔的节点列表
+    public static SeparatedSyntaxList<TNode> SeparatedList<TNode>(TNode node) where TNode : ThisInternalSyntaxNode => new(new SyntaxList<ThisInternalSyntaxNode>(node));
+
+    public static SeparatedSyntaxList<TNode> SeparatedList<TNode>(SyntaxToken token) where TNode : ThisInternalSyntaxNode => new(new SyntaxList<ThisInternalSyntaxNode>(token));
+
+    public static SeparatedSyntaxList<TNode> SeparatedList<TNode>(TNode node1, SyntaxToken token, TNode node2) where TNode : ThisInternalSyntaxNode => new(new SyntaxList<ThisInternalSyntaxNode>(SyntaxList.List(node1, token, node2)));
+
+    public static SeparatedSyntaxList<TNode> SeparatedList<TNode>(params ThisInternalSyntaxNode[] nodes) where TNode : ThisInternalSyntaxNode => nodes is null ? default : new(SyntaxList.List(nodes));
+
+    internal static partial IEnumerable<SyntaxTrivia> GetWellKnownTrivia();
+
+    internal static IEnumerable<SyntaxToken> GetWellKnownTokens() => SyntaxToken.GetWellKnownTokens();
+    #endregion
 #warning 未完成
 }

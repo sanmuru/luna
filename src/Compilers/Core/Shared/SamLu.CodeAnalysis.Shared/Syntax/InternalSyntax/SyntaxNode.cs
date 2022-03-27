@@ -108,19 +108,19 @@ internal abstract partial class
     public virtual GreenNode? GetTrailingTrivia() => null;
     public sealed override GreenNode? GetTrailingTriviaCore() => this.GetTrailingTrivia();
 
-    public abstract TResult Accept<TResult>(
+    public abstract TResult? Accept<TResult>(
 #if LANG_LUA
-        Syntax.InternalSyntax.LuaSyntaxVisitor<TResult>
+        LuaSyntaxVisitor<TResult>
 #elif LANG_MOONSCRIPT
-        Syntax.InternalSyntax.MoonScriptSyntaxVisitor<TResult>
+        MoonScriptSyntaxVisitor<TResult>
 #endif
         visitor);
 
     public abstract void Accept(
 #if LANG_LUA
-        Syntax.InternalSyntax.LuaSyntaxVisitor
+        LuaSyntaxVisitor
 #elif LANG_MOONSCRIPT
-        Syntax.InternalSyntax.MoonScriptSyntaxVisitor
+        MoonScriptSyntaxVisitor
 #endif
         visitor);
 

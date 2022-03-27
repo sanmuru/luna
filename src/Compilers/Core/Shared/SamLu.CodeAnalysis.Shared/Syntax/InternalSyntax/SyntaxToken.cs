@@ -17,6 +17,13 @@ namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
 internal partial class SyntaxToken : ThisInternalSyntaxNode
 {
+    static SyntaxToken()
+    {
+        ObjectBinder.RegisterTypeReader(typeof(SyntaxToken), r => new SyntaxToken(r));
+
+        SyntaxToken.InitializeTokensWithWellKnownText();
+    }
+
     public virtual SyntaxKind ContextualKind => this.Kind;
     public sealed override int RawContextualKind => (int)this.ContextualKind;
 
@@ -83,16 +90,6 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
     private void SetIsNotMissingFlag() => this.SetFlags(NodeFlags.IsNotMissing);
     #endregion
 
-    /// <summary>
-    /// 表示语法标识在序列化过程中是否应被重用。
-    /// </summary>
-    internal override bool ShouldReuseInSerialization => base.ShouldReuseInSerialization &&
-        // 同时不应超过词法器的最大缓存标识空间。
-        this.FullWidth < Lexer.MaxCachedTokenSize;
-
-    /// <exception cref="InvalidOperationException">此方法永远不会被调用。</exception>
-    internal sealed override GreenNode? GetSlot(int index) => throw ExceptionUtilities.Unreachable;
-
     #region 这些成员在各语言的独立项目中定义
     // FirstTokenWithWellKnownText常量
     // LastTokenWithWellKnownText常量
@@ -100,6 +97,11 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
     // s_tokensWithElasticTrivia字段
     // s_tokensWithSingleTrailingSpace字段
     // s_tokensWithSingleTrailingCRLF字段
+
+    /// <summary>
+    /// 在<see cref="SyntaxToken"/>的静态构造函数中初始化所有已知文本的标识。
+    /// </summary>
+    protected static partial void InitializeTokensWithWellKnownText();
     #endregion
 
     internal static SyntaxToken Create(SyntaxKind kind)
@@ -142,6 +144,44 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
 
     internal static SyntaxToken CreateMissing(SyntaxKind kind, GreenNode? leading, GreenNode? trailing) => new MissingTokenWithTrivia(kind, leading, trailing);
 
+    internal static SyntaxToken Identifier(string text) => new SyntaxIdentifier(text);
+
+    internal static SyntaxToken Identifier(GreenNode? leading, string text, GreenNode? trailing)
+    {
+        if (leading is null && trailing is null)
+            return SyntaxToken.Identifier(text);
+        else
+            return new SyntaxIdentifierWithTrivia(SyntaxKind.IdentifierToken, text, text, leading, trailing);
+    }
+
+    internal static SyntaxToken Identifier(SyntaxKind contextualKind, GreenNode? leading, string text, string valueText, GreenNode? trailing)
+    {
+        if (contextualKind == SyntaxKind.IdentifierName && valueText == text)
+            return SyntaxToken.Identifier(leading, text, trailing);
+        else
+            return new SyntaxIdentifierWithTrivia(contextualKind, text, valueText, leading, trailing);
+    }
+
+    internal static SyntaxToken WithValue<T>(SyntaxKind kind, string text, T value) => new SyntaxTokenWithValue<T>(kind, text, value);
+
+    internal static SyntaxToken WithValue<T>(SyntaxKind kind, GreenNode? leading, string text, T? value, GreenNode? trailing) => new SyntaxTokenWithValueAndTrivia<T>(kind, text, value, leading, trailing);
+
+    internal static SyntaxToken StringLiteral(string text) => new SyntaxTokenWithValue<string>(SyntaxKind.StringLiteralToken, text, text);
+
+    internal static SyntaxToken StringLiteral(ThisInternalSyntaxNode leading, string text, ThisInternalSyntaxNode trailing) => new SyntaxTokenWithValueAndTrivia<string>(SyntaxKind.StringLiteralToken, text, text, leading, trailing);
+
+    /// <summary>
+    /// 表示语法标识在序列化过程中是否应被重用。
+    /// </summary>
+    internal override bool ShouldReuseInSerialization => base.ShouldReuseInSerialization &&
+        // 同时不应超过词法器的最大缓存标识空间。
+        this.FullWidth < Lexer.MaxCachedTokenSize;
+
+    /// <exception cref="InvalidOperationException">此方法永远不会被调用。</exception>
+    internal sealed override GreenNode? GetSlot(int index) => throw ExceptionUtilities.Unreachable;
+
+    internal static partial IEnumerable<SyntaxToken> GetWellKnownTokens();
+
     public override object? GetValue() => this.Value;
 
     public override string GetValueText() => this.ValueText;
@@ -181,13 +221,13 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
     }
 
     #region 访问方法
-    public override TResult Accept<TResult>(
+    public override TResult? Accept<TResult>(
 #if LANG_LUA
         LuaSyntaxVisitor<TResult>
 #elif LANG_MOONSCRIPT
         MoonScriptSyntaxVisitor<TResult>
 #endif
-        visitor) => visitor.VisitToken(this);
+        visitor) where TResult : default => visitor.VisitToken(this);
 
     public override void Accept(
 #if LANG_LUA

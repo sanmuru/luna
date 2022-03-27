@@ -15,12 +15,9 @@ internal partial class SyntaxToken
 {
     internal class MissingTokenWithTrivia : SyntaxTokenWithTrivia
     {
-        public sealed override string Text => string.Empty;
+        static MissingTokenWithTrivia() => ObjectBinder.RegisterTypeReader(typeof(MissingTokenWithTrivia), r => new MissingTokenWithTrivia(r));
 
-        static MissingTokenWithTrivia()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(MissingTokenWithTrivia), r => new MissingTokenWithTrivia(r));
-        }
+        public sealed override string Text => string.Empty;
 
         internal MissingTokenWithTrivia(SyntaxKind kind, GreenNode? leading, GreenNode? trailing) : base(kind, leading, trailing)
         {
@@ -43,8 +40,8 @@ internal partial class SyntaxToken
         internal override void WriteTo(ObjectWriter writer)
         {
             base.WriteTo(writer);
-            writer.WriteValue(this.LeadingField);
-            writer.WriteValue(this.TrailingField);
+            writer.WriteValue(this._leading);
+            writer.WriteValue(this._trailing);
         }
 
         internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics) =>

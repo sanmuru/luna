@@ -14,68 +14,40 @@ internal partial class SyntaxToken
 {
     internal class SyntaxTokenWithTrivia : SyntaxToken
     {
-        protected readonly GreenNode? LeadingField;
-        protected readonly GreenNode? TrailingField;
+        static SyntaxTokenWithTrivia() => ObjectBinder.RegisterTypeReader(typeof(SyntaxTokenWithTrivia), r => new SyntaxTokenWithTrivia(r));
 
-        static SyntaxTokenWithTrivia()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(SyntaxTokenWithTrivia), r => new SyntaxTokenWithTrivia(r));
-        }
+        protected readonly GreenNode? _leading;
+        protected readonly GreenNode? _trailing;
 
-        internal SyntaxTokenWithTrivia(SyntaxKind kind, GreenNode? leading, GreenNode? trailing) : base(kind)
-        {
-            if (leading is not null)
-            {
-                this.AdjustFlagsAndWidth(leading);
-                this.LeadingField = leading;
-            }
-            if (trailing is not null)
-            {
-                this.AdjustFlagsAndWidth(trailing);
-                this.TrailingField = trailing;
-            }
-        }
+        internal SyntaxTokenWithTrivia(SyntaxKind kind, GreenNode? leading, GreenNode? trailing) : base(kind) =>
+            SyntaxToken.InitializeWithTrivia(
+                this, ref this._leading, ref this._trailing,
+                leading, trailing
+            );
 
-        internal SyntaxTokenWithTrivia(SyntaxKind kind, GreenNode? leading, GreenNode? trailing, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations) : base(kind, diagnostics, annotations)
-        {
-            if (leading is not null)
-            {
-                this.AdjustFlagsAndWidth(leading);
-                this.LeadingField = leading;
-            }
-            if (trailing is not null)
-            {
-                this.AdjustFlagsAndWidth(trailing);
-                this.TrailingField = trailing;
-            }
-        }
+        internal SyntaxTokenWithTrivia(SyntaxKind kind, GreenNode? leading, GreenNode? trailing, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations) : base(kind, diagnostics, annotations) =>
+            SyntaxToken.InitializeWithTrivia(
+                this, ref this._leading, ref this._trailing,
+                leading, trailing
+            );
 
-        internal SyntaxTokenWithTrivia(ObjectReader reader) : base(reader)
-        {
-            var leading = (GreenNode?)reader.ReadValue();
-            if (leading is not null)
-            {
-                this.AdjustFlagsAndWidth(leading);
-                this.LeadingField = leading;
-            }
-            var trailing = (GreenNode?)reader.ReadValue();
-            if (trailing is not null)
-            {
-                this.AdjustFlagsAndWidth(trailing);
-                this.TrailingField = trailing;
-            }
-        }
+        internal SyntaxTokenWithTrivia(ObjectReader reader) : base(reader) =>
+            SyntaxToken.InitializeWithTrivia(
+                this, ref this._leading, ref this._trailing,
+                (GreenNode?)reader.ReadValue(),
+                (GreenNode?)reader.ReadValue()
+            );
 
         internal override void WriteTo(ObjectWriter writer)
         {
             base.WriteTo(writer);
-            writer.WriteValue(this.LeadingField);
-            writer.WriteValue(this.TrailingField);
+            writer.WriteValue(this._leading);
+            writer.WriteValue(this._trailing);
         }
 
-        public sealed override GreenNode? GetLeadingTrivia() => this.LeadingField;
+        public sealed override GreenNode? GetLeadingTrivia() => this._leading;
 
-        public sealed override GreenNode? GetTrailingTrivia() => this.TrailingField;
+        public sealed override GreenNode? GetTrailingTrivia() => this._trailing;
 
         internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics) =>
             new SyntaxTokenWithTrivia(this.Kind, this.GetLeadingTrivia(), this.GetTrailingTrivia(), diagnostics, this.GetAnnotations());
