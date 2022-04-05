@@ -1,12 +1,19 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Text;
+using Microsoft.CodeAnalysis;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
+using ThisSyntaxTree = SamLu.CodeAnalysis.Lua.LuaSyntaxTree;
+using ThisParseOptions =SamLu.CodeAnalysis.Lua.LuaParseOptions;
+
+namespace SamLu.CodeAnalysis.Lua;
 #elif LANG_MOONSCRIPT
-    MoonScript
+using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
+using ThisSyntaxTree = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxTree;
+using ThisParseOptions = SamLu.CodeAnalysis.MoonScript.MoonScriptParseOptions;
+
+namespace SamLu.CodeAnalysis.MoonScript;
 #endif
-    ;
 
 /// <summary>
 /// 此类型提供构造各种语法节点、标识和琐碎内容的工厂方法。
@@ -62,4 +69,6 @@ public static partial class SyntaxFactory
         new(Syntax.InternalSyntax.SyntaxFactory.MissingToken(SyntaxFactory.ElasticMarker.UnderlyingNode, kind, SyntaxFactory.ElasticMarker.UnderlyingNode));
 
 #warning 未完成
+
+    public static SyntaxTree SyntaxTree(SyntaxNode root, ParseOptions? options = null, string path = "", Encoding? encoding = null) => ThisSyntaxTree.Create((ThisSyntaxNode)root, (ThisParseOptions?)options, path, encoding);
 }

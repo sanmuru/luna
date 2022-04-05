@@ -10,12 +10,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Binder\BindingDiagnosticBag.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Errors\Diagnostic.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Errors\DiagnosticFormatter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Errors\MessageID.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Errors\MessageProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Errors\SyntaxDiagnosticInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LanguageVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\BlockSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\StructuredTriviaSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxNode.cs" />
@@ -31,6 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxTrivia.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.DummySyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.ParsedSyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\StructuredTriviaSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxFactory.cs" />
@@ -39,7 +44,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxNodeRemover.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxNormalizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxReplacer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTreeDiagnosticEnumerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_PREPROCESS_.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.DebuggerSyntaxTree.cs" />
   </ItemGroup>
 </Project>

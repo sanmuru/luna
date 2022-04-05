@@ -2,6 +2,8 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Roslyn.Utilities;
+using System.Diagnostics;
 
 #if LANG_LUA
 using ThisSyntaxTree = SamLu.CodeAnalysis.Lua.LuaSyntaxTree;
@@ -70,7 +72,7 @@ public abstract partial class
     public override bool IsEquivalentTo(SyntaxTree tree, bool topLevel = false) =>
         SyntaxFactory.AreEquivalent(this, tree, topLevel);
 
-#region Factories
+    #region 工厂方法
     public static SyntaxTree Create(ThisSyntaxNode root!!, ThisParseOptions? options = null, string? path = "", Encoding? encoding = null) =>
         new ParsedSyntaxTree(
             text: null,
@@ -81,7 +83,7 @@ public abstract partial class
             root: root,
             cloneRoot: true);
 
-    internal static SyntaxTree CreateForDebugger(ThisSyntaxNode root!!, SourceText text, ThisParseOptions options) => new DebuggerSyntaxTree(root, text, options);
+    internal static SyntaxTree CreateForDebugger(ThisSyntaxNode root!!, SourceText text, ThisParseOptions options) => new DebuggerSyntaxTree(options, root, text);
 
     internal static SyntaxTree CreateWithoutClone(ThisSyntaxNode root!!) =>
         new ParsedSyntaxTree(
@@ -129,6 +131,123 @@ public abstract partial class
         tree.VerifySource();
         return tree;
     }
+    #endregion
+
+    #region 更改
+    public override SyntaxTree WithChangedText(SourceText newText)
+    {
+        if (this.TryGetText(out SourceText? oldText))
+        {
+            var changes = newText.GetChangeRanges(oldText);
+
+            if (changes.Count == 0 && newText == oldText) return this;
+            
+            return this.WithChanges(newText, changes);
+        }
+
+        return this.WithChanges(newText, new[] { new TextChangeRange(new TextSpan(0, this.Length), newText.Length) });
+    }
+
+    private SyntaxTree WithChanges(SourceText newText, IReadOnlyList<TextChangeRange> changes!!)
+    {
+        var workingChanges = changes;
+        var oldTree = this;
+
+        // 如果全文都发生更改，则重新进行全文解析。
+        if (workingChanges.Count == 1 && workingChanges[0].Span == new TextSpan(0, this.Length) && workingChanges[0].NewLength = newText.Length)
+        {
+            workingChanges = null;
+            oldTree = null;
+        }
+
+        using var lexer = new Syntax.InternalSyntax.Lexer(newText, this.Options);
+        using var parser = new Syntax.InternalSyntax.LanguageParser(lexer, oldTree?.GetRoot(), workingChanges);
+
+        var compilationUnit = (BlockSyntax)parser.ParseBlock().CreateRed();
+        return new ParsedSyntaxTree(
+            newText,
+            newText.Encoding,
+            newText.ChecksumAlgorithm,
+            this.FilePath,
+            this.Options,
+            compilationUnit,
+            cloneRoot: true
+        );
+    }
+
+    public override IList<TextSpan> GetChangedSpans(SyntaxTree oldTree) => SyntaxDiffer.GetPossiblyDifferentTextSpans(oldTree, this);
+
+    public override IList<TextChange> GetChanges(SyntaxTree oldTree) => SyntaxDiffer.GetTextChanges(oldTree, this);
+    #endregion
+
+    #region 行位置和定位
+    /// <summary>
+    /// 获取指定的字符位置对应的行位置。
+    /// </summary>
+    /// <param name="position">指定的字符位置。</param>
+    /// <param name="cancellationToken">取消操作的标识符。</param>
+    /// <returns>指定的字符位置对应的行位置。</returns>
+    private LinePosition GetLinePosition(int position, CancellationToken cancellationToken) => this.GetText(cancellationToken).Lines.GetLinePosition(position);
+
+    /// <summary>
+    /// 获取指定的文本范围所在的位置信息。
+    /// </summary>
+    /// <param name="span">一段文本的范围。</param>
+    /// <returns>这段文本所在的位置信息。</returns>
+    public override Location GetLocation(TextSpan span) => new SourceLocation(this, span);
+
+    public override FileLinePositionSpan GetLineSpan(TextSpan span, CancellationToken cancellationToken = default) =>
+        new(this.FilePath, this.GetLinePosition(span.Start, cancellationToken), this.GetLinePosition(span.End, cancellationToken));
+
+    /// <summary>
+    /// 获取重新映射后的行位置范围信息。因为基于Lua的语言不支持重新映射行位置，所以此方法等同于<see cref="GetLineSpan(TextSpan, CancellationToken)"/>。
+    /// </summary>
+    /// <returns>重新映射后的行位置范围信息。</returns>
+    /// <inheritdoc cref="GetLineSpan(TextSpan, CancellationToken)"/>
+    public sealed override FileLinePositionSpan GetMappedLineSpan(TextSpan span, CancellationToken cancellationToken = default) => this.GetLineSpan(span, cancellationToken);
+
+    internal sealed override FileLinePositionSpan GetMappedLineSpanAndVisibility(TextSpan span, out bool isHiddenPosition) => base.GetMappedLineSpanAndVisibility(span, out isHiddenPosition);
+
+    public sealed override LineVisibility GetLineVisibility(int position, CancellationToken cancellationToken = default) => LineVisibility.Visible;
+
+    public sealed override IEnumerable<LineMapping> GetLineMappings(CancellationToken cancellationToken = default) => Array.Empty<LineMapping>();
+
+    public sealed override bool HasHiddenRegions() => false;
+    #endregion
+
+    #region 消息
+    public override IEnumerable<Diagnostic> GetDiagnostics(SyntaxNode node) => this.GetDiagnostics(node.Green, node.Position);
+
+    private IEnumerable<Diagnostic> GetDiagnostics(GreenNode node, int position)
+    {
+        if (node.ContainsDiagnostics)
+            return this.EnumerateDiagnostics(node, position);
+        else
+            return SpecializedCollections.EmptyEnumerable<Diagnostic>();
+    }
+
+    private IEnumerable<Diagnostic> EnumerateDiagnostics(GreenNode node, int position) =>
+        new SyntaxTreeDiagnosticEnumerator(this, node, position).GetEnumerable();
+
+    public override IEnumerable<Diagnostic> GetDiagnostics(SyntaxToken token)
+    {
+        Debug.Assert(token.Node is not null);
+        return this.GetDiagnostics(token.Node, token.Position);
+    }
+
+    public override IEnumerable<Diagnostic> GetDiagnostics(SyntaxTrivia trivia)
+    {
+        Debug.Assert(trivia.UnderlyingNode is not null);
+        return this.GetDiagnostics(trivia.UnderlyingNode, trivia.Position);
+    }
+
+    public override IEnumerable<Diagnostic> GetDiagnostics(SyntaxNodeOrToken nodeOrToken)
+    {
+        Debug.Assert(nodeOrToken.UnderlyingNode is not null);
+        return this.GetDiagnostics(nodeOrToken.UnderlyingNode, nodeOrToken.Position);
+    }
+
+    public override IEnumerable<Diagnostic> GetDiagnostics(CancellationToken cancellationToken = default) => this.GetDiagnostics(this.GetRoot(cancellationToken));
     #endregion
 
     #region SyntaxTree
