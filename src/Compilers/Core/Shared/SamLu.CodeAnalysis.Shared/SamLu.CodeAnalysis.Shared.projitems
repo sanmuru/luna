@@ -18,6 +18,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LanguageVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\AbstractLexer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\LexerCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\SlidingTextWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\BlockSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\StructuredTriviaSyntax.cs" />
