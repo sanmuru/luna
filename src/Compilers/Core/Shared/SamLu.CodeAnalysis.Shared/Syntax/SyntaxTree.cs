@@ -154,7 +154,7 @@ public abstract partial class
         var oldTree = this;
 
         // 如果全文都发生更改，则重新进行全文解析。
-        if (workingChanges.Count == 1 && workingChanges[0].Span == new TextSpan(0, this.Length) && workingChanges[0].NewLength = newText.Length)
+        if (workingChanges.Count == 1 && workingChanges[0].Span == new TextSpan(0, this.Length) && workingChanges[0].NewLength == newText.Length)
         {
             workingChanges = null;
             oldTree = null;
