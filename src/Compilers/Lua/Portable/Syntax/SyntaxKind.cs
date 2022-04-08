@@ -56,8 +56,12 @@ public enum SyntaxKind : ushort
 
     /// <summary>表示<c>&lt;&lt;</c>标记。</summary>
     LessThanLessThenToken = 8257,
+    /// <summary>表示<c>&lt;=</c>标记。</summary>
+    LessThanEqualsToken,
     /// <summary>表示<c>&gt;&gt;</c>标记。</summary>
-    GreaterThanLessThenToken,
+    GreaterThanGreaterThenToken,
+    /// <summary>表示<c>&gt;=</c>标记。</summary>
+    GreaterThanEqualsToken,
     /// <summary>表示<c>//</c>标记。</summary>
     SlashSlashToken,
     /// <summary>表示<c>==</c>标记。</summary>
@@ -186,6 +190,9 @@ public enum SyntaxKind : ushort
     /// <summary>表示名称（<c>+</c>）元字段<c>__name</c>。</summary>
     NameMetafield,
     #endregion
+
+    /// <summary>表示文件的结尾。</summary>
+    EndOfFileToken = 9216, // 假定此类型为最后一个无文本标识。
 
     #region 文本记号
     /// <summary>表示不应出现在此位置的错误记号。</summary>

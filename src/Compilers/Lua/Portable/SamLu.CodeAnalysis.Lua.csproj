@@ -43,12 +43,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />
-    <ProjectReference Include="..\..\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj" />
+    <Compile Remove="Binder\**" />
+    <EmbeddedResource Remove="Binder\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Binder\" />
+    <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />
+    <ProjectReference Include="..\..\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj" />
   </ItemGroup>
 
   <Import Project="..\..\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems" Label="Shared" />

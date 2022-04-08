@@ -61,6 +61,11 @@ internal abstract class SlidingTextWindow : IDisposable
     protected static readonly ObjectPool<char[]> s_windowPool = new(() => new char[SlidingTextWindow.DefaultWindowLength]);
 
     /// <summary>
+    /// 获取词法器解析的代码文本。
+    /// </summary>
+    public SourceText Text => this._text;
+
+    /// <summary>
     /// 获取当前处理的字符相对于代码文本的起始位置的偏移量。
     /// </summary>
     public int Position => this._basis + this._offset;
@@ -243,7 +248,7 @@ internal abstract class SlidingTextWindow : IDisposable
     /// </summary>
     /// <param name="delta">相对于当前识别的字符位置的偏移量。</param>
     /// <returns>后方第<paramref name="delta"/>位上的字符。若已到达结尾，则返回<see cref="SlidingTextWindow.InvalidCharacter"/>。</returns>
-    public virtual char PeekChar(int delta = 0)
+    public virtual char PeekChar(int delta = 1)
     {
         int position = this.Position;
         this.AdvanceChar(delta);
