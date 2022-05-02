@@ -7,12 +7,5 @@ public abstract class Userdata : Object
     /// </summary>
     public static Userdata Wrap(object value!!) => value is Userdata userdata ? userdata : new Vanilla(value);
 
-    internal sealed class Vanilla : Userdata
-    {
-        private readonly object _value;
-
-        public Vanilla(object value!!) => this._value = value;
-    }
-
     public override TypeInfo GetTypeInfo() => TypeInfo.Userdata;
 }

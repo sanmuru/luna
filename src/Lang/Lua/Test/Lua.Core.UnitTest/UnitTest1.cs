@@ -11,8 +11,10 @@ namespace Lua.Core.UnitTest
     {
         static void Main()
         {
-            Object obj = long.MinValue;
-            obj = Userdata.Wrap(new UnitTest1());
+            Number n1, n2;
+            n1 = ulong.MaxValue;
+            n2 = ulong.MaxValue;
+            Number n3 = n1 + n2;
         }
     }
 

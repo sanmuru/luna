@@ -46,7 +46,20 @@ public sealed class Function : Object
         set => Function.s_mt = value;
     }
 
+    public override bool IsCallable => true;
+
+    public override int GetHashCode() => this._func.GetHashCode();
+
     public override TypeInfo GetTypeInfo() => TypeInfo.Function;
+
+    /// <inheritdoc/>
+    /// <exception cref="InvalidCastException"><paramref name="type"/> 不是能接受的转换目标类型。</exception>
+    public override object ChangeType(Type type!!)
+    {
+        if (typeof(Object).IsAssignableFrom(type) && type.IsAssignableFrom(typeof(Function))) return this;
+        else if (type.IsAssignableFrom(this._func.GetType())) return this._func;
+        else throw new InvalidCastException();
+    }
     #endregion
 
     public static implicit operator Function(Delegate func!!) => new(func);

@@ -43,6 +43,10 @@ public sealed class Boolean : Object, IComparable, IComparable<Boolean>, ICompar
 
     public override int GetHashCode() => this._value.GetHashCode();
 
+    /// <summary>
+    /// 将操作数从 <see cref="object"/> 转型为 <see cref="Boolean"/> 对象。
+    /// </summary>
+    /// <exception cref="ComparisonNotSupportedException"><paramref name="obj"/> 的类型不在接受的范围（<see cref="bool"/> 或 <see cref="Boolean"/>）。</exception>
     private Boolean ConvertComparandFrom(object? obj) => obj switch
     {
         bool => (Boolean)(bool)obj,
@@ -63,6 +67,15 @@ public sealed class Boolean : Object, IComparable, IComparable<Boolean>, ICompar
     }
 
     public override TypeInfo GetTypeInfo() => TypeInfo.Boolean;
+
+    /// <inheritdoc/>
+    /// <exception cref="InvalidCastException"><paramref name="type"/> 不是能接受的转换目标类型。</exception>
+    public override object ChangeType(Type type!!)
+    {
+        if (typeof(Object).IsAssignableFrom(type) && type.IsAssignableFrom(typeof(Boolean))) return this;
+        else if (type == typeof(bool)) return (bool)this;
+        else throw new InvalidCastException();
+    }
     #endregion
 
     #region 操作符

@@ -110,6 +110,8 @@ public abstract partial class Object : IDynamicMetaObjectProvider
             return Table.RawGet(mt, index);
     }
 
+    public abstract override int GetHashCode();
+
     public abstract TypeInfo GetTypeInfo();
 
     /// <summary>
@@ -128,6 +130,37 @@ public abstract partial class Object : IDynamicMetaObjectProvider
         newArgs[0] = this;
         args.CopyTo(newArgs, 1);
         return func.Invoke(newArgs);
+    }
+
+    /// <summary>
+    /// 返回一个特定类型的对象，其值与此实例相等。
+    /// </summary>
+    /// <param name="type">要返回的目标类型</param>
+    /// <returns>一个类型为 <paramref name="type"/> 的对象，其值与此实例相等。</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> 的值为 <see langword="null"/>。</exception>
+    public abstract object ChangeType(Type type);
+
+    /// <summary>
+    /// 尝试将此实例转型为一个特定类型的对象，返回一个值，指示转型是否成功。
+    /// </summary>
+    /// <param name="type">要转换的目标类型。</param>
+    /// <param name="result">一个类型为 <paramref name="type"/> 的对象，其值与此实例相等。</param>
+    /// <returns>若为 <see langword="true"/> 时，表示转型成功；若为 <see langword="false"/> 时，表示转型失败。</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="type"/> 的值为 <see langword="null"/>。</exception>
+    public bool TryChangeType(Type type!!, out object result)
+    {
+        try
+        {
+            result = this.ChangeType(type);
+            return true;
+        }
+        catch
+        {
+#pragma warning disable CS8625
+            result = null;
+#pragma warning restore CS8625
+            return false;
+        }
     }
 
     #region DynamicObject
@@ -171,8 +204,4 @@ public abstract partial class Object : IDynamicMetaObjectProvider
         Delegate => (Object)(Delegate)value,
         _ => Userdata.Wrap(value)
     };
-
-    public abstract object ChangeType(Type type);
-
-    public abstract bool TryChangeType(Type type, out object result);
 }

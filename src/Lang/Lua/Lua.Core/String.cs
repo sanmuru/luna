@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SamLu.Lua;
 
-public sealed class String : Object, IComparable, IComparable<String>, IComparable<string>, IEquatable<String>, IEquatable<string>
+public sealed class String : Object, IComparable, IComparable<String?>, IComparable<string>, IEquatable<String>, IEquatable<string>, ICloneable, IConvertible
 {
     private readonly string _value;
 
@@ -50,7 +50,45 @@ public sealed class String : Object, IComparable, IComparable<String>, IComparab
         _ => this._value.Equals(other)
     };
 
-    public override int GetHashCode() => this._value.GetHashCode();
+    #region ICloneable
+    public object Clone() => (String)this._value.Clone();
+    #endregion
+
+    #region IConvertible
+    bool IConvertible.ToBoolean(IFormatProvider? provider) => ((IConvertible)this._value).ToBoolean(provider);
+
+    sbyte IConvertible.ToSByte(IFormatProvider? provider) => ((IConvertible)this._value).ToSByte(provider);
+
+    byte IConvertible.ToByte(IFormatProvider? provider) => ((IConvertible)this._value).ToByte(provider);
+
+    short IConvertible.ToInt16(IFormatProvider? provider) => ((IConvertible)this._value).ToInt16(provider);
+
+    ushort IConvertible.ToUInt16(IFormatProvider? provider) => ((IConvertible)this._value).ToUInt16(provider);
+
+    int IConvertible.ToInt32(IFormatProvider? provider) => ((IConvertible)this._value).ToInt32(provider);
+
+    uint IConvertible.ToUInt32(IFormatProvider? provider) => ((IConvertible)this._value).ToUInt32(provider);
+
+    long IConvertible.ToInt64(IFormatProvider? provider) => ((IConvertible)this._value).ToInt64(provider);
+
+    ulong IConvertible.ToUInt64(IFormatProvider? provider) => ((IConvertible)this._value).ToUInt64(provider);
+
+    float IConvertible.ToSingle(IFormatProvider? provider) => ((IConvertible)this._value).ToSingle(provider);
+
+    double IConvertible.ToDouble(IFormatProvider? provider) => ((IConvertible)this._value).ToDouble(provider);
+
+    decimal IConvertible.ToDecimal(IFormatProvider? provider) => ((IConvertible)this._value).ToDecimal(provider);
+
+    DateTime IConvertible.ToDateTime(IFormatProvider? provider) => ((IConvertible)this._value).ToDateTime(provider);
+
+    char IConvertible.ToChar(IFormatProvider? provider) => ((IConvertible)this._value).ToChar(provider);
+
+    public string ToString(IFormatProvider? provider) => this._value.ToString(provider);
+
+    object IConvertible.ToType(Type conversionType, IFormatProvider? provider) => this.ChangeType(conversionType);
+
+    TypeCode IConvertible.GetTypeCode() => this._value.GetTypeCode();
+    #endregion
 
     #region Object
     internal static Table? s_mt;
@@ -61,7 +99,18 @@ public sealed class String : Object, IComparable, IComparable<String>, IComparab
         set => String.s_mt = value;
     }
 
+    public override int GetHashCode() => this._value.GetHashCode();
+
     public override TypeInfo GetTypeInfo() => TypeInfo.String;
+
+    /// <inheritdoc/>
+    /// <exception cref="InvalidCastException"><paramref name="type"/> 不是能接受的转换目标类型。</exception>
+    public override object ChangeType(Type type)
+    {
+        if (typeof(Object).IsAssignableFrom(type) && type.IsAssignableFrom(typeof(String))) return this;
+        else if (type == typeof(string)) return this._value;
+        else return ((IConvertible)this._value).ToType(type, null);
+    }
     #endregion
 
     #region 操作符

@@ -7,7 +7,7 @@ namespace SamLu.Lua;
 
 public readonly struct MultiReturns : IReadOnlyList<Object?>, IDynamicMetaObjectProvider
 {
-    private readonly Object?[]? _values;
+    private readonly Object?[] _values;
 
     public static MultiReturns Empty => new();
 

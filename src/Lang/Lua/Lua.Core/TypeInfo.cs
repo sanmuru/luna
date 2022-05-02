@@ -80,9 +80,13 @@ public sealed class TypeInfo : Object, IEquatable<TypeInfo>, IEquatable<String>,
     { }
 
     #region Object
-    public override Table? GetMetatable() => Lua.String.s_mt;
+    protected internal override Table? Metatable
+    {
+        get => Lua.String.s_mt;
+        set => Lua.String.s_mt = value;
+    }
 
-    public override Table? SetMetatable(Table? table) => Lua.String.s_mt = table;
+    public override Object? GetMetatable() => Lua.String.s_mt;
 
     public override TypeInfo GetTypeInfo() => TypeInfo.String;
 
@@ -102,6 +106,10 @@ public sealed class TypeInfo : Object, IEquatable<TypeInfo>, IEquatable<String>,
     public bool Equals(TypeInfo? other) => other is not null && (this._name == other._name && this._type == other._type);
 
     public override int GetHashCode() => this._name.GetHashCode() ^ (this._type is null ? 0 : this._type.GetHashCode());
+
+    /// <inheritdoc/>
+    /// <exception cref="InvalidCastException"><paramref name="type"/> 不是能接受的转换目标类型。</exception>
+    public override object ChangeType(Type type) => ((String)this).ChangeType(type);
 
     public static implicit operator TypeInfo(string type!!) => new(type);
     public static implicit operator TypeInfo(String type!!) => new((string)type);

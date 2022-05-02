@@ -97,7 +97,17 @@ public class Table : Object
         return table;
     }
 
+    public override int GetHashCode() => this.dictionary.GetHashCode();
+
     public override TypeInfo GetTypeInfo() => TypeInfo.Table;
+
+    /// <inheritdoc/>
+    /// <exception cref="InvalidCastException"><paramref name="type"/> 不是能接受的转换目标类型。</exception>
+    public override object ChangeType(Type type)
+    {
+        if (typeof(Object).IsAssignableFrom(type) && type.IsAssignableFrom(this.GetType())) return this;
+        else throw new InvalidCastException();
+    }
 
     public static Object? Next(Table table!!, Object? index = null)
     {
