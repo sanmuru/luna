@@ -182,6 +182,9 @@ public abstract partial class Object : IDynamicMetaObjectProvider
     public static implicit operator Object(string value) => (String)value;
     public static implicit operator Object(Delegate value) => (Function)value;
 
+    public static bool operator true(Object? value) => value is not null;
+    public static bool operator false(Object? value) => value is null;
+
     /// <summary>
     /// 将一个 <see cref="object"/> 对象转型为 Lua 环境的 <see cref="Object"/> 对象。
     /// </summary>

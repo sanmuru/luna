@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SamLu.Lua;
 
+#pragma warning disable CS0659, CS0661
 public abstract class Number : Object, IComparable, IComparable<Number>, IEquatable<Number>
 {
 #pragma warning disable CS8767
@@ -71,58 +72,41 @@ public abstract class Number : Object, IComparable, IComparable<Number>, IEquata
     public static implicit operator Number(float value) => (Real)value;
     public static implicit operator Number(double value) => (Real)value;
     public static implicit operator Number(decimal value) => (DecimalReal)value;
+    public static implicit operator String(Number value) => value.ToString() ?? string.Empty;
     #endregion
 
     #region Lua 操作符函数
     public static Number Addition(Number left, Number right)
     {
-        Number doubles(double l, double r)
-        {
-            if (l < 0 && r < 0)
-            {
-                double result = unchecked(l + r);
-                if (result > 0) return double.NegativeInfinity;
-                else return result;
-            }
-            else if (l > 0 && r > 0)
-            {
-                double result = unchecked(l + r);
-                if (result < 0) return double.PositiveInfinity;
-                else return result;
-            }
-            else
-                return l + r; // 符号相反，相加不会溢出。
-        }
+        Number doubles(double l, double r) => l + r;
 
         Number decimals(decimal l, decimal r)
         {
-            if (l < 0 && r < 0)
-            {
-                decimal result = unchecked(l + r);
-                if (result > 0) return double.NegativeInfinity;
-                else return result;
-            }
-            else if (l > 0 && r > 0)
-            {
-                decimal result = unchecked(l + r);
-                if (result < 0) return double.PositiveInfinity;
-                else return result;
-            }
-            else
-                return l + r; // 符号相反，相加不会溢出。
+            try { return l + r; }
+            catch (OverflowException) { return doubles((double)l, (double)r); } // 算数溢出，转型为更大范围的双精度浮点数运算。
         }
 
         Number eitherUnsigned(long l, ulong r)
         {
-            if (l < 0) return unchecked(r - (ulong)(-l));
-            else if ((ulong)l <= (ulong.MaxValue - r)) return (ulong)l + r;
-            else return (decimal)l + (decimal)r;
+            if (l >= 0 && (ulong)l <= (ulong.MaxValue - r)) return (ulong)l + r;
+            else
+            {
+                decimal result = (decimal)l + (decimal)r;
+                if (result > ulong.MaxValue) return result;
+                else if (result > long.MaxValue) return (ulong)result;
+                else return (long)result;
+            };
         }
 
         Number bothUnsigned(ulong l, ulong r)
         {
             if (l <= (ulong.MaxValue - r)) return l + r;
-            else return (decimal)l + (decimal)r;
+            else
+            {
+                decimal result = (decimal)l + (decimal)r;
+                if (result > ulong.MaxValue) return result;
+                else return (ulong)result;
+            };
         }
 
         Number bothSigned(long l, long r)
@@ -130,7 +114,7 @@ public abstract class Number : Object, IComparable, IComparable<Number>, IEquata
             if (l < 0 && r < 0)
             {
                 long result = unchecked(l + r);
-                if (result > 0) return (decimal)l + (decimal)r;
+                if (result >= 0) return (decimal)l + (decimal)r;
                 else return result;
             }
             else if (l > 0 && r > 0)
@@ -153,26 +137,212 @@ public abstract class Number : Object, IComparable, IComparable<Number>, IEquata
             _ => throw new NotSupportedException()
         };
     }
+
+    public static Number Subtraction(Number left, Number right)
+    {
+        Number doubles(double l, double r) => l + r;
+
+        Number decimals(decimal l, decimal r)
+        {
+            try { return l - r; }
+            catch (OverflowException) { return doubles((double)l, (double)r); } // 算数溢出，转型为更大范围的双精度浮点数运算。
+        }
+
+        Number eitherUnsigned(decimal l, decimal r)
+        {
+            decimal result = l - r;
+            if (result > ulong.MaxValue) return result;
+            else if (result < long.MinValue) return result;
+            else if (result > long.MaxValue) return (ulong)result;
+            else return (long)result;
+        }
+
+        Number bothUnsigned(ulong l, ulong r)
+        {
+            if (l < r) return -(long)(r - l);
+            else return l - r;
+        }
+
+        Number bothSigned(long l, long r)
+        {
+            if (l < 0 && r > 0)
+            {
+                long result = unchecked(l - r);
+                if (result >= 0) return (decimal)l - (decimal)r;
+                else return result;
+            }
+            else if (l > 0 && r < 0)
+            {
+                long result = unchecked(l - r);
+                if (result < 0) return (decimal)l - (decimal)r;
+                else return result;
+            }
+            else return l + r;
+        }
+
+        return (left, right) switch
+        {
+            (Real, _) or (_, Real) => doubles((double)left.ChangeType(typeof(double)), (double)left.ChangeType(typeof(double))),
+            (DecimalReal, _) or (_, DecimalReal) => decimals((decimal)left.ChangeType(typeof(decimal)), (decimal)left.ChangeType(typeof(decimal))),
+            (Integer, LargeInteger) or (LargeInteger, Integer) => eitherUnsigned((decimal)left.ChangeType(typeof(decimal)), (decimal)right.ChangeType(typeof(decimal))),
+            (LargeInteger, LargeInteger) => bothUnsigned((ulong)(LargeInteger)left, (ulong)(LargeInteger)right),
+            (Integer, Integer) => bothSigned((long)(Integer)left, (long)(Integer)right),
+            _ => throw new NotSupportedException()
+        };
+    }
+
+    public static Number Multiplication(Number left, Number right)
+    {
+        Number doubles(double l, double r) => l * r;
+
+        Number decimals(decimal l, decimal r)
+        {
+            try { return l * r; }
+            catch (OverflowException) { return doubles((double)l, (double)r); } // 算数溢出，转型为更大范围的双精度浮点数运算。
+        }
+
+        Number eitherUnsigned(decimal l, decimal r)
+        {
+            Number numResult = decimals(l, r);
+            if (numResult is not DecimalReal decimalRealResult) return numResult; // 超出了十进制浮点数运算的范围。
+
+            decimal result = (decimal)decimalRealResult;
+            if (result > ulong.MaxValue) return decimalRealResult;
+            else if (result < long.MinValue) return decimalRealResult;
+            else if (result > long.MaxValue) return (ulong)result;
+            else return (long)result;
+        }
+
+        Number bothUnsigned(ulong l, ulong r)
+        {
+            Number numResult = decimals(l, r);
+            if (numResult is not DecimalReal decimalRealResult) return numResult; // 超出了十进制浮点数运算的范围。
+
+            decimal result = (decimal)decimalRealResult;
+            if (result > ulong.MaxValue) return decimalRealResult;
+            else return (ulong)result;
+        }
+
+        Number bothSigned(long l, long r)
+        {
+            Number numResult = decimals(l, r);
+            if (numResult is not DecimalReal decimalRealResult) return numResult; // 超出了十进制浮点数运算的范围。
+
+            decimal result = (decimal)decimalRealResult;
+            if (result > ulong.MaxValue) return decimalRealResult;
+            else if (result < long.MinValue) return decimalRealResult;
+            else if (result > long.MaxValue) return (ulong)result;
+            else return (long)result;
+        }
+
+        return (left, right) switch
+        {
+            (Real, _) or (_, Real) => doubles((double)left.ChangeType(typeof(double)), (double)left.ChangeType(typeof(double))),
+            (DecimalReal, _) or (_, DecimalReal) => decimals((decimal)left.ChangeType(typeof(decimal)), (decimal)left.ChangeType(typeof(decimal))),
+            (Integer, LargeInteger) or (LargeInteger, Integer) => eitherUnsigned((decimal)left.ChangeType(typeof(decimal)), (decimal)right.ChangeType(typeof(decimal))),
+            (LargeInteger, LargeInteger) => bothUnsigned((ulong)(LargeInteger)left, (ulong)(LargeInteger)right),
+            (Integer, Integer) => bothSigned((long)(Integer)left, (long)(Integer)right),
+            _ => throw new NotSupportedException()
+        };
+    }
+
+    public static Number FloatDivision(Number left, Number right)
+    {
+        return (double)left.ChangeType(typeof(double)) / (double)right.ChangeType(typeof(double));
+    }
+
+    public static Number FloorDivision(Number left, Number right)
+    {
+        double result = Math.Floor((double)left.ChangeType(typeof(double)) / (double)right.ChangeType(typeof(double)));
+
+        if (result > (double)decimal.MaxValue) return result;
+        else if (result < (double)decimal.MinValue) return result;
+        else if (result > ulong.MaxValue) return decimal.Round((decimal)result);
+        else if (result < long.MinValue) return decimal.Round((decimal)result);
+        else if (result > long.MaxValue) return (ulong)result;
+        else return (long)result;
+    }
+
+    public static Number Modulo(Number left, Number right)
+    {
+        Number doubles(double l, double r) => l % r;
+
+        Number decimals(decimal l, decimal r) => l % r;
+
+        Number eitherUnsigned(decimal l, decimal r)
+        {
+            decimal result = l % r;
+            if (result > long.MaxValue) return (ulong)result;
+            else return (long)result;
+        }
+
+        Number bothUnsigned(ulong l, ulong r) => l % r;
+
+        Number bothSigned(long l, long r) => l % r;
+
+        return (left, right) switch
+        {
+            (Real, _) or (_, Real) => doubles((double)left.ChangeType(typeof(double)), (double)left.ChangeType(typeof(double))),
+            (DecimalReal, _) or (_, DecimalReal) => decimals((decimal)left.ChangeType(typeof(decimal)), (decimal)left.ChangeType(typeof(decimal))),
+            (Integer, LargeInteger) or (LargeInteger, Integer) => eitherUnsigned((decimal)left.ChangeType(typeof(decimal)), (decimal)right.ChangeType(typeof(decimal))),
+            (LargeInteger, LargeInteger) => bothUnsigned((ulong)(LargeInteger)left, (ulong)(LargeInteger)right),
+            (Integer, Integer) => bothSigned((long)(Integer)left, (long)(Integer)right),
+            _ => throw new NotSupportedException()
+        };
+    }
+
+    public static Number Exponentiation(Number left, Number right)
+    {
+        return Math.Pow((double)left.ChangeType(typeof(double)), (double)right.ChangeType(typeof(double)));
+    }
+
+    public static Number Minus(Number value)
+    {
+        return value switch
+        {
+            Real real => -(double)real,
+            DecimalReal decimalReal => -(decimal)decimalReal,
+            Integer integer => (long)integer switch
+            {
+                long.MinValue => (ulong)long.MaxValue + 1UL,
+                _ => -(long)integer
+            },
+            LargeInteger largeInteger => (ulong)largeInteger switch
+            {
+                <= long.MaxValue => -(long)(ulong)largeInteger,
+                _ => -(decimal)largeInteger
+            },
+            _ => throw new NotSupportedException()
+        };
+    }
+
+    public static bool Equality(Number left, Number right) => left.Equals(right);
+
+    public static bool Inequality(Number left, Number right) => !left.Equals(right);
+
+    public static bool LessThan(Number left, Number right) => left.CompareTo(right) < 0;
+
+    public static bool GreaterThan(Number left, Number right) => left.CompareTo(right) > 0;
+
+    public static bool LessOrEqual(Number left, Number right) => left.CompareTo(right) <= 0;
+
+    public static bool GreaterOrEqual(Number left, Number right) => left.CompareTo(right) >= 0;
     #endregion
 
     public static Number operator +(Number value) => value;
-    public static Number operator -(Number value) => value switch
-    {
-        Integer integer => (Integer)(-(long)integer),
-        LargeInteger largeInteger => (DecimalReal)(-(decimal)(ulong)largeInteger),
-        Real real => (Real)(-(double)real),
-        DecimalReal decimalReal => (DecimalReal)(-(decimal)decimalReal),
-        _ => throw new NotSupportedException()
-    };
-    public static Number operator !(Number value) => null;
-    public static Number operator ~(Number value) => null;
+    public static Number operator -(Number value) => Number.Minus(value);
+    public static Number operator ++(Number value) => value + 1;
+    public static Number operator --(Number value) => value - 1;
     public static Number operator +(Number left, Number right) => Number.Addition(left, right);
-
-    public static bool operator <(Number left, Number right) => left.CompareTo(right) < 0;
-    public static bool operator >(Number left, Number right) => left.CompareTo(right) > 0;
-    public static bool operator <=(Number left, Number right) => left.CompareTo(right) <= 0;
-    public static bool operator >=(Number left, Number right) => left.CompareTo(right) >= 0;
-    public static bool operator ==(Number left, Number right) => left.Equals(right);
-    public static bool operator !=(Number left, Number right) => !left.Equals(right);
+    public static Number operator -(Number left, Number right) => Number.Subtraction(left, right);
+    public static Number operator *(Number left, Number right) => Number.Multiplication(left, right);
+    public static Number operator /(Number left, Number right) => Number.FloatDivision(left, right);
+    public static Number operator %(Number left, Number right) => Number.Modulo(left, right);
+    public static bool operator ==(Number left, Number right) => Number.Equality(left, right);
+    public static bool operator !=(Number left, Number right) => Number.Inequality(left, right);
+    public static bool operator <(Number left, Number right) => Number.LessThan(left, right);
+    public static bool operator >(Number left, Number right) => Number.GreaterThan(left, right);
+    public static bool operator <=(Number left, Number right) => Number.LessOrEqual(left, right);
+    public static bool operator >=(Number left, Number right) => Number.GreaterOrEqual(left, right);
     #endregion
 }
