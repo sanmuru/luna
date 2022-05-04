@@ -123,7 +123,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions.ContextQuery
             // Local functions
             static bool IsGlobalAttributeList(AttributeListSyntax attributeList)
             {
-                if (attributeList.Target is { Identifier: { RawKind: var kind } })
+                if (attributeList.Target is { Identifier.RawKind: var kind })
                 {
                     return kind is ((int)SyntaxKind.AssemblyKeyword)
                         or ((int)SyntaxKind.ModuleKeyword);
@@ -940,9 +940,9 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions.ContextQuery
             return token switch
             {
                 // ref modifiers
-                { Parent: { RawKind: (int)SyntaxKind.FunctionPointerParameter } } => true,
+                { Parent.RawKind: (int)SyntaxKind.FunctionPointerParameter } => true,
                 // Regular type specifiers
-                { Parent: TypeSyntax { Parent: { RawKind: (int)SyntaxKind.FunctionPointerParameter } } } => true,
+                { Parent: TypeSyntax { Parent.RawKind: (int)SyntaxKind.FunctionPointerParameter } } => true,
                 _ => false
             };
         }
@@ -1385,6 +1385,16 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions.ContextQuery
 
             // e is not $$
             if (leftToken.IsKind(SyntaxKind.NotKeyword) && leftToken.Parent.IsKind(SyntaxKind.NotPattern))
+            {
+                return true;
+            }
+
+            // e is > $$
+            // e is >= $$
+            // e is < $$
+            // e is <= $$
+            if (leftToken.IsKind(SyntaxKind.GreaterThanToken, SyntaxKind.GreaterThanEqualsToken, SyntaxKind.LessThanToken, SyntaxKind.LessThanEqualsToken) &&
+                leftToken.Parent.IsKind(SyntaxKind.RelationalPattern))
             {
                 return true;
             }
@@ -2146,6 +2156,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions.ContextQuery
             // q |= |
             // q <<= |
             // q >>= |
+            // q >>>= |
             // q ??= |
             if (token.IsKind(SyntaxKind.EqualsToken) ||
                 token.IsKind(SyntaxKind.MinusEqualsToken) ||
@@ -2159,6 +2170,7 @@ namespace Microsoft.CodeAnalysis.CSharp.Extensions.ContextQuery
                 token.IsKind(SyntaxKind.PercentEqualsToken) ||
                 token.IsKind(SyntaxKind.LessThanLessThanEqualsToken) ||
                 token.IsKind(SyntaxKind.GreaterThanGreaterThanEqualsToken) ||
+                token.IsKind(SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken) ||
                 token.IsKind(SyntaxKind.QuestionQuestionEqualsToken))
             {
                 return true;
