@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.PooledObjects;
+using Roslyn.Utilities;
 
 namespace Microsoft.CodeAnalysis
 {
@@ -25,7 +26,7 @@ namespace Microsoft.CodeAnalysis
         private AnalyzerReference Reference { get; init; } = null!;
         private ImmutableDictionary<string, ImmutableArray<TExtension>> _extensionsPerLanguage = ImmutableDictionary<string, ImmutableArray<TExtension>>.Empty;
 
-        protected abstract bool SupportsLanguage(TExportAttribute exportAttribute, string language);
+        protected abstract ImmutableArray<string> GetLanguages(TExportAttribute exportAttribute);
         protected abstract bool TryGetExtensionsFromReference(AnalyzerReference reference, out ImmutableArray<TExtension> extensions);
 
         public static ImmutableArray<TExtension> GetExtensions(Project? project)
@@ -78,14 +79,16 @@ namespace Microsoft.CodeAnalysis
 
                 foreach (var typeInfo in typeInfos)
                 {
-                    if (typeInfo.IsSubclassOf(typeof(TExtension)))
+                    if (typeof(TExtension).IsAssignableFrom(typeInfo))
                     {
                         try
                         {
                             var attribute = typeInfo.GetCustomAttribute<TExportAttribute>();
-                            if (attribute is not null && SupportsLanguage(attribute, language))
+                            if (attribute is not null)
                             {
-                                builder.AddIfNotNull((TExtension?)Activator.CreateInstance(typeInfo.AsType()));
+                                var languages = GetLanguages(attribute);
+                                if (languages.Contains(language))
+                                    builder.AddIfNotNull((TExtension?)Activator.CreateInstance(typeInfo.AsType()));
                             }
                         }
                         catch

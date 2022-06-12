@@ -25,6 +25,7 @@ using Microsoft.CodeAnalysis.ExtractMethod;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.ImplementType;
 using Microsoft.CodeAnalysis.InlineHints;
+using Microsoft.CodeAnalysis.InlineRename;
 using Microsoft.CodeAnalysis.MetadataAsSource;
 using Microsoft.CodeAnalysis.QuickInfo;
 using Microsoft.CodeAnalysis.Remote;
@@ -51,6 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.Options
 
             // Analysis
             BindToOption(Run_background_code_analysis_for, SolutionCrawlerOptionsStorage.BackgroundAnalysisScopeOption, LanguageNames.CSharp);
+            BindToOption(Show_compiler_errors_and_warnings_for, SolutionCrawlerOptionsStorage.CompilerDiagnosticsScopeOption, LanguageNames.CSharp);
             BindToOption(DisplayDiagnosticsInline, InlineDiagnosticsOptions.EnableInlineDiagnostics, LanguageNames.CSharp);
             BindToOption(at_the_end_of_the_line_of_code, InlineDiagnosticsOptions.Location, InlineDiagnosticsLocations.PlacedAtEndOfCode, LanguageNames.CSharp);
             BindToOption(on_the_right_edge_of_the_editor_window, InlineDiagnosticsOptions.Location, InlineDiagnosticsLocations.PlacedAtEndOfEditor, LanguageNames.CSharp);
@@ -70,18 +72,15 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.Options
             BindToOption(Always_use_default_symbol_servers_for_navigation, MetadataAsSourceOptionsStorage.AlwaysUseDefaultSymbolServers);
             BindToOption(Navigate_asynchronously_exerimental, FeatureOnOffOptions.NavigateAsynchronously);
 
+            // Rename
+            BindToOption(Rename_asynchronously_exerimental, InlineRenameSessionOptionsStorage.RenameAsynchronously);
+
             // Using Directives
             BindToOption(PlaceSystemNamespaceFirst, GenerationOptions.PlaceSystemNamespaceFirst, LanguageNames.CSharp);
             BindToOption(SeparateImportGroups, GenerationOptions.SeparateImportDirectiveGroups, LanguageNames.CSharp);
             BindToOption(SuggestForTypesInReferenceAssemblies, SymbolSearchOptionsStorage.SearchReferenceAssemblies, LanguageNames.CSharp);
             BindToOption(SuggestForTypesInNuGetPackages, SymbolSearchOptionsStorage.SearchNuGetPackages, LanguageNames.CSharp);
-            BindToOption(AddUsingsOnPaste, FeatureOnOffOptions.AddImportsOnPaste, LanguageNames.CSharp, () =>
-            {
-                // This option used to be backed by an experimentation flag but is no longer.
-                // Having the option still a bool? keeps us from running into storage related issues,
-                // but if the option was stored as null we want it to respect this default
-                return false;
-            });
+            BindToOption(AddUsingsOnPaste, FeatureOnOffOptions.AddImportsOnPaste, LanguageNames.CSharp);
 
             // Quick Actions
             BindToOption(ComputeQuickActionsAsynchronouslyExperimental, SuggestionsOptions.Asynchronous, () =>
@@ -96,6 +95,10 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.Options
 
             // Outlining
             BindToOption(EnterOutliningMode, FeatureOnOffOptions.Outlining, LanguageNames.CSharp);
+            BindToOption(Collapse_regions_on_file_open, BlockStructureOptionsStorage.CollapseRegionsWhenFirstOpened, LanguageNames.CSharp);
+            BindToOption(Collapse_usings_on_file_open, BlockStructureOptionsStorage.CollapseImportsWhenFirstOpened, LanguageNames.CSharp);
+            BindToOption(Collapse_sourcelink_embedded_decompiled_files_on_open, BlockStructureOptionsStorage.CollapseSourceLinkEmbeddedDecompiledFilesWhenFirstOpened, LanguageNames.CSharp);
+            BindToOption(Collapse_metadata_signature_files_on_open, BlockStructureOptionsStorage.CollapseMetadataSignatureFilesWhenFirstOpened, LanguageNames.CSharp);
             BindToOption(DisplayLineSeparators, FeatureOnOffOptions.LineSeparator, LanguageNames.CSharp);
             BindToOption(Show_outlining_for_declaration_level_constructs, BlockStructureOptionsStorage.ShowOutliningForDeclarationLevelConstructs, LanguageNames.CSharp);
             BindToOption(Show_outlining_for_code_level_constructs, BlockStructureOptionsStorage.ShowOutliningForCodeLevelConstructs, LanguageNames.CSharp);
@@ -290,6 +293,22 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.Options
         {
             this.OptionStore.SetOption(InlineHintsOptionsStorage.EnabledForTypes, LanguageNames.CSharp, false);
             UpdateInlineHintsOptions();
+        }
+
+        private void EnterOutliningMode_Checked(object sender, RoutedEventArgs e)
+        {
+            Collapse_regions_on_file_open.IsEnabled = true;
+            Collapse_usings_on_file_open.IsEnabled = true;
+            Collapse_metadata_signature_files_on_open.IsEnabled = true;
+            Collapse_sourcelink_embedded_decompiled_files_on_open.IsEnabled = true;
+        }
+
+        private void EnterOutliningMode_Unchecked(object sender, RoutedEventArgs e)
+        {
+            Collapse_regions_on_file_open.IsEnabled = false;
+            Collapse_usings_on_file_open.IsEnabled = false;
+            Collapse_metadata_signature_files_on_open.IsEnabled = false;
+            Collapse_sourcelink_embedded_decompiled_files_on_open.IsEnabled = false;
         }
     }
 }

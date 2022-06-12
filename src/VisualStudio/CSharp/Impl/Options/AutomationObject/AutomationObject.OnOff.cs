@@ -4,6 +4,7 @@
 
 using Microsoft.CodeAnalysis.Editor.Shared.Options;
 using Microsoft.CodeAnalysis.MetadataAsSource;
+using Microsoft.CodeAnalysis.Structure;
 
 namespace Microsoft.VisualStudio.LanguageServices.CSharp.Options
 {
@@ -37,6 +38,30 @@ namespace Microsoft.VisualStudio.LanguageServices.CSharp.Options
         {
             get { return GetBooleanOption(FeatureOnOffOptions.Outlining); }
             set { SetBooleanOption(FeatureOnOffOptions.Outlining, value); }
+        }
+
+        public int CollapseImportsWhenFirstOpened
+        {
+            get { return GetBooleanOption(BlockStructureOptionsStorage.CollapseImportsWhenFirstOpened); }
+            set { SetBooleanOption(BlockStructureOptionsStorage.CollapseImportsWhenFirstOpened, value); }
+        }
+
+        public int CollapseRegionsWhenFirstOpened
+        {
+            get { return GetBooleanOption(BlockStructureOptionsStorage.CollapseRegionsWhenFirstOpened); }
+            set { SetBooleanOption(BlockStructureOptionsStorage.CollapseRegionsWhenFirstOpened, value); }
+        }
+
+        public int CollapseMetadataSignatureFilesWhenFirstOpened
+        {
+            get { return GetBooleanOption(BlockStructureOptionsStorage.CollapseMetadataSignatureFilesWhenFirstOpened); }
+            set { SetBooleanOption(BlockStructureOptionsStorage.CollapseMetadataSignatureFilesWhenFirstOpened, value); }
+        }
+
+        public int CollapseSourceLinkEmbeddedDecompiledFilesWhenFirstOpened
+        {
+            get { return GetBooleanOption(BlockStructureOptionsStorage.CollapseSourceLinkEmbeddedDecompiledFilesWhenFirstOpened); }
+            set { SetBooleanOption(BlockStructureOptionsStorage.CollapseSourceLinkEmbeddedDecompiledFilesWhenFirstOpened, value); }
         }
 
         public int HighlightReferences
