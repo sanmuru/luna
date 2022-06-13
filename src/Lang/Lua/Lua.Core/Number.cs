@@ -26,7 +26,7 @@ public abstract class Number : Object, IComparable, IComparable<Number>, IEquata
         other is null
             ? throw new ComparisonNotSupportedException(TypeInfo.TypeInfo_Number, TypeInfo.TypeInfo_Nil)
             : this.EqualsCore(other);
-#pragma warning restore CS8765, CS8767
+#pragma warning restore CS8767
 
     protected abstract bool EqualsCore(Number other);
 
