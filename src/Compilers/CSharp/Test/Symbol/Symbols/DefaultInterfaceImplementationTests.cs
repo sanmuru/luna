@@ -57534,7 +57534,7 @@ class Test1 : I2
                 );
         }
 
-        private static void ValidateEventReAbstraction_014(string source1, params DiagnosticDescription[] expected)
+        private static void ValidateEventReAbstraction_014(string source1, bool isStatic, params DiagnosticDescription[] expected)
         {
             ValidateEventReAbstraction_014(source1, isStatic: false, expected);
         }
