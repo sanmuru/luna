@@ -90,6 +90,16 @@ public abstract partial class
 #endif
           (InternalSyntaxNode green, int position, SyntaxTree? syntaxTree) : base(green, position, syntaxTree) { }
 
+    /// <summary>
+    /// 创建一个红树节点的副本，作为指定语法树的根节点使用。
+    /// 新节点不存在父节点，位置为0，且位于指定的语法树上。
+    /// </summary>
+    /// <typeparam name="T">语法节点的类型。</typeparam>
+    /// <param name="node">要克隆的语法节点。</param>
+    /// <param name="syntaxTree">语法节点所在的语法树。</param>
+    /// <returns><paramref name="node"/>的副本。</returns>
+    internal static new T CloneNodeAsRoot<T>(T node, SyntaxTree syntaxTree) where T : ThisSyntaxNode => SyntaxNode.CloneNodeAsRoot(node, syntaxTree);
+
     private static SyntaxTree ComputeSyntaxTree(ThisSyntaxNode node)
     {
         ArrayBuilder<ThisSyntaxNode>? nodes = null;

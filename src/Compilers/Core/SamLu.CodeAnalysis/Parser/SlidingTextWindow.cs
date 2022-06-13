@@ -8,7 +8,7 @@ using Roslyn.Utilities;
 namespace SamLu.CodeAnalysis.Syntax.InternalSyntax;
 
 /// <summary>
-/// 为词法器分析的源代码文本建立一个滑动的缓冲区域。通过设置标记及预先查看前方的字符，为词法器提供追踪当前“词素”的能力。词法器基于这些信息便可决定是移除标记保留词素，或是回退偏移量到标记的位置丢弃当前的词素。
+/// 为词法器分析的代码文本建立一个滑动的缓冲区域。通过设置标记及预先查看前方的字符，为词法器提供追踪当前“词素”的能力。词法器基于这些信息便可决定是移除标记保留词素，或是回退偏移量到标记的位置丢弃当前的词素。
 /// </summary>
 internal abstract class SlidingTextWindow : IDisposable
 {
