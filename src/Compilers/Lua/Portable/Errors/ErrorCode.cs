@@ -14,6 +14,7 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_BadDocumentationMode,
         ERR_BadLanguageVersion,
         ERR_UnexpectedCharacter,
+        ERR_SyntaxError,
 
         #region Lua 1.0的消息
         ERR_FeatureNotAvailableInVersion1 = 501,

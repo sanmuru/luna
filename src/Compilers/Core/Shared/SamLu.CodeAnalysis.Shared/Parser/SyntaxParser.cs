@@ -9,11 +9,13 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 using ThisParseOptions = SamLu.CodeAnalysis.Lua.LuaParseOptions;
 using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
+using ThisInternalSyntaxNode = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.LuaSyntaxNode;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
 using ThisParseOptions = SamLu.CodeAnalysis.MoonScript.MoonScriptParseOptions;
 using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
+using ThisInternalSyntaxNode = SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax.MoonScriptSyntaxNode;
 #endif
 
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
@@ -173,11 +175,56 @@ internal abstract partial class SyntaxParser : IDisposable
         }
     }
 
-    protected ResetPoint GetResetPoint();
+    protected ResetPoint GetResetPoint()
+    {
+        var pos = this.CurrentTokenPosition;
+        if (this._resetCount == 0)
+            this._resetCount = pos;
 
-    protected void Reset(ref ResetPoint point);
+        this._resetCount++;
+        return new(this._resetCount, this._mode, pos, this._prevTokenTrailingTrivia);
+    }
 
-    protected void Release(ref ResetPoint point);
+    protected void Reset(ref ResetPoint point)
+    {
+        var offset = point.Position - this._firstToken;
+        Debug.Assert(offset >= 0);
+
+        if (offset >= this._tokenCount)
+        {
+            this.PeekToken(offset - this._tokenOffset);
+
+            offset = point.Position - this._firstToken;
+        }
+
+        this._mode = point.Mode;
+        Debug.Assert(offset >= 0 && offset < this._tokenCount);
+        this._tokenOffset = offset;
+        this.CurrentToken = null;
+        this.CurrentNode = default;
+        this._prevTokenTrailingTrivia = point.PrevTokenTrailingTrivia;
+        if (this.IsBlending())
+        {
+            for (int i = this._tokenOffset; i < this._tokenCount; i++)
+            {
+                if (this._blendedTokens[i].Token is null)
+                {
+                    this._tokenCount = i;
+                    if (this._tokenCount == this)
+                        this.FetchCurrentToken();
+                    break;
+                }
+            }
+        }
+    }
+
+    protected void Release(ref ResetPoint point)
+    {
+        Debug.Assert(this._resetCount == point.ResetCount);
+        this._resetCount--;
+        if (this._resetCount == 0)
+            this._resetCount = -1;
+    }
 
     /// <summary>
     /// 获取当前的已协调节点。
@@ -399,6 +446,305 @@ internal abstract partial class SyntaxParser : IDisposable
     protected void ForceEndOfFile()
     {
         this._currentToken = SyntaxFactory.Token(SyntaxKind.EndOfFileToken);
+    }
+
+    protected SyntaxToken EatToken(SyntaxKind kind)
+    {
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+
+        var token = this.CurrentToken;
+        if (token.Kind == kind)
+        {
+            this.MoveToNextToken();
+            return token;
+        }
+
+        return this.CreateMissingToken(kind, this.CurrentToken.Kind, reportError: true);
+    }
+
+    protected SyntaxToken EatTokenAsKind(SyntaxKind expected)
+    {
+        Debug.Assert(SyntaxFactory.IsAnyToken(expected));
+
+        var token = this.CurrentToken;
+        if (token.Kind == expected)
+        {
+            this.MoveToNextToken();
+            return token;
+        }
+
+        var replacement = this.CreateMissingToken(expected, this.CurrentToken.Kind, reportError: true);
+        return this.AddTrailingSkippedSyntax(replacement, this.EatToken());
+    }
+
+    private SyntaxToken CreateMissingToken(SyntaxKind expected, SyntaxKind actual, bool reportError)
+    {
+        var token = SyntaxFactory.MissingToken(expected);
+        if (reportError)
+        {
+            token = this.WithAdditionalDiagnostics(token, this.GetExpectedTokenError(expected, actual1))
+        }
+
+        return token;
+    }
+
+    private SyntaxToken CreateMissingToken(SyntaxKind expected, ErrorCode code, bool reportError)
+    {
+        var token = SyntaxFactory.MissingToken(expected);
+        if (reportError)
+            token = this.AddError(token, code);
+    }
+
+    protected SyntaxToken EatTokenWithPrejudice
+        (SyntaxKind kind)
+    {
+        var token = this.CurrentToken;
+        Debug.Assert(SyntaxFactory.IsAnyToken(kind));
+        if (token.Kind != kind)
+            token = this.WithAdditionalDiagnostics(token, this.GetExpectedTokenError(kind, token.Kind));
+
+        this.MoveToNextToken();
+        return token;
+    }
+
+    protected SyntaxToken EatTokenWithPrejuice(ErrorCode code, params object[] args)
+    {
+        var token = this.EatToken();
+        token = this.WithAdditionalDiagnostics(token, this.MakeError(token.GetLeadingTriviaWidth(), token.Width(), token.Width, code, args));
+        return token;
+    }
+
+    protected SyntaxToken EatContextualToken(SyntaxKind kind, ErrorCode code, bool reportError = true)
+    {
+        Debug.Assert(SyntaxFacts.IsAnyTokne(kind));
+
+        if (this.CurrentToken.ContextualKind != kind)
+            return this.CreateMissingToken(kind, code, reportError);
+        else
+            return SyntaxParser.ConvertToKeyword(this.EatToken());
+    }
+
+    protected SyntaxToken EatContextualToken(SyntaxKind kind, bool reportError = true)
+    {
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+
+        var contextualKind = this.CurrentToken.ContextualKind;
+        if (contextualKind != kind)
+            return this.CreateMissingToken(kind, contextualKind, reportError);
+        else
+            return SyntaxParser.ConvertToKeyword(this.EatToken());
+    }
+
+    protected virtual partial SyntaxDiagnosticInfo GetExpectedTokenError(SyntaxKind expected, SyntaxKind actual, int offset, int width);
+
+    protected virtual SyntaxDiagnosticInfo GetExpectedTokenError(SyntaxKind expected, SyntaxKind actual)
+    {
+        this.GetDiagnosticSpanForMissingToken(out int offset, out int width);
+
+        return this.GetExpectedTokenError(expected, actual, offset, width);
+    }
+
+    protected void GetDiagnosticSpanForMissingToken(out int offset, out int width)
+    {
+        var trivia = this._prevTokenTrailingTrivia;
+        if (trivia is not null)
+        {
+            var triviaList = new SyntaxList<ThisInternalSyntaxNode>(trivia);
+            bool prevTokenHasEndOfLineTrivia = triviaList.Any((int)SyntaxKind.EndOfLineTrivia);
+            if (prevTokenHasEndOfLineTrivia)
+            {
+                offset = -trivia.FullWidth;
+                width = 0;
+                return;
+            }
+        }
+
+        SyntaxToken token = this.CurrentToken;
+        offset = token.GetLeadingTriviaWidth();
+        width = token.Width;
+    }
+
+    protected virtual TNode WithAdditionalDiagnostics<TNode>(TNode node, params DiagnosticInfo[] diagnostics)
+        where TNode : GreenNode
+    {
+        var existingDiagnostics = node.GetDiagnostics();
+        int existingLength = existingDiagnostics.Length;
+        if (existingLength == 0)
+            return node.WithDiagnosticsGreen(diagnostics);
+        else
+        {
+            var result = new DiagnosticInfo[existingDiagnostics.Length + diagnostics.Length];
+            existingDiagnostics.CopyTo(result, 0);
+            diagnostics.CopyTo(result, existingLength);
+            return node.WithDiagnosticsGreen(result);
+        }
+    }
+
+    protected TNode AddError<TNode>(TNode node, ErrorCode code) where TNode : GreenNode =>
+        this.AddError(node, node, Array.Empty<object>());
+
+    protected TNode AddError<TNode>(TNode node, ErrorCode code, params object[] args) where TNode : GreenNode
+    {
+        if (!node.IsMissing)
+            return this.WithAdditionalDiagnostics(node, this.MakeError(node, code, args));
+
+        int offset, width;
+
+        var token = node as SyntaxToken;
+        if (token is not null && token.ContainsSkippedText)
+        {
+            offset = token.GetLeadingTriviaWidth();
+            Debug.Assert(offset == 0);
+
+            width = 0;
+            bool seenSkipped = false;
+            foreach (var trivia in token.TrailingTrivia)
+            {
+                if (trivia.Kind == SyntaxKind.SkippedTokensTrivia)
+                {
+                    seenSkipped = true;
+                    width += trivia.Width;
+                }
+                else if (seenSkipped)
+                    break;
+                else
+                    offset += trivia.Width;
+            }
+        }
+        else
+            this.GetDiagnosticSpanForMissingToken(out offset, out width);
+
+        return this.WithAdditionalDiagnostics(node, this.MakeError(offset, width, code, args));
+    }
+
+    protected TNode AddError<TNode>(TNode node, ThisInternalSyntaxNode location, ErrorCode code, params object[] args) where TNode : ThisInternalSyntaxNode
+    {
+        this.FindOffset(node, location, out int offset);
+        return this.WithAdditionalDiagnostics(node, this.MakeError(offset, location.Width, code, args));
+    }
+
+    protected TNode AddErrorToFirstToken<TNode>(TNode node, ErrorCode code) where TNode : ThisInternalSyntaxNode
+    {
+        var firstToken = node.GetFirstToken();
+        return this.WithAdditionalDiagnostics(node, this.MakeError(firstToken.GetLeadingTrivia(), firstToken.Width, code));
+    }
+
+    protected TNode AddErrorToFirstToken<TNode>(TNode node, ErrorCode code, params object[] args) where TNode : ThisInternalSyntaxNode
+    {
+        var firstToken = node.GetFirstToken();
+        return this.WithAdditionalDiagnostics(node, this.MakeError(firstToken.GetLeadingTrivia(), firstToken.Width, code, args));
+    }
+
+    protected TNode AddErrorToLastToken<TNode>(TNode node, ErrorCode code) where TNode : ThisInternalSyntaxNode
+    {
+        this.GetOffsetAndWidthForLastToken(node, out int offset, out int width);
+        return this.WithAdditionalDiagnostics(node, this.MakeError(offset, width, code));
+    }
+
+    protected TNode AddErrorToLastToken<TNode>(TNode node, ErrorCode code, params object[] args) where TNode : ThisInternalSyntaxNode
+    {
+        SyntaxParser.GetOffsetAndWidthForLastToken(node, out int offset, out int width);
+        return this.WithAdditionalDiagnostics(node, this.MakeError(offset, width, code, args));
+    }
+
+    private static void GetOffsetAndWidthForLastToken<TNode>(TNode node, out int offset, out int width) where TNode : ThisInternalSyntaxNode
+    {
+        var lastToken = node.GetLastNonmissingToken();
+        offset = node.FullWidth;
+        width = 0;
+        if (lastToken is not null)
+        {
+            offset -= lastToken.FullWidth;
+            offset += lastToken.GetLeadingTriviaWidth();
+            width += lastToken.Width;
+        }
+    }
+
+#error 未完成
+
+    /// <summary>
+    /// 将非关键字标志转换为包含相同信息的关键字标志。
+    /// </summary>
+    /// <param name="token">要转化的非关键字标志。</param>
+    /// <returns>一个关键字标志，包含非关键字标志<paramref name="token"/>的所有信息。</returns>
+    protected static SyntaxToken ConvertToKeyword(SyntaxToken token)
+    {
+        if (token.Kind != token.ContextualKind)
+        {
+            // 分两种情况：是否为缺失标志。
+            var kw = token.IsMissing
+                ? SyntaxFactory.MissingToken(
+                    token.LeadingTrivia.Node,
+                    token.ContextualKind,
+                    token.TrailingTrivia.Node
+                )
+                : SyntaxFactory.Token(
+                    token.LeadingTrivia.Node,
+                    token.ContextualKind,
+                    token.TrailingTrivia.Node
+                );
+            var d = token.GetDiagnostics();
+            // 如果有诊断信息，则附加到标志上。
+            if (d is not null && d.Length > 0)
+                kw = kw.WithDiagnosticsGreen(d);
+
+            return kw;
+        }
+
+        return token;
+    }
+
+    /// <summary>
+    /// 将非标识符标志转换为包含相同信息的标识符标志。
+    /// </summary>
+    /// <param name="token">要转化的非标识符标志。</param>
+    /// <returns>一个标识符标志，包含非标识符标志<paramref name="token"/>的所有信息。</returns>
+    protected static SyntaxToken ConvertToIdentifier(SyntaxToken token)
+    {
+        Debug.Assert(!token.IsMissing);
+        return SyntaxToken.Identifier(
+            token.Kind,
+            token.LeadingTrivia.Node,
+            token.Text,
+            token.ValueText,
+            token.TrailingTrivia.Node
+        );
+    }
+
+    /// <summary>
+    /// 检查特性是否可用，不可用时为语法节点附加错误信息。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="node">作为载体的语法节点。</param>
+    /// <param name="feature">要检查的特性。</param>
+    /// <param name="forceWarning">是否强制视为警告。</param>
+    /// <returns>检查处理后的语法节点。</returns>
+    protected partial TNode CheckFeatureAvailability<TNode>(TNode node, MessageID feature, bool forceWarning = false)
+        where TNode : GreenNode;
+
+    /// <inheritdoc cref="ThisParseOptions.IsFeatureEnabled(MessageID)"/>
+    protected bool IsFeatureEnabled(MessageID feature) => this.Options.IsFeatureEnabled(feature);
+
+    /// <summary>获取当前解析的标志的位置。</summary>
+    private int CurrentTokenPosition => this._firstToken + this._tokenOffset;
+
+    /// <summary>
+    /// 当解析进入循环流程中时，为防止因意外的错误导致解析器无法向后分析而出现死循环，此方法应作为保险措施而非实现功能的方式。
+    /// </summary>
+    /// <param name="lastTokenPosition">上一次更新的标志位置。</param>
+    /// <param name="assertIfFalse">当解析器无法向后分析时是否使用断言中断。</param>
+    /// <returns>若为<see langword="true"/>时，表示解析器正常向后分析；若为<see langword="false"/>时，表示解析器无法向后分析。</returns>
+    protected bool IsMakingProgress(ref int lastTokenPosition, bool assertIfFalse = true)
+    {
+        var pos = this.CurrentTokenPosition;
+        if (pos > lastTokenPosition)
+        {
+            lastTokenPosition = pos;
+            return true;
+        }
+
+        Debug.Assert(!assertIfFalse);
+        return false;
     }
 
     #region IDisposable

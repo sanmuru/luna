@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Parser\LexerCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\SlidingTextWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\SyntaxParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\SyntaxParser.ResetPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\BlockSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\StructuredTriviaSyntax.cs" />
