@@ -194,19 +194,19 @@ public enum SyntaxKind : ushort
     /// <summary>表示文件的结尾。</summary>
     EndOfFileToken = 9216, // 假定此类型为最后一个无文本标识。
 
-    #region 文本记号
-    /// <summary>表示不应出现在此位置的错误记号。</summary>
+    #region 文本标记
+    /// <summary>表示不应出现在此位置的错误标记。</summary>
     BadToken = 9217,
-    /// <summary>表示标识符记号。</summary>
+    /// <summary>表示标识符标记。</summary>
     IdentifierToken,
-    /// <summary>表示数字字面量记号。</summary>
+    /// <summary>表示数字字面量标记。</summary>
     NumericLiteralToken,
-    /// <summary>表示字符串字面量记号。</summary>
+    /// <summary>表示字符串字面量标记。</summary>
     StringLiteralToken,
 
-    /// <summary>表示单行字符串字面量记号。</summary>
+    /// <summary>表示单行字符串字面量标记。</summary>
     SingleLineRawStringLiteralToken,
-    /// <summary>表示多行字符串字面量记号。</summary>
+    /// <summary>表示多行字符串字面量标记。</summary>
     MultiLineRawStringLiteralToken,
     #endregion
 
@@ -228,6 +228,14 @@ public enum SyntaxKind : ushort
     #region 名称和类型名称
     /// <summary>表示标识符名称。</summary>
     IdentifierName = 9473,
+    /// <summary>表示限定符名称。</summary>
+    QualifiedName,
+    /// <summary>表示泛型名称。</summary>
+    GenericName,
+    /// <summary>表示类型列表。</summary>
+    TypeArgumentList,
+    /// <summary>表示别名限定符名称。</summary>
+    AliasQualifiedName,
     #endregion
 
     #region 表达式
