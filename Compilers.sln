@@ -149,16 +149,18 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.CSharp.Emit2.UnitTests", "src\Compilers\CSharp\Test\Emit2\Microsoft.CodeAnalysis.CSharp.Emit2.UnitTests.csproj", "{AAEDD19A-9D73-42C4-A2BB-ACDE36F170D5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lua", "Lua", "{81BA554D-718C-4FAB-B415-3C8FA88A8B64}"
+	ProjectSection(SolutionItems) = preProject
+		src\Compilers\Shared\Luac.cs = src\Compilers\Shared\Luac.cs
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamLu.CodeAnalysis", "src\Compilers\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj", "{8B341E03-5E3F-4C35-BB63-0D6668BA9629}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamLu.CodeAnalysis.Lua", "src\Compilers\Lua\Portable\SamLu.CodeAnalysis.Lua.csproj", "{CE8FF80C-C11B-46DE-9BBF-93DB2C18C958}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "luac", "src\Compilers\Lua\luac\luac.csproj", "{7C639DC6-0FBF-430F-BA09-24013CD10AC3}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MoonScript", "MoonScript", "{3DEF28A6-121F-4F81-9A17-8AD2282C39EA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "moonc", "src\Compilers\MoonScript\moonc\moonc.csproj", "{EA28E00F-2024-42D9-A989-723E17BAB5F2}"
+	ProjectSection(SolutionItems) = preProject
+		src\Compilers\Shared\Moonc.cs = src\Compilers\Shared\Moonc.cs
+	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SamLu.CodeAnalysis.Shared", "src\Compilers\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.shproj", "{48CCBB50-B9E9-4A5A-AD46-91D80519B95E}"
 EndProject
@@ -181,6 +183,18 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "VbcCommandLine", "src\Compilers\VisualBasic\vbc\VbcCommandLine.shproj", "{810B02AD-2EA5-4422-88AC-B71B8AB0DF0B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vbc-arm64", "src\Compilers\VisualBasic\vbc\arm64\vbc-arm64.csproj", "{48C93F90-8776-4847-96D8-127B896D6C80}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "LuacCommandLine", "src\Compilers\Lua\luac\LuacCommandLine.shproj", "{AE16B937-88B4-406C-BEB3-D22DE9E6C887}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "luac", "src\Compilers\Lua\luac\AnyCpu\luac.csproj", "{EAD4DECD-839B-44A7-AE84-A864BF35969C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "luac-arm64", "src\Compilers\Lua\luac\arm64\luac-arm64.csproj", "{7C0D6228-4C05-4734-BC49-6BFFAA5C8F3A}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MooncCommandLine", "src\Compilers\MoonScript\moonc\MooncCommandLine.shproj", "{4CEC9807-0CF3-4AAB-91B7-7E5C68159520}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "moonc", "src\Compilers\MoonScript\moonc\AnyCpu\moonc.csproj", "{40646B8D-B128-480A-9BD2-A2EEAE5C9809}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "moonc-arm64", "src\Compilers\MoonScript\moonc\arm64\moonc-arm64.csproj", "{51A1907B-8C3A-476D-9A30-A2FA21C691CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -428,14 +442,6 @@ Global
 		{CE8FF80C-C11B-46DE-9BBF-93DB2C18C958}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE8FF80C-C11B-46DE-9BBF-93DB2C18C958}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE8FF80C-C11B-46DE-9BBF-93DB2C18C958}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7C639DC6-0FBF-430F-BA09-24013CD10AC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7C639DC6-0FBF-430F-BA09-24013CD10AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7C639DC6-0FBF-430F-BA09-24013CD10AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7C639DC6-0FBF-430F-BA09-24013CD10AC3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EA28E00F-2024-42D9-A989-723E17BAB5F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EA28E00F-2024-42D9-A989-723E17BAB5F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EA28E00F-2024-42D9-A989-723E17BAB5F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EA28E00F-2024-42D9-A989-723E17BAB5F2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{08179868-A6A3-4C87-A29F-276864C37186}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{08179868-A6A3-4C87-A29F-276864C37186}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08179868-A6A3-4C87-A29F-276864C37186}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -460,6 +466,22 @@ Global
 		{48C93F90-8776-4847-96D8-127B896D6C80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48C93F90-8776-4847-96D8-127B896D6C80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48C93F90-8776-4847-96D8-127B896D6C80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAD4DECD-839B-44A7-AE84-A864BF35969C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAD4DECD-839B-44A7-AE84-A864BF35969C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAD4DECD-839B-44A7-AE84-A864BF35969C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAD4DECD-839B-44A7-AE84-A864BF35969C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C0D6228-4C05-4734-BC49-6BFFAA5C8F3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C0D6228-4C05-4734-BC49-6BFFAA5C8F3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C0D6228-4C05-4734-BC49-6BFFAA5C8F3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C0D6228-4C05-4734-BC49-6BFFAA5C8F3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40646B8D-B128-480A-9BD2-A2EEAE5C9809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40646B8D-B128-480A-9BD2-A2EEAE5C9809}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40646B8D-B128-480A-9BD2-A2EEAE5C9809}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40646B8D-B128-480A-9BD2-A2EEAE5C9809}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51A1907B-8C3A-476D-9A30-A2FA21C691CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51A1907B-8C3A-476D-9A30-A2FA21C691CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51A1907B-8C3A-476D-9A30-A2FA21C691CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51A1907B-8C3A-476D-9A30-A2FA21C691CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -530,8 +552,6 @@ Global
 		{AAEDD19A-9D73-42C4-A2BB-ACDE36F170D5} = {32A48625-F0AD-419D-828B-A50BDABA38EA}
 		{8B341E03-5E3F-4C35-BB63-0D6668BA9629} = {A41D1B99-F489-4C43-BBDF-96D61B19A6B9}
 		{CE8FF80C-C11B-46DE-9BBF-93DB2C18C958} = {81BA554D-718C-4FAB-B415-3C8FA88A8B64}
-		{7C639DC6-0FBF-430F-BA09-24013CD10AC3} = {81BA554D-718C-4FAB-B415-3C8FA88A8B64}
-		{EA28E00F-2024-42D9-A989-723E17BAB5F2} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
 		{48CCBB50-B9E9-4A5A-AD46-91D80519B95E} = {A41D1B99-F489-4C43-BBDF-96D61B19A6B9}
 		{08179868-A6A3-4C87-A29F-276864C37186} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
 		{2B907870-2A19-4618-9D52-BA05CF11B0DF} = {81BA554D-718C-4FAB-B415-3C8FA88A8B64}
@@ -542,6 +562,12 @@ Global
 		{869E3B79-4E91-45FD-BA37-56DBD2F34721} = {E35DA3D1-16C0-4318-9187-6B664F12A870}
 		{810B02AD-2EA5-4422-88AC-B71B8AB0DF0B} = {C65C6143-BED3-46E6-869E-9F0BE6E84C37}
 		{48C93F90-8776-4847-96D8-127B896D6C80} = {C65C6143-BED3-46E6-869E-9F0BE6E84C37}
+		{AE16B937-88B4-406C-BEB3-D22DE9E6C887} = {81BA554D-718C-4FAB-B415-3C8FA88A8B64}
+		{EAD4DECD-839B-44A7-AE84-A864BF35969C} = {81BA554D-718C-4FAB-B415-3C8FA88A8B64}
+		{7C0D6228-4C05-4734-BC49-6BFFAA5C8F3A} = {81BA554D-718C-4FAB-B415-3C8FA88A8B64}
+		{4CEC9807-0CF3-4AAB-91B7-7E5C68159520} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
+		{40646B8D-B128-480A-9BD2-A2EEAE5C9809} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
+		{51A1907B-8C3A-476D-9A30-A2FA21C691CF} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F599E08-A9EA-4FAA-897F-5D824B0210E6}
@@ -555,9 +581,11 @@ Global
 		src\Workspaces\SharedUtilitiesAndExtensions\Compiler\CSharp\CSharpCompilerExtensions.projitems*{21b239d0-d144-430f-a394-c066d58ee267}*SharedItemsImports = 5
 		src\Workspaces\SharedUtilitiesAndExtensions\Workspace\CSharp\CSharpWorkspaceExtensions.projitems*{21b239d0-d144-430f-a394-c066d58ee267}*SharedItemsImports = 5
 		src\Compilers\VisualBasic\BasicAnalyzerDriver\BasicAnalyzerDriver.projitems*{2523d0e6-df32-4a3e-8ae0-a19bffae2ef6}*SharedItemsImports = 5
+		src\Compilers\MoonScript\moonc\MooncCommandLine.projitems*{40646b8d-b128-480a-9bd2-a2eeae5c9809}*SharedItemsImports = 5
 		src\Compilers\VisualBasic\vbc\VbcCommandLine.projitems*{48c93f90-8776-4847-96d8-127b896d6c80}*SharedItemsImports = 5
 		src\Compilers\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems*{48ccbb50-b9e9-4a5a-ad46-91d80519b95e}*SharedItemsImports = 13
 		src\Compilers\CSharp\csc\CscCommandLine.projitems*{4b45ca0c-03a0-400f-b454-3d4bcb16af38}*SharedItemsImports = 5
+		src\Compilers\MoonScript\moonc\MooncCommandLine.projitems*{51a1907b-8c3a-476d-9a30-a2fa21c691cf}*SharedItemsImports = 5
 		src\Compilers\CSharp\CSharpAnalyzerDriver\CSharpAnalyzerDriver.projitems*{54e08bf5-f819-404f-a18d-0ab9ea81ea04}*SharedItemsImports = 13
 		src\Workspaces\SharedUtilitiesAndExtensions\Compiler\VisualBasic\VisualBasicCompilerExtensions.projitems*{57ca988d-f010-4bf2-9a2e-07d6dcd2ff2c}*SharedItemsImports = 5
 		src\Workspaces\SharedUtilitiesAndExtensions\Workspace\VisualBasic\VisualBasicWorkspaceExtensions.projitems*{57ca988d-f010-4bf2-9a2e-07d6dcd2ff2c}*SharedItemsImports = 5
@@ -565,6 +593,7 @@ Global
 		src\Dependencies\PooledObjects\Microsoft.CodeAnalysis.PooledObjects.projitems*{5f8d2414-064a-4b3a-9b42-8e2a04246be5}*SharedItemsImports = 5
 		src\Workspaces\SharedUtilitiesAndExtensions\Compiler\Core\CompilerExtensions.projitems*{5f8d2414-064a-4b3a-9b42-8e2a04246be5}*SharedItemsImports = 5
 		src\Workspaces\SharedUtilitiesAndExtensions\Workspace\Core\WorkspaceExtensions.projitems*{5f8d2414-064a-4b3a-9b42-8e2a04246be5}*SharedItemsImports = 5
+		src\Compilers\Lua\luac\LuacCommandLine.projitems*{7c0d6228-4c05-4734-bc49-6bffaa5c8f3a}*SharedItemsImports = 5
 		src\Compilers\Server\VBCSCompiler\VBCSCompilerCommandLine.projitems*{869e3b79-4e91-45fd-ba37-56dbd2f34721}*SharedItemsImports = 5
 		src\Compilers\Server\VBCSCompiler\VBCSCompilerCommandLine.projitems*{9508f118-f62e-4c16-a6f4-7c3b56e166ad}*SharedItemsImports = 5
 		src\Compilers\CSharp\CSharpAnalyzerDriver\CSharpAnalyzerDriver.projitems*{b501a547-c911-4a05-ac6e-274a50dff30e}*SharedItemsImports = 5
@@ -576,5 +605,6 @@ Global
 		src\Compilers\VisualBasic\vbc\VbcCommandLine.projitems*{e58ee9d7-1239-4961-a0c1-f9ec3952c4c1}*SharedItemsImports = 5
 		src\Compilers\VisualBasic\BasicAnalyzerDriver\BasicAnalyzerDriver.projitems*{e8f0baa5-7327-43d1-9a51-644e81ae55f1}*SharedItemsImports = 13
 		src\Dependencies\Collections\Microsoft.CodeAnalysis.Collections.projitems*{e919dd77-34f8-4f57-8058-4d3ff4c2b241}*SharedItemsImports = 13
+		src\Compilers\Lua\luac\LuacCommandLine.projitems*{ead4decd-839b-44a7-ae84-a864bf35969c}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
