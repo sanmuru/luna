@@ -19,8 +19,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)LanguageVersion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParseOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\AbstractLexer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\BlendedNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\Blender.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\Blender.Cursor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\Blender.Reader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\LexerCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\SlidingTextWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\SyntaxParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\BlockSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\StructuredTriviaSyntax.cs" />

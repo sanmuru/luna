@@ -39,6 +39,8 @@ public abstract partial class
     /// </summary>
     public new abstract ThisParseOptions Options { get; }
 
+    /// <inheritdoc cref="ThisSyntaxNode.CloneNodeAsRoot{T}(T, SyntaxTree)"/>
+    /// <seealso cref="ThisSyntaxNode.CloneNodeAsRoot{T}(T, SyntaxTree)"/>
     protected T CloneNodeAsRoot<T>(T node)
         where T : ThisSyntaxNode =>
         ThisSyntaxNode.CloneNodeAsRoot(node, this);
@@ -98,6 +100,7 @@ public abstract partial class
     internal static SyntaxTree ParseTextLazy(SourceText text, ThisParseOptions? options = null, string path = "") =>
         new LazySyntaxTree(text, options ?? ThisParseOptions.Default, path);
 
+    /// <inheritdoc cref="ThisSyntaxTree.ParseText(SourceText, ThisParseOptions?, string, CancellationToken)"/>
     public static SyntaxTree ParseText(
         string text,
         ThisParseOptions? options = null,
@@ -109,26 +112,41 @@ public abstract partial class
             path: path,
             cancellationToken: cancellationToken);
 
+    /// <summary>
+    /// 解析代码文本并产生语法树。
+    /// </summary>
+    /// <param name="text">要解析的代码文本。</param>
+    /// <param name="options">解析选项。</param>
+    /// <param name="path">代码文本的路径。</param>
+    /// <param name="cancellationToken">解析操作的取消标志。</param>
+    /// <returns>表示<paramref name="text"/>的所有信息的语法树。</returns>
     public static SyntaxTree ParseText(
         SourceText text!!,
         ThisParseOptions? options = null,
         string path = "",
         CancellationToken cancellationToken = default)
     {
-        options = options ?? ThisParseOptions.Default;
+        options ??= ThisParseOptions.Default;
 
+        // 创建词法分析器。
         using var lexer = new Syntax.InternalSyntax.Lexer(text, options);
+        // 创建语言解析器。
         using var parser = new Syntax.InternalSyntax.LanguageParser(lexer, oldTree: null, changes: null, cancellationToken: cancellationToken);
-        var compilationUnit = (CompilationUnitSyntax)parser.ParseCompilationUnit().CreateRead();
+        // 解析并生成编译单元节点（绿树节点）对应的红树节点。
+        var block = (BlockSyntax)parser.ParseBlock().CreateRed();
+
+        // 创建已解析的语法树，使用编译单元节点作为根节点。
         var tree = new ParsedSyntaxTree(
             text,
             text.Encoding,
             text.ChecksumAlgorithm,
             path,
             options,
-            compilationUnit,
+            block,
             cloneRoot: true);
+        // 验证语法树的所有节点均匹配代码文本。
         tree.VerifySource();
+
         return tree;
     }
     #endregion
@@ -215,7 +233,7 @@ public abstract partial class
     public sealed override bool HasHiddenRegions() => false;
     #endregion
 
-    #region 消息
+    #region 诊断
     public override IEnumerable<Diagnostic> GetDiagnostics(SyntaxNode node) => this.GetDiagnostics(node.Green, node.Position);
 
     private IEnumerable<Diagnostic> GetDiagnostics(GreenNode node, int position)

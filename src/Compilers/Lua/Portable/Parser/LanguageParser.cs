@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
+namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+
+internal partial class LanguageParser : SyntaxParser
 {
-    internal class LanguageParser
-    {
-    }
 }
