@@ -530,7 +530,7 @@ internal abstract partial class SyntaxParser : IDisposable
     /// </summary>
     private void MoveToNextToken()
     {
-        // 设置上一个标志的结尾琐碎内容。
+        // 设置上一个标志的后方琐碎内容。
         this._prevTokenTrailingTrivia = this.CurrentToken.GetTrailingTrivia();
 
         // 初始化部分变量。
@@ -619,12 +619,12 @@ internal abstract partial class SyntaxParser : IDisposable
     /// 语法解析器接受并且返回当前的已词法分析的语法标志，并对其报告错误。
     /// </summary>
     /// <param name="code">要报告的错误码。</param>
-    /// <param name="args">诊断消息参数。</param>
+    /// <param name="args">诊断信息的参数。</param>
     /// <returns>返回当前的已词法分析的语法标志，并报告指定错误码和诊断消参数的错误。</returns>
     protected SyntaxToken EatTokenWithPrejuice(ErrorCode code, params object[] args)
     {
         var token = this.EatToken();
-        token = this.WithAdditionalDiagnostics(token, this.MakeError(token.GetLeadingTriviaWidth(), token.GetLeadingTriviaWidth(), token.Width, code, args));
+        token = this.WithAdditionalDiagnostics(token, SyntaxParser.MakeError(token.GetLeadingTriviaWidth(), token.GetLeadingTriviaWidth(), token.Width, code, args));
         return token;
     }
 
@@ -658,35 +658,63 @@ internal abstract partial class SyntaxParser : IDisposable
             return this.CreateMissingToken(kind, code, reportError);
     }
 
-    protected virtual partial SyntaxDiagnosticInfo GetExpectedTokenError(SyntaxKind expected, SyntaxKind actual, int offset, int width);
-
+    /// <summary>
+    /// 获取一个诊断信息，表示未得到期望的标志。
+    /// </summary>
+    /// <param name="expected">期望的标志类型。</param>
+    /// <param name="actual">实际的标志类型。</param>
+    /// <returns>表示未得到期望的标志的诊断信息。</returns>
     protected virtual SyntaxDiagnosticInfo GetExpectedTokenError(SyntaxKind expected, SyntaxKind actual)
     {
+        // 获取缺失标志的诊断文本范围。
         this.GetDiagnosticSpanForMissingToken(out int offset, out int width);
 
         return this.GetExpectedTokenError(expected, actual, offset, width);
     }
 
+    /// <param name="offset">实际的标志的文本范围的偏移量。</param>
+    /// <param name="width">实际的标志的文本范围的宽度。</param>
+    /// <inheritdoc cref="SyntaxParser.GetExpectedTokenError(SyntaxKind, SyntaxKind)"/>
+    protected virtual partial SyntaxDiagnosticInfo GetExpectedTokenError(SyntaxKind expected, SyntaxKind actual, int offset, int width);
+
+    /// <summary>
+    /// 获取缺失标志的诊断文本范围。
+    /// </summary>
+    /// <param name="offset">文本范围的偏移量。</param>
+    /// <param name="width">文本范围的宽度。</param>
+    /// <remarks>
+    /// 若上一个标志后方跟着的琐碎内容中包含行尾琐碎内容，则缺失标志的诊断位置将置于包含上一个标志的行尾，并且宽度为零；
+    /// 否则诊断的偏移量和宽度与当前标志的位置和宽度一致。
+    /// </remarks>
     protected void GetDiagnosticSpanForMissingToken(out int offset, out int width)
     {
+        // 若上一个标志后方跟着的琐碎内容中包含行尾琐碎内容，则缺失标志的诊断位置将置于包含上一个标志的行尾，并且宽度为零。
         var trivia = this._prevTokenTrailingTrivia;
         if (trivia is not null)
         {
             var triviaList = new SyntaxList<ThisInternalSyntaxNode>(trivia);
             bool prevTokenHasEndOfLineTrivia = triviaList.Any((int)SyntaxKind.EndOfLineTrivia);
             if (prevTokenHasEndOfLineTrivia)
-            {
-                offset = -trivia.FullWidth;
+            { // 包含行尾琐碎内容。
+                offset = -trivia.FullWidth; // 向前跳过上一个标志后方跟着的琐碎内容的宽度。
                 width = 0;
                 return;
             }
         }
 
+        // 否则诊断的偏移量和宽度与当前标志的位置和宽度一致。
         SyntaxToken token = this.CurrentToken;
-        offset = token.GetLeadingTriviaWidth();
+        offset = token.GetLeadingTriviaWidth(); // 向后跳过前方琐碎内容的宽度。
         width = token.Width;
     }
 
+    /// <summary>
+    /// 向语法节点添加附加诊断信息。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="node">要添加附加诊断信息的语法节点。</param>
+    /// <param name="diagnostics">要添加的附加诊断信息。</param>
+    /// <returns>添加附加诊断信息后的<paramref name="node"/>。</returns>
     protected virtual TNode WithAdditionalDiagnostics<TNode>(TNode node, params DiagnosticInfo[] diagnostics)
         where TNode : GreenNode
     {
@@ -703,19 +731,29 @@ internal abstract partial class SyntaxParser : IDisposable
         }
     }
 
+    /// <summary>
+    /// 向语法节点添加诊断错误信息。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="node">要添加附加诊断信息的语法节点。</param>
+    /// <param name="code">要添加的错误码。</param>
+    /// <returns>添加诊断错误信息后的<paramref name="node"/>。</returns>
     protected TNode AddError<TNode>(TNode node, ErrorCode code) where TNode : GreenNode =>
         this.AddError(node, code, Array.Empty<object>());
 
+    /// <param name="args">诊断信息的参数。</param>
+    /// <inheritdoc cref="SyntaxParser.AddError{TNode}(TNode, ErrorCode)"/>
     protected TNode AddError<TNode>(TNode node, ErrorCode code, params object[] args) where TNode : GreenNode
     {
+        // 不是缺失节点，直接添加附加诊断信息。
         if (!node.IsMissing)
-            return this.WithAdditionalDiagnostics(node, this.MakeError(node, code, args));
+            return this.WithAdditionalDiagnostics(node, SyntaxParser.MakeError(node, code, args));
 
+        // 对指点范围添加诊断错误信息。
         int offset, width;
 
-        var token = node as SyntaxToken;
-        if (token is not null && token.ContainsSkippedText)
-        {
+        if (node is SyntaxToken token && token.ContainsSkippedText)
+        { // 对连续的被跳过文本添加。
             offset = token.GetLeadingTriviaWidth();
             Debug.Assert(offset == 0);
 
@@ -734,56 +772,168 @@ internal abstract partial class SyntaxParser : IDisposable
                     offset += trivia.Width;
             }
         }
-        else
+        else // 对缺失标志的文本添加。
             this.GetDiagnosticSpanForMissingToken(out offset, out width);
 
-        return this.WithAdditionalDiagnostics(node, this.MakeError(offset, width, code, args));
+        return this.WithAdditionalDiagnostics(node, SyntaxParser.MakeError(offset, width, code, args));
     }
 
+    /// <param name="offset">文本范围的偏移量。</param>
+    /// <param name="length">文本范围的长度。</param>
+    /// <inheritdoc cref="SyntaxParser.AddError{TNode}(TNode, ErrorCode, object[])"/>
+    protected TNode AddError<TNode>(TNode node, int offset, int length, ErrorCode code, params object[] args) where TNode : ThisInternalSyntaxNode =>
+        this.WithAdditionalDiagnostics(node, SyntaxParser.MakeError(offset, length, code, args));
+
+    /// <summary>
+    /// 向指定根节点下的指定语法节点添加诊断错误信息。
+    /// </summary>
+    /// <param name="node">包含<paramref name="location"/>的节点。</param>
+    /// <param name="location">要添加附加诊断信息的语法节点，此节点在<paramref name="node"/>下。</param>
+    /// <inheritdoc cref="SyntaxParser.AddError{TNode}(TNode, ErrorCode, object[])"/>
     protected TNode AddError<TNode>(TNode node, ThisInternalSyntaxNode location, ErrorCode code, params object[] args) where TNode : ThisInternalSyntaxNode
     {
+        // 查找偏移量。
         this.FindOffset(node, location, out int offset);
-        return this.WithAdditionalDiagnostics(node, this.MakeError(offset, location.Width, code, args));
+        return this.WithAdditionalDiagnostics(node, SyntaxParser.MakeError(offset, location.Width, code, args));
     }
 
+    /// <summary>
+    /// 向语法节点的第一个标志添加诊断错误信息。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="node">要添加附加诊断信息的标志所在的语法节点。</param>
+    /// <param name="code">要添加的错误码。</param>
+    /// <returns>其第一个标志添加诊断错误信息后的<paramref name="node"/>。</returns>
     protected TNode AddErrorToFirstToken<TNode>(TNode node, ErrorCode code) where TNode : ThisInternalSyntaxNode
     {
-        var firstToken = node.GetFirstToken();
-        return this.WithAdditionalDiagnostics(node, this.MakeError(firstToken.GetLeadingTrivia(), firstToken.Width, code));
+        SyntaxParser.GetOffsetAndWidthForFirstToken(node, out int offset, out int width);
+        return this.WithAdditionalDiagnostics(node, SyntaxParser.MakeError(offset, width, code));
     }
 
+    /// <param name="args">诊断信息的参数。</param>
+    /// <inheritdoc cref="AddErrorToFirstToken{TNode}(TNode, ErrorCode)"/>
     protected TNode AddErrorToFirstToken<TNode>(TNode node, ErrorCode code, params object[] args) where TNode : ThisInternalSyntaxNode
     {
-        var firstToken = node.GetFirstToken();
-        return this.WithAdditionalDiagnostics(node, this.MakeError(firstToken.GetLeadingTrivia(), firstToken.Width, code, args));
+        SyntaxParser.GetOffsetAndWidthForFirstToken(node, out int offset, out int width);
+        return this.WithAdditionalDiagnostics(node, SyntaxParser.MakeError(offset, width, code, args));
     }
 
+    /// <summary>
+    /// 向语法节点的最后一个标志添加诊断错误信息。
+    /// </summary>
+    /// <returns>其最后一个标志添加诊断错误信息后的<paramref name="node"/>。</returns>
+    /// <inheritdoc cref="AddErrorToFirstToken{TNode}(TNode, ErrorCode)"/>
     protected TNode AddErrorToLastToken<TNode>(TNode node, ErrorCode code) where TNode : ThisInternalSyntaxNode
     {
-        this.GetOffsetAndWidthForLastToken(node, out int offset, out int width);
-        return this.WithAdditionalDiagnostics(node, this.MakeError(offset, width, code));
+        SyntaxParser.GetOffsetAndWidthForLastToken(node, out int offset, out int width);
+        return this.WithAdditionalDiagnostics(node, SyntaxParser.MakeError(offset, width, code));
     }
 
+    /// <inheritdoc cref="AddErrorToLastToken{TNode}(TNode, ErrorCode)"/>
+    /// <inheritdoc cref="AddErrorToFirstToken{TNode}(TNode, ErrorCode, object[])"/>
     protected TNode AddErrorToLastToken<TNode>(TNode node, ErrorCode code, params object[] args) where TNode : ThisInternalSyntaxNode
     {
         SyntaxParser.GetOffsetAndWidthForLastToken(node, out int offset, out int width);
-        return this.WithAdditionalDiagnostics(node, this.MakeError(offset, width, code, args));
+        return this.WithAdditionalDiagnostics(node, SyntaxParser.MakeError(offset, width, code, args));
     }
 
+    /// <summary>
+    /// 获取指定语法节点的第一个标志的偏移量和宽度。
+    /// </summary>
+    private static void GetOffsetAndWidthForFirstToken<TNode>(TNode node, out int offset, out int width) where TNode : ThisInternalSyntaxNode
+    {
+        var firstToken = node.GetFirstToken();
+        Debug.Assert(firstToken is not null);
+
+        offset = firstToken.GetLeadingTriviaWidth();
+        width = firstToken.Width;
+    }
+
+    /// <summary>
+    /// 获取指定语法节点的最后一个标志的偏移量和宽度。
+    /// </summary>
     private static void GetOffsetAndWidthForLastToken<TNode>(TNode node, out int offset, out int width) where TNode : ThisInternalSyntaxNode
     {
         var lastToken = node.GetLastNonmissingToken();
-        offset = node.FullWidth;
-        width = 0;
-        if (lastToken is not null)
+
+        offset = node.FullWidth; // 向后移动到节点尾部。
+        if (lastToken is null) // 当所有节点均缺失时。
+            width = 0;
+        else
         {
-            offset -= lastToken.FullWidth;
-            offset += lastToken.GetLeadingTriviaWidth();
-            width += lastToken.Width;
+            offset -= lastToken.FullWidth; // 向前回退到标志的头部。
+            offset += lastToken.GetLeadingTriviaWidth(); // 向后移动到标志前方琐碎内容之后。
+            width = lastToken.Width;
         }
     }
 
+    /// <summary>
+    /// 创建语法诊断错误消息的实例。实例指定偏移量、宽度和错误码。
+    /// </summary>
+    /// <returns>语法诊断错误消息的实例。</returns>
+    /// <inheritdoc cref="SyntaxDiagnosticInfo.SyntaxDiagnosticInfo(int, int, ErrorCode)"/>
+    protected static SyntaxDiagnosticInfo MakeError(int offset, int width, ErrorCode code) => new(offset, width, code);
+
+    /// <summary>
+    /// 创建语法诊断错误消息的实例。实例指定偏移量、宽度、错误码和消息参数。
+    /// </summary>
+    /// <inheritdoc cref="SyntaxParser.MakeError(int, int, ErrorCode)"/>
+    /// <inheritdoc cref="SyntaxDiagnosticInfo.SyntaxDiagnosticInfo(int, int, ErrorCode)"/>
+    protected static SyntaxDiagnosticInfo MakeError(int offset, int width, ErrorCode code, params object[] args) => new(offset, width, code, args);
+
+    /// <summary>
+    /// 创建语法诊断错误消息的实例。实例指定绿树节点的偏移量和宽度，以及指定的错误码和消息参数。
+    /// </summary>
+    /// <param name="node">这个绿树节点的范围即创建的实例表示的范围。</param>
+    /// <inheritdoc cref="SyntaxParser.MakeError(int, int, ErrorCode)"/>
+    protected static SyntaxDiagnosticInfo MakeError(GreenNode node, ErrorCode code, params object[] args) => new(node.GetLeadingTriviaWidth(), node.Width, code, args);
+
+    /// <summary>
+    /// 创建语法诊断错误消息的实例。实例指定错误码和消息参数。
+    /// </summary>
+    /// <inheritdoc cref="SyntaxParser.MakeError(int, int, ErrorCode, object[])"/>
+    protected static SyntaxDiagnosticInfo MakeError(ErrorCode code, params object[] args) => new(code, args);
+
 #error 未完成
+
+    /// <summary>
+    /// 在指定根节点中查找指定语法节点的偏移量。
+    /// </summary>
+    /// <param name="root">根节点。</param>
+    /// <param name="location">要查询的语法节点。</param>
+    /// <param name="offset">返回在以<paramref name="root"/>作为根节点的子树中<paramref name="location"/>的偏移量。</param>
+    /// <returns>若在<paramref name="root"/>中查询到<paramref name="location"/>，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
+    private bool FindOffset(GreenNode root, ThisInternalSyntaxNode location, out int offset)
+    {
+        offset = 0;
+
+        int currentOffset = 0;
+        for (int i = 0, n = root.SlotCount; i < n; i++)
+        {
+            var child = root.GetSlot(i);
+            // 忽略子节点为空的情况。
+            if (child is null) continue;
+            // 检查子节点是否为要查询的节点。
+            else if (child == location)
+            {
+                offset = currentOffset;
+                return true;
+            }
+            // 递归查询子树中的节点是否为要查询的节点。
+            else if (this.FindOffset(child, location, out offset))
+            {
+                // 计算偏移量。
+                offset += child.GetLeadingTriviaWidth() + currentOffset;
+                return true;
+            }
+            // 子树中未找到要查询的节点，累加偏移量并进入下一轮循环。
+            else
+                currentOffset += child.FullWidth;
+        }
+
+        // 未找到要查询的节点。
+        return false;
+    }
 
     /// <summary>
     /// 将非关键字标志转换为包含相同信息的关键字标志。

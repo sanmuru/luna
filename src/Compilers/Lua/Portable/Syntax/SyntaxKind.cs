@@ -219,6 +219,8 @@ public enum SyntaxKind : ushort
     SingleLineCommentTrivia,
     /// <summary>表示多行注释。</summary>
     MultiLineCommentTrivia,
+    /// <summary>表示被跳过的多个语法标志。</summary>
+    SkippedTokensTrivia,
     #endregion
 
     #region 注释文档节点
