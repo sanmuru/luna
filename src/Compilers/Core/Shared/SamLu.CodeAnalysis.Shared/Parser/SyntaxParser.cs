@@ -64,6 +64,7 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <summary>
     /// 获取语法解析器的设置。
     /// </summary>
+    /// <seealso cref="Lexer.Options"/>
     public ThisParseOptions Options => this.lexer.Options;
 
     /// <summary>
@@ -136,10 +137,21 @@ internal abstract partial class SyntaxParser : IDisposable
             this.PreLex();
     }
 
+    /// <summary>
+    /// 语法解析器是否协调新旧节点。
+    /// </summary>
+    /// <returns>若语法解析器开启增量处理操作，且允许重设词法器的模式时返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
+    /// <remarks>
+    /// 若返回<see langword="true"/>时，<see cref="SyntaxParser._blendedTokens"/>不为<see langword="null"/>；
+    /// 若返回<see langword="false"/>时，<see cref="SyntaxParser._lexedTokens"/>不为<see langword="null"/>。
+    /// </remarks>
     [MemberNotNullWhen(true, nameof(SyntaxParser._blendedTokens))]
     [MemberNotNullWhen(false, nameof(SyntaxParser._lexedTokens))]
     protected bool IsBlending() => this._isIncremental || this._allowModeReset;
 
+    /// <summary>
+    /// 重新初始化此语法解析器实例。
+    /// </summary>
     protected void ReInitialize()
     {
         this._firstToken = 0;
@@ -149,7 +161,7 @@ internal abstract partial class SyntaxParser : IDisposable
         this._resetStart = 0;
         this._currentToken = null;
         this._prevTokenTrailingTrivia = null;
-        if (this._isIncremental || this._allowModeReset)
+        if (this.IsBlending())
             this._firstBlender = new(this.lexer, null, null);
     }
 
@@ -162,12 +174,10 @@ internal abstract partial class SyntaxParser : IDisposable
         // 不应在这个方法内部处理取消标志。
         var size = Math.Min(4096, Math.Max(32, this.lexer.TextWindow.Text.Length / 2));
         this._lexedTokens ??= new ArrayElement<SyntaxToken>[size];
-        var lexer = this.lexer;
-        var mode = this._mode;
 
         for (int i = 0; i < size; i++)
         {
-            var token = lexer.Lex(mode); // 词法器分析一个标志。
+            var token = this.lexer.Lex(this._mode); // 词法器分析一个标志。
             this.AddLexedToken(token);
 
             // 遇到文件结尾。
@@ -234,7 +244,7 @@ internal abstract partial class SyntaxParser : IDisposable
     {
         get
         {
-            Debug.Assert(this._blendedTokens is not null);
+            Debug.Assert(this.IsBlending());
 
             var node = this._currentNode.Node;
             if (node is not null) return node;
@@ -245,7 +255,7 @@ internal abstract partial class SyntaxParser : IDisposable
     }
 
     /// <summary>
-    /// 获取当前的已协调节点的语法部分类型。
+    /// 获取当前的已协调节点的语法部分种类。
     /// </summary>
     protected SyntaxKind CurrentNodeKind => this.CurrentNode?.Kind() ?? SyntaxKind.None;
 
@@ -255,27 +265,39 @@ internal abstract partial class SyntaxParser : IDisposable
     [MemberNotNull(nameof(SyntaxParser._blendedTokens))]
     private void ReadCurrentNode()
     {
-        Debug.Assert(this._blendedTokens is not null);
+        Debug.Assert(this.IsBlending());
 
+        // 获取用来读取节点的协调器。
+        Blender blender;
         if (this._tokenOffset == 0)
-            this._currentNode = this._firstBlender.ReadNode(this._mode);
+            blender = this._firstBlender;
         else
-            this._currentNode = this._blendedTokens[this._tokenOffset - 1].Blender.ReadNode(this._mode);
+            blender = this._blendedTokens[this._tokenOffset - 1].Blender;
+        // 使用协调器读取节点。
+        this._currentNode = blender.ReadNode(this._mode);
     }
 
+    /// <summary>
+    /// 语法解析器接受当前的语法节点，并返回其对应的绿树节点。
+    /// </summary>
+    /// <returns>接受的语法节点对应的绿树节点。</returns>
     [MemberNotNull(nameof(SyntaxParser._blendedTokens))]
     protected GreenNode? EatNode()
     {
-        Debug.Assert(this._blendedTokens is not null);
+        Debug.Assert(this.IsBlending());
 
+        // 语法解析器吃下（当前节点）的绿树节点。
         var result = this.CurrentNode?.Green;
 
+        // 必要时扩充已协调标志数组的容量。
         if (this._tokenOffset >= this._blendedTokens.Length)
             this.AddTokenSlot();
 
+        // 添加节点到已处理的标志数组中。
         this._blendedTokens[this._tokenOffset++] = this._currentNode;
         this._tokenCount = this._tokenOffset;
 
+        // 恢复当前处理的变量为初始状态。
         this._currentNode = default;
         this._currentToken = null;
 
@@ -301,30 +323,38 @@ internal abstract partial class SyntaxParser : IDisposable
             return this._lexedTokens[this._tokenOffset];
     }
 
+    /// <summary>
+    /// 读取并添加下一个新的标志。
+    /// </summary>
     private void AddNewToken()
     {
-        if (this._blendedTokens is null)
-            this.AddLexedToken(this.lexer.Lex(this._mode));
-        else
+        if (this.IsBlending())
         {
-            if (this._tokenCount > 0)
-                this.AddToken(this._blendedTokens[this._tokenCount - 1].Blender.ReadToken(this._mode));
-            else
+            if (this._tokenCount == 0)
             {
                 if (this._currentNode.Token is not null)
                     this.AddToken(this._currentNode);
                 else
                     this.AddToken(this._firstBlender.ReadToken(this._mode));
             }
+            else
+                this.AddToken(this._blendedTokens[this._tokenCount - 1].Blender.ReadToken(this._mode));
         }
+        else
+            this.AddLexedToken(this.lexer.Lex(this._mode));
     }
 
+    /// <summary>
+    /// 添加指定标志。
+    /// </summary>
+    /// <param name="tokenResult">要添加的已协调节点。</param>
     [MemberNotNull(nameof(SyntaxParser._blendedTokens))]
     private void AddToken(in BlendedNode tokenResult)
     {
         Debug.Assert(tokenResult.Token is not null);
-        Debug.Assert(this._blendedTokens is not null);
+        Debug.Assert(this.IsBlending());
 
+        // 必要时扩充已协调标志数组的容量。
         if (this._tokenCount >= this._blendedTokens.Length)
             this.AddTokenSlot();
 
@@ -332,11 +362,16 @@ internal abstract partial class SyntaxParser : IDisposable
         this._tokenCount++;
     }
 
+    /// <summary>
+    /// 添加指定已词法分析的标志。
+    /// </summary>
+    /// <param name="token">要添加的已词法分析的标志。</param>
     [MemberNotNull(nameof(SyntaxParser._lexedTokens))]
     private void AddLexedToken(SyntaxToken token)
     {
-        Debug.Assert(this._lexedTokens is not null);
+        Debug.Assert(!this.IsBlending());
 
+        // 必要时扩充已词法分析的标志数组的容量。
         if (this._tokenCount >= this._lexedTokens.Length)
             this.AddLexedTokenSlot();
 
@@ -344,10 +379,13 @@ internal abstract partial class SyntaxParser : IDisposable
         this._tokenCount++;
     }
 
+    /// <summary>
+    /// 扩充已协调标志数组的容量。
+    /// </summary>
     [MemberNotNull(nameof(SyntaxParser._blendedTokens))]
     private void AddTokenSlot()
     {
-        Debug.Assert(this._blendedTokens is not null);
+        Debug.Assert(this.IsBlending());
 
         if (this._tokenOffset > (this._blendedTokens.Length >> 1) && (this._resetStart == -1 || this._resetStart > this._firstToken))
         {
@@ -370,10 +408,13 @@ internal abstract partial class SyntaxParser : IDisposable
         }
     }
 
+    /// <summary>
+    /// 扩充已词法分析的标志数组的容量。
+    /// </summary>
     [MemberNotNull(nameof(SyntaxParser._lexedTokens))]
     private void AddLexedTokenSlot()
     {
-        Debug.Assert(this._lexedTokens is not null);
+        Debug.Assert(!this.IsBlending());
 
         if (this._tokenOffset > (this._lexedTokens.Length >> 1) && (this._resetStart == -1 || this._resetStart > this._firstToken))
         {
@@ -395,10 +436,17 @@ internal abstract partial class SyntaxParser : IDisposable
         }
     }
 
+    /// <summary>
+    /// 查看当前后方第<paramref name="n"/>个位置的语法节点。
+    /// </summary>
+    /// <param name="n">表示要查看的语法节点在当前后方的位置。</param>
+    /// <returns>当前后方第<paramref name="n"/>个位置的语法节点。</returns>
+    /// <remarks>此操作不会改变此语法解析器的内容和状态。</remarks>
     protected SyntaxToken PeekToken(int n)
     {
         Debug.Assert(n >= 0);
 
+        // 补充不足的标志。
         while (this._tokenOffset + n >= this._tokenCount)
             this.AddNewToken();
 
@@ -408,6 +456,10 @@ internal abstract partial class SyntaxParser : IDisposable
             return this._lexedTokens[this._tokenOffset + n];
     }
 
+    /// <summary>
+    /// 语法解析器接受并且返回当前的已词法分析的语法标志。
+    /// </summary>
+    /// <returns>当前的已词法分析的语法标志</returns>
     protected SyntaxToken EatToken()
     {
         var token = this.CurrentToken;
@@ -415,6 +467,11 @@ internal abstract partial class SyntaxParser : IDisposable
         return token;
     }
 
+    /// <summary>
+    /// 语法解析器接受并且返回当前的已词法分析的语法标志，这个语法标志必须符合指定语法部分种类。
+    /// </summary>
+    /// <param name="kind">要返回的语法标志须符合的语法部分种类，枚举值必须标志语法标志。</param>
+    /// <returns>若当前的已词法分析的语法标志符合指定语法部分种类，则返回这个语法标志；否则返回表示缺失标志的语法标志，并报告错误。</returns>
     protected SyntaxToken EatToken(SyntaxKind kind)
     {
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));
@@ -425,43 +482,77 @@ internal abstract partial class SyntaxParser : IDisposable
             this.MoveToNextToken();
             return token;
         }
-
-        return this.CreateMissingToken(kind, this.CurrentToken.Kind, reportError: true);
+        else
+            return this.CreateMissingToken(kind, token.Kind, reportError: true);
     }
 
-    protected SyntaxToken? TryEatToken(SyntaxKind kind) => this.CurrentToken.Kind == kind ? this.EatToken() : null;
+    /// <param name="reportError">是否报告错误。</param>
+    /// <returns>若当前的已词法分析的语法标志符合指定语法部分种类，则返回这个语法标志；否则返回表示缺失标志的语法标志。</returns>
+    /// <inheritdoc cref="SyntaxParser.EatToken(SyntaxKind)"/>
+    protected SyntaxToken EatToken(SyntaxKind kind, bool reportError)
+    {
+        if (reportError) return this.EatToken(kind);
 
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+        if (this.CurrentToken.Kind == kind)
+            return this.EatToken();
+        else
+            return SyntaxFactory.MissingToken(kind);
+    }
+
+    /// <param name="code">要报告的错误码。</param>
+    /// <param name="reportError">是否报告错误。</param>
+    /// <returns>若当前的已词法分析的语法标志符合指定语法部分种类，则返回这个语法标志；否则返回表示缺失标志的语法标志。</returns>
+    /// <inheritdoc cref="SyntaxParser.EatToken(SyntaxKind)"/>
+    protected SyntaxToken EatToken(SyntaxKind kind, ErrorCode code, bool reportError = true)
+    {
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+        if (this.CurrentToken.Kind == kind)
+            return this.EatToken();
+        else
+            return this.CreateMissingToken(kind, code, reportError);
+    }
+
+    /// <summary>
+    /// 尝试接受并返回当前的已词法分析的语法标志，这个语法标志必须符合指定语法部分种类。
+    /// </summary>
+    /// <returns>若当前的已词法分析的语法标志符合指定语法部分种类，则返回这个语法标志；否则返回<see langword="null"/>。</returns>
+    /// <inheritdoc cref="SyntaxParser.EatToken(SyntaxKind)"/>
+    protected SyntaxToken? TryEatToken(SyntaxKind kind)
+    {
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+
+        return this.CurrentToken.Kind == kind ? this.EatToken() : null;
+    }
+
+    /// <summary>
+    /// 移动到下一个标志。
+    /// </summary>
     private void MoveToNextToken()
     {
+        // 设置上一个标志的结尾琐碎内容。
         this._prevTokenTrailingTrivia = this.CurrentToken.GetTrailingTrivia();
 
+        // 初始化部分变量。
         this._currentToken = null;
-
-        if (this._blendedTokens is not null)
+        if (this.IsBlending())
             this._currentNode = default;
 
+        // 向后移动一个位置。
         this._tokenOffset++;
     }
 
-    protected void ForceEndOfFile()
-    {
+    /// <summary>
+    /// 强制使得当前标志为文件结束标志。
+    /// </summary>
+    protected void ForceEndOfFile() =>
         this._currentToken = SyntaxFactory.Token(SyntaxKind.EndOfFileToken);
-    }
 
-    protected SyntaxToken EatToken(SyntaxKind kind)
-    {
-        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
-
-        var token = this.CurrentToken;
-        if (token.Kind == kind)
-        {
-            this.MoveToNextToken();
-            return token;
-        }
-
-        return this.CreateMissingToken(kind, this.CurrentToken.Kind, reportError: true);
-    }
-
+    /// <summary>
+    /// 语法解析器接受并且返回当前的已词法分析的语法标志，若这个语法标志不符合指定语法部分种类，则跳过并替换为正确的语法标志。
+    /// </summary>
+    /// <param name="expected">要返回的语法标志应符合的语法部分种类，枚举值必须标志语法标志。</param>
+    /// <returns>若当前的已词法分析的语法标志符合指定语法部分种类，则返回这个语法标志；否则返回一个结尾跳过语法，使用表示缺失标志的语法标志替换这个语法标志，并报告错误。</returns>
     protected SyntaxToken EatTokenAsKind(SyntaxKind expected)
     {
         Debug.Assert(SyntaxFactory.IsAnyToken(expected));
@@ -473,28 +564,45 @@ internal abstract partial class SyntaxParser : IDisposable
             return token;
         }
 
-        var replacement = this.CreateMissingToken(expected, this.CurrentToken.Kind, reportError: true);
+        var replacement = this.CreateMissingToken(expected, token.Kind, reportError: true);
         return this.AddTrailingSkippedSyntax(replacement, this.EatToken());
     }
 
+    /// <summary>
+    /// 创建一个表示缺少指定标志类型的语法标志。
+    /// </summary>
+    /// <param name="expected">期望的标志类型。</param>
+    /// <param name="actual">实际的标志类型。</param>
+    /// <param name="reportError">是否报告错误。</param>
     private SyntaxToken CreateMissingToken(SyntaxKind expected, SyntaxKind actual, bool reportError)
     {
         var token = SyntaxFactory.MissingToken(expected);
         if (reportError)
-        {
-            token = this.WithAdditionalDiagnostics(token, this.GetExpectedTokenError(expected, actual1))
-        }
+            token = this.WithAdditionalDiagnostics(token, this.GetExpectedTokenError(expected, actual));
 
         return token;
     }
 
+    /// <summary>
+    /// 创建一个表示缺少指定标志类型的语法标志。
+    /// </summary>
+    /// <param name="expected">期望的标志类型。</param>
+    /// <param name="code">要报告的错误码。</param>
+    /// <param name="reportError">是否报告错误。</param>
     private SyntaxToken CreateMissingToken(SyntaxKind expected, ErrorCode code, bool reportError)
     {
         var token = SyntaxFactory.MissingToken(expected);
         if (reportError)
             token = this.AddError(token, code);
+
+        return token;
     }
 
+    /// <summary>
+    /// 语法解析器接受并且返回当前的已词法分析的语法标志，若这个语法标志不符合指定语法部分种类，则对其报告错误。
+    /// </summary>
+    /// <param name="kind">要返回的语法标志须符合的语法部分种类，枚举值必须标志语法标志。</param>
+    /// <returns>返回当前的已词法分析的语法标志，若这个语法标志不符合指定语法部分种类，则报告错误。</returns>
     protected SyntaxToken EatTokenWithPrejudice
         (SyntaxKind kind)
     {
@@ -507,32 +615,47 @@ internal abstract partial class SyntaxParser : IDisposable
         return token;
     }
 
+    /// <summary>
+    /// 语法解析器接受并且返回当前的已词法分析的语法标志，并对其报告错误。
+    /// </summary>
+    /// <param name="code">要报告的错误码。</param>
+    /// <param name="args">诊断消息参数。</param>
+    /// <returns>返回当前的已词法分析的语法标志，并报告指定错误码和诊断消参数的错误。</returns>
     protected SyntaxToken EatTokenWithPrejuice(ErrorCode code, params object[] args)
     {
         var token = this.EatToken();
-        token = this.WithAdditionalDiagnostics(token, this.MakeError(token.GetLeadingTriviaWidth(), token.Width(), token.Width, code, args));
+        token = this.WithAdditionalDiagnostics(token, this.MakeError(token.GetLeadingTriviaWidth(), token.GetLeadingTriviaWidth(), token.Width, code, args));
         return token;
     }
 
-    protected SyntaxToken EatContextualToken(SyntaxKind kind, ErrorCode code, bool reportError = true)
-    {
-        Debug.Assert(SyntaxFacts.IsAnyTokne(kind));
-
-        if (this.CurrentToken.ContextualKind != kind)
-            return this.CreateMissingToken(kind, code, reportError);
-        else
-            return SyntaxParser.ConvertToKeyword(this.EatToken());
-    }
-
+    /// <summary>
+    /// 语法解析器接受并且返回当前的已词法分析的语法标志，这个语法标志的上下文种类必须符合指定语法部分种类。
+    /// </summary>
+    /// <param name="kind">要返回的语法标志须符合的语法部分种类，枚举值必须标志语法标志。</param>
+    /// <param name="reportError">是否报告错误。</param>
+    /// <returns>若当前的已词法分析的语法标志的上下文种类符合指定语法部分种类，则返回这个语法标志；否则返回表示缺失标志的语法标志，并报告错误。</returns>
     protected SyntaxToken EatContextualToken(SyntaxKind kind, bool reportError = true)
     {
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));
 
         var contextualKind = this.CurrentToken.ContextualKind;
-        if (contextualKind != kind)
-            return this.CreateMissingToken(kind, contextualKind, reportError);
-        else
+        if (contextualKind == kind)
             return SyntaxParser.ConvertToKeyword(this.EatToken());
+        else
+            return this.CreateMissingToken(kind, contextualKind, reportError);
+    }
+
+    /// <param name="code">要报告的错误码。</param>
+    /// <returns>若当前的已词法分析的语法标志的上下文种类符合指定语法部分种类，则返回这个语法标志；否则返回表示缺失标志的语法标志，并报告指定错误码的错误。</returns>
+    /// <inheritdoc cref="SyntaxParser.EatContextualToken(SyntaxKind, bool)"/>
+    protected SyntaxToken EatContextualToken(SyntaxKind kind, ErrorCode code, bool reportError = true)
+    {
+        Debug.Assert(SyntaxFacts.IsAnyTokne(kind));
+
+        if (this.CurrentToken.ContextualKind == kind)
+            return SyntaxParser.ConvertToKeyword(this.EatToken());
+        else
+            return this.CreateMissingToken(kind, code, reportError);
     }
 
     protected virtual partial SyntaxDiagnosticInfo GetExpectedTokenError(SyntaxKind expected, SyntaxKind actual, int offset, int width);
@@ -581,7 +704,7 @@ internal abstract partial class SyntaxParser : IDisposable
     }
 
     protected TNode AddError<TNode>(TNode node, ErrorCode code) where TNode : GreenNode =>
-        this.AddError(node, node, Array.Empty<object>());
+        this.AddError(node, code, Array.Empty<object>());
 
     protected TNode AddError<TNode>(TNode node, ErrorCode code, params object[] args) where TNode : GreenNode
     {
