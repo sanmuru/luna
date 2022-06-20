@@ -1,4 +1,6 @@
-﻿namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+﻿using Microsoft.CodeAnalysis;
+
+namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 partial class SyntaxParser
 {
@@ -26,4 +28,26 @@ partial class SyntaxParser
 #warning 需完善未得到期望的标志对应的错误码。
             _ => ErrorCode.ERR_SyntaxError
         };
+
+#warning Need code review.
+    protected partial TNode CheckFeatureAvailability<TNode>(TNode node, MessageID feature, bool forceWarning = false)
+        where TNode : GreenNode
+    {
+        LanguageVersion avaliableVersion = this.Options.LanguageVersion;
+
+        switch (feature)
+        {
+            default:
+                break;
+        };
+
+        var info = feature.GetFeatureAvailabilityDiagnosticInfo(this.Options);
+        if (info is null)
+            return node;
+
+        if (forceWarning)
+            return this.AddError(node, ErrorCode.WRN_ErrorOverride, info, (int)info.Code);
+        else
+            return this.AddError(node, info.Code, info.Arguments);
+    }
 }

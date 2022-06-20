@@ -185,6 +185,7 @@ internal abstract partial class SyntaxParser : IDisposable
         }
     }
 
+#warning Need code review.
     protected ResetPoint GetResetPoint()
     {
         var pos = this.CurrentTokenPosition;
@@ -195,6 +196,7 @@ internal abstract partial class SyntaxParser : IDisposable
         return new(this._resetCount, this._mode, pos, this._prevTokenTrailingTrivia);
     }
 
+#warning Need code review.
     protected void Reset(ref ResetPoint point)
     {
         var offset = point.Position - this._firstToken;
@@ -210,8 +212,8 @@ internal abstract partial class SyntaxParser : IDisposable
         this._mode = point.Mode;
         Debug.Assert(offset >= 0 && offset < this._tokenCount);
         this._tokenOffset = offset;
-        this.CurrentToken = null;
-        this.CurrentNode = default;
+        this._currentToken = null;
+        this._currentNode = default;
         this._prevTokenTrailingTrivia = point.PrevTokenTrailingTrivia;
         if (this.IsBlending())
         {
@@ -220,7 +222,7 @@ internal abstract partial class SyntaxParser : IDisposable
                 if (this._blendedTokens[i].Token is null)
                 {
                     this._tokenCount = i;
-                    if (this._tokenCount == this)
+                    if (this._tokenCount == this._tokenOffset)
                         this.FetchCurrentToken();
                     break;
                 }
@@ -894,7 +896,129 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <inheritdoc cref="SyntaxParser.MakeError(int, int, ErrorCode, object[])"/>
     protected static SyntaxDiagnosticInfo MakeError(ErrorCode code, params object[] args) => new(code, args);
 
-#error 未完成
+#warning Need code review.
+    protected TNode AddLeadingSkippedSyntax<TNode>(TNode node, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode
+    {
+        var oldToken = node as SyntaxToken ?? node.GetFirstToken()!;
+        var newToken = this.AddSkippedSyntax(oldToken, skippedSyntax, trailing: false);
+        return SyntaxFirstTokenReplacer.Replace(node, oldToken, newToken, skippedSyntax.FullWidth);
+    }
+
+#warning Need code review.
+    protected void AddTrailingSkippedSyntax(SyntaxListBuilder list, GreenNode skippedSyntax) =>
+        list[^1] = this.AddTrailingSkippedSyntax((ThisInternalSyntaxNode)list[^1]!, skippedSyntax);
+
+#warning Need code review.
+    protected void AddTrailingSkippedSyntax<TNode>(SyntaxListBuilder<TNode> list, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode =>
+        list[^1] = this.AddTrailingSkippedSyntax(list[^1]!, skippedSyntax);
+
+#warning Need code review.
+    protected TNode AddTrailingSkippedSyntax<TNode>(TNode node, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode
+    {
+        if (node is SyntaxToken token)
+            return (TNode)(ThisInternalSyntaxNode)this.AddSkippedSyntax(token, skippedSyntax, trailing: true);
+        else
+        {
+            var lastToken = node.GetLastToken()!;
+            var newToken = this.AddSkippedSyntax(lastToken, skippedSyntax, trailing: true);
+            return SyntaxLastTokenReplacer.Replace(node, newToken);
+        }
+    }
+
+#warning Need code review.
+    internal SyntaxToken AddSkippedSyntax(SyntaxToken target, GreenNode skippedSyntax, bool trailing)
+    {
+        var builder = new SyntaxListBuilder(4);
+
+        SyntaxDiagnosticInfo? diagnostic = null;
+
+        int diagnosticOffset = 0;
+
+        int currentOffset = 0;
+        foreach (var node in skippedSyntax.EnumerateNodes())
+        {
+            if (node is SyntaxToken token)
+            {
+                builder.Add(token.GetLeadingTrivia());
+
+                if (token.Width > 0)
+                {
+                    var tk = token.TokenWithLeadingTrivia(null).TokenWithTrailingTrivia(null);
+
+                    int leadingWidth = token.GetLeadingTriviaWidth();
+                    if (leadingWidth > 0)
+                    {
+                        var tokenDiagnostics = tk.GetDiagnostics();
+                        for (int i = 0; i < tokenDiagnostics.Length; i++)
+                        {
+                            var d = (SyntaxDiagnosticInfo)tokenDiagnostics[i];
+                            tokenDiagnostics[i] = new SyntaxDiagnosticInfo(d.Offset - leadingWidth, d.Width, (ErrorCode)d.Code, d.Arguments);
+                        }
+                    }
+
+                    builder.Add(SyntaxFactory.SkippedTokenTrivia(tk));
+                }
+                else
+                {
+                    var existing = (SyntaxDiagnosticInfo)token.GetDiagnostics().FirstOrDefault();
+                    if (existing is not null)
+                    {
+                        diagnostic = existing;
+                        diagnosticOffset = currentOffset;
+                    }
+                }
+                builder.Add(token.GetTrailingTrivia());
+
+                currentOffset += token.FullWidth;
+            }
+            else if (node.ContainsDiagnostics && diagnostic == null)
+            {
+                var existing = (SyntaxDiagnosticInfo)node.GetDiagnostics().FirstOrDefault();
+                if (existing is not null)
+                {
+                    diagnostic = existing;
+                    diagnosticOffset = currentOffset;
+                }
+            }
+        }
+
+        int triviaWidth = currentOffset;
+        var trivia = builder.ToListNode();
+
+        int triviaOffset;
+        if (trailing)
+        {
+            var trailingTrivia = target.GetTrailingTrivia();
+            triviaOffset = target.FullWidth;
+            target = target.TokenWithTrailingTrivia(SyntaxList.Concat(trailingTrivia, trivia));
+        }
+        else
+        {
+            if (triviaWidth > 0)
+            {
+                var targetDiagnostics = target.GetDiagnostics();
+                for (int i = 0; i < targetDiagnostics.Length; i++)
+                {
+                    var d = (SyntaxDiagnosticInfo)targetDiagnostics[i];
+                    targetDiagnostics[i] = new SyntaxDiagnosticInfo(d.Offset + triviaWidth, d.Width, (ErrorCode)d.Code, d.Arguments);
+                }
+            }
+
+            var leadingTrivia = target.GetLeadingTrivia();
+            target = target.TokenWithLeadingTrivia(SyntaxList.Concat(trivia, leadingTrivia));
+            triviaOffset = 0;
+        }
+
+        if (diagnostic is not null)
+        {
+            int newOffset = triviaOffset + diagnosticOffset + diagnostic.Offset;
+
+            target = this.WithAdditionalDiagnostics(target, new SyntaxDiagnosticInfo(newOffset, diagnostic.Width, (ErrorCode)diagnostic.Code, diagnostic.Arguments)
+            );
+        }
+
+        return target;
+    }
 
     /// <summary>
     /// 在指定根节点中查找指定语法节点的偏移量。
