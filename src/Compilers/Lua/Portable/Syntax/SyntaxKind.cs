@@ -17,6 +17,8 @@ public enum SyntaxKind : ushort
     AsteriskToken,
     /// <summary>表示<c>/</c>标记。</summary>
     SlashToken,
+    /// <summary>表示<c>^</c>标记。</summary>
+    CaretToken,
     /// <summary>表示<c>%</c>标记。</summary>
     PersentToken,
     /// <summary>表示<c>#</c>标记。</summary>
@@ -150,7 +152,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示取负（一元<c>-</c>）元方法<c>__unm</c>。</summary>
     NegationMetamethod,
     /// <summary>表示向下取整除法（<c>+</c>）元方法<c>__idiv</c>。</summary>
-    FloorDivision,
+    FloorDivisionMetamethod,
     /// <summary>表示按位与（<c>&amp;</c>）元方法<c>__band</c>。</summary>
     BitwiseAndMetamethod,
     /// <summary>表示按位或（<c>|</c>）元方法<c>__bor</c>。</summary>
