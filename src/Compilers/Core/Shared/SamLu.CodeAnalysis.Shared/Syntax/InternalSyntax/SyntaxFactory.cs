@@ -193,5 +193,4 @@ internal static partial class SyntaxFactory
 
     internal static IEnumerable<SyntaxToken> GetWellKnownTokens() => SyntaxToken.GetWellKnownTokens();
     #endregion
-#warning 未完成
 }

@@ -75,19 +75,28 @@ public abstract partial class
         SyntaxFactory.AreEquivalent(this, tree, topLevel);
 
     #region 工厂方法
-    public static SyntaxTree Create(ThisSyntaxNode root!!, ThisParseOptions? options = null, string? path = "", Encoding? encoding = null) =>
+    public static SyntaxTree Create(
+        ThisSyntaxNode root,
+        ThisParseOptions? options = null,
+        string? path = "",
+        Encoding? encoding = null
+    ) =>
         new ParsedSyntaxTree(
             text: null,
             encoding: null,
             checksumAlgorithm: SourceHashAlgorithm.Sha1,
             path: path,
             options: options ?? ThisParseOptions.Default,
-            root: root,
+            root: root ?? throw new ArgumentNullException(nameof(root)),
             cloneRoot: true);
 
-    internal static SyntaxTree CreateForDebugger(ThisSyntaxNode root!!, SourceText text, ThisParseOptions options) => new DebuggerSyntaxTree(options, root, text);
+    internal static SyntaxTree CreateForDebugger(
+        ThisSyntaxNode root,
+        SourceText text,
+        ThisParseOptions options
+    ) => new DebuggerSyntaxTree(root, text, options);
 
-    internal static SyntaxTree CreateWithoutClone(ThisSyntaxNode root!!) =>
+    internal static SyntaxTree CreateWithoutClone(ThisSyntaxNode root) =>
         new ParsedSyntaxTree(
             text: null,
             encoding: null,
@@ -121,11 +130,13 @@ public abstract partial class
     /// <param name="cancellationToken">解析操作的取消标志。</param>
     /// <returns>表示<paramref name="text"/>的所有信息的语法树。</returns>
     public static SyntaxTree ParseText(
-        SourceText text!!,
+        SourceText text,
         ThisParseOptions? options = null,
         string path = "",
         CancellationToken cancellationToken = default)
     {
+        if (text is null) throw new ArgumentNullException(nameof(text));
+
         options ??= ThisParseOptions.Default;
 
         // 创建词法分析器。
@@ -159,15 +170,17 @@ public abstract partial class
             var changes = newText.GetChangeRanges(oldText);
 
             if (changes.Count == 0 && newText == oldText) return this;
-            
+
             return this.WithChanges(newText, changes);
         }
 
         return this.WithChanges(newText, new[] { new TextChangeRange(new TextSpan(0, this.Length), newText.Length) });
     }
 
-    private SyntaxTree WithChanges(SourceText newText, IReadOnlyList<TextChangeRange> changes!!)
+    private SyntaxTree WithChanges(SourceText newText, IReadOnlyList<TextChangeRange> changes)
     {
+        if (changes is null) throw new ArgumentNullException(nameof(changes));
+
         var workingChanges = changes;
         var oldTree = this;
 
@@ -181,14 +194,14 @@ public abstract partial class
         using var lexer = new Syntax.InternalSyntax.Lexer(newText, this.Options);
         using var parser = new Syntax.InternalSyntax.LanguageParser(lexer, oldTree?.GetRoot(), workingChanges);
 
-        var compilationUnit = (BlockSyntax)parser.ParseBlock().CreateRed();
+        var block = (BlockSyntax)parser.ParseBlock().CreateRed();
         return new ParsedSyntaxTree(
             newText,
             newText.Encoding,
             newText.ChecksumAlgorithm,
             this.FilePath,
             this.Options,
-            compilationUnit,
+            block,
             cloneRoot: true
         );
     }
