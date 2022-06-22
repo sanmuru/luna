@@ -297,11 +297,6 @@ public abstract partial class
 
     protected override bool IsEquivalentToCore(SyntaxNode node, bool topLevel = false) =>
         SyntaxFactory.AreEquivalent(this, (ThisSyntaxNode)node, topLevel);
-
-    internal override bool ShouldCreateWeakList()
-    {
-        return base.ShouldCreateWeakList();
-    }
     #endregion
 
     string IFormattable.ToString(string? format, IFormatProvider? formatProvider) => this.ToString();

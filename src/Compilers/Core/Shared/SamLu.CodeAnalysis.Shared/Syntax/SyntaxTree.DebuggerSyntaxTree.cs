@@ -2,15 +2,15 @@
 using Microsoft.CodeAnalysis.Text;
 
 #if LANG_LUA
-using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
-using ThisParseOptions = SamLu.CodeAnalysis.Lua.LuaParseOptions;
-
 namespace SamLu.CodeAnalysis.Lua;
-#elif LANG_MOONSCRIPT
-using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
-using ThisParseOptions = SamLu.CodeAnalysis.MoonScript.MoonScriptParseOptions;
 
+using ThisSyntaxNode = LuaSyntaxNode;
+using ThisParseOptions = LuaParseOptions;
+#elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
+
+using ThisSyntaxNode = MoonScriptSyntaxNode;
+using ThisParseOptions = MoonScriptParseOptions;
 #endif
 
 public partial class

@@ -51,6 +51,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.DummySyntaxTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.LazySyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.ParsedSyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\StructuredTriviaSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxFactory.cs" />

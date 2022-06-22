@@ -6,17 +6,17 @@ using Roslyn.Utilities;
 using System.Diagnostics;
 
 #if LANG_LUA
-using ThisSyntaxTree = SamLu.CodeAnalysis.Lua.LuaSyntaxTree;
-using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
-using ThisParseOptions = SamLu.CodeAnalysis.Lua.LuaParseOptions;
-
 namespace SamLu.CodeAnalysis.Lua;
-#elif LANG_MOONSCRIPT
-using ThisSyntaxTree = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxTree;
-using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
-using ThisParseOptions = SamLu.CodeAnalysis.MoonScript.MoonScriptParseOptions;
 
+using ThisSyntaxTree = LuaSyntaxTree;
+using ThisSyntaxNode = LuaSyntaxNode;
+using ThisParseOptions = LuaParseOptions;
+#elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
+
+using ThisSyntaxTree = MoonScriptSyntaxTree;
+using ThisSyntaxNode = MoonScriptSyntaxNode;
+using ThisParseOptions = MoonScriptParseOptions;
 #endif
 
 #if LANG_LUA

@@ -32,7 +32,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示<c>&lt;</c>标记。</summary>
     LessThanToken,
     /// <summary>表示<c>&gt;</c>标记。</summary>
-    GreaterThenToken,
+    GreaterThanToken,
     /// <summary>表示<c>=</c>标记。</summary>
     EqualsToken,
     /// <summary>表示<c>(</c>标记。</summary>
@@ -57,11 +57,11 @@ public enum SyntaxKind : ushort
     DotToken,
 
     /// <summary>表示<c>&lt;&lt;</c>标记。</summary>
-    LessThanLessThenToken = 8257,
+    LessThanLessThanToken = 8257,
     /// <summary>表示<c>&lt;=</c>标记。</summary>
     LessThanEqualsToken,
     /// <summary>表示<c>&gt;&gt;</c>标记。</summary>
-    GreaterThanGreaterThenToken,
+    GreaterThanGreaterThanToken,
     /// <summary>表示<c>&gt;=</c>标记。</summary>
     GreaterThanEqualsToken,
     /// <summary>表示<c>//</c>标记。</summary>
@@ -70,10 +70,6 @@ public enum SyntaxKind : ushort
     EqualsEqualsToken,
     /// <summary>表示<c>~=</c>标记。</summary>
     TildeEqualsToken,
-    /// <summary>表示<c>&lt;=</c>标记。</summary>
-    LessThenEqualsToken,
-    /// <summary>表示<c>&gt;=</c>标记。</summary>
-    GreaterThenEqualsToken,
     /// <summary>表示<c>::</c>标记。</summary>
     ColonColonToken,
     /// <summary>表示<c>..</c>标记。</summary>
@@ -188,7 +184,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示标记要被关闭（<c>+</c>）元方法<c>__close</c>。（自Lua 5.4版本添加。）</summary>
     ToBeClosedMetamethod,
     /// <summary>表示弱表模式（<c>+</c>）元字段<c>__mode</c>。</summary>
-    WeekModeMetafield,
+    WeakModeMetafield,
     /// <summary>表示名称（<c>+</c>）元字段<c>__name</c>。</summary>
     NameMetafield,
     #endregion

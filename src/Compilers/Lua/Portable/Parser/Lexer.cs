@@ -179,7 +179,7 @@ internal partial class Lexer
 
                     case '<':
                         this.TextWindow.AdvanceChar();
-                        info.Kind = SyntaxKind.LessThanLessThenToken;
+                        info.Kind = SyntaxKind.LessThanLessThanToken;
                         break;
 
                     default:
@@ -198,11 +198,11 @@ internal partial class Lexer
                         break;
                     case '<':
                         this.TextWindow.AdvanceChar();
-                        info.Kind = SyntaxKind.GreaterThanGreaterThenToken;
+                        info.Kind = SyntaxKind.GreaterThanGreaterThanToken;
                         break;
 
                     default:
-                        info.Kind = SyntaxKind.GreaterThenToken;
+                        info.Kind = SyntaxKind.GreaterThanToken;
                         break;
                 }
                 break;
