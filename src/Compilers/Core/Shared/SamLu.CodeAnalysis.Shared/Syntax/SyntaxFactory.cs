@@ -214,8 +214,47 @@ public static partial class SyntaxFactory
     #endregion
 
     #region 字面量
-    public static SyntaxToken Literal(int value) =>
-        ThisParseOptions.
+    public static SyntaxToken Literal(long value) =>
+        SyntaxFactory.Literal(ObjectDisplay.FormatLiteral(value, ObjectDisplayOptions.None), value);
+
+    public static SyntaxToken Literal(string text, long value) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
+            SyntaxFactory.ElasticMarker.UnderlyingNode,
+            text,
+            value,
+            SyntaxFactory.ElasticMarker.UnderlyingNode));
+
+    public static SyntaxToken Literal(
+        SyntaxTriviaList leading,
+        string text,
+        long value,
+        SyntaxTriviaList trailing) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
+            leading.Node,
+            text,
+            value,
+            trailing.Node));
+
+    public static SyntaxToken Literal(double value) =>
+        SyntaxFactory.Literal(ObjectDisplay.FormatLiteral(value, ObjectDisplayOptions.None), value);
+
+    public static SyntaxToken Literal(string text, double value) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
+            SyntaxFactory.ElasticMarker.UnderlyingNode,
+            text,
+            value,
+            SyntaxFactory.ElasticMarker.UnderlyingNode));
+
+    public static SyntaxToken Literal(
+        SyntaxTriviaList leading,
+        string text,
+        double value,
+        SyntaxTriviaList trailing) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
+            leading.Node,
+            text,
+            value,
+            trailing.Node));
     #endregion
     #endregion
 

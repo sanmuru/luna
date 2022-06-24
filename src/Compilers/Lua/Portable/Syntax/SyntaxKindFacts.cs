@@ -2,7 +2,7 @@
 
 namespace SamLu.CodeAnalysis.Lua;
 
-public static partial class SyntaxKindFacts
+public static partial class SyntaxFacts
 {
     /// <summary>
     /// 获取部分语法种类对应的文本表示。
