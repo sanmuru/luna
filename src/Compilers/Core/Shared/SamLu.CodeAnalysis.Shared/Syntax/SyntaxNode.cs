@@ -159,7 +159,7 @@ public abstract partial class
     /// <returns>此节点在源代码中的位置。</returns>
     public new Location GetLocation() => new SourceLocation(this);
 
-    [return:NotNullIfNotNull("visitor")]
+    [return: NotNullIfNotNull("visitor")]
     public abstract TResult? Accept<TResult>(
 #if LANG_LUA
         LuaSyntaxVisitor<TResult>
@@ -186,8 +186,10 @@ public abstract partial class
     /// <exception cref="ArgumentNullException"><paramref name="stream"/>的值为<see langword="null"/>。</exception>
     /// <exception cref="InvalidOperationException"><paramref name="stream"/>流不可读。</exception>
     /// <exception cref="ArgumentException"><paramref name="stream"/>流中含有不合法的数据。</exception>
-    public static SyntaxNode DeserializeFrom(Stream stream!!, CancellationToken cancellationToken = default)
+    public static SyntaxNode DeserializeFrom(Stream stream, CancellationToken cancellationToken = default)
     {
+        if (stream is null) throw new ArgumentNullException(nameof(stream));
+
         if (!stream.CanRead)
             throw new InvalidOperationException(CodeAnalysisResources.TheStreamCannotBeReadFrom);
 
@@ -252,7 +254,6 @@ public abstract partial class
             trivia, computeReplacementTrivia
         ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
     }
-        
 
     protected internal override SyntaxNode ReplaceNodeInListCore(
         SyntaxNode originalNode,
@@ -296,11 +297,6 @@ public abstract partial class
 
     protected override bool IsEquivalentToCore(SyntaxNode node, bool topLevel = false) =>
         SyntaxFactory.AreEquivalent(this, (ThisSyntaxNode)node, topLevel);
-
-    internal override bool ShouldCreateWeakList()
-    {
-        return base.ShouldCreateWeakList();
-    }
     #endregion
 
     string IFormattable.ToString(string? format, IFormatProvider? formatProvider) => this.ToString();

@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Text;
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 #elif LANG_MOONSCRIPT
-namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
 
 internal abstract partial class AbstractLexer : IDisposable

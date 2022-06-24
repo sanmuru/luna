@@ -46,8 +46,8 @@ partial class
             Encoding? encoding,
             SourceHashAlgorithm checksumAlgorithm,
             string? path,
-            ThisParseOptions options!!,
-            ThisSyntaxNode root!!,
+            ThisParseOptions options,
+            ThisSyntaxNode root,
             bool cloneRoot)
         {
             Debug.Assert(

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
+﻿using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
-using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -23,100 +19,9 @@ internal enum LexerMode
 /// <summary>
 /// 针对Lua语言特定的词法解析器。
 /// </summary>
-internal partial class Lexer : AbstractLexer
+internal partial class Lexer
 {
-    private const int IdentifierBufferInitialCapacity = 32;
-    private const int TriviaListInitialCapacity = 8;
-
-    private readonly LuaParseOptions _options;
-
-    private LexerMode _mode;
-    private readonly StringBuilder _builder;
-    private char[] _identifierBuffer;
-    private int _identifierLength;
-    private readonly LexerCache _cache;
-    private int _badTokenCount; // 产生的坏标识符的累计数量。
-
-    public LuaParseOptions Options => this._options;
-
-    /// <summary>
-    /// 存放语法标识的必要信息。
-    /// </summary>
-    internal struct TokenInfo
-    {
-        /// <summary>
-        /// 直接语法类别。
-        /// </summary>
-        internal SyntaxKind Kind;
-        /// <summary>
-        /// 上下文语法类别。
-        /// </summary>
-        internal SyntaxKind ContextualKind;
-        /// <summary>
-        /// 语法标识的文本表示。
-        /// </summary>
-        internal string? Text;
-        /// <summary>
-        /// 语法标识的值类别。
-        /// </summary>
-        internal SpecialType ValueKind;
-        internal bool HasIdentifierEscapeSequence;
-        /// <summary>
-        /// 语法标识的字符串类型值。
-        /// </summary>
-        internal string? StringValue;
-        /// <summary>
-        /// 语法标识的32位整数类型值。
-        /// </summary>
-        internal int IntValue;
-        /// <summary>
-        /// 语法标识的64位整数类型值。
-        /// </summary>
-        internal long LongValue;
-        /// <summary>
-        /// 语法标识的32位单精度浮点数类型值。
-        /// </summary>
-        internal float FloatValue;
-        /// <summary>
-        /// 语法标识的64位双精度浮点数类型值。
-        /// </summary>
-        internal double DoubleValue;
-        /// <summary>
-        /// 语法标识是否为逐字。
-        /// </summary>
-        internal bool IsVerbatim;
-    }
-
-    public Lexer(SourceText text, LuaParseOptions options) : base(text)
-    {
-        this._options = options;
-        this._builder = new StringBuilder();
-        this._identifierBuffer = new char[Lexer.IdentifierBufferInitialCapacity];
-        this._cache = new();
-        this._createQuickTokenFunction = this.CreateQuickToken;
-    }
-
-    public override void Dispose()
-    {
-        this._cache.Free();
-
-        base.Dispose();
-    }
-
-    public void Reset(int position) => this.TextWindow.Reset(position);
-
-    private static LexerMode ModeOf(LexerMode mode) => mode & LexerMode.MaskLexMode;
-
-    private bool ModeIs(LexerMode mode) => Lexer.ModeOf(this._mode) == mode;
-
-    public SyntaxToken Lex(ref LexerMode mode)
-    {
-        var result = this.Lex(mode);
-        mode = this._mode;
-        return result;
-    }
-
-    public SyntaxToken Lex(LexerMode mode)
+    public partial SyntaxToken Lex(LexerMode mode)
     {
         this._mode = mode;
 
@@ -134,40 +39,8 @@ internal partial class Lexer : AbstractLexer
         }
     }
 
-    private SyntaxListBuilder _leadingTriviaCache = new(10);
-    private SyntaxListBuilder _trailingTriviaCache = new(10);
-
-    private static int GetFullWidth(SyntaxListBuilder? builder)
-    {
-        if (builder is null) return 0;
-
-        int width = 0;
-        for (int i = 0; i < builder.Count; i++)
-        {
-            var node = builder[i];
-            Debug.Assert(node is not null);
-            width += node.FullWidth;
-        }
-
-        return width;
-    }
-
-    private SyntaxToken LexSyntaxToken();
-
-    internal SyntaxTriviaList LexSyntaxLeadingTrivia();
-
-    internal SyntaxTriviaList LexSyntaxTrailingTrivia();
-
-    /// <summary>
-    /// 创建一个语法标识。
-    /// </summary>
-    /// <param name="info">语法标识的相关信息。</param>
-    /// <param name="leading">起始的语法列表构造器。</param>
-    /// <param name="trailing">结尾的语法列表构造器。</param>
-    /// <param name="errors">语法消息数组。</param>
-    /// <returns>新的语法标识。</returns>
-    private SyntaxToken Create(
-        ref TokenInfo info,
+    private partial SyntaxToken Create(
+        in TokenInfo info,
         SyntaxListBuilder? leading,
         SyntaxListBuilder? trailing,
         SyntaxDiagnosticInfo[]? errors)
@@ -179,10 +52,10 @@ internal partial class Lexer : AbstractLexer
 
         SyntaxToken token = info.Kind switch
         {
-            // 标识符标识
+            // 标识符标志
             SyntaxKind.IdentifierToken => SyntaxFactory.Identifier(info.ContextualKind, leadingNode, info.Text!, info.StringValue!, trailingNode),
 
-            // 数字字面量标识
+            // 数字字面量标志
             SyntaxKind.NumericLiteralToken =>
                 info.ValueKind switch
                 {
@@ -197,11 +70,11 @@ internal partial class Lexer : AbstractLexer
                     _ => throw ExceptionUtilities.UnexpectedValue(info.ValueKind),
                 },
 
-            // 字符串字面量标识
+            // 字符串字面量标志
             SyntaxKind.StringLiteralToken or
-            // 单行原始字符串字面量标识
+            // 单行原始字符串字面量标志
             SyntaxKind.SingleLineRawStringLiteralToken or
-            // 多行原始字符串字面量标识
+            // 多行原始字符串字面量标志
             SyntaxKind.MultiLineRawStringLiteralToken => SyntaxFactory.Literal(leadingNode, info.Text!, info.Kind, info.StringValue!, trailingNode),
 
             SyntaxKind.EndOfFileToken => SyntaxFactory.Token(leadingNode, SyntaxKind.EndOfFileToken, trailingNode),
@@ -211,16 +84,16 @@ internal partial class Lexer : AbstractLexer
             _ => SyntaxFactory.Token(leadingNode, info.Kind, trailingNode)
         };
 
-        // 为标识添加诊断。
+        // 为标志添加诊断。
         if (errors is not null && this._options.DocumentationMode >= DocumentationMode.Diagnose)
             token = token.WithDiagnosticsGreen(errors);
 
         return token;
     }
 
-    private void ScanSyntaxToken(ref TokenInfo info)
+    private partial void ScanSyntaxToken(ref TokenInfo info)
     {
-        // 初始化以准备新的标识扫描。
+        // 初始化以准备新的标志扫描。
         info.Kind = SyntaxKind.None;
         info.ContextualKind = SyntaxKind.None;
         info.Text = null;
@@ -229,7 +102,7 @@ internal partial class Lexer : AbstractLexer
         bool isEscaped = false;
         int startingPosition = this.TextWindow.Position;
 
-        // 开始扫描标识。
+        // 开始扫描标志。
         c = this.TextWindow.PeekChar();
         switch (c)
         {
@@ -306,7 +179,7 @@ internal partial class Lexer : AbstractLexer
 
                     case '<':
                         this.TextWindow.AdvanceChar();
-                        info.Kind = SyntaxKind.LessThanLessThenToken;
+                        info.Kind = SyntaxKind.LessThanLessThanToken;
                         break;
 
                     default:
@@ -325,11 +198,11 @@ internal partial class Lexer : AbstractLexer
                         break;
                     case '<':
                         this.TextWindow.AdvanceChar();
-                        info.Kind = SyntaxKind.GreaterThanGreaterThenToken;
+                        info.Kind = SyntaxKind.GreaterThanGreaterThanToken;
                         break;
 
                     default:
-                        info.Kind = SyntaxKind.GreaterThenToken;
+                        info.Kind = SyntaxKind.GreaterThanToken;
                         break;
                 }
                 break;
@@ -538,5 +411,5 @@ internal partial class Lexer : AbstractLexer
         }
     }
 
-#warning 未完成
+#error 未完成
 }

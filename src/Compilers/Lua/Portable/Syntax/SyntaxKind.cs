@@ -17,6 +17,8 @@ public enum SyntaxKind : ushort
     AsteriskToken,
     /// <summary>表示<c>/</c>标记。</summary>
     SlashToken,
+    /// <summary>表示<c>^</c>标记。</summary>
+    CaretToken,
     /// <summary>表示<c>%</c>标记。</summary>
     PersentToken,
     /// <summary>表示<c>#</c>标记。</summary>
@@ -30,7 +32,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示<c>&lt;</c>标记。</summary>
     LessThanToken,
     /// <summary>表示<c>&gt;</c>标记。</summary>
-    GreaterThenToken,
+    GreaterThanToken,
     /// <summary>表示<c>=</c>标记。</summary>
     EqualsToken,
     /// <summary>表示<c>(</c>标记。</summary>
@@ -55,11 +57,11 @@ public enum SyntaxKind : ushort
     DotToken,
 
     /// <summary>表示<c>&lt;&lt;</c>标记。</summary>
-    LessThanLessThenToken = 8257,
+    LessThanLessThanToken = 8257,
     /// <summary>表示<c>&lt;=</c>标记。</summary>
     LessThanEqualsToken,
     /// <summary>表示<c>&gt;&gt;</c>标记。</summary>
-    GreaterThanGreaterThenToken,
+    GreaterThanGreaterThanToken,
     /// <summary>表示<c>&gt;=</c>标记。</summary>
     GreaterThanEqualsToken,
     /// <summary>表示<c>//</c>标记。</summary>
@@ -68,10 +70,6 @@ public enum SyntaxKind : ushort
     EqualsEqualsToken,
     /// <summary>表示<c>~=</c>标记。</summary>
     TildeEqualsToken,
-    /// <summary>表示<c>&lt;=</c>标记。</summary>
-    LessThenEqualsToken,
-    /// <summary>表示<c>&gt;=</c>标记。</summary>
-    GreaterThenEqualsToken,
     /// <summary>表示<c>::</c>标记。</summary>
     ColonColonToken,
     /// <summary>表示<c>..</c>标记。</summary>
@@ -150,7 +148,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示取负（一元<c>-</c>）元方法<c>__unm</c>。</summary>
     NegationMetamethod,
     /// <summary>表示向下取整除法（<c>+</c>）元方法<c>__idiv</c>。</summary>
-    FloorDivision,
+    FloorDivisionMetamethod,
     /// <summary>表示按位与（<c>&amp;</c>）元方法<c>__band</c>。</summary>
     BitwiseAndMetamethod,
     /// <summary>表示按位或（<c>|</c>）元方法<c>__bor</c>。</summary>
@@ -186,7 +184,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示标记要被关闭（<c>+</c>）元方法<c>__close</c>。（自Lua 5.4版本添加。）</summary>
     ToBeClosedMetamethod,
     /// <summary>表示弱表模式（<c>+</c>）元字段<c>__mode</c>。</summary>
-    WeekModeMetafield,
+    WeakModeMetafield,
     /// <summary>表示名称（<c>+</c>）元字段<c>__name</c>。</summary>
     NameMetafield,
     #endregion
@@ -219,6 +217,8 @@ public enum SyntaxKind : ushort
     SingleLineCommentTrivia,
     /// <summary>表示多行注释。</summary>
     MultiLineCommentTrivia,
+    /// <summary>表示被跳过的多个语法标志。</summary>
+    SkippedTokensTrivia,
     #endregion
 
     #region 注释文档节点

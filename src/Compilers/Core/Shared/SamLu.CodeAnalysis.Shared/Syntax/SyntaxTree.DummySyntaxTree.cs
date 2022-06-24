@@ -4,17 +4,17 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis;
 
 #if LANG_LUA
-using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
-using ThisSyntaxTree = SamLu.CodeAnalysis.Lua.LuaSyntaxTree;
-using ThisParseOptions = SamLu.CodeAnalysis.Lua.LuaParseOptions;
-
 namespace SamLu.CodeAnalysis.Lua;
-#elif LANG_MOONSCRIPT
-using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
-using ThisSyntaxTree = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxTree;
-using ThisParseOptions = SamLu.CodeAnalysis.MoonScript.MoonScriptParseOptions;
 
+using ThisSyntaxNode = LuaSyntaxNode;
+using ThisSyntaxTree = LuaSyntaxTree;
+using ThisParseOptions = LuaParseOptions;
+#elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
+
+using ThisSyntaxNode = MoonScriptSyntaxNode;
+using ThisSyntaxTree = MoonScriptSyntaxTree;
+using ThisParseOptions = MoonScriptParseOptions;
 #endif
 
 public partial class
