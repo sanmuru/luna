@@ -14,6 +14,25 @@ internal static class ObjectDisplay
     internal static string NilLiteral => "nil";
 
     /// <summary>
+    /// 格式化预定义类型的值。
+    /// </summary>
+    /// <param name="obj">要格式化的预定义类型的值。</param>
+    /// <returns><paramref name="obj"/>的字符串表示。</returns>
+    /// <remarks>
+    /// 处理类型有<see cref="bool"/>、<see cref="string"/>、<see cref="sbyte"/>、<see cref="byte"/>、<see cref="short"/>、<see cref="ushort"/>、<see cref="int"/>、<see cref="uint"/>、<see cref="long"/>、<see cref="ulong"/>、<see cref="double"/>、<see cref="float"/>、<see cref="decimal"/>和<see langword="null"/>。
+    /// </remarks>
+    internal static string? FormatPrimitive(object? obj, ObjectDisplayOptions options) =>
+        obj switch
+        {
+            null => ObjectDisplay.NilLiteral,
+            bool => ObjectDisplay.FormatLiteral((bool)obj),
+            sbyte or byte or short or ushort or int or uint or long or ulong => ObjectDisplay.FormatLiteral((long)Convert.ChangeType(obj, typeof(long)), options),
+            float or double or decimal => ObjectDisplay.FormatLiteral((double)Convert.ChangeType(obj, typeof(double)), options),
+            string => ObjectDisplay.FormatLiteral((string)obj, options),
+            _ => null
+        };
+
+    /// <summary>
     /// 格式化布尔值字面量。
     /// </summary>
     /// <param name="value">要格式化的字面量。</param>

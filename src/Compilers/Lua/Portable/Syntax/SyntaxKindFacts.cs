@@ -110,14 +110,14 @@ public static partial class SyntaxFacts
     /// <param name="kind">要查询的语法种类。</param>
     /// <returns>若<paramref name="kind"/>表示关键字，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
     public static bool IsKeywordKind(SyntaxKind kind) =>
-        SyntaxKindFacts.IsReservedKeyword(kind) || SyntaxKindFacts.IsContextualKeyword(kind);
+        SyntaxFacts.IsReservedKeyword(kind) || SyntaxFacts.IsContextualKeyword(kind);
 
     /// <summary>
     /// 获取所有关键字语法种类。
     /// </summary>
     /// <returns>所有关键字语法种类。</returns>
     public static IEnumerable<SyntaxKind> GetKeywordKinds() =>
-        SyntaxKindFacts.GetReservedKeywordKinds().Concat(SyntaxKindFacts.GetContextualKeywordKinds());
+        SyntaxFacts.GetReservedKeywordKinds().Concat(SyntaxFacts.GetContextualKeywordKinds());
 
     #region 保留关键字
     /// <summary>
@@ -196,7 +196,7 @@ public static partial class SyntaxFacts
     /// <returns>若<paramref name="kind"/>表示上下文关键字，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
     public static bool IsContextualKeyword(SyntaxKind kind) =>
         // 元字段和元方法
-        SyntaxKindFacts.IsMetafield(kind) ||
+        SyntaxFacts.IsMetafield(kind) ||
 
         // 上下文关键词
         kind switch
@@ -227,7 +227,7 @@ public static partial class SyntaxFacts
             "_ENV" => SyntaxKind.EnvironmentKeyword,
 
             // 元字段和元方法
-            _ => SyntaxKindFacts.GetMetafieldKind(text)
+            _ => SyntaxFacts.GetMetafieldKind(text)
         };
     #endregion
 
@@ -263,8 +263,8 @@ public static partial class SyntaxFacts
     /// <returns>若<paramref name="kind"/>表示标点或关键字，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
     public static bool IsPunctuationOrKeyword(SyntaxKind kind) =>
         kind == SyntaxKind.EndOfFileToken ||
-        SyntaxKindFacts.IsPunctuation(kind) ||
-        SyntaxKindFacts.IsKeywordKind(kind);
+        SyntaxFacts.IsPunctuation(kind) ||
+        SyntaxFacts.IsKeywordKind(kind);
 
     /// <summary>
     /// 指定语法种类是否表示字面量。
@@ -328,10 +328,10 @@ public static partial class SyntaxFacts
     //public static bool IsTypeDeclaration(SyntaxKind kind)
     //public static bool IsNamespaceMemberDeclaration(SyntaxKind kind)
 
-    public static bool IsAnyUnaryExpression(SyntaxKind token) => SyntaxKindFacts.IsPrefixUnaryExpression(token);
+    public static bool IsAnyUnaryExpression(SyntaxKind token) => SyntaxFacts.IsPrefixUnaryExpression(token);
 
     public static bool IsPrefixUnaryExpression(SyntaxKind token) =>
-        SyntaxKindFacts.GetPrefixUnaryExpression(token) != SyntaxKind.None;
+        SyntaxFacts.GetPrefixUnaryExpression(token) != SyntaxKind.None;
 
     public static bool IsPrefixUnaryExpressionOperatorToken(SyntaxKind token) => GetPrefixUnaryExpression(token) != SyntaxKind.None;
 
@@ -347,7 +347,7 @@ public static partial class SyntaxFacts
         };
 
     public static bool IsPrimaryFunction(SyntaxKind keyword) =>
-        SyntaxKindFacts.GetPrimaryFunction(keyword) != SyntaxKind.None;
+        SyntaxFacts.GetPrimaryFunction(keyword) != SyntaxKind.None;
 
     public static SyntaxKind GetPrimaryFunction(SyntaxKind keyword) =>
         keyword switch
@@ -356,7 +356,7 @@ public static partial class SyntaxFacts
         };
 
     public static bool IsLiteralExpression(SyntaxKind token) =>
-        SyntaxKindFacts.GetLiteralExpression(token) != SyntaxKind.None;
+        SyntaxFacts.GetLiteralExpression(token) != SyntaxKind.None;
 
     public static SyntaxKind GetLiteralExpression(SyntaxKind token) =>
         token switch
@@ -374,7 +374,7 @@ public static partial class SyntaxFacts
         };
 
     public static bool IsBinaryExpression(SyntaxKind token) =>
-        SyntaxKindFacts.GetBinaryExpression(token) != SyntaxKind.None;
+        SyntaxFacts.GetBinaryExpression(token) != SyntaxKind.None;
 
     public static SyntaxKind GetBinaryExpression(SyntaxKind token) =>
         token switch
@@ -413,7 +413,7 @@ public static partial class SyntaxFacts
         };
 
     public static bool IsAssignmentExpressionOperatorToken(SyntaxKind token) =>
-        SyntaxKindFacts.GetAssignmentExpression(token) != SyntaxKind.None;
+        SyntaxFacts.GetAssignmentExpression(token) != SyntaxKind.None;
 
     public static SyntaxKind GetAssignmentExpression(SyntaxKind token) =>
         token switch

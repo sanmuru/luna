@@ -1,9 +1,17 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Diagnostics;
+using Microsoft.CodeAnalysis;
 
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 internal static partial class SyntaxFactory
 {
+    private static partial void ValidateTokenKind(SyntaxKind kind)
+    {
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+        Debug.Assert(kind != SyntaxKind.IdentifierToken);
+        Debug.Assert(kind != SyntaxKind.NumericLiteralToken);
+    }
+
     internal static partial IEnumerable<SyntaxTrivia> GetWellKnownTrivia()
     {
         yield return SyntaxFactory.CarriageReturnLineFeed;

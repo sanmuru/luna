@@ -155,18 +155,33 @@ public static partial class SyntaxFactory
             kind,
             SyntaxFactory.ElasticMarker.UnderlyingNode));
 
-    public static SyntaxToken Token(SyntaxTriviaList leading, SyntaxKind kind, SyntaxTriviaList trailing) =>
+    public static SyntaxToken Token(
+        SyntaxTriviaList leading,
+        SyntaxKind kind,
+        SyntaxTriviaList trailing) =>
         new(Syntax.InternalSyntax.SyntaxFactory.Token(
             leading.Node,
             kind,
             trailing.Node));
 
-    public static partial SyntaxToken Token(
+    public static SyntaxToken Token(
         SyntaxTriviaList leading,
         SyntaxKind kind,
         string text,
         string valueText,
-        SyntaxTriviaList trailing);
+        SyntaxTriviaList trailing)
+    {
+        SyntaxFactory.ValidateTokenKind(kind);
+
+        return new(Syntax.InternalSyntax.SyntaxFactory.Token(
+            leading.Node,
+            kind,
+            text,
+            valueText,
+            trailing.Node));
+    }
+
+    private static partial void ValidateTokenKind(SyntaxKind kind);
 
     public static SyntaxToken MissingToken(SyntaxKind kind) =>
         new(Syntax.InternalSyntax.SyntaxFactory.MissingToken(
@@ -214,47 +229,92 @@ public static partial class SyntaxFactory
     #endregion
 
     #region 字面量
-    public static SyntaxToken Literal(long value) =>
-        SyntaxFactory.Literal(ObjectDisplay.FormatLiteral(value, ObjectDisplayOptions.None), value);
+    /// <summary>
+    /// 构造表示64位整数的语法标志。
+    /// </summary>
+    /// <param name="value">表示的64位整数。</param>
+    /// <returns>表示64位整数的语法标志。</returns>
+    public static partial SyntaxToken Literal(long value);
 
-    public static SyntaxToken Literal(string text, long value) =>
-        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
-            SyntaxFactory.ElasticMarker.UnderlyingNode,
-            text,
-            value,
-            SyntaxFactory.ElasticMarker.UnderlyingNode));
+    /// <summary>
+    /// 构造表示64位整数的语法标志，使用指定的字符串表示。
+    /// </summary>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的64位整数。</param>
+    /// <returns>表示64位整数的语法标志。</returns>
+    public static partial SyntaxToken Literal(string text, long value);
 
-    public static SyntaxToken Literal(
+    /// <summary>
+    /// 构造表示64位整数的语法标志，使用指定的字符串表示以及前后方语法琐碎内容。
+    /// </summary>
+    /// <param name="leading">指定的前方语法琐碎内容。</param>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的64位整数。</param>
+    /// <param name="trailing">指定的后方语法琐碎内容。</param>
+    /// <returns>表示64位整数的语法标志。</returns>
+    public static partial SyntaxToken Literal(
         SyntaxTriviaList leading,
         string text,
         long value,
-        SyntaxTriviaList trailing) =>
-        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
-            leading.Node,
-            text,
-            value,
-            trailing.Node));
+        SyntaxTriviaList trailing);
 
-    public static SyntaxToken Literal(double value) =>
-        SyntaxFactory.Literal(ObjectDisplay.FormatLiteral(value, ObjectDisplayOptions.None), value);
+    /// <summary>
+    /// 构造表示双精度浮点数的语法标志。
+    /// </summary>
+    /// <param name="value">表示的双精度浮点数。</param>
+    /// <returns>表示双精度浮点数的语法标志。</returns>
+    public static partial SyntaxToken Literal(double value);
 
-    public static SyntaxToken Literal(string text, double value) =>
-        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
-            SyntaxFactory.ElasticMarker.UnderlyingNode,
-            text,
-            value,
-            SyntaxFactory.ElasticMarker.UnderlyingNode));
+    /// <summary>
+    /// 构造表示双精度浮点数的语法标志，使用指定的字符串表示。
+    /// </summary>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的双精度浮点数。</param>
+    /// <returns>表示双精度浮点数的语法标志。</returns>
+    public static partial SyntaxToken Literal(string text, double value);
 
-    public static SyntaxToken Literal(
+    /// <summary>
+    /// 构造表示双精度浮点数的语法标志，使用指定的字符串表示以及前后方语法琐碎内容。
+    /// </summary>
+    /// <param name="leading">指定的前方语法琐碎内容。</param>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的双精度浮点数。</param>
+    /// <param name="trailing">指定的后方语法琐碎内容。</param>
+    /// <returns>表示双精度浮点数的语法标志。</returns>
+    public static partial SyntaxToken Literal(
         SyntaxTriviaList leading,
         string text,
         double value,
-        SyntaxTriviaList trailing) =>
-        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
-            leading.Node,
-            text,
-            value,
-            trailing.Node));
+        SyntaxTriviaList trailing);
+
+    /// <summary>
+    /// 构造表示字符串的语法标志。
+    /// </summary>
+    /// <param name="value">表示的字符串。</param>
+    /// <returns>表示字符串的语法标志。</returns>
+    public static partial SyntaxToken Literal(string value);
+
+    /// <summary>
+    /// 构造表示字符串的语法标志，使用指定的字符串表示。
+    /// </summary>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的字符串。</param>
+    /// <returns>表示字符串的语法标志。</returns>
+    public static partial SyntaxToken Literal(string text, string value);
+
+    /// <summary>
+    /// 构造表示字符串的语法标志，使用指定的字符串表示以及前后方语法琐碎内容。
+    /// </summary>
+    /// <param name="leading">指定的前方语法琐碎内容。</param>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的字符串。</param>
+    /// <param name="trailing">指定的后方语法琐碎内容。</param>
+    /// <returns>表示字符串的语法标志。</returns>
+    public static partial SyntaxToken Literal(
+        SyntaxTriviaList leading,
+        string text,
+        string value,
+        SyntaxTriviaList trailing);
     #endregion
     #endregion
 
