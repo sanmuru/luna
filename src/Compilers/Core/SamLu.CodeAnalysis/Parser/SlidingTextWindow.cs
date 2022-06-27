@@ -248,7 +248,7 @@ internal abstract class SlidingTextWindow : IDisposable
     /// </summary>
     /// <param name="delta">相对于当前识别的字符位置的偏移量。</param>
     /// <returns>后方第<paramref name="delta"/>位上的字符。若已到达结尾，则返回<see cref="SlidingTextWindow.InvalidCharacter"/>。</returns>
-    public virtual char PeekChar(int delta = 1)
+    public virtual char PeekChar(int delta = 0)
     {
         int position = this.Position;
         this.AdvanceChar(delta);

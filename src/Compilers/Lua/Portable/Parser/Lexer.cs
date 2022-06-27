@@ -21,6 +21,8 @@ internal enum LexerMode
 /// </summary>
 internal partial class Lexer
 {
+    private static partial LexerMode ModeOf(LexerMode mode) => mode & LexerMode.MaskLexMode;
+
     public partial SyntaxToken Lex(LexerMode mode)
     {
         this._mode = mode;
@@ -35,7 +37,7 @@ internal partial class Lexer
         switch (Lexer.ModeOf(this._mode))
         {
             default:
-                throw ExceptionUtilities.UnexpectedValue(ModeOf(_mode));
+                throw ExceptionUtilities.UnexpectedValue(Lexer.ModeOf(this._mode));
         }
     }
 
@@ -47,8 +49,8 @@ internal partial class Lexer
     {
         Debug.Assert(info.Kind != SyntaxKind.IdentifierToken || info.StringValue is not null);
 
-        GreenNode? leadingNode = leading?.ToListNode();
-        GreenNode? trailingNode = trailing?.ToListNode();
+        var leadingNode = leading?.ToListNode();
+        var trailingNode = trailing?.ToListNode();
 
         SyntaxToken token = info.Kind switch
         {
@@ -59,12 +61,8 @@ internal partial class Lexer
             SyntaxKind.NumericLiteralToken =>
                 info.ValueKind switch
                 {
-                    // 32位整数
-                    SpecialType.System_Int32 => SyntaxFactory.Literal(leadingNode, info.Text!, info.IntValue, trailingNode),
                     // 64为整数
                     SpecialType.System_Int64 => SyntaxFactory.Literal(leadingNode, info.Text!, info.LongValue, trailingNode),
-                    // 32位单精度浮点数
-                    SpecialType.System_Single => SyntaxFactory.Literal(leadingNode, info.Text!, info.FloatValue, trailingNode),
                     // 64为双精度浮点数
                     SpecialType.System_Double => SyntaxFactory.Literal(leadingNode, info.Text!, info.DoubleValue, trailingNode),
                     _ => throw ExceptionUtilities.UnexpectedValue(info.ValueKind),
@@ -77,15 +75,18 @@ internal partial class Lexer
             // 多行原始字符串字面量标志
             SyntaxKind.MultiLineRawStringLiteralToken => SyntaxFactory.Literal(leadingNode, info.Text!, info.Kind, info.StringValue!, trailingNode),
 
+            // 文件结尾标志
             SyntaxKind.EndOfFileToken => SyntaxFactory.Token(leadingNode, SyntaxKind.EndOfFileToken, trailingNode),
 
+            // 异常枚举值
             SyntaxKind.None => SyntaxFactory.BadToken(leadingNode, info.Text!, trailingNode),
 
+            // 标点或关键字
             _ => SyntaxFactory.Token(leadingNode, info.Kind, trailingNode)
         };
 
         // 为标志添加诊断。
-        if (errors is not null && this._options.DocumentationMode >= DocumentationMode.Diagnose)
+        if (errors is not null)
             token = token.WithDiagnosticsGreen(errors);
 
         return token;
@@ -252,9 +253,8 @@ internal partial class Lexer
                             if (nextChar == '=') continue;
                             else if (nextChar == '[')
                                 this.ScanMultiLineStringLiteral(ref info, i - 2);
-                            else goto default;
+                            else goto default; // 未匹配到完整的多行原始字符字面量的起始语法。
                         }
-                        if (info.Kind == SyntaxKind.None) goto default; // 未匹配到完整的多行原始字符字面量的起始语法。
                         break;
 
                     default:
@@ -291,20 +291,23 @@ internal partial class Lexer
                 break;
 
             case '.':
-                this.TextWindow.AdvanceChar();
-                if (this.TextWindow.PeekChar() == '.')
+                if (!this.ScanNumericLiteral(ref info))
                 {
                     this.TextWindow.AdvanceChar();
                     if (this.TextWindow.PeekChar() == '.')
                     {
                         this.TextWindow.AdvanceChar();
-                        info.Kind = SyntaxKind.DotDotDotToken;
+                        if (this.TextWindow.PeekChar() == '.')
+                        {
+                            this.TextWindow.AdvanceChar();
+                            info.Kind = SyntaxKind.DotDotDotToken;
+                        }
+                        else
+                            info.Kind = SyntaxKind.DotDotToken;
                     }
                     else
-                        info.Kind = SyntaxKind.DotDotToken;
+                        info.Kind = SyntaxKind.DotToken;
                 }
-                else
-                    info.Kind = SyntaxKind.DotToken;
                 break;
 
             // 字符串字面量
@@ -409,6 +412,190 @@ internal partial class Lexer
                 this.AddError(ErrorCode.ERR_UnexpectedCharacter, info);
                 break;
         }
+    }
+
+    private void CheckFeatureAvaliability(MessageID feature)
+    {
+        var info = feature.GetFeatureAvailabilityDiagnosticInfo(this.Options);
+        if (info != null)
+            this.AddError(info.Code, info.Arguments);
+    }
+
+    /// <summary>
+    /// 扫描一个完整的整型数字字面量。
+    /// </summary>
+    /// <param name="integerIsAbsent">扫描到的整型数字字面量是否缺失。</param>
+    /// <param name="isHex">是否是十六进制格式。</param>
+    private void ScanNumericLiteralSingleInteger(ref bool integerIsAbsent, bool isHex)
+    {
+        char c;
+        while (true)
+        {
+            c = this.TextWindow.PeekChar();
+            if (
+                (isHex && SyntaxFacts.IsHexDigit(c)) ||
+                SyntaxFacts.IsDecDigit(c)
+            )
+            {
+                this._builder.Append(c); // 将接受的字符推入缓存。
+                integerIsAbsent = false;
+            }
+            else break;
+        }
+    }
+
+    /// <summary>
+    /// 扫描一个数字字面量
+    /// </summary>
+    /// <param name="info">要填充的标志信息对象。</param>
+    /// <returns>
+    /// 若扫描成功，则返回<see langword="true"/>；否则返回<see langword="false"/>。
+    /// </returns>
+    /// <remarks>
+    /// 扫描接受的格式有：
+    /// <list type="bullet">
+    ///     <item>
+    ///         <term>十进制小数格式</term>
+    ///         <description>由于第一个字符为<c>.</c>，所以没有十六进制前缀。</description>
+    ///     </item>
+    ///     <item>
+    ///         <term>十进制整数格式</term>
+    ///         <description>不含小数点；后方有可选的指数表示：<c>e</c>或<c>E</c>后跟可正可负十进制整型数字。</description>
+    ///     </item>
+    ///     <item>
+    ///         <term>十六进制整数或小数格式</term>
+    ///         <description>小数格式时含小数点，整数部分和小数部分不能同时缺省；前方有<c>0x</c>或<c>0X</c>前缀；后方有可选的指数表示：<c>p</c>或<c>P</c>后跟可正可负十进制整型数字。</description>
+    ///     </item>
+    /// </list>
+    /// </remarks>
+    private partial bool ScanNumericLiteral(ref TokenInfo info)
+    {
+        int start = this.TextWindow.Position;
+        char c = TextWindow.PeekChar();
+        bool isHex = false;
+        bool hasDecimal = false;
+        bool hasExponent = false;
+        bool integeralPartIsAbsent = true;
+        bool fractionalPartIsAbsent = true;
+        info.Text = null;
+        info.ValueKind = SpecialType.None;
+        this._builder.Clear();
+
+        c = this.TextWindow.PeekChar();
+        if (c == '0')
+        {
+            c = this.TextWindow.PeekChar(1);
+            switch (c)
+            {
+                case 'x':
+                case 'X':
+                    this.TextWindow.AdvanceChar(2);
+                    isHex = true;
+                    break;
+            }
+        }
+
+        /* 向后扫描一个完整的整形数字字面量，可能遇到这个字面量的宽度为零的情况。
+         * 作为小数格式的整数部分时是合法的，但是作为整数格式时是不合法的。
+         * 后者情况将在排除前者情况后生成诊断错误。
+         */
+        this.ScanNumericLiteralSingleInteger(ref integeralPartIsAbsent, isHex);
+
+        int resetMark = this.TextWindow.Position; // 回退记号。
+        if (this.TextWindow.PeekChar() == '.') // 扫描小数点。
+        {
+            c = this.TextWindow.PeekChar(1);
+            if (
+                (isHex && SyntaxFacts.IsHexDigit(c)) ||
+                SyntaxFacts.IsDecDigit(c)
+            ) // 符合小数部分格式。
+            {
+                // 确认含有小数部分。
+                hasDecimal = true;
+                this._builder.Append('.');
+
+                // 先将回退记号推进到第一个连续的0-9的最后一位。
+                this.ScanNumericLiteralSingleInteger(ref fractionalPartIsAbsent, isHex: false);
+                resetMark = this.TextWindow.Position;
+
+                this.ScanNumericLiteralSingleInteger(ref fractionalPartIsAbsent, isHex);
+                Debug.Assert(fractionalPartIsAbsent == false); // 必定存在小数部分。
+            }
+            else if (integeralPartIsAbsent)
+            {
+                // 整数和小数部分同时缺失，产生诊断错误信息。
+                this.AddError(this.MakeError(ErrorCode.ERR_InvalidReal));
+            }
+        }
+
+        // 现在数字部分已经处理完，接下来处理指数表示。
+        c = this.TextWindow.PeekChar();
+        if (isHex ?
+            c == 'p' || c == 'P' :
+            c == 'e' || c == 'E'
+        )
+        {
+            char c2 = this.TextWindow.PeekChar(1);
+            bool negativeExponent = false;
+            if (c2 == '-') // 负数指数
+            {
+                negativeExponent = true;
+                c2 = this.TextWindow.PeekChar(2);
+            }
+
+            if (SyntaxFacts.IsDecDigit(c2)) // 符合指数格式。
+            {
+                // 确认含有指数部分。
+                hasExponent = true;
+                this._builder.Append(c);
+
+                if (negativeExponent)
+                {
+                    this._builder.Append('-');
+                    this.TextWindow.AdvanceChar(2);
+                }
+                else
+                {
+                    this.TextWindow.AdvanceChar(1);
+                }
+
+                bool exponentPartIsAbsent = true;
+                this.ScanNumericLiteralSingleInteger(ref exponentPartIsAbsent, isHex: false);
+                Debug.Assert(exponentPartIsAbsent == false); // 必定存在指数部分。
+            }
+        }
+        // 指数部分格式不符，为了防止破坏后续的标志，尽可能回退到上一个可接受的回退记号的位置。
+        if (!hasExponent)
+            this.Reset(this.TextWindow.Position);
+
+        // 填充标志信息前最后一步：检查特性的可用性。
+        if (isHex)
+        {
+            if (hasDecimal) // 十六进制浮点数自Lua 5.2添加，需要检查特性是否可用。
+                this.CheckFeatureAvaliability(MessageID.IDS_FeatureHexadecimalFloatConstant);
+
+            if (hasExponent) // 以2为底数的指数表示自Lua 5.2添加，需要检查特性是否可用。
+                this.CheckFeatureAvaliability(MessageID.IDS_FeatureBinaryExponent);
+        }
+
+        info.Kind = SyntaxKind.NumericLiteralToken;
+        info.Text = this.TextWindow.GetText(true);
+        Debug.Assert(info.Text is not null);
+        var valueText = this.TextWindow.Intern(this._builder);
+        switch (info.ValueKind)
+        {
+            case SpecialType.System_Int64:
+                info.LongValue = this.GetValueInt64(valueText, isHex);
+                break;
+            case SpecialType.System_Double:
+                info.DoubleValue = this.GetValueDouble(valueText, isHex);
+                break;
+            default:
+                this.AddError(this.MakeError(ErrorCode.ERR_InvalidNumber));
+                break;
+        }
+
+        return true;
     }
 
 #error 未完成

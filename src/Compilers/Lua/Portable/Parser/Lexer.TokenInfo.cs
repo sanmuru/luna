@@ -25,23 +25,14 @@ internal partial class Lexer
         /// 语法标识的值类别。
         /// </summary>
         internal SpecialType ValueKind;
-        internal bool HasIdentifierEscapeSequence;
         /// <summary>
         /// 语法标识的字符串类型值。
         /// </summary>
         internal string? StringValue;
         /// <summary>
-        /// 语法标识的32位整数类型值。
-        /// </summary>
-        internal int IntValue;
-        /// <summary>
         /// 语法标识的64位整数类型值。
         /// </summary>
         internal long LongValue;
-        /// <summary>
-        /// 语法标识的32位单精度浮点数类型值。
-        /// </summary>
-        internal float FloatValue;
         /// <summary>
         /// 语法标识的64位双精度浮点数类型值。
         /// </summary>

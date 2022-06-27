@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Parser\Blender.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\Blender.Cursor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\Blender.Reader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\CharacterInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\LanguageParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\Lexer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\LexerCache.cs" />
