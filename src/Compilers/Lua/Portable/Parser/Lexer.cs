@@ -5,6 +5,9 @@ using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
+using RealParser = SamLu.CodeAnalysis.RealParser;
+using IntegerParser = SamLu.CodeAnalysis.IntegerParser;
+
 [Flags]
 internal enum LexerMode
 {
@@ -313,7 +316,7 @@ internal partial class Lexer
             // 字符串字面量
             case '\"':
             case '\'':
-                this.ScanSingleStringLiteral(ref info);
+                this.ScanSingleLineStringLiteral(ref info);
                 break;
 
             case 'a':
@@ -417,7 +420,7 @@ internal partial class Lexer
     private void CheckFeatureAvaliability(MessageID feature)
     {
         var info = feature.GetFeatureAvailabilityDiagnosticInfo(this.Options);
-        if (info != null)
+        if (info is not null)
             this.AddError(info.Code, info.Arguments);
     }
 
@@ -604,6 +607,22 @@ internal partial class Lexer
         }
 
         return true;
+    }
+
+    private long GetValueInt64(string text, bool isHex)
+    {
+        if (!IntegerParser.TryParseInt64(text, out long result))
+            this.AddError(this.MakeError(ErrorCode.ERR_IntegerOverflow));
+
+        return result;
+    }
+
+    private double GetValueDouble(string text, bool isHex)
+    {
+        if (!RealParser.TryParseDouble(text, out double result))
+            this.AddError(this.MakeError(ErrorCode.ERR_FloatOverflow));
+
+        return result;
     }
 
 #error 未完成
