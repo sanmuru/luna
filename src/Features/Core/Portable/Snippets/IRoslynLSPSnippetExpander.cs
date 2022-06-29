@@ -5,15 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
+using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.CodeAnalysis.Internal.Log
+namespace Microsoft.CodeAnalysis.Snippets
 {
-    internal static class CorrelationIdFactory
+    internal interface IRoslynLSPSnippetExpander
     {
-        private static int s_globalId;
-
-        public static int GetNextId()
-            => Interlocked.Increment(ref s_globalId);
+        bool CanExpandSnippet();
     }
 }
