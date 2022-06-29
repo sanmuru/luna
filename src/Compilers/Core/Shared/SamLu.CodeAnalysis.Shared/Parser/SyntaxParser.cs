@@ -557,7 +557,7 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <returns>若当前的已词法分析的语法标志符合指定语法部分种类，则返回这个语法标志；否则返回一个结尾跳过语法，使用表示缺失标志的语法标志替换这个语法标志，并报告错误。</returns>
     protected SyntaxToken EatTokenAsKind(SyntaxKind expected)
     {
-        Debug.Assert(SyntaxFactory.IsAnyToken(expected));
+        Debug.Assert(SyntaxFacts.IsAnyToken(expected));
 
         var token = this.CurrentToken;
         if (token.Kind == expected)
@@ -609,7 +609,7 @@ internal abstract partial class SyntaxParser : IDisposable
         (SyntaxKind kind)
     {
         var token = this.CurrentToken;
-        Debug.Assert(SyntaxFactory.IsAnyToken(kind));
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
         if (token.Kind != kind)
             token = this.WithAdditionalDiagnostics(token, this.GetExpectedTokenError(kind, token.Kind));
 
@@ -626,7 +626,7 @@ internal abstract partial class SyntaxParser : IDisposable
     protected SyntaxToken EatTokenWithPrejuice(ErrorCode code, params object[] args)
     {
         var token = this.EatToken();
-        token = this.WithAdditionalDiagnostics(token, SyntaxParser.MakeError(token.GetLeadingTriviaWidth(), token.GetLeadingTriviaWidth(), token.Width, code, args));
+        token = this.WithAdditionalDiagnostics(token, SyntaxParser.MakeError(token.GetLeadingTriviaWidth(), token.Width, code, args));
         return token;
     }
 
@@ -652,7 +652,7 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <inheritdoc cref="SyntaxParser.EatContextualToken(SyntaxKind, bool)"/>
     protected SyntaxToken EatContextualToken(SyntaxKind kind, ErrorCode code, bool reportError = true)
     {
-        Debug.Assert(SyntaxFacts.IsAnyTokne(kind));
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
 
         if (this.CurrentToken.ContextualKind == kind)
             return SyntaxParser.ConvertToKeyword(this.EatToken());
@@ -956,7 +956,7 @@ internal abstract partial class SyntaxParser : IDisposable
                         }
                     }
 
-                    builder.Add(SyntaxFactory.SkippedTokenTrivia(tk));
+                    builder.Add(SyntaxFactory.SkippedTokensTrivia(tk));
                 }
                 else
                 {

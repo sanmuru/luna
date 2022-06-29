@@ -9,7 +9,8 @@ internal enum MessageID
     None = 0,
     MessageBase = 1200,
 
-
+    IDS_FeatureHexadecimalFloatConstant,
+    IDS_FeatureBinaryExponent
 }
 
 internal static partial class MessageIDExtensions
@@ -27,16 +28,12 @@ internal static partial class MessageIDExtensions
         // 在语言分析器中检查特性的支持版本。
         return feature switch
         {
+            // Lua 5.2的特性
+            MessageID.IDS_FeatureHexadecimalFloatConstant or
+            MessageID.IDS_FeatureBinaryExponent
+                => LanguageVersion.Lua5_2,
+
             _ => throw ExceptionUtilities.UnexpectedValue(feature)
         };
-    }
-
-    internal static bool CheckFeatureAvaliability(
-        this MessageID feature,
-        BindingDiagnosticBag diagnostics,
-        SyntaxNode syntax,
-        Location? location = null)
-    {
-
     }
 }

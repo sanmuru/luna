@@ -5,7 +5,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
+#if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+#elif LANG_MOONSCRIPT
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
+#endif
 
 internal partial class LexerCache
 {

@@ -132,19 +132,16 @@ internal static partial class SyntaxFactory
 
     internal static SyntaxToken Token(GreenNode? leading, SyntaxKind kind, string text, string valueText, GreenNode? trailing)
     {
-        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
-#if LANG_LUA
-        Debug.Assert(kind != SyntaxKind.IdentifierToken);
-        Debug.Assert(kind != SyntaxKind.NumericLiteralToken);
-#elif LANG_MOONSCRIPT
-#warning 未进行对应断言检查
-#endif
+        SyntaxFactory.ValidateTokenKind(kind); // 检查不接受的语法分类。
 
         string defaultText = SyntaxFacts.GetText(kind);
         return kind >= SyntaxToken.FirstTokenWithWellKnownText && kind <= SyntaxToken.LastTokenWithWellKnownText && text == defaultText && valueText == defaultText
             ? SyntaxFactory.Token(leading, kind, trailing)
             : SyntaxToken.WithValue(kind, leading, text, valueText, trailing);
     }
+
+    [Conditional("DEBUG")]
+    private static partial void ValidateTokenKind(SyntaxKind kind);
 
     internal static SyntaxToken MissingToken(SyntaxKind kind) => SyntaxToken.CreateMissing(kind, null, null);
 
@@ -155,6 +152,14 @@ internal static partial class SyntaxFactory
     internal static SyntaxToken Identifier(GreenNode? leading, string text, GreenNode? trailing) => SyntaxFactory.Identifier(SyntaxKind.IdentifierToken, leading, text, text, trailing);
 
     internal static SyntaxToken Identifier(SyntaxKind contextualKind, GreenNode? leading, string text, string valueText, GreenNode? trailing) => SyntaxToken.Identifier(contextualKind, leading, text, valueText, trailing);
+
+    internal static SyntaxToken Literal(GreenNode? leading, string text, long value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
+
+    internal static SyntaxToken Literal(GreenNode? leading, string text, double value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
+
+    internal static SyntaxToken Literal(GreenNode? leading, string text, string value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
+
+    internal static SyntaxToken Literal(GreenNode? leading, string text, SyntaxKind kind, string value, GreenNode? trailing) => SyntaxToken.WithValue(kind, leading, text, value, trailing);
 
     internal static SyntaxToken BadToken(GreenNode? leading, string text, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.BadToken, leading, text, text, trailing);
 

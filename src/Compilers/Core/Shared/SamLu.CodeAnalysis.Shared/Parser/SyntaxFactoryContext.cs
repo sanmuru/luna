@@ -1,10 +1,8 @@
-﻿namespace SamLu.CodeAnalysis.
-#if LANG_LUA
-    Lua
+﻿#if LANG_LUA
+namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
-    .Syntax.InternalSyntax;
 
 /// <summary>
 /// 为构建语法节点提供上下文信息，有助于决定节点是否能在增量分析中重用。

@@ -1,10 +1,20 @@
-﻿namespace SamLu.CodeAnalysis.
+﻿using Microsoft.CodeAnalysis;
+
 #if LANG_LUA
-    Lua
+namespace SamLu.CodeAnalysis.Lua;
+
+using ThisParseOptions = LuaParseOptions;
+using ThisCompilation = LuaCompilation;
+using ThisDiagnosticInfo = LuaDiagnosticInfo;
+using ThisRequiredLanguageVersion = LuaRequiredLanguageVersion;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript;
+
+using ThisParseOptions = MoonScriptParseOptions;
+using ThisCompilation = MoonScriptCompilation;
+using ThisDiagnosticInfo = MoonScriptDiagnosticInfo;
+using ThisRequiredLanguageVersion = MoonScriptRequiredLanguageVersion;
 #endif
-    ;
 
 /// <summary>
 /// 为便于本地化文本，此类将<see cref="MessageID"/>包装为实现<see cref="IFormattable"/>的对象。
@@ -47,4 +57,51 @@ internal static partial class MessageIDExtensions
     internal static partial string? RequiredFeature(this MessageID feature);
 
     internal static partial LanguageVersion RequiredVersion(this MessageID feature);
+
+    internal static bool CheckFeatureAvailability(
+        this MessageID feature,
+        BindingDiagnosticBag diagnostics,
+        SyntaxNode syntax,
+        Location? location = null)
+    {
+        var diagnostic = MessageIDExtensions.GetFeatureAvailabilityDiagnosticInfo(feature, (ThisParseOptions)syntax.SyntaxTree.Options);
+        if (diagnostic is null) return true;
+
+        diagnostics.Add(diagnostic, location ?? syntax.GetLocation());
+        return false;
+    }
+
+    internal static bool CheckFeatureAvailability(
+        this MessageID feature,
+        BindingDiagnosticBag diagnostics,
+        Compilation compilation,
+        Location location)
+    {
+        var diagnostic = MessageIDExtensions.GetFeatureAvailabilityDiagnosticInfo(feature, (ThisCompilation)compilation);
+        if (diagnostic is null) return true;
+
+        diagnostics.Add(diagnostic, location);
+        return false;
+    }
+
+    internal static ThisDiagnosticInfo? GetFeatureAvailabilityDiagnosticInfo(this MessageID feature, ThisParseOptions options) =>
+        options.IsFeatureEnabled(feature) ? null :
+            MessageIDExtensions.GetDisabledFeatureDiagnosticInfo(feature, options.LanguageVersion);
+
+    internal static ThisDiagnosticInfo? GetFeatureAvailabilityDiagnosticInfo(this MessageID feature, ThisCompilation compilation) =>
+        compilation.IsFeatureEnabled(feature) ? null :
+            MessageIDExtensions.GetDisabledFeatureDiagnosticInfo(feature, compilation.LanguageVersion);
+
+    internal static ThisDiagnosticInfo GetDisabledFeatureDiagnosticInfo(MessageID feature, LanguageVersion availableVersion)
+    {
+        string? requiredFeature = feature.RequiredFeature();
+        if (requiredFeature is not null)
+            return new(ErrorCode.ERR_FeatureIsExperimental, feature.Localize(), requiredFeature);
+
+        LanguageVersion requiredVersion = feature.RequiredVersion();
+        if (requiredVersion == LanguageVersion.Preview.MapSpecifiedToEffectiveVersion())
+            return new(ErrorCode.ERR_FeatureInPreview, feature.Localize());
+        else
+            return new(availableVersion.GetErrorCode(), feature.Localize(), new ThisRequiredLanguageVersion(requiredVersion));
+    }
 }

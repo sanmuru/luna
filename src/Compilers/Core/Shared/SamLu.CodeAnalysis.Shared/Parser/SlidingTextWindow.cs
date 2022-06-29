@@ -1,13 +1,11 @@
 ﻿using System.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
-    .Syntax.InternalSyntax;
 
 /// <inheritdoc/>
 internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSyntax.SlidingTextWindow

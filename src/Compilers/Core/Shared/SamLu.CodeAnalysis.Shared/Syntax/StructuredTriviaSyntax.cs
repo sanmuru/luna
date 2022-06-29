@@ -1,21 +1,19 @@
 ﻿using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
-#elif LANG_MOONSCRIPT
-    MoonScript
-#endif
-    .Syntax;
+namespace SamLu.CodeAnalysis.Lua.Syntax;
 
-public abstract partial class StructuredTriviaSyntax :
-#if LANG_LUA
-    LuaSyntaxNode
+using ThisSyntaxNode = LuaSyntaxNode;
+using ThisInternalSyntaxNode = InternalSyntax.LuaSyntaxNode;
 #elif LANG_MOONSCRIPT
-    MoonScriptSyntaxNode
+namespace SamLu.CodeAnalysis.MoonScript.Syntax;
+
+using ThisSyntaxNode = MoonScriptSyntaxNode;
+using ThisInternalSyntaxNode = InternalSyntax.MoonScriptSyntaxNode;
 #endif
-    , IStructuredTriviaSyntax
+
+public abstract partial class StructuredTriviaSyntax : ThisSyntaxNode, IStructuredTriviaSyntax
 {
     private SyntaxTrivia _parent;
 
@@ -25,12 +23,14 @@ public abstract partial class StructuredTriviaSyntax :
     public override SyntaxTrivia ParentTrivia => this._parent;
 
     internal StructuredTriviaSyntax(
-#if LANG_LUA
-        InternalSyntax.LuaSyntaxNode green
-#elif LANG_MOONSCRIPT
-        InternalSyntax.MoonScriptSyntaxNode green
-#endif
-        , SyntaxNode? parent, int position) : base(green, position, parent?.SyntaxTree) => Debug.Assert(parent is null || position >= 0);
+        ThisInternalSyntaxNode green,
+        SyntaxNode? parent,
+        int position) :
+        base(
+            green,
+            position,
+            parent?.SyntaxTree) =>
+        Debug.Assert(parent is null || position >= 0);
 
     /// <summary>
     /// 从语法琐碎内容中创建一个结构化语法节点的实例。
