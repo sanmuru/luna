@@ -61,9 +61,9 @@ internal partial class Lexer
             SyntaxKind.NumericLiteralToken =>
                 info.ValueKind switch
                 {
-                    // 64为整数
+                    // 64位整数
                     SpecialType.System_Int64 => SyntaxFactory.Literal(leadingNode, info.Text!, info.LongValue, trailingNode),
-                    // 64为双精度浮点数
+                    // 64位双精度浮点数
                     SpecialType.System_Double => SyntaxFactory.Literal(leadingNode, info.Text!, info.DoubleValue, trailingNode),
                     _ => throw ExceptionUtilities.UnexpectedValue(info.ValueKind),
                 },
@@ -432,13 +432,14 @@ internal partial class Lexer
         while (true)
         {
             c = this.TextWindow.PeekChar();
-            if (
-                (isHex && SyntaxFacts.IsHexDigit(c)) ||
+            if (isHex ?
+                SyntaxFacts.IsHexDigit(c) :
                 SyntaxFacts.IsDecDigit(c)
             )
             {
                 this._builder.Append(c); // 将接受的字符推入缓存。
                 integerIsAbsent = false;
+                this.TextWindow.AdvanceChar();
             }
             else break;
         }
@@ -470,17 +471,17 @@ internal partial class Lexer
     /// </remarks>
     private partial bool ScanNumericLiteral(ref TokenInfo info)
     {
-        int start = this.TextWindow.Position;
         char c = TextWindow.PeekChar();
-        bool isHex = false;
-        bool hasDecimal = false;
-        bool hasExponent = false;
-        bool integeralPartIsAbsent = true;
-        bool fractionalPartIsAbsent = true;
+        bool isHex = false; // 是否为十六进制。
+        bool hasDecimal = false; // 是否含有小数部分。
+        bool hasExponent = false; // 是否含有指数部分。
+        bool integeralPartIsAbsent = true; // 整数部分是否缺省。
+        bool fractionalPartIsAbsent = true; // 小数部分是否缺省。
         info.Text = null;
         info.ValueKind = SpecialType.None;
         this._builder.Clear();
 
+        // 扫描可能存在的十六进制前缀。
         c = this.TextWindow.PeekChar();
         if (c == '0')
         {
@@ -501,22 +502,23 @@ internal partial class Lexer
          */
         this.ScanNumericLiteralSingleInteger(ref integeralPartIsAbsent, isHex);
 
-        int resetMark = this.TextWindow.Position; // 回退记号。
+        int resetMarker = this.TextWindow.Position; // 回退记号。
         if (this.TextWindow.PeekChar() == '.') // 扫描小数点。
         {
             c = this.TextWindow.PeekChar(1);
-            if (
-                (isHex && SyntaxFacts.IsHexDigit(c)) ||
+            if (isHex ?
+                SyntaxFacts.IsHexDigit(c) :
                 SyntaxFacts.IsDecDigit(c)
             ) // 符合小数部分格式。
             {
                 // 确认含有小数部分。
                 hasDecimal = true;
                 this._builder.Append('.');
+                this.TextWindow.AdvanceChar();
 
                 // 先将回退记号推进到第一个连续的0-9的最后一位。
                 this.ScanNumericLiteralSingleInteger(ref fractionalPartIsAbsent, isHex: false);
-                resetMark = this.TextWindow.Position;
+                resetMarker = this.TextWindow.Position;
 
                 this.ScanNumericLiteralSingleInteger(ref fractionalPartIsAbsent, isHex);
                 Debug.Assert(fractionalPartIsAbsent == false); // 必定存在小数部分。
@@ -536,10 +538,12 @@ internal partial class Lexer
         )
         {
             char c2 = this.TextWindow.PeekChar(1);
-            bool negativeExponent = false;
-            if (c2 == '-') // 负数指数
+            char sign = char.MaxValue;
+            bool signedExponent = false;
+            if (c2 == '-' || c2 == '+') // 有符号指数
             {
-                negativeExponent = true;
+                signedExponent = true;
+                sign = c2;
                 c2 = this.TextWindow.PeekChar(2);
             }
 
@@ -549,14 +553,14 @@ internal partial class Lexer
                 hasExponent = true;
                 this._builder.Append(c);
 
-                if (negativeExponent)
+                if (signedExponent)
                 {
-                    this._builder.Append('-');
+                    this._builder.Append(sign);
                     this.TextWindow.AdvanceChar(2);
                 }
                 else
                 {
-                    this.TextWindow.AdvanceChar(1);
+                    this.TextWindow.AdvanceChar();
                 }
 
                 bool exponentPartIsAbsent = true;
@@ -566,7 +570,11 @@ internal partial class Lexer
         }
         // 指数部分格式不符，为了防止破坏后续的标志，尽可能回退到上一个可接受的回退记号的位置。
         if (!hasExponent)
-            this.Reset(this.TextWindow.Position);
+        {
+            int length = this.TextWindow.Position - resetMarker;
+            this._builder.Remove(this._builder.Length - length, length);
+            this.Reset(resetMarker);
+        }
 
         // 填充标志信息前最后一步：检查特性的可用性。
         if (isHex)
