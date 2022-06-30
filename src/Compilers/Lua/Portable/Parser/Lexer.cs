@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Numerics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 using Roslyn.Utilities;
@@ -117,14 +118,8 @@ internal partial class Lexer
 
             case '-':
                 this.TextWindow.AdvanceChar();
-                if (this.TextWindow.PeekChar() == '-')
-                {
-                    this.TextWindow.AdvanceChar();
-                    this.ScanComment(ref info);
-                }
-                else
-                    info.Kind = SyntaxKind.MinusToken; break;
-
+                info.Kind = SyntaxKind.MinusToken;
+                break;
             case '*':
                 this.TextWindow.AdvanceChar();
                 info.Kind = SyntaxKind.AsteriskToken;
@@ -499,7 +494,7 @@ internal partial class Lexer
             }
         }
 
-        /* 向后扫描一个完整的整形数字字面量，可能遇到这个字面量的宽度为零的情况。
+        /* 向后扫描一个完整的整型数字字面量，可能遇到这个字面量的宽度为零的情况。
          * 作为小数格式的整数部分时是合法的，但是作为整数格式时是不合法的。
          * 后者情况将在排除前者情况后生成诊断错误。
          */
@@ -529,7 +524,7 @@ internal partial class Lexer
             else if (integeralPartIsAbsent)
             {
                 // 整数和小数部分同时缺失，产生诊断错误信息。
-                this.AddError(this.MakeError(ErrorCode.ERR_InvalidReal));
+                this.AddError(Lexer.MakeError(ErrorCode.ERR_InvalidReal));
             }
         }
 
@@ -554,6 +549,7 @@ internal partial class Lexer
             {
                 // 确认含有指数部分。
                 hasExponent = true;
+                hasDecimal = true;
                 this._builder.Append(c);
 
                 if (signedExponent)
@@ -593,36 +589,162 @@ internal partial class Lexer
         info.Text = this.TextWindow.GetText(true);
         Debug.Assert(info.Text is not null);
         var valueText = this.TextWindow.Intern(this._builder);
-        switch (info.ValueKind)
-        {
-            case SpecialType.System_Int64:
-                info.LongValue = this.GetValueInt64(valueText, isHex);
-                break;
-            case SpecialType.System_Double:
-                info.DoubleValue = this.GetValueDouble(valueText, isHex);
-                break;
-            default:
-                this.AddError(this.MakeError(ErrorCode.ERR_InvalidNumber));
-                break;
-        }
+        if (hasDecimal)
+            this.ParseIntegerValue(ref info, valueText, isHex);
+        else
+            this.ParseRealValue(ref info, valueText, isHex);
 
         return true;
     }
 
-    private long GetValueInt64(string text, bool isHex)
+    /// <summary>
+    /// 解析整型数字。
+    /// </summary>
+    private void ParseIntegerValue(ref TokenInfo info, string text, bool isHex)
     {
-        if (!IntegerParser.TryParseInt64(text, out long result))
-            this.AddError(this.MakeError(ErrorCode.ERR_IntegerOverflow));
+        if (isHex)
+        {
+            if (IntegerParser.TryParseHexadecimalInt64(text, out long result))
+            {
+                info.ValueKind = SpecialType.System_Int64;
+                info.LongValue = result;
+                return;
+            }
+        }
+        else
+        {
+            if (IntegerParser.TryParseDecimalInt64(text, out BigInteger bigInteger))
+            {
+                info.ValueKind = SpecialType.System_Int64;
+                info.LongValue = (long)bigInteger;
+                return;
+            }
+            else if (bigInteger <= (BigInteger)double.MaxValue && bigInteger >= (BigInteger)double.MinValue)
+            {
+                info.ValueKind = SpecialType.System_Double;
+                info.DoubleValue = (double)bigInteger;
+                return;
+            }
+        }
 
-        return result;
+        this.AddError(Lexer.MakeError(ErrorCode.ERR_NumberOverflow));
     }
 
-    private double GetValueDouble(string text, bool isHex)
+    /// <summary>
+    /// 解析浮点型数字。
+    /// </summary>
+    private void ParseRealValue(ref TokenInfo info, string text, bool isHex)
     {
-        if (!RealParser.TryParseDouble(text, out double result))
-            this.AddError(this.MakeError(ErrorCode.ERR_FloatOverflow));
+        if (isHex)
+        {
+            if (RealParser.TryParseHexadecimalDouble(text, out double result))
+            {
+                info.ValueKind = SpecialType.System_Double;
+                info.DoubleValue = result;
+                return;
+            }
+        }
+        else
+        {
+            if (RealParser.TryParseDecimalDouble(text, out double result))
+            {
+                info.ValueKind = SpecialType.System_Double;
+                info.DoubleValue = result;
+                return;
+            }
+        }
 
-        return result;
+        this.AddError(Lexer.MakeError(ErrorCode.ERR_NumberOverflow));
+    }
+    private partial void LexSyntaxTrivia(
+        bool afterFirstToken,
+        bool isTrailing,
+        ref SyntaxListBuilder triviaList)
+    {
+        while (true)
+        {
+            this.Start();
+            char c = this.TextWindow.PeekChar();
+            if (c == ' ')
+            {
+                this.AddTrivia(this.ScanWhitespace(), ref triviaList);
+                continue;
+            }
+            else if (c > 127)
+            {
+                if (SyntaxFacts.IsWhitespace(c))
+                    c = ' ';
+                else if (SyntaxFacts.IsNewline(c))
+                    c = '\n';
+            }
+
+            switch (c)
+            {
+                case ' ':
+                case '\t':
+                case '\v':
+                case '\f':
+                case '\u001A':
+                    this.AddTrivia(this.ScanWhitespace(), ref triviaList);
+                    break;
+                case '-':
+                    if (this.TextWindow.PeekChar(1) == '-')
+                        this.TextWindow.AdvanceChar(2);
+                        this.AddTrivia(this.ScanComment(), ref triviaList);
+                    break;
+            }
+        }
+    }
+
+    private partial bool ScanComment()
+    {
+
+    }
+
+    private bool ScanLongBrackets(out bool isTerminal)
+    {
+        if (this.TextWindow.PeekChar() == '[')
+        {
+            int level = 0;
+            while (true)
+            {
+                char c = this.TextWindow.PeekChar(level + 1);
+                if (c == '=')
+                {
+                    level++;
+                    continue;
+                }
+                else if (c == '[')
+                {
+                    break;
+                }
+                else
+                {
+                    isTerminal = false;
+                    return false;
+                }
+            }
+            this.TextWindow.AdvanceChar(level + 2);
+
+            while (true)
+            {
+                char c = this.TextWindow.PeekChar();
+                if (c == ']')
+                {
+                    this.TextWindow.AdvanceChar();
+                    for (int i = 0; i < level; i++)
+                    {
+                        if (this.TextWindow.PeekChar() == '=')
+                            this.TextWindow.AdvanceChar();
+                        else
+                        {
+                            this.TextWindow.AdvanceChar();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
 #error 未完成
