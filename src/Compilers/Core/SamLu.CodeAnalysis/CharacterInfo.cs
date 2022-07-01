@@ -5,6 +5,22 @@ namespace SamLu.CodeAnalysis;
 internal static class CharacterInfo
 {
     /// <summary>
+    /// 指定的Unicode字符是否表示新行。
+    /// </summary>
+    /// <param name="c">一个Unicode字符。</param>
+    /// <returns>若<paramref name="c"/>的值表示新行则返回<see langword="true"/>，否则返回<see langword="false"/>。</returns>
+    public static bool IsNewLine(this char c) =>
+        c switch
+        {
+            '\r' or           // 回车符（U+000D）
+            '\n' or           // 换行符（U+000A）
+            '\u0085' or       // 新行符（U+0085）
+            '\u2028' or       // 分行负（U+2028）
+            '\u2029' => true, // 分段符（U+2029）
+            _ => false
+        };
+
+    /// <summary>
     /// 指定的Unicode字符是否是十六进制数字的数位。
     /// </summary>
     /// <param name="c">一个Unicode字符。</param>

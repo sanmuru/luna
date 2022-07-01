@@ -419,6 +419,7 @@ internal partial class Lexer
             this.AddError(info.Code, info.Arguments);
     }
 
+    #region 数字字面量
     /// <summary>
     /// 扫描一个完整的整型数字字面量。
     /// </summary>
@@ -524,7 +525,7 @@ internal partial class Lexer
             else if (integeralPartIsAbsent)
             {
                 // 整数和小数部分同时缺失，产生诊断错误信息。
-                this.AddError(Lexer.MakeError(ErrorCode.ERR_InvalidReal));
+                this.AddError(Lexer.MakeError(ErrorCode.ERR_InvalidNumber));
             }
         }
 
@@ -656,6 +657,77 @@ internal partial class Lexer
 
         this.AddError(Lexer.MakeError(ErrorCode.ERR_NumberOverflow));
     }
+    #endregion
+
+    #region 字符串字面量
+    private partial bool ScanSingleLineStringLiteral(ref TokenInfo info)
+    {
+        char quote = this.TextWindow.NextChar();
+        Debug.Assert(quote == '\'' || quote == '"');
+
+        this._builder.Clear();
+
+        while (true)
+        {
+            char c = this.TextWindow.PeekChar();
+            if (c == '\\') // 转义字符前缀
+            {
+                // 标准化转义字符的表示。
+                c = this.ScanEscapeSequence(out char c2);
+                this._builder.Append(c);
+                if (c2 != SlidingTextWindow.InvalidCharacter)
+                    this._builder.Append(c2);
+            }
+            else if (c == quote) // 字符串结尾
+            {
+                this.TextWindow.AdvanceChar();
+                break;
+            }
+            // 字符串可能中包含非正规的Utf-16以外的字符，检查是否真正到达文本结尾来验证这些字符不是由用户代码引入的情况。
+            else if (SyntaxFacts.IsNewLine(c) ||
+                (c == SlidingTextWindow.InvalidCharacter && this.TextWindow.IsReallyAtEnd())
+            )
+            {
+                Debug.Assert(this.TextWindow.Width > 0);
+                this.AddError(ErrorCode.ERR_NewlineInConst);
+                break;
+            }
+            else // 普通字符
+            {
+                this.TextWindow.AdvanceChar();
+                this._builder.Append(c);
+            }
+        }
+
+        info.ValueKind = SpecialType.System_String;
+        info.Text = this.TextWindow.GetText(intern: true);
+
+        if (this._builder.Length == 0)
+            info.StringValue = string.Empty;
+        else
+            info.StringValue = this.TextWindow.Intern(this._builder);
+
+        return true;
+    }
+
+    private partial bool ScanMultiLineStringLiteral(ref TokenInfo info, int level)
+    {
+        if (this.ScanLongBrackets(out var isTerminal, level))
+        {
+            info.ValueKind = SpecialType.System_String;
+            info.Text = this.TextWindow.GetText(intern: true);
+            info.StringValue = this.TextWindow.Intern(this._builder);
+
+            if (!isTerminal)
+                this.AddError(ErrorCode.ERR_UnterminatedStringLiteral);
+
+            return true;
+        }
+
+        return false;
+    }
+    #endregion
+
     private partial void LexSyntaxTrivia(
         bool afterFirstToken,
         bool isTrailing,
@@ -674,7 +746,7 @@ internal partial class Lexer
             {
                 if (SyntaxFacts.IsWhitespace(c))
                     c = ' ';
-                else if (SyntaxFacts.IsNewline(c))
+                else if (SyntaxFacts.IsNewLine(c))
                     c = '\n';
             }
 
@@ -696,55 +768,18 @@ internal partial class Lexer
         }
     }
 
-    private partial bool ScanComment()
+    private partial SyntaxTrivia ScanComment()
     {
-
-    }
-
-    private bool ScanLongBrackets(out bool isTerminal)
-    {
-        if (this.TextWindow.PeekChar() == '[')
+        if (this.ScanLongBrackets(out bool isTerminal))
         {
-            int level = 0;
-            while (true)
-            {
-                char c = this.TextWindow.PeekChar(level + 1);
-                if (c == '=')
-                {
-                    level++;
-                    continue;
-                }
-                else if (c == '[')
-                {
-                    break;
-                }
-                else
-                {
-                    isTerminal = false;
-                    return false;
-                }
-            }
-            this.TextWindow.AdvanceChar(level + 2);
-
-            while (true)
-            {
-                char c = this.TextWindow.PeekChar();
-                if (c == ']')
-                {
-                    this.TextWindow.AdvanceChar();
-                    for (int i = 0; i < level; i++)
-                    {
-                        if (this.TextWindow.PeekChar() == '=')
-                            this.TextWindow.AdvanceChar();
-                        else
-                        {
-                            this.TextWindow.AdvanceChar();
-                            break;
-                        }
-                    }
-                }
-            }
+            if (!isTerminal)
+                this.AddError(ErrorCode.ERR_OpenEndedComment);
         }
+        else
+            this.ScanToEndOfLine();
+
+        var text = this.TextWindow.GetText(intern: false);
+        return SyntaxFactory.Comment(text);
     }
 
 #error 未完成

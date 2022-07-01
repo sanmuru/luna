@@ -11,6 +11,9 @@ namespace SamLu.CodeAnalysis.MoonScript;
 /// </summary>
 public static partial class SyntaxFacts
 {
+    /// <inheritdoc cref="CharacterInfo.IsNewLine(char)"/>
+    internal static bool IsNewLine(char c) => c.IsNewLine();
+
     /// <inheritdoc cref="CharacterInfo.IsHexDigit(char)"/>
     internal static bool IsHexDigit(char c) => c.IsHexDigit();
 

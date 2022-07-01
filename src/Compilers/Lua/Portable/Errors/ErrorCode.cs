@@ -13,10 +13,20 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_BadSourceCodeKind,
         ERR_BadDocumentationMode,
         ERR_BadLanguageVersion,
+        /// <summary>意外的字符</summary>
         ERR_UnexpectedCharacter,
+        /// <summary>语法错误。</summary>
         ERR_SyntaxError,
-        ERR_InvalidReal,
+        /// <summary>无效的数字。</summary>
+        ERR_InvalidNumber,
+        /// <summary>数字溢出。</summary>
         ERR_NumberOverflow,
+        /// <summary>没有结束配对的注释。</summary>
+        ERR_OpenEndedComment,
+        /// <summary>未终止的字符串常量。</summary>
+        ERR_UnterminatedStringLiteral,
+        /// <summary>字符串常量中有换行符。</summary>
+        ERR_NewlineInConst,
 
         #region Lua 1.0的消息
         ERR_FeatureNotAvailableInVersion1 = 501,
