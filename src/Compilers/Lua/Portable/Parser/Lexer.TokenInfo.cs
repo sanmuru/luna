@@ -37,10 +37,6 @@ internal partial class Lexer
         /// 语法标识的64位双精度浮点数类型值。
         /// </summary>
         internal double DoubleValue;
-        /// <summary>
-        /// 语法标识是否为逐字。
-        /// </summary>
-        internal bool IsVerbatim;
     }
 
 }

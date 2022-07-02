@@ -212,7 +212,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示换行。</summary>
     EndOfLineTrivia = 9249,
     /// <summary>表示空白字符。</summary>
-    WhitespaceTrivia,
+    WhiteSpaceTrivia,
     /// <summary>表示单行注释。</summary>
     SingleLineCommentTrivia,
     /// <summary>表示多行注释。</summary>

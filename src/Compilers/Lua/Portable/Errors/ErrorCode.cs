@@ -27,6 +27,8 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_UnterminatedStringLiteral,
         /// <summary>字符串常量中有换行符。</summary>
         ERR_NewlineInConst,
+        /// <summary>不合法的转义序列。</summary>
+        ERR_IllegalEscape,
 
         #region Lua 1.0的消息
         ERR_FeatureNotAvailableInVersion1 = 501,

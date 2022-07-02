@@ -78,14 +78,14 @@ public static partial class SyntaxFactory
     /// 获取包含空格符的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的语法琐碎内容，其包含单个空格符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的语法琐碎内容，其包含单个空格符。
     /// </value>
     public static SyntaxTrivia Space { get; } = Syntax.InternalSyntax.SyntaxFactory.Space;
     /// <summary>
     /// 获取包含空格符的可变的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的可变的语法琐碎内容，其包含单个空格符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的可变的语法琐碎内容，其包含单个空格符。
     /// </value>
     /// <remarks>
     /// 可变的语法琐碎内容用于表示那些不是从解析代码文本过程中产生的琐碎内容，它们一般在格式化时不会被保留。
@@ -96,14 +96,14 @@ public static partial class SyntaxFactory
     /// 获取包含制表符的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的语法琐碎内容，其包含单个制表符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的语法琐碎内容，其包含单个制表符。
     /// </value>
     public static SyntaxTrivia Tab { get; } = Syntax.InternalSyntax.SyntaxFactory.Tab;
     /// <summary>
     /// 获取包含制表符的可变的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的可变的语法琐碎内容，其包含单个制表符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的可变的语法琐碎内容，其包含单个制表符。
     /// </value>
     /// <remarks>
     /// 可变的语法琐碎内容用于表示那些不是从解析代码文本过程中产生的琐碎内容，它们一般在格式化时不会被保留。
@@ -114,7 +114,7 @@ public static partial class SyntaxFactory
     /// 获取表示可变记号的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的可变的语法琐碎内容，其不包含任何字符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的可变的语法琐碎内容，其不包含任何字符。
     /// </value>
     /// <remarks>
     /// 当语法琐碎内容没有明确时，工厂方法将自动置入可变记号。在语法格式化阶段，可变记号将会被替换为合适的语法琐碎内容。
@@ -126,9 +126,9 @@ public static partial class SyntaxFactory
 
     public static SyntaxTrivia ElasticEndOfLine(string text) => Syntax.InternalSyntax.SyntaxFactory.EndOfLine(text, elastic: true);
 
-    public static SyntaxTrivia Whitespace(string text) => Syntax.InternalSyntax.SyntaxFactory.Whitespace(text, elastic: false);
+    public static SyntaxTrivia WhiteSpace(string text) => Syntax.InternalSyntax.SyntaxFactory.WhiteSpace(text, elastic: false);
 
-    public static SyntaxTrivia ElasticWhitespace(string text) => Syntax.InternalSyntax.SyntaxFactory.Whitespace(text, elastic: true);
+    public static SyntaxTrivia ElasticWhiteSpace(string text) => Syntax.InternalSyntax.SyntaxFactory.WhiteSpace(text, elastic: true);
 
     public static SyntaxTrivia Comment(string text) => Syntax.InternalSyntax.SyntaxFactory.Comment(text);
 
@@ -139,7 +139,7 @@ public static partial class SyntaxFactory
         return kind switch
         {
             SyntaxKind.EndOfLineTrivia or
-            SyntaxKind.WhitespaceTrivia or
+            SyntaxKind.WhiteSpaceTrivia or
             SyntaxKind.SingleLineCommentTrivia or
             SyntaxKind.MultiLineCommentTrivia =>
                 new(default, new Syntax.InternalSyntax.SyntaxTrivia(kind, text), 0, 0),

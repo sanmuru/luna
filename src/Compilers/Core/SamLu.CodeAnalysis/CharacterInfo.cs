@@ -1,9 +1,31 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 
 namespace SamLu.CodeAnalysis;
 
 internal static class CharacterInfo
 {
+    /// <summary>
+    /// 指定的Unicode字符是否表示空白。
+    /// </summary>
+    /// <param name="c">一个Unicode字符。</param>
+    /// <returns>若<paramref name="c"/>的值表示空白则返回<see langword="true"/>，否则返回<see langword="false"/>。</returns>
+    public static bool IsWhiteSpace(this char c) =>
+        c switch
+        {
+            ' ' or
+            '\t' or
+            '\v' or
+            '\f' or
+            '\u00A0' or // 无中断空格符（U+00A0）
+            '\uFEFF' or // 零宽无中断空格符（U+FEFF）
+            '\u001A'    // 替换符（U+001A）
+                => true,
+            > (char)255 =>
+                CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.SpaceSeparator,
+            _ => false
+        };
+
     /// <summary>
     /// 指定的Unicode字符是否表示新行。
     /// </summary>

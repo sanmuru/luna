@@ -265,6 +265,15 @@ internal partial class Lexer : AbstractLexer
     private partial bool ScanMultiLineStringLiteral(ref TokenInfo info, int level = -1);
 
     /// <summary>
+    /// 扫描一个标识符或关键字。
+    /// </summary>
+    /// <param name="info">指定的标志信息，它将在扫描过程中被修改。</param>
+    /// <returns>
+    /// 若扫描成功，则返回<see langword="true"/>；否则返回<see langword="false"/>。
+    /// </returns>
+    private partial bool ScanIdentifierOrKeyword(ref TokenInfo info);
+
+    /// <summary>
     /// 分析一个语法琐碎内容。
     /// </summary>
     /// <param name="afterFirstToken"></param>
@@ -368,6 +377,4 @@ internal partial class Lexer : AbstractLexer
         isTerminal = default;
         return false;
     }
-
-#error 未完成
 }

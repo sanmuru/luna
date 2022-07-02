@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 using Roslyn.Utilities;
@@ -96,6 +98,15 @@ internal partial class Lexer
         return token;
     }
 
+    /// <summary>创建表示空白字符的<see cref="SyntaxTrivia"/>对象的函数。</summary>
+    Func<SyntaxTrivia>? _createWhiteSpaceTriviaFunction;
+    /// <summary>
+    /// 创建表示空白字符的<see cref="SyntaxTrivia"/>对象。
+    /// </summary>
+    /// <returns>使用当前识别到的</returns>
+    private SyntaxTrivia CreateWhiteSpaceTrivia() =>
+        SyntaxFactory.WhiteSpace(this.TextWindow.GetText(intern: true));
+
     private partial void ScanSyntaxToken(ref TokenInfo info)
     {
         // 初始化以准备新的标志扫描。
@@ -103,8 +114,6 @@ internal partial class Lexer
         info.ContextualKind = SyntaxKind.None;
         info.Text = null;
         char c;
-        char surrogateCharacter = SlidingTextWindow.InvalidCharacter;
-        bool isEscaped = false;
         int startingPosition = this.TextWindow.Position;
 
         // 开始扫描标志。
@@ -253,7 +262,6 @@ internal partial class Lexer
                                 this.ScanMultiLineStringLiteral(ref info, i - 2);
                             else goto default; // 未匹配到完整的多行原始字符字面量的起始语法。
                         }
-                        break;
 
                     default:
                         this.TextWindow.AdvanceChar();
@@ -417,6 +425,169 @@ internal partial class Lexer
         var info = feature.GetFeatureAvailabilityDiagnosticInfo(this.Options);
         if (info is not null)
             this.AddError(info.Code, info.Arguments);
+    }
+
+    [MemberNotNull(nameof(Lexer._createWhiteSpaceTriviaFunction))]
+    private SyntaxTrivia ScanWhiteSpace()
+    {
+        this._createWhiteSpaceTriviaFunction ??= this.CreateWhiteSpaceTrivia;
+        int hashCode = Hash.FnvOffsetBias;
+        bool onlySpaces = true;
+
+NextChar:
+        char c = this.TextWindow.PeekChar();
+        switch (c)
+        {
+            // 连续处理空白符。
+            case ' ':
+                this.TextWindow.AdvanceChar();
+                hashCode = Hash.CombineFNVHash(hashCode, c);
+                goto NextChar;
+
+            // 遇到换行符停下。
+            case '\r':
+            case '\n':
+                break;
+
+            default:
+                // 处理其他空白字符，但注明并非仅普通的空格字符。
+                if (SyntaxFacts.IsWhiteSpace(c))
+                {
+                    onlySpaces = false;
+                    goto case ' ';
+                }
+                break;
+        }
+
+        if (this.TextWindow.Width == 1 && onlySpaces)
+            return SyntaxFactory.Space;
+        else
+        {
+            var width = this.TextWindow.Width;
+            if (width < Lexer.MaxCachedTokenSize)
+                return this._cache.LookupTrivia(
+                    this.TextWindow.CharacterWindow,
+                    this.TextWindow.LexemeRelativeStart,
+                    width,
+                    hashCode,
+                    this._createWhiteSpaceTriviaFunction);
+            else
+                return this._createWhiteSpaceTriviaFunction();
+        }
+    }
+
+    private partial bool ScanIdentifierOrKeyword(ref TokenInfo info)
+    {
+        info.ContextualKind = SyntaxKind.None;
+
+        if (this.ScanIdentifier(ref info))
+        {
+            Debug.Assert(info.Text is not null);
+
+            if (!this._cache.TryGetKeywordKind(info.Text, out info.Kind))
+            {
+                info.Kind = SyntaxKind.IdentifierToken;
+                info.ContextualKind = info.Kind;
+            }
+            else if (SyntaxFacts.IsContextualKeyword(info.Kind))
+            {
+                info.ContextualKind = info.Kind;
+                info.Kind = SyntaxKind.IdentifierToken;
+            }
+
+            // 排除关键字，剩下的必然是标识符。
+            if (info.Kind == SyntaxKind.None)
+                info.Kind = SyntaxKind.IdentifierToken;
+
+            return true;
+        }
+        else
+        {
+            info.Kind = SyntaxKind.None;
+            return false;
+        }
+    }
+
+    private bool ScanIdentifier(ref TokenInfo info) =>
+        ScanIdentifier_FastPath(ref info) || ScanIdentifier_SlowPath(ref info);
+
+    /// <summary>快速扫描标识符。</summary>
+    private bool ScanIdentifier_FastPath(ref TokenInfo info) =>
+        this.ScanIdentifierCore(ref info, isFastPath: true);
+
+    /// <summary>慢速扫描标识符。</summary>
+    private bool ScanIdentifier_SlowPath(ref TokenInfo info) =>
+        this.ScanIdentifierCore(ref info, isFastPath: false);
+
+    /// <summary>扫描标识符的实现方法。</summary>
+    /// <remarks>此方法应尽可能地内联以减少调用深度。</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool ScanIdentifierCore(ref TokenInfo info, bool isFastPath)
+    {
+        var currentOffset = this.TextWindow.Offset;
+        var characterWindow = this.TextWindow.CharacterWindow;
+        var characterWindowCount = this.TextWindow.CharacterWindowCount;
+
+        var startOffset = currentOffset;
+
+        while (true)
+        {
+            // 没有后续字符，立即返回扫描失败。
+            if (currentOffset == characterWindowCount)
+                return false;
+
+            var c = characterWindow[currentOffset];
+
+            // 数字
+            if (c >= '0' && c <= '9')
+            {
+                // 首字符不能是数字。
+                if (currentOffset == startOffset)
+                    return false;
+                else
+                    continue;
+            }
+            // 拉丁字符
+            else if (c >= 'a' && c <= 'f')
+                continue;
+            else if (c >= 'A' && c <= 'F')
+                continue;
+            // 下划线
+            else if (c == '_')
+                continue;
+            // ASCII可显示字符范围外的可用的Unicode字符
+            // 因为SyntaxFacts.IsIdentifierStartCharacter和SyntaxFacts.IsIdentifierPartCharacter是高开销的方法，所以在快速扫描阶段不进行。
+            else if (!isFastPath)
+            {
+                if (currentOffset == startOffset ?
+                    SyntaxFacts.IsIdentifierStartCharacter(c) :
+                    SyntaxFacts.IsIdentifierPartCharacter(c)
+                )
+                    continue;
+                else
+                    return false;
+            }
+
+            // 处理终止字符。
+            if (
+                SyntaxFacts.IsWhiteSpace(c) || // 属于空白字符
+                SyntaxFacts.IsNewLine(c) || // 属于换行符
+                (c >= 32 || c <= 126)) // 属于ASCII可显示字符范围
+            {
+                var length = currentOffset - startOffset;
+                this.TextWindow.AdvanceChar(length);
+                info.Text = this.TextWindow.Intern(characterWindow, startOffset, length);
+                info.StringValue = info.Text;
+                return true;
+            }
+            // 其余字符一律留给慢速扫描处理。
+            else if (isFastPath)
+                return false;
+            // 慢速扫描处理
+            else
+                // 目前没有找到例外情况。
+                Debug.Fail($"扫描标识符时遇到意外的终止字符“{c}”。");
+        }
     }
 
     #region 数字字面量
@@ -671,13 +842,7 @@ internal partial class Lexer
         {
             char c = this.TextWindow.PeekChar();
             if (c == '\\') // 转义字符前缀
-            {
-                // 标准化转义字符的表示。
-                c = this.ScanEscapeSequence(out char c2);
-                this._builder.Append(c);
-                if (c2 != SlidingTextWindow.InvalidCharacter)
-                    this._builder.Append(c2);
-            }
+                this.ScanEscapeSequence();
             else if (c == quote) // 字符串结尾
             {
                 this.TextWindow.AdvanceChar();
@@ -710,6 +875,128 @@ internal partial class Lexer
         return true;
     }
 
+
+    /// <summary>
+    /// 扫描一个转义序列。
+    /// </summary>
+    private void ScanEscapeSequence()
+    {
+        var start = this.TextWindow.Position;
+        SyntaxDiagnosticInfo? error;
+
+        char c = this.TextWindow.NextChar();
+
+        Debug.Assert(c == '\\');
+
+        c = this.TextWindow.NextChar();
+        switch (c)
+        {
+            // 转义后返回自己的字符
+            case '\'':
+            case '"':
+            case '\\':
+                this._builder.Append(c);
+                break;
+
+            // 常用转义字符
+            case 'a':
+                this._builder.Append('\a');
+                break;
+            case 'b':
+                this._builder.Append('\b');
+                break;
+            case 'f':
+                this._builder.Append('\f');
+                break;
+            case 'n':
+                this._builder.Append('\n');
+                break;
+            case 'r':
+                this._builder.Append('\r');
+                break;
+            case 't':
+                this._builder.Append('\t');
+                break;
+            case 'v':
+                this._builder.Append('\v');
+                break;
+
+            // 十进制数字表示的Unicode字符
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                this.TextWindow.Reset(start);
+                c = this.TextWindow.NextUnicodeDecEscape(out error);
+                if (c != SlidingTextWindow.InvalidCharacter)
+                    this._builder.Append(c);
+                this.AddError(error);
+                break;
+
+            // 十六进制数字表示的ASCII字符
+            case 'x':
+                this.TextWindow.Reset(start);
+                c = this.TextWindow.NextAsciiHexEscape(out error);
+                if (c != SlidingTextWindow.InvalidCharacter)
+                    this._builder.Append(c);
+                this.AddError(error);
+                break;
+
+            // 十六进制数字表示的Unicode字符
+            case 'u':
+                this.TextWindow.Reset(start);
+                c = this.TextWindow.NextUnicodeHexEscape(out error);
+                if (c != SlidingTextWindow.InvalidCharacter)
+                    this._builder.Append(c);
+                this.AddError(error);
+                break;
+
+            // 后方紧跟的连续的字面量的空白字符和换行字符。
+            case 'z':
+                c = this.TextWindow.PeekChar();
+                while (SyntaxFacts.IsWhiteSpace(c) || SyntaxFacts.IsNewLine(c))
+                {
+                    this.TextWindow.AdvanceChar();
+
+                    // 跳过这些字符。
+
+                    c = this.TextWindow.PeekChar();
+                }
+                break;
+
+            // 插入换行字符序列本身。
+            // Windows系统的换行字符序列为“\r\n”；
+            // Unix系统的换行字符序列为“\n”；
+            // Mac系统的换行字符序列为“\r”。
+            case '\r':
+            case '\n':
+                this._builder.Append(c);
+                if (c == '\r')
+                {
+                    c = this.TextWindow.PeekChar();
+                    if (c == '\n')
+                    {
+                        this.TextWindow.AdvanceChar();
+                        this._builder.Append(c);
+                    }
+                }
+                break;
+
+            default:
+                this.AddError(
+                    start,
+                    this.TextWindow.Position - start,
+                    ErrorCode.ERR_IllegalEscape);
+                break;
+        }
+    }
+
     private partial bool ScanMultiLineStringLiteral(ref TokenInfo info, int level)
     {
         if (this.ScanLongBrackets(out var isTerminal, level))
@@ -728,6 +1015,7 @@ internal partial class Lexer
     }
     #endregion
 
+    #region 语法琐碎内容
     private partial void LexSyntaxTrivia(
         bool afterFirstToken,
         bool isTrailing,
@@ -739,12 +1027,12 @@ internal partial class Lexer
             char c = this.TextWindow.PeekChar();
             if (c == ' ')
             {
-                this.AddTrivia(this.ScanWhitespace(), ref triviaList);
+                this.AddTrivia(this.ScanWhiteSpace(), ref triviaList);
                 continue;
             }
             else if (c > 127)
             {
-                if (SyntaxFacts.IsWhitespace(c))
+                if (SyntaxFacts.IsWhiteSpace(c))
                     c = ' ';
                 else if (SyntaxFacts.IsNewLine(c))
                     c = '\n';
@@ -757,12 +1045,14 @@ internal partial class Lexer
                 case '\v':
                 case '\f':
                 case '\u001A':
-                    this.AddTrivia(this.ScanWhitespace(), ref triviaList);
+                    this.AddTrivia(this.ScanWhiteSpace(), ref triviaList);
                     break;
                 case '-':
                     if (this.TextWindow.PeekChar(1) == '-')
+                    {
                         this.TextWindow.AdvanceChar(2);
                         this.AddTrivia(this.ScanComment(), ref triviaList);
+                    }
                     break;
             }
         }
@@ -781,6 +1071,5 @@ internal partial class Lexer
         var text = this.TextWindow.GetText(intern: false);
         return SyntaxFactory.Comment(text);
     }
-
-#error 未完成
+    #endregion
 }
