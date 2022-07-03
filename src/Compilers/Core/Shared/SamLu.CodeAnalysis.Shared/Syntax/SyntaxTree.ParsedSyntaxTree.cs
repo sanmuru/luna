@@ -1,21 +1,25 @@
-﻿using System.Diagnostics;
+﻿/*
+ * Latest code review on 2022.7.3.
+ */
+
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
 #if LANG_LUA
-using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
-using ThisSyntaxTree = SamLu.CodeAnalysis.Lua.LuaSyntaxTree;
-using ThisParseOptions = SamLu.CodeAnalysis.Lua.LuaParseOptions;
-
 namespace SamLu.CodeAnalysis.Lua;
-#elif LANG_MOONSCRIPT
-using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
-using ThisSyntaxTree = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxTree;
-using ThisParseOptions = SamLu.CodeAnalysis.MoonScript.MoonScriptParseOptions;
 
+using ThisSyntaxNode = LuaSyntaxNode;
+using ThisSyntaxTree = LuaSyntaxTree;
+using ThisParseOptions = LuaParseOptions;
+#elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
+
+using ThisSyntaxNode = MoonScriptSyntaxNode;
+using ThisSyntaxTree = MoonScriptSyntaxTree;
+using ThisParseOptions = MoonScriptParseOptions;
 #endif
 
 partial class
@@ -25,6 +29,9 @@ partial class
     MoonScriptSyntaxTree
 #endif
 {
+    /// <summary>
+    /// 已解析的语法树，此类的实例应仅由现有的根语法节点创建。
+    /// </summary>
     private class ParsedSyntaxTree : ThisSyntaxTree
     {
         private readonly ThisParseOptions _options;
@@ -35,12 +42,30 @@ partial class
         private readonly SourceHashAlgorithm _checksumAlgorithm;
         private SourceText? _lazyText;
 
+        /// <inheritdoc/>
         public override ThisParseOptions Options => this._options;
+        /// <inheritdoc/>
         public override string FilePath => this._path;
+        /// <inheritdoc/>
         public override bool HasCompilationUnitRoot => this._hasCompilationUnitRoot;
+        /// <inheritdoc/>
         public override Encoding? Encoding => this._encoding;
+        /// <inheritdoc/>
         public override int Length => this._root.FullSpan.Length;
 
+        /// <summary>
+        /// 创建<see cref="ParsedSyntaxTree"/>的新实例。
+        /// </summary>
+        /// <param name="text">包含的代码文本。</param>
+        /// <param name="encoding">代码文本的编码。</param>
+        /// <param name="checksumAlgorithm">代码文本的校验算法。</param>
+        /// <param name="path">代码文件的路径。代码文本并非必须从文件中创建，只要此参数的值能在之后的流程中得到对应的处理即可。</param>
+        /// <param name="options">解析器导出选项集。</param>
+        /// <param name="root">要设置为根节点的语法节点。</param>
+        /// <param name="cloneRoot">若要创建<paramref name="root"/>的副本作为根语法节点，则传入<see langword="true"/>；否则传入<see langword="false"/>。</param>
+        /// <remarks>
+        /// 当<paramref name="text"/>不为<see langword="null"/>时，<paramref name="encoding"/>和<paramref name="checksumAlgorithm"/>必须与<paramref name="text"/>的编码和校验算法一致。
+        /// </remarks>
         internal ParsedSyntaxTree(
             SourceText? text,
             Encoding? encoding,
@@ -59,11 +84,12 @@ partial class
             this._encoding = encoding ?? text?.Encoding;
             this._checksumAlgorithm = checksumAlgorithm;
             this._options = options;
-            this._path = path ?? String.Empty;
+            this._path = path ?? string.Empty;
             this._root = cloneRoot ? this.CloneNodeAsRoot(root) : root;
-            this._hasCompilationUnitRoot = root.Kind() == SyntaxKind.Block; // 基于Lua的语言的编译单元是Block。
+            this._hasCompilationUnitRoot = root.Kind() == SyntaxKind.Chunk; // 基于Lua的语言的编译单元是Chunk。
         }
 
+        [MemberNotNull(nameof(ParsedSyntaxTree._lazyText))]
         public override SourceText GetText(CancellationToken cancellationToken = default)
         {
             if (this._lazyText is null)
@@ -82,7 +108,7 @@ partial class
 
         public override ThisSyntaxNode GetRoot(CancellationToken cancellationToken = default) => this._root;
 
-        public override bool TryGetRoot([NotNullWhen(true)] out ThisSyntaxNode? root)
+        public override bool TryGetRoot(out ThisSyntaxNode root)
         {
             root = this._root;
             return true;

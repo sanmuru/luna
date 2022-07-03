@@ -26,7 +26,7 @@ public partial class
 {
     internal sealed class DummySyntaxTree : ThisSyntaxTree
     {
-        private readonly Syntax.BlockSyntax _node;
+        private readonly Syntax.ChunkSyntax _node;
 
         public override Encoding? Encoding => Encoding.UTF8;
 

@@ -38,7 +38,7 @@ public abstract partial class
     /// </summary>
     private int _recursionDepth;
 
-    [return: NotNullIfNotNull("node")]
+    [return: NotNullIfNotNull(nameof(node))]
 #if LANG_LUA
     public override LuaSyntaxNode? Visit(LuaSyntaxNode? node)
 #elif LANG_MOONSCRIPT
@@ -52,6 +52,7 @@ public abstract partial class
         StackGuard.EnsureSufficientExecutionStack(this._recursionDepth);
 
         var result = node.Accept(this); // 获取访问结果。
+        Debug.Assert(result is not null);
 
         this._recursionDepth--;
 

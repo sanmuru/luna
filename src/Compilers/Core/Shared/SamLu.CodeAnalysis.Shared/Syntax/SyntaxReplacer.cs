@@ -3,15 +3,18 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
 #if LANG_LUA
-using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
-
 namespace SamLu.CodeAnalysis.Lua.Syntax;
-#elif LANG_MOONSCRIPT
-using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
 
+using ThisSyntaxNode = LuaSyntaxNode;
+#elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript.Syntax;
+
+using ThisSyntaxNode = MoonScriptSyntaxNode;
 #endif
 
+/// <summary>
+/// 此类型提供替换语法节点、标识和琐碎内容的方法。
+/// </summary>
 internal static class SyntaxReplacer
 {
     internal static ThisSyntaxNode Replace<TNode>(
@@ -51,6 +54,10 @@ internal static class SyntaxReplacer
         else return root;
     }
 
+    /// <summary>
+    /// 进行替换工作的替换器。
+    /// </summary>
+    /// <typeparam name="TNode">替换器处理的语法节点的类型。</typeparam>
     private class Replacer<TNode> :
 #if LANG_LUA
         LuaSyntaxRewriter
@@ -89,9 +96,9 @@ internal static class SyntaxReplacer
             this._computeReplacementToken = computeReplacementToken;
             this._computeReplacementTrivia = computeReplacementTrivia;
 
-            this._nodeSet = nodes is null ? Replacer<TNode>.s_noNodes : new();
-            this._tokenSet = tokens is null ? Replacer<TNode>.s_noTokens : new();
-            this._triviaSet = trivia is null ? Replacer<TNode>.s_noTrivia : new();
+            this._nodeSet = nodes is null ? Replacer<TNode>.s_noNodes : new(nodes);
+            this._tokenSet = tokens is null ? Replacer<TNode>.s_noTokens : new(tokens);
+            this._triviaSet = trivia is null ? Replacer<TNode>.s_noTrivia : new(trivia);
 
             this._spanSet = new(
                 new[]
@@ -102,6 +109,7 @@ internal static class SyntaxReplacer
                 }.SelectMany(spans => spans)
             );
 
+            // 快速计算总文本范围，缩小搜索范围。
             this._totalSpan = Replacer<TNode>.ComputeTotalSpan(this._spanSet);
 
             this.VisitInfoStructuredTrivia =
@@ -112,6 +120,11 @@ internal static class SyntaxReplacer
             this._shouldVisitTrivia = this._triviaSet.Count > 0 || this.VisitInfoStructuredTrivia;
         }
 
+        /// <summary>
+        /// 快速计算多个文本范围合并的总文本范围，包含中间未覆盖的范围。
+        /// </summary>
+        /// <param name="spans">要合并计算的多个文本范围。</param>
+        /// <returns><paramref name="spans"/>合并后的总文本范围。</returns>
         private static TextSpan ComputeTotalSpan(HashSet<TextSpan> spans)
         {
             bool first = true;
@@ -136,8 +149,14 @@ internal static class SyntaxReplacer
             return new TextSpan(start, end - start);
         }
 
+        /// <summary>
+        /// 替换器是否应该进入指定的文本区域。
+        /// </summary>
+        /// <param name="span"></param>
+        /// <returns>若<paramref name="span"/>与<see cref="Replacer{TNode}._spanSet"/>中的任何一项有交集，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
         private bool ShouldVisit(TextSpan span)
         {
+            // 首先快速与总文本范围进行交集测试。
             if (!span.IntersectsWith(this._totalSpan)) return false;
 
             foreach (var s in this._spanSet)
@@ -148,7 +167,7 @@ internal static class SyntaxReplacer
             return false;
         }
 
-        [return: NotNullIfNotNull("node")]
+        [return: NotNullIfNotNull(nameof(node))]
         public override ThisSyntaxNode? Visit(ThisSyntaxNode? node)
         {
             var rewritten = node;

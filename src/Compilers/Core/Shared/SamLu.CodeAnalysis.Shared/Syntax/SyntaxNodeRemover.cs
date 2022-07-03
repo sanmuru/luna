@@ -1,4 +1,6 @@
-﻿namespace SamLu.CodeAnalysis.
+﻿using Microsoft.CodeAnalysis;
+
+namespace SamLu.CodeAnalysis.
 #if LANG_LUA
     Lua
 #elif LANG_MOONSCRIPT

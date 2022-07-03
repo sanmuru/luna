@@ -33,7 +33,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Parser\SyntaxParser.ResetPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SymbolDisplay\SymbolDisplay.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Syntax\BlockSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\StructuredTriviaSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxFirstTokenReplacer.cs" />
