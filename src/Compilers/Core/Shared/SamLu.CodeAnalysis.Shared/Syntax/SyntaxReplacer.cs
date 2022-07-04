@@ -6,16 +6,18 @@ using Microsoft.CodeAnalysis.Text;
 namespace SamLu.CodeAnalysis.Lua.Syntax;
 
 using ThisSyntaxNode = LuaSyntaxNode;
+using ThisSyntaxRewriter = LuaSyntaxRewriter;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript.Syntax;
 
 using ThisSyntaxNode = MoonScriptSyntaxNode;
+using ThisSyntaxRewriter = MoonScriptSyntaxRewriter;
 #endif
 
 /// <summary>
 /// 此类型提供替换语法节点、标识和琐碎内容的方法。
 /// </summary>
-internal static class SyntaxReplacer
+internal static partial class SyntaxReplacer
 {
     internal static ThisSyntaxNode Replace<TNode>(
         ThisSyntaxNode root,
@@ -58,12 +60,7 @@ internal static class SyntaxReplacer
     /// 进行替换工作的替换器。
     /// </summary>
     /// <typeparam name="TNode">替换器处理的语法节点的类型。</typeparam>
-    private class Replacer<TNode> :
-#if LANG_LUA
-        LuaSyntaxRewriter
-#elif LANG_MOONSCRIPT
-        MoonScriptSyntaxRewriter
-#endif
+    private class Replacer<TNode> : ThisSyntaxRewriter
         where TNode : ThisSyntaxNode
     {
         private readonly Func<TNode, TNode, ThisSyntaxNode>? _computeReplacementNode;
@@ -167,29 +164,48 @@ internal static class SyntaxReplacer
             return false;
         }
 
+        /// <summary>
+        /// 处理语法节点并产生替换后的语法节点。
+        /// </summary>
+        /// <returns>替换后的语法节点。</returns>
+        /// <remarks>
+        /// 若<paramref name="node"/>不在需要替换的语法节点集中，或未指定用于计算替换后的语法节点的委托，则方法将返回<paramref name="node"/>本身。
+        /// </remarks>
+        /// <inheritdoc/>
         [return: NotNullIfNotNull(nameof(node))]
         public override ThisSyntaxNode? Visit(ThisSyntaxNode? node)
         {
-            var rewritten = node;
+            if (node is null) return null;
 
-            if (node is not null)
-            {
-                if (this.ShouldVisit(node.FullSpan))
-                    rewritten = base.Visit(node);
+            ThisSyntaxNode rewritten;
 
-                if (this._nodeSet.Contains(node) && this._computeReplacementNode is not null)
-                    rewritten = this._computeReplacementNode((TNode)node, (TNode)rewritten!);
-            }
+            if (this.ShouldVisit(node.FullSpan))
+                rewritten = base.Visit(node);
+            else
+                rewritten = node;
+
+            if (this._nodeSet.Contains(node) && this._computeReplacementNode is not null)
+                rewritten = this._computeReplacementNode((TNode)node, (TNode)rewritten);
 
             return rewritten;
         }
 
+        /// <summary>
+        /// 处理语法标志并产生替换后的语法标志。
+        /// </summary>
+        /// <returns>替换后的语法标志。</returns>
+        /// <remarks>
+        /// 若<paramref name="token"/>不在需要替换的语法标志集中，或未指定用于计算替换后的语法标志的委托，则方法将返回<paramref name="token"/>本身。
+        /// </remarks>
+        /// <inheritdoc/>
         public override SyntaxToken VisitToken(SyntaxToken token)
         {
-            var rewritten = token;
+            SyntaxToken rewritten;
 
             if (this._shouldVisitTrivia && this.ShouldVisit(token.FullSpan))
                 rewritten = base.VisitToken(token);
+            else
+                rewritten = token;
 
             if (this._tokenSet.Contains(token) && this._computeReplacementToken is not null)
                 rewritten = this._computeReplacementToken(token, rewritten);
@@ -197,12 +213,22 @@ internal static class SyntaxReplacer
             return rewritten;
         }
 
+        /// <summary>
+        /// 处理语法琐碎内容并产生替换后的语法琐碎内容。
+        /// </summary>
+        /// <returns>替换后的语法琐碎内容。</returns>
+        /// <remarks>
+        /// 若<paramref name="trivia"/>不在需要替换的语法琐碎内容集中，或未指定用于计算替换后的语法琐碎内容的委托，则方法将返回<paramref name="trivia"/>本身。
+        /// </remarks>
+        /// <inheritdoc/>
         public override SyntaxTrivia VisitListElement(SyntaxTrivia trivia)
         {
-            var rewritten = trivia;
+            SyntaxTrivia rewritten;
 
             if (this.VisitInfoStructuredTrivia && trivia.HasStructure && this.ShouldVisit(trivia.FullSpan))
                 rewritten = this.VisitTrivia(trivia);
+            else
+                rewritten = trivia;
 
             if (this._triviaSet.Contains(trivia) && this._computeReplacementTrivia is not null)
                 rewritten = this._computeReplacementTrivia(trivia, rewritten);
@@ -210,6 +236,4 @@ internal static class SyntaxReplacer
             return rewritten;
         }
     }
-
-#warning 未完成
 }

@@ -61,9 +61,9 @@ public abstract partial class
     #endregion
 
     /// <summary>
-    /// 处理语法标识并产生结果。
+    /// 处理语法标志并产生结果。
     /// </summary>
-    /// <param name="token">要进行处理的语法标识。</param>
+    /// <param name="token">要进行处理的语法标志。</param>
     /// <returns>产生的结果。</returns>
     public virtual SyntaxToken VisitToken(SyntaxToken token)
     {

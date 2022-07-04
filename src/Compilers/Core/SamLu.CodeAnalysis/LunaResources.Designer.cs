@@ -61,6 +61,15 @@ namespace SamLu.CodeAnalysis {
         }
         
         /// <summary>
+        ///   查找类似 The item specified is not the element of a list. 的本地化字符串。
+        /// </summary>
+        internal static string MissingListItem {
+            get {
+                return ResourceManager.GetString("MissingListItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 Syntax node type &apos;{0}&apos; must be derived from &apos;{1}&apos; 的本地化字符串。
         /// </summary>
         internal static string SyntaxNodeTypeMustBeDerivedFromCertainType {

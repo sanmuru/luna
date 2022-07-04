@@ -68,4 +68,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.DebuggerSyntaxTree.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxReplacer.ListEdit.cs" />
+  </ItemGroup>
 </Project>
