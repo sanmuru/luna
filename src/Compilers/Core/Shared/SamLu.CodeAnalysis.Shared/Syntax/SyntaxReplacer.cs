@@ -15,7 +15,7 @@ using ThisSyntaxRewriter = MoonScriptSyntaxRewriter;
 #endif
 
 /// <summary>
-/// 此类型提供替换语法节点、标识和琐碎内容的方法。
+/// 此类型提供替换语法节点、标志和琐碎内容的方法。
 /// </summary>
 internal static partial class SyntaxReplacer
 {
@@ -172,7 +172,7 @@ internal static partial class SyntaxReplacer
         /// 若<paramref name="node"/>不在需要替换的语法节点集中，或未指定用于计算替换后的语法节点的委托，则方法将返回<paramref name="node"/>本身。
         /// </remarks>
         /// <inheritdoc/>
-        [return: NotNullIfNotNull(nameof(node))]
+        [return: NotNullIfNotNull("node")]
         public override ThisSyntaxNode? Visit(ThisSyntaxNode? node)
         {
             if (node is null) return null;

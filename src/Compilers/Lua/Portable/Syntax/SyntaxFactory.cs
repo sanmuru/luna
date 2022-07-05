@@ -2,6 +2,9 @@
 
 namespace SamLu.CodeAnalysis.Lua;
 
+using System.Text;
+using Syntax;
+
 public static partial class SyntaxFactory
 {
     #region 标志
@@ -85,4 +88,16 @@ public static partial class SyntaxFactory
             trailing.Node));
     #endregion
     #endregion
+
+    public static ChunkSyntax ParseCompilationUnit(string text, int offset = 0, LuaParseOptions? options = null)
+    {
+        // note that we do not need a "consumeFullText" parameter, because parsing a compilation unit always must
+        // consume input until the end-of-file
+        using (var lexer = SyntaxFactory.MakeLexer(text, offset, options))
+        using (var parser = SyntaxFactory.MakeParser(lexer))
+        {
+            var node = parser.ParseCompilationUnit();
+            return (ChunkSyntax)node.CreateRed();
+        }
+    }
 }

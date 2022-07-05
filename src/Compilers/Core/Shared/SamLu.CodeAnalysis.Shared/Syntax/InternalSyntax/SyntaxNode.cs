@@ -94,7 +94,7 @@ internal abstract partial class
 
     public override bool IsDirective => false;
 
-    public override bool IsDocumentationCommentTrivia => SyntaxFacts.IsDocumentationCommentTrivia(this.Kind);
+    public sealed override bool IsDocumentationCommentTrivia => false;
 
     public SyntaxToken? GetFirstToken() => (SyntaxToken?)this.GetFirstTerminal();
 

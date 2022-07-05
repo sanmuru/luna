@@ -180,7 +180,7 @@ tryAgain:
             var trailing = token.GetTrailingTrivia();
             if (trailing is not null) this.Push(trailing); // 压入结束的语法琐碎内容。
 
-            this.Push(token); // 压入语法标识福。
+            this.Push(token); // 压入语法标志。
             var leading = token.GetLeadingTrivia();
             if (leading is not null) this.Push(leading); // 压入起始的语法琐碎内容。
         }

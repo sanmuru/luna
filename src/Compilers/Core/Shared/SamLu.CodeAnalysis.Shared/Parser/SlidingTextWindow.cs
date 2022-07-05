@@ -88,7 +88,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
                 break;
         }
         if (intChar > ushort.MaxValue) // 超出Unicode字符范围。
-            info = this.CreateIllegalEscapeDiagnostic(start);
+            info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
 
         return (char)intChar;
     }
@@ -121,7 +121,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
             }
         }
 
-        info = this.CreateIllegalEscapeDiagnostic(start);
+        info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
         return SlidingTextWindow.InvalidCharacter;
     }
 

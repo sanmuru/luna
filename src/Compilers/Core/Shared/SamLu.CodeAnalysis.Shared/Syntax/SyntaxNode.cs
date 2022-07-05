@@ -194,7 +194,7 @@ public abstract partial class
     /// 从字节流中反序列化语法节点。
     /// </summary>
     /// <param name="stream">从中读取数据的流。</param>
-    /// <param name="cancellationToken">取消操作的标识。</param>
+    /// <param name="cancellationToken">取消操作的标志。</param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/>的值为<see langword="null"/>。</exception>
     /// <exception cref="InvalidOperationException"><paramref name="stream"/>流不可读。</exception>
@@ -216,22 +216,22 @@ public abstract partial class
     }
     #endregion
 
-    #region 查找标识
+    #region 查找标志
     /// <summary>
-    /// 获取以此节点为根节点的语法树的第一个标识。
+    /// 获取以此节点为根节点的语法树的第一个标志。
     /// </summary>
-    /// <param name="predicate">筛选符合条件的标识的方法。若要允许所有标识，则传入<see langword="null"/>。</param>
+    /// <param name="predicate">筛选符合条件的标志的方法。若要允许所有标志，则传入<see langword="null"/>。</param>
     /// <param name="stepInto">若值不是<see langword="null"/>时深入语法琐碎内容。仅此委托返回<see langword="true"/>时语法琐碎内容才会被包含在内。</param>
-    /// <returns>以此节点为根节点的语法树的第一个标识。</returns>
+    /// <returns>以此节点为根节点的语法树的第一个标志。</returns>
     internal SyntaxToken GetFirstToken(Func<SyntaxToken, bool>? predicate, Func<SyntaxTrivia, bool>? stepInto = null) =>
         SyntaxNavigator.Instance.GetFirstToken(this, predicate, stepInto);
 
     /// <summary>
-    /// 获取以此节点为根节点的语法树的最后一个标识。
+    /// 获取以此节点为根节点的语法树的最后一个标志。
     /// </summary>
-    /// <param name="predicate">筛选符合条件的标识的方法。</param>
+    /// <param name="predicate">筛选符合条件的标志的方法。</param>
     /// <param name="stepInto">若值不是<see langword="null"/>时深入语法琐碎内容。仅此委托返回<see langword="true"/>时语法琐碎内容才会被包含在内。</param>
-    /// <returns>以此节点为根节点的语法树的最后一个标识。</returns>
+    /// <returns>以此节点为根节点的语法树的最后一个标志。</returns>
     internal SyntaxToken GetLastToken(Func<SyntaxToken, bool> predicate, Func<SyntaxTrivia, bool>? stepInto = null) =>
         SyntaxNavigator.Instance.GetLastToken(this, predicate, stepInto);
     #endregion
@@ -261,11 +261,12 @@ public abstract partial class
         if (!typeof(ThisSyntaxNode).IsAssignableFrom(typeof(TNode)))
             throw new InvalidOperationException(string.Format(LunaResources.SyntaxNodeTypeMustBeDerivedFromCertainType, nameof(TNode), typeof(ThisSyntaxNode).FullName));
 
-        return SyntaxReplacer.Replace(this,
+        return SyntaxReplacer.Replace(
+            this,
             nodes.Cast<ThisSyntaxNode>(), computeReplacementNode is null ? null : (node, rewritten) => (ThisSyntaxNode)computeReplacementNode((node as TNode)!, (rewritten as TNode)!),
             tokens, computeReplacementToken,
-            trivia, computeReplacementTrivia
-        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+            trivia, computeReplacementTrivia)
+            .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
     }
 
     protected internal override SyntaxNode ReplaceNodeInListCore(
@@ -273,8 +274,8 @@ public abstract partial class
         IEnumerable<SyntaxNode> replacementNodes) =>
         SyntaxReplacer.ReplaceNodeInList(this,
             (ThisSyntaxNode)originalNode,
-            replacementNodes.Cast<ThisSyntaxNode>()
-        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+            replacementNodes.Cast<ThisSyntaxNode>())
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode InsertNodesInListCore(
         SyntaxNode nodeInList,
@@ -284,29 +285,53 @@ public abstract partial class
             this,
             (ThisSyntaxNode)nodeInList,
             nodesToInsert.Cast<ThisSyntaxNode>(),
-            insertBefore
-        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+            insertBefore)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode ReplaceTokenInListCore(SyntaxToken originalToken, IEnumerable<SyntaxToken> newTokens) =>
-        SyntaxReplacer.ReplaceTokenInList(this, originalToken, newTokens).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxReplacer.ReplaceTokenInList(
+            this,
+            originalToken,
+            newTokens)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode InsertTokensInListCore(SyntaxToken originalToken, IEnumerable<SyntaxToken> newTokens, bool insertBefore) =>
-        SyntaxReplacer.InsertTokenInList(this, originalToken, newTokens, insertBefore).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxReplacer.InsertTokenInList(
+            this,
+            originalToken,
+            newTokens,
+            insertBefore)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode ReplaceTriviaInListCore(SyntaxTrivia originalTrivia, IEnumerable<SyntaxTrivia> newTrivia) =>
-        SyntaxReplacer.ReplaceTriviaInList(this, originalTrivia, newTrivia).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxReplacer.ReplaceTriviaInList(
+            this,
+            originalTrivia,
+            newTrivia)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode InsertTriviaInListCore(SyntaxTrivia originalTrivia, IEnumerable<SyntaxTrivia> newTrivia, bool insertBefore) =>
-        SyntaxReplacer.InsertTriviaInList(this, originalTrivia, newTrivia, insertBefore).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxReplacer.InsertTriviaInList(
+            this,
+            originalTrivia,
+            newTrivia,
+            insertBefore)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode? RemoveNodesCore(IEnumerable<SyntaxNode> nodes, SyntaxRemoveOptions options) =>
-        SyntaxNodeRemover.RemoveNodes(this,
+        SyntaxNodeRemover.RemoveNodes(
+            this,
             nodes.Cast<ThisSyntaxNode>(),
-            options
-        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+            options)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode NormalizeWhitespaceCore(string indentation, string eol, bool elasticTrivia) =>
-        SyntaxNormalizer.Normalize(this, indentation, eol, elasticTrivia).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxNormalizer.Normalize(
+            this,
+            indentation,
+            eol,
+            elasticTrivia)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected override bool IsEquivalentToCore(SyntaxNode node, bool topLevel = false) =>
         SyntaxFactory.AreEquivalent(this, (ThisSyntaxNode)node, topLevel);

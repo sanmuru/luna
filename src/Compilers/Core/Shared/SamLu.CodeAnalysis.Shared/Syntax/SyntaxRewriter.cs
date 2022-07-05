@@ -38,7 +38,7 @@ public abstract partial class
     /// </summary>
     private int _recursionDepth;
 
-    [return: NotNullIfNotNull(nameof(node))]
+    [return: NotNullIfNotNull("node")]
 #if LANG_LUA
     public override LuaSyntaxNode? Visit(LuaSyntaxNode? node)
 #elif LANG_MOONSCRIPT

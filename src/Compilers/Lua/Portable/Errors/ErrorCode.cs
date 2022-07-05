@@ -7,6 +7,8 @@ namespace SamLu.CodeAnalysis.Lua
         Void = InternalErrorCode.Void,
         Unknown = InternalErrorCode.Unknown,
 
+        ERR_InternalError,
+
         [Obsolete("Lua.NET不支持预处理指令", false)]
         ERR_InvalidPreprocessingSymbol = 1,
         ERR_InvalidInstrumentationKind,
@@ -29,6 +31,7 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_NewlineInConst,
         /// <summary>不合法的转义序列。</summary>
         ERR_IllegalEscape,
+        WRN_ErrorOverride,
 
         #region Lua 1.0的消息
         ERR_FeatureNotAvailableInVersion1 = 501,
@@ -92,6 +95,11 @@ namespace SamLu.CodeAnalysis.Lua
 
         #region Lua 5.4的消息
         ERR_FeatureNotAvailableInVersion5_4 = 8001,
+        #endregion
+
+        #region Lua实验性版本的消息
+        ERR_FeatureIsExperimental = 8501,
+        ERR_FeatureInPreview
         #endregion
 
         // 更新编译器的警告后应手动运行（eng\generate-compiler-code.cmd）。

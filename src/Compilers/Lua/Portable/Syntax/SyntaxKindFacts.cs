@@ -257,7 +257,7 @@ public static partial class SyntaxFacts
     #endregion
 
     /// <summary>
-    /// 指定语法种类是否表示标点或关键字（包含文件结尾标识）。
+    /// 指定语法种类是否表示标点或关键字（包含文件结尾标志）。
     /// </summary>
     /// <param name="kind">要查询的语法种类。</param>
     /// <returns>若<paramref name="kind"/>表示标点或关键字，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>

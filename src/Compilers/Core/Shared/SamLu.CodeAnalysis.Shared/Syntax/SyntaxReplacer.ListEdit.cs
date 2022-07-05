@@ -96,7 +96,7 @@ static partial class SyntaxReplacer
 
         private bool ShouldVisit(TextSpan span) => span.IntersectsWith(this._elementSpan);
 
-        [return: NotNullIfNotNull(nameof(node))]
+        [return: NotNullIfNotNull("node")]
         public override ThisSyntaxNode? Visit(ThisSyntaxNode? node)
         {
             if (node is null) return null;
@@ -154,7 +154,7 @@ static partial class SyntaxReplacer
             this._newNodes = newNodes;
         }
 
-        [return: NotNullIfNotNull(nameof(node))]
+        [return: NotNullIfNotNull("node")]
         public override ThisSyntaxNode? Visit(ThisSyntaxNode? node)
         {
             if (node == this._originalNode)

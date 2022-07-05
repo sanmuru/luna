@@ -39,7 +39,7 @@ public partial class
         public override bool HasCompilationUnitRoot => true;
 
         public DummySyntaxTree() =>
-            this._node = this.CloneNodeAsRoot(SyntaxFactory.ParseBlock(string.Empty));
+            this._node = this.CloneNodeAsRoot(SyntaxFactory.ParseCompilationUnit(string.Empty));
 
         public override string ToString() => string.Empty;
 

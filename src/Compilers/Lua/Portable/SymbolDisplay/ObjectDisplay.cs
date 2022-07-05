@@ -279,7 +279,8 @@ internal static class ObjectDisplay
                 while (disabledLevels.Contains(avaliableLevel)) avaliableLevel++;
 
                 char[] chars = new char[avaliableLevel + 2];
-                Array.Fill(chars, '=', 1, avaliableLevel);
+                for (int i = 1; i <= avaliableLevel; i++)
+                    chars[i] = '=';
 
                 chars[0] = chars[^1] = '[';
                 sb.Insert(0, chars);

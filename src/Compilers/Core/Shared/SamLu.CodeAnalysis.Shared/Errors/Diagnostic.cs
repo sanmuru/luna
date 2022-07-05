@@ -4,15 +4,14 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 
 #if LANG_LUA
-using ThisDiagnostic = SamLu.CodeAnalysis.Lua.LuaDiagnostic;
-using ThisDiagnosticFormatter = SamLu.CodeAnalysis.Lua.LuaDiagnosticFormatter;
-
 namespace SamLu.CodeAnalysis.Lua;
+using ThisDiagnostic = LuaDiagnostic;
+using ThisDiagnosticFormatter = LuaDiagnosticFormatter;
 #elif LANG_MOONSCRIPT
-using ThisDiagnostic = SamLu.CodeAnalysis.MoonScript.MoonScriptDiagnostic;
-using ThisDiagnosticFormatter = SamLu.CodeAnalysis.MoonScript.MoonScriptDiagnosticFormatter;
-
 namespace SamLu.CodeAnalysis.MoonScript;
+
+using ThisDiagnostic = MoonScriptDiagnostic;
+using ThisDiagnosticFormatter = MoonScriptDiagnosticFormatter;
 #endif
 
 internal class
