@@ -30,6 +30,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua" />
     <InternalsVisibleTo Include="SamLu.CodeAnalysis.MoonScript" />
+    <InternalsVisibleTo Include="SamLu.CodeAnalysis.UnitTests"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />

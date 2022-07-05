@@ -76,6 +76,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "moonc", "src\Compilers\Moon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "moonc-arm64", "src\Compilers\MoonScript\moonc\arm64\moonc-arm64.csproj", "{51A1907B-8C3A-476D-9A30-A2FA21C691CF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamLu.CodeAnalysis.UnitTests", "src\Compilers\Core\CodeAnalysisTest\SamLu.CodeAnalysis.UnitTests.csproj", "{7DCE9614-4484-4FB9-AE07-1C04ECEAF60B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -150,6 +152,10 @@ Global
 		{51A1907B-8C3A-476D-9A30-A2FA21C691CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51A1907B-8C3A-476D-9A30-A2FA21C691CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51A1907B-8C3A-476D-9A30-A2FA21C691CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DCE9614-4484-4FB9-AE07-1C04ECEAF60B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DCE9614-4484-4FB9-AE07-1C04ECEAF60B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DCE9614-4484-4FB9-AE07-1C04ECEAF60B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DCE9614-4484-4FB9-AE07-1C04ECEAF60B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,6 +185,7 @@ Global
 		{4CEC9807-0CF3-4AAB-91B7-7E5C68159520} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
 		{40646B8D-B128-480A-9BD2-A2EEAE5C9809} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
 		{51A1907B-8C3A-476D-9A30-A2FA21C691CF} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
+		{7DCE9614-4484-4FB9-AE07-1C04ECEAF60B} = {A41D1B99-F489-4C43-BBDF-96D61B19A6B9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F599E08-A9EA-4FAA-897F-5D824B0210E6}
