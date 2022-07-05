@@ -14,7 +14,7 @@ namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 
 /// <summary>
-/// 此类型提供构造各种内部的语法节点、标识和琐碎内容的工厂方法。
+/// 此类型提供构造各种内部的语法节点、标志和琐碎内容的工厂方法。
 /// </summary>
 internal static partial class SyntaxFactory
 {
@@ -162,6 +162,12 @@ internal static partial class SyntaxFactory
     internal static SyntaxToken Literal(GreenNode? leading, string text, SyntaxKind kind, string value, GreenNode? trailing) => SyntaxToken.WithValue(kind, leading, text, value, trailing);
 
     internal static SyntaxToken BadToken(GreenNode? leading, string text, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.BadToken, leading, text, text, trailing);
+
+    internal static SyntaxTrivia SkippedTokensTrivia(SyntaxToken token)
+    {
+#warning 未实现。
+        throw new NotImplementedException();
+    }
 
     #region SyntaxKind到SyntaxToken的转换方法
     // 各种语法部分的转换方法在各语言的独立项目中定义

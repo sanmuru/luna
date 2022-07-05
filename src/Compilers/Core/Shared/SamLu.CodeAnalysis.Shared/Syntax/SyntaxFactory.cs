@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
@@ -16,7 +18,7 @@ using ThisParseOptions = MoonScriptParseOptions;
 #endif
 
 /// <summary>
-/// 此类型提供构造各种语法节点、标识和琐碎内容的工厂方法。
+/// 此类型提供构造各种语法节点、标志和琐碎内容的工厂方法。
 /// </summary>
 public static partial class SyntaxFactory
 {
@@ -318,7 +320,49 @@ public static partial class SyntaxFactory
     #endregion
     #endregion
 
+    public static SyntaxToken BadToken(
+        SyntaxTriviaList leading,
+        string text,
+        SyntaxTriviaList trailing) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.BadToken(
+            leading.Node,
+            text,
+            trailing.Node));
+
+    public static SyntaxList<TNode> List<TNode>() where TNode : SyntaxNode => default;
+
+    public static SyntaxList<TNode> SingletonList<TNode>(TNode node) where TNode : SyntaxNode => new(node);
+
+    public static SyntaxList<TNode> List<TNode>(IEnumerable<TNode> nodes) where TNode : SyntaxNode => new(nodes);
+
+    public static SyntaxTokenList TokenList() => default;
+
+    public static SyntaxTokenList TokenList(SyntaxToken token) => new(token);
+
+    public static SyntaxTokenList TokenList(params SyntaxToken[] tokens) => new(tokens);
+
+    public static SyntaxTokenList TokenList(IEnumerable<SyntaxToken> tokens) => new(tokens);
+
+    public static SyntaxTrivia Trivia(Syntax.StructuredTriviaSyntax node) => new(default, node.Green, position: 0, index: 0);
+
+    public static SyntaxTriviaList TriviaList() => default;
+
+    public static SyntaxTriviaList TriviaList(SyntaxTrivia trivia) => new(trivia);
+
+    public static SyntaxTriviaList TriviaList(params SyntaxTrivia[] trivia) => new(trivia);
+
+    public static SyntaxTriviaList TriviaList(IEnumerable<SyntaxTrivia> trivia) => new(trivia);
+
 #warning 未完成
+
+    public static SyntaxTree ParseSyntaxTree(
+            SourceText text,
+            ThisParseOptions? options,
+            string path,
+            CancellationToken cancellationToken)
+    {
+        return ThisSyntaxTree.ParseText(text, options, path, cancellationToken);
+    }
 
     public static SyntaxTree SyntaxTree(
         SyntaxNode root,
@@ -330,4 +374,64 @@ public static partial class SyntaxFactory
             (ThisParseOptions?)options,
             path,
             encoding);
+
+    #region 语法树相等判断
+    public static bool AreEquivalent(SyntaxTree? oldTree, SyntaxTree? newTree, bool topLevel)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent(SyntaxNode? oldNode, SyntaxNode? newNode, bool topLevel)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent(SyntaxNode? oldNode, SyntaxNode? newNode, Func<SyntaxKind, bool>? ignoreChildNode = null)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent(SyntaxToken oldToken, SyntaxToken newToken)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent(SyntaxTokenList oldList, SyntaxTokenList newList)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent<TNode>(SyntaxList<TNode> oldList, SyntaxList<TNode> newList, bool topLevel)
+        where TNode : ThisSyntaxNode
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent<TNode>(SyntaxList<TNode> oldList, SyntaxList<TNode> newList, Func<SyntaxKind, bool>? ignoreChildNode = null)
+        where TNode : SyntaxNode
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent<TNode>(SeparatedSyntaxList<TNode> oldList, SeparatedSyntaxList<TNode> newList, bool topLevel)
+        where TNode : SyntaxNode
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent<TNode>(SeparatedSyntaxList<TNode> oldList, SeparatedSyntaxList<TNode> newList, Func<SyntaxKind, bool>? ignoreChildNode = null)
+        where TNode : SyntaxNode
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+    #endregion
 }

@@ -1,14 +1,19 @@
 ﻿
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.PooledObjects;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
-using ThisDiagnosticInfo = SamLu.CodeAnalysis.Lua.LuaDiagnosticInfo;
+
+using ThisDiagnosticInfo = LuaDiagnosticInfo;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
-using ThisDiagnosticInfo = SamLu.CodeAnalysis.MoonScript.MSDiagnosticInfo;
+
+using ThisDiagnosticInfo = MoonScriptDiagnosticInfo;
 #endif
+
+using Symbols;
 
 internal sealed class BindingDiagnosticBag : BindingDiagnosticBag<AssemblySymbol>
 {
@@ -87,4 +92,30 @@ internal sealed class BindingDiagnosticBag : BindingDiagnosticBag<AssemblySymbol
     protected override bool ReportUseSiteDiagnostic(DiagnosticInfo diagnosticInfo, DiagnosticBag diagnosticBag, Location location) =>
         Symbol.ReportUseSiteDiagnostic(diagnosticInfo, diagnosticBag, location);
 
+    internal ThisDiagnosticInfo Add(ErrorCode code, Location location)
+    {
+        var info = new ThisDiagnosticInfo(code);
+        this.Add(info, location);
+        return info;
+    }
+
+    internal ThisDiagnosticInfo Add(ErrorCode code, Location location, params object[] args)
+    {
+        var info = new ThisDiagnosticInfo(code, args);
+        this.Add(info, location);
+        return info;
+    }
+
+    internal ThisDiagnosticInfo Add(ErrorCode code, Location location, ImmutableArray<Symbol> symbols, params object[] args)
+    {
+        var info = new ThisDiagnosticInfo(code, args, symbols, ImmutableArray<Location>.Empty);
+        this.Add(info, location);
+        return info;
+    }
+
+    internal void Add(DiagnosticInfo? info, Location location)
+    {
+        if (info is not null)
+            this.DiagnosticBag?.Add(info, location);
+    }
 }
