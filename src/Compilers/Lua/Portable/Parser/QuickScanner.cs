@@ -20,6 +20,7 @@ partial class Lexer
     private SyntaxToken? QuickScanSyntaxToken()
     {
 #warning 未实现。
+        return null;
         throw new NotImplementedException();
     }
 }
