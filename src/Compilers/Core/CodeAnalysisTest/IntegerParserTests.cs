@@ -25,7 +25,7 @@ public sealed class IntegerParserTests
     [TestMethod]
     public void TryParseDecimalInt64Tests()
     {
-        Parallel.For(0, 310, body =>
+        Parallel.For(0, 31000, body =>
         {
             var source = IntegerParserTests.RandomBigInteger();
             string decimalStr = source.ToString();
@@ -36,6 +36,8 @@ public sealed class IntegerParserTests
 
             if (source > long.MaxValue || source < long.MinValue)
                 Assert.IsFalse(succeed, "大数字超出Int64范围，应当数字溢出导致失败！");
+            else
+                Assert.IsTrue(succeed, "大数字在Int64范围内，应当返回解析结果！");
         });
     }
 }

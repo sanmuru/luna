@@ -15,7 +15,7 @@ internal static class IntegerParser
     public static bool TryParseDecimalInt64(string s, out BigInteger bigInteger)
     {
         if (BigInteger.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out bigInteger))
-            return bigInteger <= long.MaxValue;
+            return bigInteger >= long.MinValue && bigInteger <= long.MaxValue;
         else
             return false;
     }
