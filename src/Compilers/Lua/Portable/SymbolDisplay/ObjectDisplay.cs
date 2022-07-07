@@ -154,53 +154,25 @@ internal static class ObjectDisplay
             }
             else
             {
-                sb.Append("0x");
+                sb.Append("0x1");
 
-                var pooledBuilder2 = PooledStringBuilder.GetInstance();
-                var sb2 = pooledBuilder2.Builder;
+                long longValue = BitConverter.DoubleToInt64Bits(value);
+                long mantissa = longValue & 0xFFFFFFFFFFFFF;
+                long exponent = (longValue >> 52) - 0x3FF;
 
-                #region 整数部分
-                double trunc = Math.Floor(value);
-                value -= trunc;
-                while (trunc >= 16)
+                string mantissaStr = mantissa.ToString("X");
+                mantissaStr = mantissaStr.TrimEnd('0');
+                if (mantissaStr.Length != 0)
                 {
-                    byte reminder = (byte)(trunc % 16);
-                    sb2.Append(reminder.ToString("X"));
-                    trunc = Math.Floor(trunc / 16);
+                    sb.Append('.');
+                    sb.Append(mantissaStr);
                 }
-                if ((int)trunc != 0)
-                    sb2.Append(Convert.ToString((int)trunc, 16));
 
-                char[] buff = new char[sb2.Length];
-                sb2.CopyTo(0, buff, 0, buff.Length);
-                Array.Reverse(buff);
-                #endregion
-
-                sb2.Clear();
-
-                #region 小数部分
-                byte hexdigit;
-                while (value != 0)
+                if (exponent != 0)
                 {
-                    value *= 16;
-                    hexdigit = (byte)value;
-                    sb2.Append(hexdigit.ToString("X"));
-                    value -= hexdigit;
+                    sb.Append('P');
+                    sb.Append(exponent);
                 }
-                char[] buff2 = pooledBuilder2.ToStringAndFree().TrimEnd('0').ToCharArray();
-                #endregion
-
-                if (buff.Length == 0)
-                    sb.Append('0');
-                else
-                    sb.Append(buff);
-
-                sb.Append('.');
-
-                if (buff2.Length == 0)
-                    sb.Append('0');
-                else
-                    sb.Append(buff2);
             }
         }
 

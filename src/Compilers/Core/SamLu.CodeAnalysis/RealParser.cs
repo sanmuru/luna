@@ -14,7 +14,8 @@ internal static class RealParser
         int shiftedDigits = 0;
         for (int i = isHex ? 2 : 0; i < exponentIndex; i++)
         {
-            switch (i)
+            char c = s[i];
+            switch (c)
             {
                 case '.':
                     decimalSeparaterIndex = i; // 查找小数点的位置。
@@ -33,24 +34,23 @@ internal static class RealParser
 
             if (shiftedDigits < 14) // 尾数部分最多只有52+1位（需要14个十六进制数位）。
             {
-                char digit = s[i];
-                if (digit == '0' && mantissa == 0) continue; // 跳过所有的先导0。
+                if (c == '0' && mantissa == 0) continue; // 跳过所有的先导0。
 
                 mantissa <<= 4;
                 shiftedDigits++;
-                mantissa |= (byte)s[i].HexValue();
+                mantissa += (byte)c.HexValue();
             }
         }
         // 1234.56789 => 123456789.0, decimalSeparaterOffset = decimalSeparaterIndex - exponentIndex. (< 0 because of left shift)
-        int offset = (decimalSeparaterIndex - exponentIndex) * 4;
+        int offset = (decimalSeparaterIndex - exponentIndex + shiftedDigits) * 4 - 1;
         // 若第54-56位上不全为0，则右移尾数部分，直到高位上只有第53位为1，计算偏移量。
-        while (mantissa >= 0x2000000000000UL)
+        while (mantissa > 0x1FFFFFFFFFFFFF)
         {
             mantissa >>= 1;
             offset++;
         }
         // 若第53位为0，则左移尾数部分，直到第53位为1，计算偏移量。
-        while (mantissa < 0x10000000000000UL)
+        while (mantissa <= 0xFFFFFFFFFFFFF)
         {
             mantissa <<= 1;
             offset--;
@@ -84,7 +84,7 @@ internal static class RealParser
             return false;
         }
 
-        d = BitConverter.Int64BitsToDouble(unchecked((long)(mantissa | ((uint)exponent << 52))));
+        d = BitConverter.Int64BitsToDouble(unchecked((long)(mantissa + ((ulong)(exponent + 0x3FF) << 52))));
         return true;
     }
 

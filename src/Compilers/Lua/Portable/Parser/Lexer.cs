@@ -704,6 +704,9 @@ NextChar:
                     return false;
 
             }
+            else
+                // 小数部分缺失。
+                hasDecimal = true;
         }
 
         // 现在数字部分已经处理完，接下来处理指数表示。
