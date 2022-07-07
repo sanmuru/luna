@@ -41,7 +41,7 @@ internal static class ObjectDisplay
         value ? "true" : "false";
 
     /// <summary>
-    /// 格式化整数字面量。
+    /// 格式化64位有符号整数字面量。
     /// </summary>
     /// <param name="value">要格式化的字面量。</param>
     /// <returns><paramref name="value"/>的字符串表示。</returns>
@@ -49,6 +49,32 @@ internal static class ObjectDisplay
     /// 当<paramref name="options"/>包含<see cref="ObjectDisplayOptions.UseHexadecimalNumbers"/>时，返回十六进制格式。
     /// </remarks>
     internal static string FormatLiteral(long value, ObjectDisplayOptions options, CultureInfo? cultureInfo = null)
+    {
+        var pooledBuilder = PooledStringBuilder.GetInstance();
+        var sb = pooledBuilder.Builder;
+
+        if (options.IncludesOption(ObjectDisplayOptions.UseHexadecimalNumbers))
+        {
+            sb.Append("0x");
+            sb.Append(value.ToHexString());
+        }
+        else
+        {
+            sb.Append(value.ToString(ObjectDisplay.GetFormatCulture(cultureInfo)));
+        }
+
+        return pooledBuilder.ToStringAndFree();
+    }
+
+    /// <summary>
+    /// 格式化64位无符号整数字面量。
+    /// </summary>
+    /// <param name="value">要格式化的字面量。</param>
+    /// <returns><paramref name="value"/>的字符串表示。</returns>
+    /// <remarks>
+    /// 当<paramref name="options"/>包含<see cref="ObjectDisplayOptions.UseHexadecimalNumbers"/>时，返回十六进制格式。
+    /// </remarks>
+    internal static string FormatLiteral(ulong value, ObjectDisplayOptions options, CultureInfo? cultureInfo = null)
     {
         var pooledBuilder = PooledStringBuilder.GetInstance();
         var sb = pooledBuilder.Builder;
@@ -96,6 +122,11 @@ internal static class ObjectDisplay
     /// 将64位有符号整数转化为十六进制字符串格式。
     /// </summary>
     public static string ToHexString(this long value) => value.ToString("X");
+
+    /// <summary>
+    /// 将64位无符号整数转化为十六进制字符串格式。
+    /// </summary>
+    public static string ToHexString(this ulong value) => value.ToString("X");
 
     /// <summary>
     /// 将双精度浮点数转化为十六进制字符串格式。

@@ -201,10 +201,7 @@ public enum SyntaxKind : ushort
     NumericLiteralToken,
     /// <summary>表示字符串字面量标记。</summary>
     StringLiteralToken,
-
-    /// <summary>表示单行字符串字面量标记。</summary>
-    SingleLineRawStringLiteralToken,
-    /// <summary>表示多行字符串字面量标记。</summary>
+    /// <summary>表示多行原始字符串字面量标记。</summary>
     MultiLineRawStringLiteralToken,
     #endregion
 

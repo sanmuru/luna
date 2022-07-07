@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\CodeAnalysisTest\SamLu.CodeAnalysis.UnitTests.csproj" />
     <ProjectReference Include="..\..\Portable\SamLu.CodeAnalysis.Lua.csproj" />
   </ItemGroup>
 

@@ -45,6 +45,27 @@ public static partial class SyntaxFactory
             value,
             trailing.Node));
 
+    public static partial SyntaxToken Literal(ulong value) =>
+        SyntaxFactory.Literal(ObjectDisplay.FormatLiteral(value, ObjectDisplayOptions.None), value);
+
+    public static partial SyntaxToken Literal(string text, ulong value) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
+            SyntaxFactory.ElasticMarker.UnderlyingNode,
+            text,
+            value,
+            SyntaxFactory.ElasticMarker.UnderlyingNode));
+
+    public static partial SyntaxToken Literal(
+        SyntaxTriviaList leading,
+        string text,
+        ulong value,
+        SyntaxTriviaList trailing) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
+            leading.Node,
+            text,
+            value,
+            trailing.Node));
+
     public static partial SyntaxToken Literal(double value) =>
         SyntaxFactory.Literal(ObjectDisplay.FormatLiteral(value, ObjectDisplayOptions.None), value);
 

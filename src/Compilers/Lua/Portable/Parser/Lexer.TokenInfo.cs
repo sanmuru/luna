@@ -34,6 +34,13 @@ internal partial class Lexer
         /// </summary>
         internal long LongValue;
         /// <summary>
+        /// 语法标志的64位整数类型值。
+        /// </summary>
+        /// <remarks>
+        /// 主要用于承载紧跟着一个负号（<c>-</c>）的<c>0x8000000000000000</c>。
+        /// </remarks>
+        internal ulong ULongValue;
+        /// <summary>
         /// 语法标志的64位双精度浮点数类型值。
         /// </summary>
         internal double DoubleValue;

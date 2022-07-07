@@ -155,6 +155,8 @@ internal static partial class SyntaxFactory
 
     internal static SyntaxToken Literal(GreenNode? leading, string text, long value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
 
+    internal static SyntaxToken Literal(GreenNode? leading, string text, ulong value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
+
     internal static SyntaxToken Literal(GreenNode? leading, string text, double value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
 
     internal static SyntaxToken Literal(GreenNode? leading, string text, string value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);

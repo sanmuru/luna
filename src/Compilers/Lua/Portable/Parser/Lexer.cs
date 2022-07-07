@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
@@ -69,6 +68,7 @@ internal partial class Lexer
                 {
                     // 64位整数
                     SpecialType.System_Int64 => SyntaxFactory.Literal(leadingNode, info.Text!, info.LongValue, trailingNode),
+                    SpecialType.System_UInt64 => SyntaxFactory.Literal(leadingNode, info.Text!, info.ULongValue, trailingNode),
                     // 64位双精度浮点数
                     SpecialType.System_Double => SyntaxFactory.Literal(leadingNode, info.Text!, info.DoubleValue, trailingNode),
                     _ => throw ExceptionUtilities.UnexpectedValue(info.ValueKind),
@@ -76,8 +76,6 @@ internal partial class Lexer
 
             // 字符串字面量标志
             SyntaxKind.StringLiteralToken or
-            // 单行原始字符串字面量标志
-            SyntaxKind.SingleLineRawStringLiteralToken or
             // 多行原始字符串字面量标志
             SyntaxKind.MultiLineRawStringLiteralToken => SyntaxFactory.Literal(leadingNode, info.Text!, info.Kind, info.StringValue!, trailingNode),
 
@@ -259,9 +257,13 @@ internal partial class Lexer
                             char nextChar = this.TextWindow.PeekChar(i);
                             if (nextChar == '=') continue;
                             else if (nextChar == '[')
-                                this.ScanMultiLineStringLiteral(ref info, i - 2);
+                            {
+                                this.ScanMultiLineStringLiteral(ref info, i - 1);
+                                break;
+                            }
                             else goto default; // 未匹配到完整的多行原始字符字面量的起始语法。
                         }
+                        break;
 
                     default:
                         this.TextWindow.AdvanceChar();
@@ -536,7 +538,7 @@ NextChar:
             if (currentOffset == characterWindowCount)
                 return false;
 
-            var c = characterWindow[currentOffset];
+            var c = characterWindow[currentOffset++];
 
             // 数字
             if (c >= '0' && c <= '9')
@@ -548,9 +550,9 @@ NextChar:
                     continue;
             }
             // 拉丁字符
-            else if (c >= 'a' && c <= 'f')
+            else if (c >= 'a' && c <= 'z')
                 continue;
-            else if (c >= 'A' && c <= 'F')
+            else if (c >= 'A' && c <= 'Z')
                 continue;
             // 下划线
             else if (c == '_')
@@ -574,6 +576,7 @@ NextChar:
                 SyntaxFacts.IsNewLine(c) || // 属于换行符
                 (c >= 32 || c <= 126)) // 属于ASCII可显示字符范围
             {
+                currentOffset--;
                 var length = currentOffset - startOffset;
                 this.TextWindow.AdvanceChar(length);
                 info.Text = this.TextWindow.Intern(characterWindow, startOffset, length);
@@ -641,7 +644,6 @@ NextChar:
     /// </remarks>
     private partial bool ScanNumericLiteral(ref TokenInfo info)
     {
-        char c = TextWindow.PeekChar();
         bool isHex = false; // 是否为十六进制。
         bool hasDecimal = false; // 是否含有小数部分。
         bool hasExponent = false; // 是否含有指数部分。
@@ -652,7 +654,7 @@ NextChar:
         this._builder.Clear();
 
         // 扫描可能存在的十六进制前缀。
-        c = this.TextWindow.PeekChar();
+        char c = this.TextWindow.PeekChar();
         if (c == '0')
         {
             c = this.TextWindow.PeekChar(1);
@@ -695,8 +697,12 @@ NextChar:
             }
             else if (integeralPartIsAbsent)
             {
-                // 整数和小数部分同时缺失，产生诊断错误信息。
-                this.AddError(Lexer.MakeError(ErrorCode.ERR_InvalidNumber));
+                // 整数和小数部分同时缺失。
+                if (isHex) // 存在十六进制前缀，则推断数字字面量格式错误。
+                    this.AddError(Lexer.MakeError(ErrorCode.ERR_InvalidNumber));
+                else // 除了一个“.”以外没有任何其他字符，推断不是数字字面量标志。
+                    return false;
+
             }
         }
 
@@ -742,9 +748,12 @@ NextChar:
         // 指数部分格式不符，为了防止破坏后续的标志，尽可能回退到上一个可接受的回退记号的位置。
         if (!hasExponent)
         {
-            int length = this.TextWindow.Position - resetMarker;
-            this._builder.Remove(this._builder.Length - length, length);
-            this.Reset(resetMarker);
+            if (resetMarker != this.TextWindow.Position)
+            {
+                int length = this.TextWindow.Position - resetMarker;
+                this._builder.Remove(this._builder.Length - length, length);
+                this.Reset(resetMarker);
+            }
         }
 
         // 填充标志信息前最后一步：检查特性的可用性。
@@ -762,9 +771,9 @@ NextChar:
         Debug.Assert(info.Text is not null);
         var valueText = this.TextWindow.Intern(this._builder);
         if (hasDecimal)
-            this.ParseIntegerValue(ref info, valueText, isHex);
-        else
             this.ParseRealValue(ref info, valueText, isHex);
+        else
+            this.ParseIntegerValue(ref info, valueText, isHex);
 
         return true;
     }
@@ -785,16 +794,18 @@ NextChar:
         }
         else
         {
-            if (IntegerParser.TryParseDecimalInt64(text, out BigInteger bigInteger))
+            if (IntegerParser.TryParseDecimalInt64(text, out ulong result))
             {
-                info.ValueKind = SpecialType.System_Int64;
-                info.LongValue = (long)bigInteger;
-                return;
-            }
-            else if (bigInteger <= (BigInteger)double.MaxValue && bigInteger >= (BigInteger)double.MinValue)
-            {
-                info.ValueKind = SpecialType.System_Double;
-                info.DoubleValue = (double)bigInteger;
+                if (result <= (ulong)long.MaxValue)
+                {
+                    info.ValueKind = SpecialType.System_Int64;
+                    info.LongValue = (long)result;
+                }
+                else
+                {
+                    info.ValueKind = SpecialType.System_UInt64;
+                    info.ULongValue = result;
+                }
                 return;
             }
         }
@@ -864,6 +875,7 @@ NextChar:
             }
         }
 
+        info.Kind = SyntaxKind.StringLiteralToken;
         info.ValueKind = SpecialType.System_String;
         info.Text = this.TextWindow.GetText(intern: true);
 
@@ -1001,6 +1013,7 @@ NextChar:
     {
         if (this.ScanLongBrackets(out var isTerminal, level))
         {
+            info.Kind = SyntaxKind.MultiLineRawStringLiteralToken;
             info.ValueKind = SpecialType.System_String;
             info.Text = this.TextWindow.GetText(intern: true);
             info.StringValue = this.TextWindow.Intern(this._builder);
@@ -1046,14 +1059,30 @@ NextChar:
                 case '\f':
                 case '\u001A':
                     this.AddTrivia(this.ScanWhiteSpace(), ref triviaList);
-                    break;
+                    continue;
+
                 case '-':
                     if (this.TextWindow.PeekChar(1) == '-')
                     {
                         this.TextWindow.AdvanceChar(2);
                         this.AddTrivia(this.ScanComment(), ref triviaList);
+                        continue;
                     }
-                    break;
+                    else goto default;
+
+                default:
+                    {
+                        var endOfLine = this.ScanEndOfLine();
+                        if (endOfLine is not null)
+                        {
+                            this.AddTrivia(endOfLine, ref triviaList);
+                            // 当分析的是后方语法琐碎内容时，分析成功后直接退出。
+                            if (isTrailing) return;
+                        }
+                    }
+
+                    // 下一个字符不是空白字符，终止扫描。
+                    return;
             }
         }
     }

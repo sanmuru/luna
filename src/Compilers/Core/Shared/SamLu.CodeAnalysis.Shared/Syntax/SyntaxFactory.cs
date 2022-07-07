@@ -232,32 +232,61 @@ public static partial class SyntaxFactory
 
     #region 字面量
     /// <summary>
-    /// 构造表示64位整数的语法标志。
+    /// 构造表示64位有符号整数的语法标志。
     /// </summary>
-    /// <param name="value">表示的64位整数。</param>
-    /// <returns>表示64位整数的语法标志。</returns>
+    /// <param name="value">表示的64位有符号整数。</param>
+    /// <returns>表示64位有符号整数的语法标志。</returns>
     public static partial SyntaxToken Literal(long value);
 
     /// <summary>
-    /// 构造表示64位整数的语法标志，使用指定的字符串表示。
+    /// 构造表示64位有符号整数的语法标志，使用指定的字符串表示。
     /// </summary>
     /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
-    /// <param name="value">表示的64位整数。</param>
-    /// <returns>表示64位整数的语法标志。</returns>
+    /// <param name="value">表示的64位有符号整数。</param>
+    /// <returns>表示64位有符号整数的语法标志。</returns>
     public static partial SyntaxToken Literal(string text, long value);
 
     /// <summary>
-    /// 构造表示64位整数的语法标志，使用指定的字符串表示以及前后方语法琐碎内容。
+    /// 构造表示64位有符号整数的语法标志，使用指定的字符串表示以及前后方语法琐碎内容。
     /// </summary>
     /// <param name="leading">指定的前方语法琐碎内容。</param>
     /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
-    /// <param name="value">表示的64位整数。</param>
+    /// <param name="value">表示的64位有符号整数。</param>
     /// <param name="trailing">指定的后方语法琐碎内容。</param>
-    /// <returns>表示64位整数的语法标志。</returns>
+    /// <returns>表示64位有符号整数的语法标志。</returns>
     public static partial SyntaxToken Literal(
         SyntaxTriviaList leading,
         string text,
         long value,
+        SyntaxTriviaList trailing);
+
+    /// <summary>
+    /// 构造表示64位无符号整数的语法标志。
+    /// </summary>
+    /// <param name="value">表示的64位无符号整数。</param>
+    /// <returns>表示64位无符号整数的语法标志。</returns>
+    public static partial SyntaxToken Literal(ulong value);
+
+    /// <summary>
+    /// 构造表示64位无符号整数的语法标志，使用指定的字符串表示。
+    /// </summary>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的64位无符号整数。</param>
+    /// <returns>表示64位无符号整数的语法标志。</returns>
+    public static partial SyntaxToken Literal(string text, ulong value);
+
+    /// <summary>
+    /// 构造表示64位无符号整数的语法标志，使用指定的字符串表示以及前后方语法琐碎内容。
+    /// </summary>
+    /// <param name="leading">指定的前方语法琐碎内容。</param>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的64位无符号整数。</param>
+    /// <param name="trailing">指定的后方语法琐碎内容。</param>
+    /// <returns>表示64位无符号整数的语法标志。</returns>
+    public static partial SyntaxToken Literal(
+        SyntaxTriviaList leading,
+        string text,
+        ulong value,
         SyntaxTriviaList trailing);
 
     /// <summary>

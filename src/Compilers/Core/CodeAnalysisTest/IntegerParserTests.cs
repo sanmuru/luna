@@ -31,9 +31,14 @@ public class IntegerParserTests
 #endif
     }
 
-    private protected virtual BigInteger GetRandomBigInteger() => IntegerParserTests.NextRandomBigInteger();
+    private protected virtual BigInteger GetRandomUnsignedBigInteger() => BigInteger.Abs(IntegerParserTests.NextRandomBigInteger());
+
+    protected internal static ulong NextRandomUInt64() =>
+        Math.Min(unchecked((ulong)IntegerParserTests.NextRandomInt64()), 0x8000000000000000);
 
     private protected virtual long GetRandomInt64() => IntegerParserTests.NextRandomInt64();
+
+    private protected virtual ulong GetRandomUInt64() => IntegerParserTests.NextRandomUInt64();
 
     [TestMethod]
     public void TryParseDecimalInt64Tests()
@@ -41,17 +46,18 @@ public class IntegerParserTests
         const int SampleCount = 31000;
         Parallel.For(0, SampleCount, body =>
         {
-            var source = this.GetRandomBigInteger();
+            var source = this.GetRandomUnsignedBigInteger();
             var decimalStr = source.ToString();
 
             var success = IntegerParser.TryParseDecimalInt64(decimalStr, out var result);
 
-            Assert.AreEqual(source, result, "十进制数字解析错误！");
+            if (success)
+                Assert.AreEqual(source, (BigInteger)result, "十进制数字解析错误！");
 
-            if (source > long.MaxValue || source < long.MinValue)
-                Assert.IsFalse(success, "大数字超出Int64范围，应当数字溢出导致失败！");
+            if (source > 0x8000000000000000)
+                Assert.IsFalse(success, "大数字超出范围，应当数字溢出导致失败！");
             else
-                Assert.IsTrue(success, "大数字在Int64范围内，应当返回解析结果！");
+                Assert.IsTrue(success, "大数字在范围内，应当返回解析结果！");
         });
     }
 

@@ -284,6 +284,49 @@ internal partial class Lexer : AbstractLexer
         bool isTrailing,
         ref SyntaxListBuilder triviaList);
 
+    /// <summary>
+    /// 扫描一个表示新行的字符序列，并返回对应的绿树节点。
+    /// </summary>
+    /// <returns>表示新行的绿树节点。</returns>
+    private ThisInternalSyntaxNode? ScanEndOfLine()
+    {
+        this._builder.Clear();
+
+        char c = this.TextWindow.PeekChar();
+        if (SyntaxFacts.IsNewLine(c))
+        {
+            while (true)
+            {
+                this._builder.Append(this.TextWindow.NextChar());
+                c = this.TextWindow.PeekChar();
+
+                char firstChar = this._builder[0];
+                char[] restChars = new char[this._builder.Length];
+                int length = restChars.Length - 1;
+                this._builder.CopyTo(1, restChars, 0, length);
+                restChars[length] = c;
+
+                if (!SyntaxFacts.IsNewLine(firstChar, restChars))
+                    break;
+            }
+
+            string newLine = this._builder.ToString();
+            return newLine switch
+            {
+                "\r\n" => SyntaxFactory.CarriageReturnLineFeed,
+                "\n" => SyntaxFactory.LineFeed,
+                "\r" => SyntaxFactory.CarriageReturn,
+                _ => SyntaxFactory.EndOfLine(newLine)
+            };
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// 扫描一个表示注释的字符序列，并返回对应的语法琐碎内容。
+    /// </summary>
+    /// <returns>表示注释的语法琐碎内容。</returns>
     private partial SyntaxTrivia ScanComment();
 
     /// <summary>
@@ -303,6 +346,7 @@ internal partial class Lexer : AbstractLexer
     /// 扫描长方括号结构（多行注释或字符串常量）。
     /// </summary>
     /// <param name="isTerminal">长方括号结构是否闭合。</param>
+    /// <param name="level">如果指定了这个参数，则表示预先匹配到的长方括号结构的级数。</param>
     private bool ScanLongBrackets(out bool isTerminal, int level = -1)
     {
         this._builder.Clear();
@@ -354,7 +398,7 @@ internal partial class Lexer : AbstractLexer
             for (int i = 0; i < level; i++)
             {
                 if (this.TextWindow.PeekChar() == '=')
-                    this.TextWindow.AdvanceChar();
+                    this._builder.Append(this.TextWindow.NextChar());
                 else
                 {
                     isPairedLevel = false;
@@ -366,7 +410,7 @@ internal partial class Lexer : AbstractLexer
             {
                 this.TextWindow.AdvanceChar();
                 // 由于this._builder的末尾处有结束长方括号结构，因此需要删除这段内容。
-                this._builder.Length -= level + 2;
+                this._builder.Length -= level + 1;
 
                 isTerminal = true;
                 return true;

@@ -274,7 +274,7 @@ public static partial class SyntaxFacts
     internal static bool IsLiteral(SyntaxKind kind) =>
         kind switch
         {
-            >= SyntaxKind.IdentifierToken and <= SyntaxKind.MultiLineRawStringLiteralToken => true,
+            >= SyntaxKind.NumericLiteralToken and <= SyntaxKind.MultiLineRawStringLiteralToken => true,
 
             _ => false
         };
@@ -366,7 +366,6 @@ public static partial class SyntaxFacts
             SyntaxKind.TrueKeyword => SyntaxKind.TrueLiteralExpression,
             SyntaxKind.NumericLiteralToken => SyntaxKind.NumericLiteralExpression,
             SyntaxKind.StringLiteralToken or
-            SyntaxKind.SingleLineRawStringLiteralToken or
             SyntaxKind.MultiLineRawStringLiteralToken => SyntaxKind.StringLiteralExpression,
             SyntaxKind.DotDotDotToken => SyntaxKind.VariousArgumentsExpression,
 
