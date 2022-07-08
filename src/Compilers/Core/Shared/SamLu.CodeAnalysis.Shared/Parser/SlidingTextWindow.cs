@@ -71,7 +71,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
 
         int start = this.Position;
 
-        char c = this.PeekChar();
+        char c = this.NextChar();
         Debug.Assert(c == '\\');
 
         c = this.NextChar();
@@ -79,10 +79,11 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
 
         // 最多识别5位十进制数字（Unicode字符有65535个），提前遇到非十进制数字字符时中断。
         int intChar = 0;
-        for (int i = 1; i <= 5; i++)
+        for (int i = 1; ; i++)
         {
             intChar = intChar * 10 + SyntaxFacts.DecValue(c);
-            if (SyntaxFacts.IsDecDigit(this.PeekChar()))
+            if (i == 5) break;
+            else if (SyntaxFacts.IsDecDigit(this.PeekChar()))
                 c = this.NextChar();
             else
                 break;
@@ -99,7 +100,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
 
         int start = this.Position;
 
-        char c = this.PeekChar();
+        char c = this.NextChar();
         Debug.Assert(c == '\\');
 
         c = this.NextChar();
@@ -107,16 +108,15 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
 
         // 识别2位十六进制数字（Ascii字符有256个）。
         int intChar = 0;
-        if (SyntaxFacts.IsHexDigit(c))
+        if (SyntaxFacts.IsHexDigit(this.PeekChar()))
         {
             c = this.NextChar();
             intChar = SyntaxFacts.HexValue(c);
 
-            c = this.PeekChar();
-            if (SyntaxFacts.IsHexDigit(c))
+            if (SyntaxFacts.IsHexDigit(this.PeekChar()))
             {
                 c = this.NextChar();
-                intChar = intChar << 4 + SyntaxFacts.HexValue(c);
+                intChar = (intChar << 4) + SyntaxFacts.HexValue(c);
                 return (char)intChar;
             }
         }
@@ -131,14 +131,13 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
 
         int start = this.Position;
 
-        char c = this.PeekChar();
+        char c = this.NextChar();
         Debug.Assert(c == '\\');
 
         c = this.NextChar();
         Debug.Assert(c == 'u');
 
-        c = this.PeekChar();
-        if (c != '{') // 强制要求的左花括号。
+        if (this.PeekChar() != '{') // 强制要求的左花括号。
         {
             info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
             return SlidingTextWindow.InvalidCharacter;
@@ -146,29 +145,29 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         else
             this.AdvanceChar();
 
-        if (!SyntaxFacts.IsHexDigit(c)) // 至少要有1位十六进制数字。
+        if (!SyntaxFacts.IsHexDigit(this.PeekChar())) // 至少要有1位十六进制数字。
         {
             info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
             return SlidingTextWindow.InvalidCharacter;
         }
         else
-            this.AdvanceChar();
+            c = this.NextChar();
 
         // 最少识别1位十六进制数字，提前遇到非十六进制数字字符时中断。
         int intChar = 0;
         for (int i = 1; ; i++)
         {
-            intChar = intChar << 4 + SyntaxFacts.HexValue(c);
+            intChar = (intChar << 4) + SyntaxFacts.HexValue(c);
             if (intChar > ushort.MaxValue) // 超出Unicode字符范围。
-                info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
-            else if (SyntaxFacts.IsHexDigit(this.PeekChar()))
+                info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
+
+            if (SyntaxFacts.IsHexDigit(this.PeekChar()))
                 c = this.NextChar();
             else
                 break;
         }
 
-        c = this.PeekChar();
-        if (c != '}') // 强制要求的右花括号。
+        if (this.PeekChar() != '}') // 强制要求的右花括号。
             info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
         else
             this.AdvanceChar();

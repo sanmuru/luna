@@ -302,7 +302,7 @@ internal partial class Lexer : AbstractLexer
 
                 char firstChar = this._builder[0];
                 char[] restChars = new char[this._builder.Length];
-                int length = restChars.Length - 1;
+                int length = restChars.Length;
                 this._builder.CopyTo(1, restChars, 0, length);
                 restChars[length] = c;
 
@@ -363,6 +363,7 @@ internal partial class Lexer : AbstractLexer
         // 匹配长方括号的复数等号部分，同时收集级数（等号字符个数）信息，为之后匹配长方括号的结束部分做准备。
         if (level < 0)
         {
+            level = 0;
             while (true)
             {
                 char c = this.TextWindow.PeekChar(level + 1);
@@ -391,7 +392,14 @@ internal partial class Lexer : AbstractLexer
             char c = this.TextWindow.NextChar();
             if (c == SlidingTextWindow.InvalidCharacter && this.TextWindow.IsReallyAtEnd()) break;
 
-            this._builder.Append(c);
+            if (c == '\n' && (this._builder.Length > 0 && this._builder[this._builder.Length - 1] == '\r'))
+                // 匹配到“\r\n”，删除前方的回车符以替换为换行符。
+                this._builder.Length--;
+
+            if (!(c == '\n' && this._builder.Length == 0))
+                // 忽略第一个新行。
+                this._builder.Append(c);
+
             if (c != ']') continue; // 不进入匹配结束长方括号的代码区域。
 
             bool isPairedLevel = true;

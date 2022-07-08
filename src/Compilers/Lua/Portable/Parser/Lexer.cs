@@ -991,16 +991,9 @@ NextChar:
             // Mac系统的换行字符序列为“\r”。
             case '\r':
             case '\n':
-                this._builder.Append(c);
-                if (c == '\r')
-                {
-                    c = this.TextWindow.PeekChar();
-                    if (c == '\n')
-                    {
-                        this.TextWindow.AdvanceChar();
-                        this._builder.Append(c);
-                    }
-                }
+                this._builder.Append('\n');
+                if (c == '\r' && this.TextWindow.PeekChar() == '\n')
+                    this.TextWindow.AdvanceChar(); // 跳过这个字符。
                 break;
 
             default:

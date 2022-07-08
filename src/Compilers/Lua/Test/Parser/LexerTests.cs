@@ -40,22 +40,16 @@ public partial class LexerTests
     internal static void LiteralLexTest<T>(string source, T? value, LuaParseOptions? options = null)
     {
         var lexer = LexerTests.CreateLexer(source, options);
-        try
-        {
-            var token = lexer.Lex(LexerMode.Syntax);
-            // 忽略可能的负号。
-            if (LexerTestUtilities.IsPunctuationCore(token, "-"))
-                token = lexer.Lex(LexerMode.Syntax);
-            Assert.That.IsLiteral(token);
 
-            var tokenValue = token.GetValue();
-            Assert.IsInstanceOfType(value, typeof(T));
-            Assert.AreEqual((T?)tokenValue, value);
-        }
-        catch (AssertFailedException)
-        {
-            throw;
-        }
+        var token = lexer.Lex(LexerMode.Syntax);
+        // 忽略可能的负号。
+        if (LexerTestUtilities.IsPunctuationCore(token, "-"))
+            token = lexer.Lex(LexerMode.Syntax);
+        Assert.That.IsLiteral(token);
+
+        var tokenValue = token.GetValue();
+        Assert.IsInstanceOfType(value, typeof(T));
+        Assert.AreEqual((T?)tokenValue, value);
     }
 
     [TestMethod]
@@ -71,7 +65,8 @@ public partial class LexerTests
         string hexValue = value.ToHexString();
         LiteralLexTest(hexValue, value); // 十六进制浮点数。
 
-        LiteralLexTest("31415", 31415L); // 正常整数，long类型。
+        LiteralLexTest("31415", 31415L); // 正常十进制整数，long类型。
+        LiteralLexTest("0x31415ABCD", 0x31415ABCD); // 正常十六进制整数，long类型。
         LiteralLexTest("31.415", 31.415D); // 正常十进制浮点数，double类型。
         LiteralLexTest(".314", 0.314D); // 整数部分缺失。
         LiteralLexTest("314.", 314.0D); // 小数部分缺失。
@@ -80,6 +75,62 @@ public partial class LexerTests
     [TestMethod]
     public void StringLiteralLexTests()
     {
+        LiteralLexTest("""   '\a\b\f\n\r\t\v\\\"\''   """, "\a\b\f\n\r\t\v\\\"\'"); // 基本转义字符。
+
+        LiteralLexTest("""   "as',\",\'df"   """, "as',\",'df"); // 双引号内包含的单引号可以不转义，但双引号必须转义。
+        LiteralLexTest("""   'as",\',\"df'   """, "as\",',\"df"); // 单引号内包含的双引号可以不转义，但单引号必须转义。
+
+        LiteralLexTest("""
+            'first line\
+            \
+            third line'
+            """, "first line\n\nthird line"); // 转义字面换行。
+        LiteralLexTest("""
+            'abso\z
+                 lutely fun\z  ny!\z
+            '
+            """, "absolutely funny!"); // 跳过空白字符和新行字符。
+        LiteralLexTest("""
+            '\97o\10\049t23+\23383456'
+            """, "ao\n1t23+字456"); // 转义十进制Unicode字符。
+        LiteralLexTest("""
+            '\x61\x6F\n\x3123'
+            """, "ao\n123"); // 转义十六进制Ascii字符。
+        LiteralLexTest("""
+            '\u{61}o\u{A}\u{0031}t23+\u{00000000000000000000000000005B57}456'
+            """, "ao\n1t23+字456"); // 转义十进制Unicode字符。
+
+        LiteralLexTest("""
+            [===[a,[b],[[c]],[=[d]=],[==[e]==],[====[f]====],g]===]
+            """, "a,[b],[[c]],[=[d]=],[==[e]==],[====[f]====],g"); // 多行原始字符串。
+        LiteralLexTest("""
+            [===[
+            first line
+            second line
+            ]===]
+            """, "first line\nsecond line\n"); // 字面多行，如果第一行没有字符则忽略这行。
+    }
+
+    [TestMethod]
+    public void CommentLexTests()
+    {
+        string source = """
+            -- a single line comment.
+            --[=a=[also a single line comment because of character 'a'.]=a=]
+            -- [==[another single line comment because of the space before long bracket.]==]
+            --[==[a multiline comment
+            that,
+            though contains other level of [=====[long brackets]=====], can
+            cross
+            many lines.
+            ]==]
+            """;
+        Lexer lexer = LexerTests.CreateLexer(source);
+        LexerMode mode = LexerMode.Syntax;
+        SyntaxToken token;
+
+        token = lexer.Lex(mode);
+
     }
     #endregion
 }
