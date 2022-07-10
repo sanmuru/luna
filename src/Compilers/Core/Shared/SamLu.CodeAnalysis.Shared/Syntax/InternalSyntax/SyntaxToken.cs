@@ -1,18 +1,18 @@
-﻿
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 
 #if LANG_LUA
-using ThisInternalSyntaxNode = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.LuaSyntaxNode;
-
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+
+using ThisInternalSyntaxNode = LuaSyntaxNode;
 #elif LANG_MOONSCRIPT
-using ThisInternalSyntaxNode = SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax.MoonScriptSyntaxNode;
 
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
+
+using ThisInternalSyntaxNode = MoonScriptSyntaxNode;
 #endif
 
 internal partial class SyntaxToken : ThisInternalSyntaxNode

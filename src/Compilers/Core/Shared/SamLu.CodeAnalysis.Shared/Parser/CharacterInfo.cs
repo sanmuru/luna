@@ -12,18 +12,13 @@ namespace SamLu.CodeAnalysis.MoonScript;
 public static partial class SyntaxFacts
 {
     /// <inheritdoc cref="CharacterInfo.IsWhiteSpace(char)"/>
-    public static bool IsWhiteSpace(char c) => c.IsWhiteSpace();
+    public static partial bool IsWhiteSpace(char c);
 
     /// <inheritdoc cref="CharacterInfo.IsNewLine(char)"/>
-    public static bool IsNewLine(char c) => c.IsNewLine();
+    public static partial bool IsNewLine(char c);
 
-    /// <summary>
-    /// 指定的多个字符序列是否表示新行。
-    /// </summary>
-    /// <param name="firstChar">第一个Unicode字符。</param>
-    /// <param name="restChars">后续的Unicode字符序列。</param>
-    /// <returns>若<paramref name="firstChar"/>和<paramref name="restChars"/>组成的字符序列表示新行则返回<see langword="true"/>，否则返回<see langword="false"/>。</returns>
-    public static partial bool IsNewLine(char firstChar, params char[] restChars);
+    /// <inheritdoc cref="CharacterInfo.IsNewLine(char, char)"/>
+    public static partial bool IsNewLine(char firstChar, char secondChar);
 
     /// <inheritdoc cref="CharacterInfo.IsHexDigit(char)"/>
     internal static bool IsHexDigit(char c) => c.IsHexDigit();

@@ -5,17 +5,11 @@ namespace SamLu.CodeAnalysis.Lua;
 
 public static partial class SyntaxFacts
 {
-    /// <exception cref="ArgumentNullException"><paramref name="restChars"/>的值为<see langword="null"/>。</exception>
-    public static partial bool IsNewLine(char firstChar, params char[] restChars)
-    {
-        if (restChars is null) throw new ArgumentNullException(nameof(restChars));
+    public static partial bool IsWhiteSpace(char c) => CharacterInfo.IsWhiteSpace(c);
 
-        if (restChars.Length == 0)
-            return SyntaxFacts.IsNewLine(firstChar);
-        else
-            return firstChar == '\r' && restChars[0] == '\n';
-    }
+    public static partial bool IsNewLine(char c) => CharacterInfo.IsNewLine(c);
 
+    public static partial bool IsNewLine(char firstChar, char secondChar) => CharacterInfo.IsNewLine(firstChar, secondChar);
 
     public static partial bool IsIdentifierStartCharacter(char c) =>
         UnicodeCharacterUtilities.IsIdentifierStartCharacter(c);

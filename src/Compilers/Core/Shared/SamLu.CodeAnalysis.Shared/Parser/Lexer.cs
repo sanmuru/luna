@@ -288,40 +288,7 @@ internal partial class Lexer : AbstractLexer
     /// 扫描一个表示新行的字符序列，并返回对应的绿树节点。
     /// </summary>
     /// <returns>表示新行的绿树节点。</returns>
-    private ThisInternalSyntaxNode? ScanEndOfLine()
-    {
-        this._builder.Clear();
-
-        char c = this.TextWindow.PeekChar();
-        if (SyntaxFacts.IsNewLine(c))
-        {
-            while (true)
-            {
-                this._builder.Append(this.TextWindow.NextChar());
-                c = this.TextWindow.PeekChar();
-
-                char firstChar = this._builder[0];
-                char[] restChars = new char[this._builder.Length];
-                int length = restChars.Length;
-                this._builder.CopyTo(1, restChars, 0, length);
-                restChars[length] = c;
-
-                if (!SyntaxFacts.IsNewLine(firstChar, restChars))
-                    break;
-            }
-
-            string newLine = this._builder.ToString();
-            return newLine switch
-            {
-                "\r\n" => SyntaxFactory.CarriageReturnLineFeed,
-                "\n" => SyntaxFactory.LineFeed,
-                "\r" => SyntaxFactory.CarriageReturn,
-                _ => SyntaxFactory.EndOfLine(newLine)
-            };
-        }
-
-        return null;
-    }
+    private partial ThisInternalSyntaxNode? ScanEndOfLine();
 
     /// <summary>
     /// 扫描一个表示注释的字符序列，并返回对应的语法琐碎内容。
@@ -332,14 +299,30 @@ internal partial class Lexer : AbstractLexer
     /// <summary>
     /// 扫描到一行的末尾。
     /// </summary>
-    private void ScanToEndOfLine()
+    private void ScanToEndOfLine(bool isTrim = true)
     {
+        this._builder.Clear();
+        int length = 0;
         for (
             char c = this.TextWindow.PeekChar();
             !SyntaxFacts.IsNewLine(c) && (c != SlidingTextWindow.InvalidCharacter || !this.TextWindow.IsReallyAtEnd());
             c = this.TextWindow.PeekChar()
         )
+        {
+            if (isTrim)
+            {
+                bool isWhiteSpace = SyntaxFacts.IsWhiteSpace(c);
+                if (length != 0 || !isWhiteSpace)
+                {
+                    this._builder.Append(c);
+
+                    if (!isWhiteSpace)
+                        length = this._builder.Length;
+                }
+            }
             this.TextWindow.AdvanceChar();
+        }
+        this._builder.Length = length;
     }
 
     /// <summary>

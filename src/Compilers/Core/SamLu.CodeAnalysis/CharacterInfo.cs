@@ -10,7 +10,7 @@ internal static class CharacterInfo
     /// </summary>
     /// <param name="c">一个Unicode字符。</param>
     /// <returns>若<paramref name="c"/>的值表示空白则返回<see langword="true"/>，否则返回<see langword="false"/>。</returns>
-    public static bool IsWhiteSpace(this char c) =>
+    public static bool IsWhiteSpace(char c) =>
         c switch
         {
             ' ' or
@@ -31,16 +31,25 @@ internal static class CharacterInfo
     /// </summary>
     /// <param name="c">一个Unicode字符。</param>
     /// <returns>若<paramref name="c"/>的值表示新行则返回<see langword="true"/>，否则返回<see langword="false"/>。</returns>
-    public static bool IsNewLine(this char c) =>
+    public static bool IsNewLine(char c) =>
         c switch
         {
-            '\r' or           // 回车符（U+000D）
             '\n' or           // 换行符（U+000A）
+            '\r' or           // 回车符（U+000D）
             '\u0085' or       // 新行符（U+0085）
             '\u2028' or       // 分行负（U+2028）
             '\u2029' => true, // 分段符（U+2029）
             _ => false
         };
+
+    /// <summary>
+    /// 指定的两个连续的Unicode字符是否表示新行。
+    /// </summary>
+    /// <param name="firstChar">第一个Unicode字符。</param>
+    /// <param name="secondChar">第二个Unicode字符。</param>
+    /// <returns>若<paramref name="firstChar"/>和<paramref name="secondChar"/>组成的字符序列的值表示新行则返回<see langword="true"/>，否则返回<see langword="false"/>。</returns>
+    public static bool IsNewLine(char firstChar, char secondChar) =>
+        firstChar == '\r' && secondChar == '\n';
 
     /// <summary>
     /// 指定的Unicode字符是否是十六进制数字的数位。

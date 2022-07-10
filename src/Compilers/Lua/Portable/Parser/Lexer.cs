@@ -1072,8 +1072,12 @@ NextChar:
                         if (endOfLine is not null)
                         {
                             this.AddTrivia(endOfLine, ref triviaList);
-                            // 当分析的是后方语法琐碎内容时，分析成功后直接退出。
-                            if (isTrailing) return;
+                            if (isTrailing)
+                                // 当分析的是后方语法琐碎内容时，分析成功后直接退出。
+                                return;
+                            else
+                                // 否则进行下一个语法琐碎内容的分析。
+                                continue;
                         }
                     }
 
@@ -1081,6 +1085,32 @@ NextChar:
                     return;
             }
         }
+    }
+
+    private partial LuaSyntaxNode? ScanEndOfLine()
+    {
+        char c1 = this.TextWindow.PeekChar();
+        char c2 = this.TextWindow.PeekChar(1);
+        if (SyntaxFacts.IsNewLine(c1, c2))
+        {
+            this.TextWindow.AdvanceChar(2);
+            if (c1 == '\r' && c2 == '\n')
+                return SyntaxFactory.CarriageReturnLineFeed;
+            else
+                return SyntaxFactory.EndOfLine(new string(new[] { c1, c2 }));
+        }
+        else if (SyntaxFacts.IsNewLine(c1))
+        {
+            this.TextWindow.AdvanceChar();
+            if (c1 == '\n')
+                return SyntaxFactory.LineFeed;
+            else if (c1 == '\r')
+                return SyntaxFactory.CarriageReturn;
+            else
+                return SyntaxFactory.EndOfLine(new string(new[] { c1 }));
+        }
+
+        return null;
     }
 
     private partial SyntaxTrivia ScanComment()
@@ -1091,7 +1121,7 @@ NextChar:
                 this.AddError(ErrorCode.ERR_OpenEndedComment);
         }
         else
-            this.ScanToEndOfLine();
+            this.ScanToEndOfLine(isTrim: true);
 
         var text = this.TextWindow.GetText(intern: false);
         return SyntaxFactory.Comment(text);

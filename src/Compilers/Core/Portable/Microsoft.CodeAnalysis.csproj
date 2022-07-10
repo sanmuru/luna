@@ -97,6 +97,7 @@
     <InternalsVisibleTo Include="SamLu.CodeAnalysis"/>
     <InternalsVisibleTo Include="luac"/>
     <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua"/>
+    <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua.Parser.UnitTests"/>
     <InternalsVisibleTo Include="moonc"/>
     <InternalsVisibleTo Include="SamLu.CodeAnalysis.MoonScript"/>
   </ItemGroup>

@@ -1,9 +1,9 @@
-﻿using Microsoft.CodeAnalysis.Text;
-using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
-
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
 
 using Utilities;
+using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 [TestClass]
 public partial class LexerTests
@@ -115,7 +115,7 @@ public partial class LexerTests
     public void CommentLexTests()
     {
         string source = """
-            -- a single line comment.
+            --     a single line comment.       
             --[=a=[also a single line comment because of character 'a'.]=a=]
             -- [==[another single line comment because of the space before long bracket.]==]
             --[==[a multiline comment
@@ -123,14 +123,37 @@ public partial class LexerTests
             though contains other level of [=====[long brackets]=====], can
             cross
             many lines.
-            ]==]
+            ]==]     --last single line comment.
             """;
         Lexer lexer = LexerTests.CreateLexer(source);
         LexerMode mode = LexerMode.Syntax;
         SyntaxToken token;
 
         token = lexer.Lex(mode);
+        var list = token.LeadingTrivia;
+        Assert.IsTrue(list.Count == 9);
 
+        Assert.IsTrue(list[0]!.Kind == SyntaxKind.SingleLineCommentTrivia);
+        Assert.AreEqual(((SyntaxTrivia)list[0]!).Text, "--     a single line comment.       ");
+
+        Assert.IsTrue(list[2]!.Kind == SyntaxKind.SingleLineCommentTrivia);
+        Assert.AreEqual(((SyntaxTrivia)list[2]!).Text, "--[=a=[also a single line comment because of character 'a'.]=a=]");
+
+        Assert.IsTrue(list[4]!.Kind == SyntaxKind.SingleLineCommentTrivia);
+        Assert.AreEqual(((SyntaxTrivia)list[4]!).Text, "-- [==[another single line comment because of the space before long bracket.]==]");
+
+        Assert.IsTrue(list[6]!.Kind == SyntaxKind.MultiLineCommentTrivia);
+        Assert.AreEqual(((SyntaxTrivia)list[6]!).Text, """
+            --[==[a multiline comment
+            that,
+            though contains other level of [=====[long brackets]=====], can
+            cross
+            many lines.
+            ]==]
+            """);
+
+        Assert.IsTrue(list[8]!.Kind == SyntaxKind.SingleLineCommentTrivia);
+        Assert.AreEqual(((SyntaxTrivia)list[8]!).Text, "--last single line comment.");
     }
     #endregion
 }
