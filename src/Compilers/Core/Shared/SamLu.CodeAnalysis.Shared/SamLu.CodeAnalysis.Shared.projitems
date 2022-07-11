@@ -65,6 +65,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxTrivia.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.DebuggerSyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.DummySyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.LazySyntaxTree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.ParsedSyntaxTree.cs" />
@@ -74,14 +75,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxNodeRemover.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxNormalizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxReplacer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxReplacer.ListEdit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTreeDiagnosticEnumerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_PREPROCESS_.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTree.DebuggerSyntaxTree.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxReplacer.ListEdit.cs" />
   </ItemGroup>
 </Project>
