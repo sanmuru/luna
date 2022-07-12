@@ -4,6 +4,7 @@ namespace SyntaxGenerator;
 
 internal abstract class SourceWriter : AbstractFileWriter
 {
+    protected abstract string LanguageName { get; }
     protected abstract string RootNamespace { get; }
 
     protected SourceWriter(TextWriter writer, Tree tree, CancellationToken cancellationToken = default)
@@ -18,8 +19,8 @@ internal abstract class SourceWriter : AbstractFileWriter
         WriteLine("using System;");
         WriteLine("using System.Collections.Generic;");
         WriteLine("using System.Diagnostics.CodeAnalysis;");
+        WriteLine("using Microsoft.CodeAnalysis;");
         WriteLine("using Microsoft.CodeAnalysis.Syntax.InternalSyntax;");
-        WriteLine("using SamLu.CodeAnalysis.Syntax.InternalSyntax;");
         WriteLine("using Roslyn.Utilities;");
         WriteLine();
     }
@@ -214,11 +215,11 @@ internal abstract class SourceWriter : AbstractFileWriter
                 }
                 else if (IsSeparatedNodeList(field.Type))
                 {
-                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type}(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<CSharpSyntaxNode>(this.{CamelCase(field.Name)}));");
+                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type}(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{this.LanguageName}SyntaxNode>(this.{CamelCase(field.Name)}));");
                 }
                 else if (field.Type == "SyntaxNodeOrTokenList")
                 {
-                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<CSharpSyntaxNode> {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<CSharpSyntaxNode>(this.{CamelCase(field.Name)});");
+                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{this.LanguageName}SyntaxNode> {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{this.LanguageName}SyntaxNode>(this.{CamelCase(field.Name)});");
                 }
                 else
                 {
@@ -264,7 +265,7 @@ internal abstract class SourceWriter : AbstractFileWriter
             }
 
             WriteLine();
-            WriteLine($"internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new CSharp.Syntax.{node.Name}(this, parent, position);");
+            WriteLine($"internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new {this.LanguageName}.Syntax.{node.Name}(this, parent, position);");
 
             this.WriteGreenAcceptMethods(nd);
             this.WriteGreenUpdateMethod(nd);
@@ -426,8 +427,8 @@ internal abstract class SourceWriter : AbstractFileWriter
     protected virtual void WriteGreenAcceptMethods(Node node)
     {
         WriteLine();
-        WriteLine($"public override void Accept(CSharpSyntaxVisitor visitor) => visitor.Visit{StripPost(node.Name, "Syntax")}(this);");
-        WriteLine($"public override TResult Accept<TResult>(CSharpSyntaxVisitor<TResult> visitor) => visitor.Visit{StripPost(node.Name, "Syntax")}(this);");
+        WriteLine($"public override void Accept({this.LanguageName}SyntaxVisitor visitor) => visitor.Visit{StripPost(node.Name, "Syntax")}(this);");
+        WriteLine($"public override TResult Accept<TResult>({this.LanguageName}SyntaxVisitor<TResult> visitor) => visitor.Visit{StripPost(node.Name, "Syntax")}(this);");
     }
 
     protected virtual void WriteGreenVisitors()
@@ -441,7 +442,7 @@ internal abstract class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine("internal partial class CSharpSyntaxVisitor" + (withResult ? "<TResult>" : ""));
+        WriteLine($"internal partial class {this.LanguageName}SyntaxVisitor{(withResult ? "<TResult>" : "")}");
         OpenBlock();
         foreach (var node in nodes.OfType<Node>())
         {
@@ -457,7 +458,7 @@ internal abstract class SourceWriter : AbstractFileWriter
         Write(CommaJoin(node.Fields.Select(f =>
         {
             var type =
-                f.Type == "SyntaxNodeOrTokenList" ? "Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<CSharpSyntaxNode>" :
+                f.Type == "SyntaxNodeOrTokenList" ? "Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{this.LanguageName}SyntaxNode>" :
                 f.Type == "SyntaxTokenList" ? "Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken>" :
                 IsNodeList(f.Type) ? "Microsoft.CodeAnalysis.Syntax.InternalSyntax." + f.Type :
                 IsSeparatedNodeList(f.Type) ? "Microsoft.CodeAnalysis.Syntax.InternalSyntax." + f.Type :
@@ -509,7 +510,7 @@ internal abstract class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine("internal partial class CSharpSyntaxRewriter : CSharpSyntaxVisitor<CSharpSyntaxNode>");
+        WriteLine($"internal partial class {this.LanguageName}SyntaxRewriter : {this.LanguageName}SyntaxVisitor<{this.LanguageName}SyntaxNode>");
         OpenBlock();
         int nWritten = 0;
         foreach (var node in nodes.OfType<Node>())
@@ -519,7 +520,7 @@ internal abstract class SourceWriter : AbstractFileWriter
             if (nWritten > 0)
                 WriteLine();
             nWritten++;
-            WriteLine($"public override CSharpSyntaxNode Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
+            WriteLine($"public override {this.LanguageName}SyntaxNode Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
             Indent();
 
             if (nodeFields.Count == 0)
@@ -554,7 +555,7 @@ internal abstract class SourceWriter : AbstractFileWriter
         WriteLine("internal partial class ContextAwareSyntax");
         OpenBlock();
         WriteLine();
-        WriteLine("protected virtual SyntaxFactoryContext context;");
+        WriteLine("private SyntaxFactoryContext context;");
 
         WriteLine();
         WriteLine("public ContextAwareSyntax(SyntaxFactoryContext context)");
@@ -700,7 +701,7 @@ internal abstract class SourceWriter : AbstractFileWriter
             //SyntaxNode cached = SyntaxNodeCache.TryGetNode(SyntaxKind.IdentifierName, identifier, this.context, out hash);
             if (withSyntaxFactoryContext)
             {
-                Write("var cached = CSharpSyntaxNodeCache.TryGetNode((int)");
+                Write($"var cached = {this.LanguageName}SyntaxNodeCache.TryGetNode((int)");
             }
             else
             {
@@ -749,7 +750,7 @@ internal abstract class SourceWriter : AbstractFileWriter
             {
                 var type = f.Type switch
                 {
-                    "SyntaxNodeOrTokenList" => "Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<CSharpSyntaxNode>",
+                    "SyntaxNodeOrTokenList" => "Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{this.LanguageName}SyntaxNode>",
                     _ when IsSeparatedNodeList(f.Type) || IsNodeList(f.Type) => $"Microsoft.CodeAnalysis.Syntax.InternalSyntax.{f.Type}",
                     _ => GetFieldType(f, green: true),
                 };
@@ -797,7 +798,7 @@ internal abstract class SourceWriter : AbstractFileWriter
             var nd = (AbstractNode)node;
             WriteLine($"public abstract partial class {node.Name} : {node.Base}");
             OpenBlock();
-            WriteLine($"internal {node.Name}(InternalSyntax.CSharpSyntaxNode green, SyntaxNode? parent, int position)");
+            WriteLine($"internal {node.Name}(InternalSyntax.{this.LanguageName}SyntaxNode green, SyntaxNode? parent, int position)");
             WriteLine("  : base(green, parent, position)");
             OpenBlock();
             CloseBlock();
@@ -924,19 +925,19 @@ internal abstract class SourceWriter : AbstractFileWriter
                 {
                     if (IsSeparatedNodeList(field.Type) || field.Type == "SyntaxNodeOrTokenList")
                     {
-                        WriteLine($"protected virtual SyntaxNode? {CamelCase(field.Name)};");
+                        WriteLine($"private SyntaxNode? {CamelCase(field.Name)};");
                     }
                     else
                     {
                         var type = GetFieldType(field, green: false);
-                        WriteLine($"protected virtual {type} {CamelCase(field.Name)};");
+                        WriteLine($"private {type} {CamelCase(field.Name)};");
                     }
                 }
             }
 
             // write constructor
             WriteLine();
-            WriteLine($"internal {node.Name}(InternalSyntax.CSharpSyntaxNode green, SyntaxNode? parent, int position)");
+            WriteLine($"internal {node.Name}(InternalSyntax.{this.LanguageName}SyntaxNode green, SyntaxNode? parent, int position)");
             WriteLine("  : base(green, parent, position)");
             OpenBlock();
             CloseBlock();
@@ -1139,7 +1140,7 @@ internal abstract class SourceWriter : AbstractFileWriter
     protected virtual void WriteRedAcceptMethod(Node node, bool genericResult)
     {
         string genericArgs = genericResult ? "<TResult>" : "";
-        WriteLine($"public override {(genericResult ? "TResult?" : "void")} Accept{genericArgs}(CSharpSyntaxVisitor{genericArgs} visitor){(genericResult ? " where TResult : default" : "")} => visitor.Visit{StripPost(node.Name, "Syntax")}(this);");
+        WriteLine($"public override {(genericResult ? "TResult?" : "void")} Accept{genericArgs}({this.LanguageName}SyntaxVisitor{genericArgs} visitor){(genericResult ? " where TResult : default" : "")} => visitor.Visit{StripPost(node.Name, "Syntax")}(this);");
     }
 
     protected virtual void WriteRedVisitors()
@@ -1154,7 +1155,7 @@ internal abstract class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine("public partial class CSharpSyntaxVisitor" + genericArgs);
+        WriteLine($"public partial class {this.LanguageName}SyntaxVisitor{genericArgs}");
         OpenBlock();
         int nWritten = 0;
         foreach (var node in nodes.OfType<Node>())
@@ -1379,7 +1380,7 @@ internal abstract class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine("public partial class CSharpSyntaxRewriter : CSharpSyntaxVisitor<SyntaxNode?>");
+        WriteLine($"public partial class {this.LanguageName}SyntaxRewriter : {this.LanguageName}SyntaxVisitor<SyntaxNode?>");
         OpenBlock();
 
         int nWritten = 0;
@@ -1593,7 +1594,7 @@ internal abstract class SourceWriter : AbstractFileWriter
                 else if (IsSeparatedNodeList(f.Type))
                     return $"{CamelCase(f.Name)}.Node.ToGreenSeparatedList<Syntax.InternalSyntax.{GetElementType(f.Type)}>()";
                 else if (f.Type == "SyntaxNodeOrTokenList")
-                    return $"{CamelCase(f.Name)}.Node.ToGreenList<Syntax.InternalSyntax.CSharpSyntaxNode>()";
+                    return $"{CamelCase(f.Name)}.Node.ToGreenList<Syntax.InternalSyntax.{this.LanguageName}SyntaxNode>()";
                 else if (IsOptional(f))
                     return $"{CamelCase(f.Name)} == null ? null : (Syntax.InternalSyntax.{f.Type}){CamelCase(f.Name)}.Green";
                 else
@@ -1658,7 +1659,7 @@ internal abstract class SourceWriter : AbstractFileWriter
             if (field.Type == "SyntaxToken" && CanBeAutoCreated(nd, field) && field.Kinds.Count > 1)
             {
                 WriteLine();
-                WriteLine($"protected virtual static SyntaxKind Get{StripPost(nd.Name, "Syntax")}{StripPost(field.Name, "Opt")}Kind(SyntaxKind kind)");
+                WriteLine($"private static SyntaxKind Get{StripPost(nd.Name, "Syntax")}{StripPost(field.Name, "Opt")}Kind(SyntaxKind kind)");
                 Indent();
                 WriteLine("=> kind switch");
                 OpenBlock();

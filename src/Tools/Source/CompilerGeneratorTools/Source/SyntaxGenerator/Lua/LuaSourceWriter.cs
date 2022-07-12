@@ -1,8 +1,12 @@
-﻿namespace SyntaxGenerator.Lua;
+﻿using SamLu.CodeAnalysis;
+
+namespace SyntaxGenerator.Lua;
 
 internal sealed class LuaSourceWriter : SourceWriter
 {
-    public LuaSourceWriter(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) : base(writer, tree, cancellationToken) { }
+    protected override string LanguageName => LanguageNames.Lua;
 
     protected override string RootNamespace => "SamLu.CodeAnalysis.Lua";
+
+    public LuaSourceWriter(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) : base(writer, tree, cancellationToken) { }
 }

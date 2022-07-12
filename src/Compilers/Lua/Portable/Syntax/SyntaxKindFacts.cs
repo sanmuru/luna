@@ -316,10 +316,7 @@ public static partial class SyntaxFacts
     public static bool IsName(SyntaxKind kind) =>
         kind switch
         {
-            SyntaxKind.IdentifierName or
-            SyntaxKind.GenericName or
-            SyntaxKind.QualifiedName or
-            SyntaxKind.AliasQualifiedName => true,
+            SyntaxKind.IdentifierName => true,
 
             _ => false
         };

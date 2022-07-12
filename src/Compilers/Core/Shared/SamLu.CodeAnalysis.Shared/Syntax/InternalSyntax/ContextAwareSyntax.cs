@@ -7,10 +7,4 @@
     .Syntax.InternalSyntax;
 
 #warning 未实现。
-internal partial class ContextAwareSyntax
-{
-    public ContextAwareSyntax(SyntaxFactoryContext syntaxFactoryContext)
-    {
-        throw new NotImplementedException();
-    }
-}
+internal partial class ContextAwareSyntax { }

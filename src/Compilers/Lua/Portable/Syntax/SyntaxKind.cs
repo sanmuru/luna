@@ -225,17 +225,10 @@ public enum SyntaxKind : ushort
     #region 名称和类型名称
     /// <summary>表示标识符名称。</summary>
     IdentifierName = 9473,
-    /// <summary>表示限定符名称。</summary>
-    QualifiedName,
-    /// <summary>表示泛型名称。</summary>
-    GenericName,
-    /// <summary>表示类型列表。</summary>
-    TypeArgumentList,
-    /// <summary>表示别名限定符名称。</summary>
-    AliasQualifiedName,
     #endregion
 
     #region 表达式
+    // 基本表达式
     /// <summary>表示<see langword="nil"/>关键词字面量表达式。</summary>
     NilLiteralExpression = 9537,
     /// <summary>表示<see langword="false"/>关键词字面量表达式。</summary>
@@ -250,8 +243,6 @@ public enum SyntaxKind : ushort
     VariousArgumentsExpression,
     /// <summary>表示函数定义表达式。</summary>
     FunctionDefinitionExpression,
-    /// <summary>表示前置表达式。</summary>
-    PrefixExpression,
     /// <summary>表示表初始化表达式。</summary>
     TableConstructorExpression,
 
@@ -276,10 +267,10 @@ public enum SyntaxKind : ushort
     BitwiseExclusiveOrExpression,
     /// <summary>表示按位或表达式。</summary>
     BitwiseOrExpression,
-    /// <summary>表示按位右移表达式。</summary>
-    BitwiseRightShiftExpression,
     /// <summary>表示按位左移表达式。</summary>
     BitwiseLeftShiftExpression,
+    /// <summary>表示按位右移表达式。</summary>
+    BitwiseRightShiftExpression,
     /// <summary>表示连接表达式。</summary>
     ConcatenationExpression,
     /// <summary>表示小于表达式。</summary>

@@ -89,7 +89,7 @@ internal abstract class TestWriter : AbstractFileWriter
 
         var strippedName = StripPost(node.Name, "Syntax");
 
-        WriteLine($"protected virtual static {csharpNamespace}{node.Name} Generate{strippedName}()");
+        WriteLine($"private static {csharpNamespace}{node.Name} Generate{strippedName}()");
 
         Write($"    => {syntaxFactory}.{strippedName}(");
         //instantiate node
@@ -160,7 +160,7 @@ internal abstract class TestWriter : AbstractFileWriter
                     Write($"{syntaxFactory}.Token(SyntaxKind.{kind})");
                 }
             }
-            else if (field.Type == "CSharpSyntaxNode")
+            else if (field.Type == "{this.RootNamespace}SyntaxNode")
             {
                 Write($"{syntaxFactory}.IdentifierName({syntaxFactory}.Identifier(\"{field.Name}\"))");
             }
