@@ -9,9 +9,7 @@ namespace SamLu.CodeAnalysis.Lua
 
         ERR_InternalError,
 
-        [Obsolete("Lua.NET不支持预处理指令", false)]
-        ERR_InvalidPreprocessingSymbol = 1,
-        ERR_InvalidInstrumentationKind,
+        ERR_InvalidInstrumentationKind = 1,
         ERR_BadSourceCodeKind,
         ERR_BadDocumentationMode,
         ERR_BadLanguageVersion,

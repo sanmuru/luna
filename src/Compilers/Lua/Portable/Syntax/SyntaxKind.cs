@@ -321,12 +321,8 @@ public enum SyntaxKind : ushort
     #endregion
 
     #region 语句
-    /// <summary>表示程序块（编译单元）。</summary>
-    Chunk = 9761,
-    /// <summary>表示代码块。</summary>
-    Block,
     /// <summary>表示仅有分隔符（<c>;</c>）的空语句。</summary>
-    ColonStatement,
+    ColonStatement = 9761,
     /// <summary>表示包含表达式的语句。</summary>
     ExpressionStatement,
     /// <summary>表示标签语句。</summary>
@@ -360,6 +356,9 @@ public enum SyntaxKind : ushort
     #endregion
 
     #region 声明
-    // = 9889,
+    /// <summary>表示程序块（编译单元）。</summary>
+    Chunk = 9889,
+    /// <summary>表示代码块。</summary>
+    Block,
     #endregion
 }
