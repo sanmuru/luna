@@ -58,7 +58,12 @@
   <Import Project="..\..\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems" Label="Shared" />
 
   <ItemGroup>
-    <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua.Parser.UnitTests"/>
+    <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua.Parser.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.2.0" />
+    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.3.37" />
   </ItemGroup>
   
 </Project>
