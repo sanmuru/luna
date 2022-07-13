@@ -241,10 +241,26 @@ public enum SyntaxKind : ushort
     StringLiteralExpression,
     /// <summary>表示可变参数列表表达式。</summary>
     VariousArgumentsExpression,
+    /// <summary>表示带圆括号的表达式。</summary>
+    ParenthesizedExpression,
+    /// <summary>表示带方括号的表达式。</summary>
+    BracketedExpression,
+    /// <summary>表示表达式列表。</summary>
+    ExpressionList,
+    /// <summary>表示带花括号的表达式列表。</summary>
+    BracedExpressionList,
     /// <summary>表示函数定义表达式。</summary>
     FunctionDefinitionExpression,
+    /// <summary>表示表字段列表。</summary>
+    FieldList,
+    /// <summary>表示表字段。</summary>
+    Field,
     /// <summary>表示表初始化表达式。</summary>
     TableConstructorExpression,
+    /// <summary>表示传入隐式self参数的调用头。</summary>
+    ImplicitSelfCall,
+    /// <summary>表示调用表达式。</summary>
+    InvocationExpression,
 
     // 二元运算符表达式
     /// <summary>表示加法表达式。</summary>
@@ -301,8 +317,8 @@ public enum SyntaxKind : ushort
     BitwiseNotExpression,
 
     // 赋值表达式
-    /// <summary>表示一般赋值表达式。</summary>
-    SimpleAssignmentExpression = 9697,
+    /// <summary>表示赋值表达式。</summary>
+    AssignmentExpression = 9697,
 
     // 成员操作表达式
     /// <summary>表示一般成员操作表达式。</summary>

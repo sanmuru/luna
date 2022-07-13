@@ -4,13 +4,15 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 using Roslyn.Utilities;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+
+using ThisInternalSyntaxNode = LuaSyntaxNode;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
+
+using ThisInternalSyntaxNode = MoonScriptSyntaxNode;
 #endif
-    .Syntax.InternalSyntax;
 
 [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 internal abstract partial class
@@ -124,7 +126,23 @@ internal abstract partial class
 #endif
         visitor);
 
-#warning SetFactoryContext
+    /// <summary>
+    /// 设置语法工厂上下文。
+    /// </summary>
+    /// <param name="context">包含语法工厂上下文信息的对象。</param>
+    /// <remarks>
+    /// 此方法仅应在构造语法节点时调用。
+    /// </remarks>
+    protected void SetFactoryContext(SyntaxFactoryContext context) =>
+        this.flags = ThisInternalSyntaxNode.SetFactoryContext(this.flags, context);
+
+    /// <summary>
+    /// 给指定的节点标示设置语法工厂上下文。
+    /// </summary>
+    /// <param name="flags">要修改的节点标示。</param>
+    /// <param name="context">包含语法工厂上下文信息的对象。</param>
+    /// <returns>修改后的<paramref name="flags"/>。</returns>
+    internal static partial NodeFlags SetFactoryContext(NodeFlags flags, SyntaxFactoryContext context);
 
     public override partial Microsoft.CodeAnalysis.SyntaxToken CreateSeparator<TNode>(SyntaxNode element);
 

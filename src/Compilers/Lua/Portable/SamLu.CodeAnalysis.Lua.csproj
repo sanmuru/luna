@@ -42,11 +42,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />
     <ProjectReference Include="..\..\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj" />
-    <ProjectReference Include="..\..\..\Tools\Source\CompilerGeneratorTools\Source\SyntaxGenerator\SyntaxGenerator.csproj">
+    <ProjectReference Include="..\..\..\Tools\Source\CompilerGeneratorTools\src\LuaCodeAnalysisSourceGenerators\LuaCodeAnalysisSourceGenerators.csproj">
       <OutputItemType>Analyzer</OutputItemType>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <!-- SyntaxGenerator项目的目标平台除了.NET Standard 2.0外还有.NET 6.0，后者将被编译成控制台程序。在这里我们只需要它作为组件，生成代码参与编译。 -->
-      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
     </ProjectReference>
   </ItemGroup>
 

@@ -403,7 +403,7 @@ public static partial class SyntaxFacts
     public static bool IsAssignmentExpression(SyntaxKind kind) =>
         kind switch
         {
-            SyntaxKind.SimpleAssignmentExpression => true,
+            SyntaxKind.AssignmentExpression => true,
 
             _ => false
         };
@@ -414,7 +414,7 @@ public static partial class SyntaxFacts
     public static SyntaxKind GetAssignmentExpression(SyntaxKind token) =>
         token switch
         {
-            SyntaxKind.EqualsToken => SyntaxKind.SimpleAssignmentExpression,
+            SyntaxKind.EqualsToken => SyntaxKind.AssignmentExpression,
 
             _ => SyntaxKind.None
         };

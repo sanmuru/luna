@@ -50,6 +50,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxFirstTokenReplacer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxLastTokenReplacer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxNodeCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxRewriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SkippedTokensTriviaSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxFactory.Parser.cs" />

@@ -12,6 +12,8 @@ internal partial class LuaSyntaxNode
         _ => this.KindText
     };
 
+    internal static partial NodeFlags SetFactoryContext(NodeFlags flags, SyntaxFactoryContext context) => flags;
+
     public override partial Microsoft.CodeAnalysis.SyntaxToken CreateSeparator<TNode>(SyntaxNode element) => Lua.SyntaxFactory.Token(SyntaxKind.CommanToken);
 
     public override partial bool IsTriviaWithEndOfLine() =>
