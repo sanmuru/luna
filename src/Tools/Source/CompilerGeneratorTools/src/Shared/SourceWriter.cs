@@ -274,7 +274,7 @@ internal class SourceWriter : AbstractFileWriter
             }
 
             WriteLine();
-            WriteLine($"internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new {LanguageNames.This}.Syntax.{node.Name}(this, parent, position);");
+            WriteLine($"internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new {LanguageNames.This}.Syntax.{node.Name}(this, parent as {LanguageNames.This}.{LanguageNames.This}SyntaxNode, position);");
 
             this.WriteGreenAcceptMethods(nd);
             this.WriteGreenUpdateMethod(nd);
@@ -946,7 +946,7 @@ internal class SourceWriter : AbstractFileWriter
 
             // write constructor
             WriteLine();
-            WriteLine($"internal {node.Name}(InternalSyntax.{LanguageNames.This}SyntaxNode green, SyntaxNode? parent, int position)");
+            WriteLine($"internal {node.Name}(InternalSyntax.{LanguageNames.This}SyntaxNode green, {LanguageNames.This}SyntaxNode? parent, int position)");
             WriteLine("  : base(green, parent, position)");
             OpenBlock();
             CloseBlock();

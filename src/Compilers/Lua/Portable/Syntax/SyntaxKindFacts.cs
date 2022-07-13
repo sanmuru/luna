@@ -34,7 +34,7 @@ public static partial class SyntaxFacts
             SyntaxKind.CloseBracketToken => "]",
             SyntaxKind.ColonToken => ":",
             SyntaxKind.SemicolonToken => ";",
-            SyntaxKind.CommanToken => ",",
+            SyntaxKind.CommaToken => ",",
             SyntaxKind.DotToken => ".",
             SyntaxKind.LessThanLessThanToken => "<<",
             SyntaxKind.LessThanEqualsToken => "<=",

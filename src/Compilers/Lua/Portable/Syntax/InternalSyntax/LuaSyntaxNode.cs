@@ -14,7 +14,7 @@ internal partial class LuaSyntaxNode
 
     internal static partial NodeFlags SetFactoryContext(NodeFlags flags, SyntaxFactoryContext context) => flags;
 
-    public override partial Microsoft.CodeAnalysis.SyntaxToken CreateSeparator<TNode>(SyntaxNode element) => Lua.SyntaxFactory.Token(SyntaxKind.CommanToken);
+    public override partial Microsoft.CodeAnalysis.SyntaxToken CreateSeparator<TNode>(SyntaxNode element) => Lua.SyntaxFactory.Token(SyntaxKind.CommaToken);
 
     public override partial bool IsTriviaWithEndOfLine() =>
         this.Kind switch

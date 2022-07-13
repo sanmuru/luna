@@ -17,8 +17,11 @@
     <!-- Enable output of generated files back into our Generated directory -->
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <Authors>Sam Lu</Authors>
-    <Company />
+    <Company></Company>
     <Copyright>© Sam Lu, All rights reserved.</Copyright>
     <PackageTags>Luna CodeAnalysis Compiler Lua MoonScript Parser Scanner Lexer Emit CodeGeneration Metadata IL Compilation Scripting Syntax Semantics</PackageTags>
     <NeutralLanguage>zh-CN</NeutralLanguage>
@@ -31,12 +34,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Binder\**" />
-    <EmbeddedResource Remove="Binder\**" />
+    <AdditionalFiles Include="Syntax\Syntax.xml" />
+
+    <!-- 不将上一个源代码生成器产生的输出结果包含进入后续的运行流程。 -->
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="Syntax\Syntax.xml" />
+    <EmbeddedResource Update="LuaResources.resx" GenerateSource="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,29 +54,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="LuaResources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>LuaResources.resx</DependentUpon>
-    </Compile>
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.2.0" />
+    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.3.37" />
   </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="LuaResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>LuaResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
+  
   <Import Project="..\..\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems" Label="Shared" />
 
   <ItemGroup>
     <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua.Parser.UnitTests" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.2.0" />
-    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.3.37" />
-  </ItemGroup>
-  
 </Project>

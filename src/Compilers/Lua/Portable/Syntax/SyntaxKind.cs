@@ -52,7 +52,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示<c>;</c>标记。</summary>
     SemicolonToken,
     /// <summary>表示<c>,</c>标记。</summary>
-    CommanToken,
+    CommaToken,
     /// <summary>表示<c>.</c>标记。</summary>
     DotToken,
 
@@ -243,22 +243,10 @@ public enum SyntaxKind : ushort
     VariousArgumentsExpression,
     /// <summary>表示带圆括号的表达式。</summary>
     ParenthesizedExpression,
-    /// <summary>表示带方括号的表达式。</summary>
-    BracketedExpression,
-    /// <summary>表示表达式列表。</summary>
-    ExpressionList,
-    /// <summary>表示带花括号的表达式列表。</summary>
-    BracedExpressionList,
     /// <summary>表示函数定义表达式。</summary>
     FunctionDefinitionExpression,
-    /// <summary>表示表字段列表。</summary>
-    FieldList,
-    /// <summary>表示表字段。</summary>
-    Field,
     /// <summary>表示表初始化表达式。</summary>
     TableConstructorExpression,
-    /// <summary>表示传入隐式self参数的调用头。</summary>
-    ImplicitSelfCall,
     /// <summary>表示调用表达式。</summary>
     InvocationExpression,
 
@@ -329,15 +317,15 @@ public enum SyntaxKind : ushort
 
     #region 语句
     /// <summary>表示仅有分隔符（<c>;</c>）的空语句。</summary>
-    ColonStatement = 9761,
-    /// <summary>表示包含表达式的语句。</summary>
-    ExpressionStatement,
+    EmptyStatement = 9761,
     /// <summary>表示标签语句。</summary>
     LabeledStatement,
     /// <summary>表示中断流程（<see langword="break"/>）语句。</summary>
     BreakStatement,
     /// <summary>表示跳转标签（<see langword="goto"/>）语句。</summary>
     GotoStatement,
+    /// <summary>表示返回（<see langword="return"/>）语句。</summary>
+    ReturnStatement,
     /// <summary>表示执行代码块语句。</summary>
     DoStatement,
     /// <summary>表示<see langword="while"/>循环语句。</summary>
@@ -347,7 +335,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示<see langword="if"/>条件语句。</summary>
     IfStatement,
     /// <summary>表示<see langword="elseif"/>条件从句。</summary>
-    ElseifClause,
+    ElseIfClause,
     /// <summary>表示<see langword="else"/>条件从句。</summary>
     ElseClause,
     /// <summary>表示逐量<see langword="for"/>循环语句。</summary>
@@ -367,5 +355,25 @@ public enum SyntaxKind : ushort
     Chunk = 9889,
     /// <summary>表示代码块。</summary>
     Block,
+    /// <summary>表示带方括号的表达式。</summary>
+    BracketedExpression,
+    /// <summary>表示表达式列表。</summary>
+    ExpressionList,
+    /// <summary>表示带花括号的表达式列表。</summary>
+    BracedExpressionList,
+    /// <summary>表示表字段列表。</summary>
+    FieldList,
+    /// <summary>表示表字段。</summary>
+    Field,
+    /// <summary>表示函数参数列表。</summary>
+    ParameterList,
+    /// <summary>表示函数参数。</summary>
+    Parameter,
+    /// <summary>表示调用参数列表。</summary>
+    ArgumentList,
+    /// <summary>表示调用参数。</summary>
+    Argument,
+    /// <summary>表示传入隐式self参数的调用头。</summary>
+    ImplicitSelfCall,
     #endregion
 }

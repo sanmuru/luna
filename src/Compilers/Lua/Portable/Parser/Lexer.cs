@@ -295,7 +295,7 @@ internal partial class Lexer
 
             case ',':
                 this.TextWindow.AdvanceChar();
-                info.Kind = SyntaxKind.CommanToken;
+                info.Kind = SyntaxKind.CommaToken;
                 break;
 
             case '.':

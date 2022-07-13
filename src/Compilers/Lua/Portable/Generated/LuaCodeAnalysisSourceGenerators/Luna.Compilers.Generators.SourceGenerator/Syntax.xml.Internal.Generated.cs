@@ -91,7 +91,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         internal override GreenNode? GetSlot(int index)
             => index == 0 ? this.identifier : null;
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.IdentifierNameSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.IdentifierNameSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitIdentifierName(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitIdentifierName(this);
@@ -195,7 +195,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         internal override GreenNode? GetSlot(int index)
             => index == 0 ? this.token : null;
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.LiteralExpressionSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.LiteralExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitLiteralExpression(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitLiteralExpression(this);
@@ -304,7 +304,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 _ => null,
             };
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ParenthesizedExpressionSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ParenthesizedExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitParenthesizedExpression(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitParenthesizedExpression(this);
@@ -358,6 +358,3042 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         static ParenthesizedExpressionSyntax()
         {
             ObjectBinder.RegisterTypeReader(typeof(ParenthesizedExpressionSyntax), r => new ParenthesizedExpressionSyntax(r));
+        }
+    }
+
+    /// <summary>Class which represents the syntax node for the list of expressions.</summary>
+    internal sealed partial class ExpressionListSyntax : LuaSyntaxNode
+    {
+        internal readonly GreenNode? expressions;
+
+        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 1;
+            if (expressions != null)
+            {
+                this.AdjustFlagsAndWidth(expressions);
+                this.expressions = expressions;
+            }
+        }
+
+        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 1;
+            if (expressions != null)
+            {
+                this.AdjustFlagsAndWidth(expressions);
+                this.expressions = expressions;
+            }
+        }
+
+        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions)
+          : base(kind)
+        {
+            this.SlotCount = 1;
+            if (expressions != null)
+            {
+                this.AdjustFlagsAndWidth(expressions);
+                this.expressions = expressions;
+            }
+        }
+
+        /// <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of expressions.</summary>
+        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> Expressions => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.expressions));
+
+        internal override GreenNode? GetSlot(int index)
+            => index == 0 ? this.expressions : null;
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ExpressionListSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitExpressionList(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitExpressionList(this);
+
+        public ExpressionListSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
+        {
+            if (expressions != this.Expressions)
+            {
+                var newNode = SyntaxFactory.ExpressionList(expressions);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new ExpressionListSyntax(this.Kind, this.expressions, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new ExpressionListSyntax(this.Kind, this.expressions, GetDiagnostics(), annotations);
+
+        internal ExpressionListSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 1;
+            var expressions = (GreenNode?)reader.ReadValue();
+            if (expressions != null)
+            {
+                AdjustFlagsAndWidth(expressions);
+                this.expressions = expressions;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.expressions);
+        }
+
+        static ExpressionListSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(ExpressionListSyntax), r => new ExpressionListSyntax(r));
+        }
+    }
+
+    internal sealed partial class FunctionDefinitionExpressionSyntax : ExpressionSyntax
+    {
+        internal readonly SyntaxToken functionKeyword;
+        internal readonly ParameterListSyntax parameters;
+        internal readonly BlockSyntax body;
+        internal readonly SyntaxToken endKeyword;
+
+        internal FunctionDefinitionExpressionSyntax(SyntaxKind kind, SyntaxToken functionKeyword, ParameterListSyntax parameters, BlockSyntax body, SyntaxToken endKeyword, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 4;
+            this.AdjustFlagsAndWidth(functionKeyword);
+            this.functionKeyword = functionKeyword;
+            this.AdjustFlagsAndWidth(parameters);
+            this.parameters = parameters;
+            this.AdjustFlagsAndWidth(body);
+            this.body = body;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal FunctionDefinitionExpressionSyntax(SyntaxKind kind, SyntaxToken functionKeyword, ParameterListSyntax parameters, BlockSyntax body, SyntaxToken endKeyword, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 4;
+            this.AdjustFlagsAndWidth(functionKeyword);
+            this.functionKeyword = functionKeyword;
+            this.AdjustFlagsAndWidth(parameters);
+            this.parameters = parameters;
+            this.AdjustFlagsAndWidth(body);
+            this.body = body;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal FunctionDefinitionExpressionSyntax(SyntaxKind kind, SyntaxToken functionKeyword, ParameterListSyntax parameters, BlockSyntax body, SyntaxToken endKeyword)
+          : base(kind)
+        {
+            this.SlotCount = 4;
+            this.AdjustFlagsAndWidth(functionKeyword);
+            this.functionKeyword = functionKeyword;
+            this.AdjustFlagsAndWidth(parameters);
+            this.parameters = parameters;
+            this.AdjustFlagsAndWidth(body);
+            this.body = body;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        public SyntaxToken FunctionKeyword => this.functionKeyword;
+        public ParameterListSyntax Parameters => this.parameters;
+        public BlockSyntax Body => this.body;
+        public SyntaxToken EndKeyword => this.endKeyword;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.functionKeyword,
+                1 => this.parameters,
+                2 => this.body,
+                3 => this.endKeyword,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.FunctionDefinitionExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitFunctionDefinitionExpression(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitFunctionDefinitionExpression(this);
+
+        public FunctionDefinitionExpressionSyntax Update(SyntaxToken functionKeyword, ParameterListSyntax parameters, BlockSyntax body, SyntaxToken endKeyword)
+        {
+            if (functionKeyword != this.FunctionKeyword || parameters != this.Parameters || body != this.Body || endKeyword != this.EndKeyword)
+            {
+                var newNode = SyntaxFactory.FunctionDefinitionExpression(functionKeyword, parameters, body, endKeyword);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new FunctionDefinitionExpressionSyntax(this.Kind, this.functionKeyword, this.parameters, this.body, this.endKeyword, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new FunctionDefinitionExpressionSyntax(this.Kind, this.functionKeyword, this.parameters, this.body, this.endKeyword, GetDiagnostics(), annotations);
+
+        internal FunctionDefinitionExpressionSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 4;
+            var functionKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(functionKeyword);
+            this.functionKeyword = functionKeyword;
+            var parameters = (ParameterListSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(parameters);
+            this.parameters = parameters;
+            var body = (BlockSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(body);
+            this.body = body;
+            var endKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.functionKeyword);
+            writer.WriteValue(this.parameters);
+            writer.WriteValue(this.body);
+            writer.WriteValue(this.endKeyword);
+        }
+
+        static FunctionDefinitionExpressionSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(FunctionDefinitionExpressionSyntax), r => new FunctionDefinitionExpressionSyntax(r));
+        }
+    }
+
+    /// <summary>Class which represents the syntax node for the table constructor expression.</summary>
+    internal sealed partial class TableConstructorExpressionSyntax : ExpressionSyntax
+    {
+        internal readonly SyntaxToken openBrace;
+        internal readonly GreenNode? fields;
+        internal readonly SyntaxToken closeBrace;
+
+        internal TableConstructorExpressionSyntax(SyntaxKind kind, SyntaxToken openBrace, GreenNode? fields, SyntaxToken closeBrace, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(openBrace);
+            this.openBrace = openBrace;
+            if (fields != null)
+            {
+                this.AdjustFlagsAndWidth(fields);
+                this.fields = fields;
+            }
+            this.AdjustFlagsAndWidth(closeBrace);
+            this.closeBrace = closeBrace;
+        }
+
+        internal TableConstructorExpressionSyntax(SyntaxKind kind, SyntaxToken openBrace, GreenNode? fields, SyntaxToken closeBrace, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(openBrace);
+            this.openBrace = openBrace;
+            if (fields != null)
+            {
+                this.AdjustFlagsAndWidth(fields);
+                this.fields = fields;
+            }
+            this.AdjustFlagsAndWidth(closeBrace);
+            this.closeBrace = closeBrace;
+        }
+
+        internal TableConstructorExpressionSyntax(SyntaxKind kind, SyntaxToken openBrace, GreenNode? fields, SyntaxToken closeBrace)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(openBrace);
+            this.openBrace = openBrace;
+            if (fields != null)
+            {
+                this.AdjustFlagsAndWidth(fields);
+                this.fields = fields;
+            }
+            this.AdjustFlagsAndWidth(closeBrace);
+            this.closeBrace = closeBrace;
+        }
+
+        /// <summary>SyntaxToken representing open brace.</summary>
+        public SyntaxToken OpenBrace => this.openBrace;
+        /// <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of fields.</summary>
+        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldListSyntax> Fields => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldListSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.fields));
+        /// <summary>SyntaxToken representing close brace.</summary>
+        public SyntaxToken CloseBrace => this.closeBrace;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.openBrace,
+                1 => this.fields,
+                2 => this.closeBrace,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.TableConstructorExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitTableConstructorExpression(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitTableConstructorExpression(this);
+
+        public TableConstructorExpressionSyntax Update(SyntaxToken openBrace, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldListSyntax> fields, SyntaxToken closeBrace)
+        {
+            if (openBrace != this.OpenBrace || fields != this.Fields || closeBrace != this.CloseBrace)
+            {
+                var newNode = SyntaxFactory.TableConstructorExpression(openBrace, fields, closeBrace);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new TableConstructorExpressionSyntax(this.Kind, this.openBrace, this.fields, this.closeBrace, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new TableConstructorExpressionSyntax(this.Kind, this.openBrace, this.fields, this.closeBrace, GetDiagnostics(), annotations);
+
+        internal TableConstructorExpressionSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var openBrace = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(openBrace);
+            this.openBrace = openBrace;
+            var fields = (GreenNode?)reader.ReadValue();
+            if (fields != null)
+            {
+                AdjustFlagsAndWidth(fields);
+                this.fields = fields;
+            }
+            var closeBrace = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(closeBrace);
+            this.closeBrace = closeBrace;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.openBrace);
+            writer.WriteValue(this.fields);
+            writer.WriteValue(this.closeBrace);
+        }
+
+        static TableConstructorExpressionSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(TableConstructorExpressionSyntax), r => new TableConstructorExpressionSyntax(r));
+        }
+    }
+
+    /// <summary>Class which represents an expression that has a binary operator.</summary>
+    internal sealed partial class BinaryExpressionSyntax : ExpressionSyntax
+    {
+        internal readonly ExpressionSyntax left;
+        internal readonly SyntaxToken operatorToken;
+        internal readonly ExpressionSyntax right;
+
+        internal BinaryExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(left);
+            this.left = left;
+            this.AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            this.AdjustFlagsAndWidth(right);
+            this.right = right;
+        }
+
+        internal BinaryExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(left);
+            this.left = left;
+            this.AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            this.AdjustFlagsAndWidth(right);
+            this.right = right;
+        }
+
+        internal BinaryExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(left);
+            this.left = left;
+            this.AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            this.AdjustFlagsAndWidth(right);
+            this.right = right;
+        }
+
+        /// <summary>ExpressionSyntax node representing the expression on the left of the binary operator.</summary>
+        public ExpressionSyntax Left => this.left;
+        /// <summary>SyntaxToken representing the operator of the binary expression.</summary>
+        public SyntaxToken OperatorToken => this.operatorToken;
+        /// <summary>ExpressionSyntax node representing the expression on the right of the binary operator.</summary>
+        public ExpressionSyntax Right => this.right;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.left,
+                1 => this.operatorToken,
+                2 => this.right,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.BinaryExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitBinaryExpression(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitBinaryExpression(this);
+
+        public BinaryExpressionSyntax Update(ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right)
+        {
+            if (left != this.Left || operatorToken != this.OperatorToken || right != this.Right)
+            {
+                var newNode = SyntaxFactory.BinaryExpression(this.Kind, left, operatorToken, right);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new BinaryExpressionSyntax(this.Kind, this.left, this.operatorToken, this.right, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new BinaryExpressionSyntax(this.Kind, this.left, this.operatorToken, this.right, GetDiagnostics(), annotations);
+
+        internal BinaryExpressionSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var left = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(left);
+            this.left = left;
+            var operatorToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            var right = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(right);
+            this.right = right;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.left);
+            writer.WriteValue(this.operatorToken);
+            writer.WriteValue(this.right);
+        }
+
+        static BinaryExpressionSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(BinaryExpressionSyntax), r => new BinaryExpressionSyntax(r));
+        }
+    }
+
+    /// <summary>Class which represents the syntax node for prefix unary expression.</summary>
+    internal sealed partial class UnaryExpressionSyntax : ExpressionSyntax
+    {
+        internal readonly SyntaxToken operatorToken;
+        internal readonly ExpressionSyntax operand;
+
+        internal UnaryExpressionSyntax(SyntaxKind kind, SyntaxToken operatorToken, ExpressionSyntax operand, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            this.AdjustFlagsAndWidth(operand);
+            this.operand = operand;
+        }
+
+        internal UnaryExpressionSyntax(SyntaxKind kind, SyntaxToken operatorToken, ExpressionSyntax operand, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            this.AdjustFlagsAndWidth(operand);
+            this.operand = operand;
+        }
+
+        internal UnaryExpressionSyntax(SyntaxKind kind, SyntaxToken operatorToken, ExpressionSyntax operand)
+          : base(kind)
+        {
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            this.AdjustFlagsAndWidth(operand);
+            this.operand = operand;
+        }
+
+        /// <summary>SyntaxToken representing the kind of the operator of the prefix unary expression.</summary>
+        public SyntaxToken OperatorToken => this.operatorToken;
+        /// <summary>ExpressionSyntax representing the operand of the prefix unary expression.</summary>
+        public ExpressionSyntax Operand => this.operand;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.operatorToken,
+                1 => this.operand,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.UnaryExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitUnaryExpression(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitUnaryExpression(this);
+
+        public UnaryExpressionSyntax Update(SyntaxToken operatorToken, ExpressionSyntax operand)
+        {
+            if (operatorToken != this.OperatorToken || operand != this.Operand)
+            {
+                var newNode = SyntaxFactory.UnaryExpression(this.Kind, operatorToken, operand);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new UnaryExpressionSyntax(this.Kind, this.operatorToken, this.operand, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new UnaryExpressionSyntax(this.Kind, this.operatorToken, this.operand, GetDiagnostics(), annotations);
+
+        internal UnaryExpressionSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 2;
+            var operatorToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            var operand = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(operand);
+            this.operand = operand;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.operatorToken);
+            writer.WriteValue(this.operand);
+        }
+
+        static UnaryExpressionSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(UnaryExpressionSyntax), r => new UnaryExpressionSyntax(r));
+        }
+    }
+
+    /// <summary>Class which represents an expression that has an assignment operator.</summary>
+    internal sealed partial class AssignmentExpressionSyntax : ExpressionSyntax
+    {
+        internal readonly ExpressionSyntax left;
+        internal readonly SyntaxToken equalsToken;
+        internal readonly ExpressionSyntax right;
+
+        internal AssignmentExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken equalsToken, ExpressionSyntax right, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(left);
+            this.left = left;
+            this.AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
+            this.AdjustFlagsAndWidth(right);
+            this.right = right;
+        }
+
+        internal AssignmentExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken equalsToken, ExpressionSyntax right, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(left);
+            this.left = left;
+            this.AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
+            this.AdjustFlagsAndWidth(right);
+            this.right = right;
+        }
+
+        internal AssignmentExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken equalsToken, ExpressionSyntax right)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(left);
+            this.left = left;
+            this.AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
+            this.AdjustFlagsAndWidth(right);
+            this.right = right;
+        }
+
+        /// <summary>ExpressionSyntax node representing the expression on the left of the assignment operator.</summary>
+        public ExpressionSyntax Left => this.left;
+        /// <summary>SyntaxToken representing the operator of the assignment expression.</summary>
+        public SyntaxToken EqualsToken => this.equalsToken;
+        /// <summary>ExpressionSyntax node representing the expression on the right of the assignment operator.</summary>
+        public ExpressionSyntax Right => this.right;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.left,
+                1 => this.equalsToken,
+                2 => this.right,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.AssignmentExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitAssignmentExpression(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitAssignmentExpression(this);
+
+        public AssignmentExpressionSyntax Update(ExpressionSyntax left, SyntaxToken equalsToken, ExpressionSyntax right)
+        {
+            if (left != this.Left || equalsToken != this.EqualsToken || right != this.Right)
+            {
+                var newNode = SyntaxFactory.AssignmentExpression(left, equalsToken, right);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new AssignmentExpressionSyntax(this.Kind, this.left, this.equalsToken, this.right, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new AssignmentExpressionSyntax(this.Kind, this.left, this.equalsToken, this.right, GetDiagnostics(), annotations);
+
+        internal AssignmentExpressionSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var left = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(left);
+            this.left = left;
+            var equalsToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
+            var right = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(right);
+            this.right = right;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.left);
+            writer.WriteValue(this.equalsToken);
+            writer.WriteValue(this.right);
+        }
+
+        static AssignmentExpressionSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(AssignmentExpressionSyntax), r => new AssignmentExpressionSyntax(r));
+        }
+    }
+
+    internal abstract partial class MemberAccessExpressionSyntax : ExpressionSyntax
+    {
+        internal MemberAccessExpressionSyntax(SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+        }
+
+        internal MemberAccessExpressionSyntax(SyntaxKind kind)
+          : base(kind)
+        {
+        }
+
+        protected MemberAccessExpressionSyntax(ObjectReader reader)
+          : base(reader)
+        {
+        }
+
+        /// <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
+        public abstract ExpressionSyntax Expression { get; }
+
+        /// <summary>SimpleNameSyntax node representing the member being accessed.</summary>
+        public abstract ExpressionSyntax MemberExpression { get; }
+    }
+
+    /// <summary>Class which represents the syntax node for member access expression.</summary>
+    internal sealed partial class SimpleMemberAccessExpression : MemberAccessExpressionSyntax
+    {
+        internal readonly ExpressionSyntax expression;
+        internal readonly SyntaxToken operatorToken;
+        internal readonly ExpressionSyntax memberExpression;
+
+        internal SimpleMemberAccessExpression(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken operatorToken, ExpressionSyntax memberExpression, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(expression);
+            this.expression = expression;
+            this.AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            this.AdjustFlagsAndWidth(memberExpression);
+            this.memberExpression = memberExpression;
+        }
+
+        internal SimpleMemberAccessExpression(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken operatorToken, ExpressionSyntax memberExpression, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(expression);
+            this.expression = expression;
+            this.AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            this.AdjustFlagsAndWidth(memberExpression);
+            this.memberExpression = memberExpression;
+        }
+
+        internal SimpleMemberAccessExpression(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken operatorToken, ExpressionSyntax memberExpression)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(expression);
+            this.expression = expression;
+            this.AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            this.AdjustFlagsAndWidth(memberExpression);
+            this.memberExpression = memberExpression;
+        }
+
+        /// <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
+        public override ExpressionSyntax Expression => this.expression;
+        /// <summary>SyntaxToken representing the kind of the operator in the member access expression.</summary>
+        public SyntaxToken OperatorToken => this.operatorToken;
+        /// <summary>SimpleNameSyntax node representing the member being accessed.</summary>
+        public override ExpressionSyntax MemberExpression => this.memberExpression;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.expression,
+                1 => this.operatorToken,
+                2 => this.memberExpression,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.SimpleMemberAccessExpression(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitSimpleMemberAccessExpression(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitSimpleMemberAccessExpression(this);
+
+        public SimpleMemberAccessExpression Update(ExpressionSyntax expression, SyntaxToken operatorToken, ExpressionSyntax memberExpression)
+        {
+            if (expression != this.Expression || operatorToken != this.OperatorToken || memberExpression != this.MemberExpression)
+            {
+                var newNode = SyntaxFactory.SimpleMemberAccessExpression(expression, operatorToken, memberExpression);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new SimpleMemberAccessExpression(this.Kind, this.expression, this.operatorToken, this.memberExpression, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new SimpleMemberAccessExpression(this.Kind, this.expression, this.operatorToken, this.memberExpression, GetDiagnostics(), annotations);
+
+        internal SimpleMemberAccessExpression(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var expression = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(expression);
+            this.expression = expression;
+            var operatorToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(operatorToken);
+            this.operatorToken = operatorToken;
+            var memberExpression = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(memberExpression);
+            this.memberExpression = memberExpression;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.expression);
+            writer.WriteValue(this.operatorToken);
+            writer.WriteValue(this.memberExpression);
+        }
+
+        static SimpleMemberAccessExpression()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(SimpleMemberAccessExpression), r => new SimpleMemberAccessExpression(r));
+        }
+    }
+
+    /// <summary>Class which represents the syntax node for member access expression.</summary>
+    internal sealed partial class IndexMemberAccessExpressionSyntax : MemberAccessExpressionSyntax
+    {
+        internal readonly ExpressionSyntax expression;
+        internal readonly BracketedExpressionSyntax key;
+
+        internal IndexMemberAccessExpressionSyntax(SyntaxKind kind, ExpressionSyntax expression, BracketedExpressionSyntax key, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(expression);
+            this.expression = expression;
+            this.AdjustFlagsAndWidth(key);
+            this.key = key;
+        }
+
+        internal IndexMemberAccessExpressionSyntax(SyntaxKind kind, ExpressionSyntax expression, BracketedExpressionSyntax key, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(expression);
+            this.expression = expression;
+            this.AdjustFlagsAndWidth(key);
+            this.key = key;
+        }
+
+        internal IndexMemberAccessExpressionSyntax(SyntaxKind kind, ExpressionSyntax expression, BracketedExpressionSyntax key)
+          : base(kind)
+        {
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(expression);
+            this.expression = expression;
+            this.AdjustFlagsAndWidth(key);
+            this.key = key;
+        }
+
+        /// <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
+        public override ExpressionSyntax Expression => this.expression;
+        public BracketedExpressionSyntax Key => this.key;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.expression,
+                1 => this.key,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.IndexMemberAccessExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitIndexMemberAccessExpression(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitIndexMemberAccessExpression(this);
+
+        public IndexMemberAccessExpressionSyntax Update(ExpressionSyntax expression, BracketedExpressionSyntax key)
+        {
+            if (expression != this.Expression || key != this.Key)
+            {
+                var newNode = SyntaxFactory.IndexMemberAccessExpression(expression, key);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new IndexMemberAccessExpressionSyntax(this.Kind, this.expression, this.key, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new IndexMemberAccessExpressionSyntax(this.Kind, this.expression, this.key, GetDiagnostics(), annotations);
+
+        internal IndexMemberAccessExpressionSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 2;
+            var expression = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(expression);
+            this.expression = expression;
+            var key = (BracketedExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(key);
+            this.key = key;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.expression);
+            writer.WriteValue(this.key);
+        }
+
+        static IndexMemberAccessExpressionSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(IndexMemberAccessExpressionSyntax), r => new IndexMemberAccessExpressionSyntax(r));
+        }
+    }
+
+    /// <summary>Class which represents the syntax node for invocation expression.</summary>
+    internal sealed partial class InvocationExpressionSyntax : ExpressionSyntax
+    {
+        internal readonly ExpressionSyntax? expression;
+        internal readonly ImplicitSelfCallSyntax? selfCallExpression;
+        internal readonly ArgumentListSyntax argumentList;
+
+        internal InvocationExpressionSyntax(SyntaxKind kind, ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCallExpression, ArgumentListSyntax argumentList, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            if (expression != null)
+            {
+                this.AdjustFlagsAndWidth(expression);
+                this.expression = expression;
+            }
+            if (selfCallExpression != null)
+            {
+                this.AdjustFlagsAndWidth(selfCallExpression);
+                this.selfCallExpression = selfCallExpression;
+            }
+            this.AdjustFlagsAndWidth(argumentList);
+            this.argumentList = argumentList;
+        }
+
+        internal InvocationExpressionSyntax(SyntaxKind kind, ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCallExpression, ArgumentListSyntax argumentList, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            if (expression != null)
+            {
+                this.AdjustFlagsAndWidth(expression);
+                this.expression = expression;
+            }
+            if (selfCallExpression != null)
+            {
+                this.AdjustFlagsAndWidth(selfCallExpression);
+                this.selfCallExpression = selfCallExpression;
+            }
+            this.AdjustFlagsAndWidth(argumentList);
+            this.argumentList = argumentList;
+        }
+
+        internal InvocationExpressionSyntax(SyntaxKind kind, ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCallExpression, ArgumentListSyntax argumentList)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            if (expression != null)
+            {
+                this.AdjustFlagsAndWidth(expression);
+                this.expression = expression;
+            }
+            if (selfCallExpression != null)
+            {
+                this.AdjustFlagsAndWidth(selfCallExpression);
+                this.selfCallExpression = selfCallExpression;
+            }
+            this.AdjustFlagsAndWidth(argumentList);
+            this.argumentList = argumentList;
+        }
+
+        /// <summary>ExpressionSyntax node representing the expression part of the invocation.</summary>
+        public ExpressionSyntax? Expression => this.expression;
+        public ImplicitSelfCallSyntax? SelfCallExpression => this.selfCallExpression;
+        /// <summary>ArgumentListSyntax node representing the list of arguments of the invocation expression.</summary>
+        public ArgumentListSyntax ArgumentList => this.argumentList;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.expression,
+                1 => this.selfCallExpression,
+                2 => this.argumentList,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.InvocationExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitInvocationExpression(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitInvocationExpression(this);
+
+        public InvocationExpressionSyntax Update(ExpressionSyntax expression, ImplicitSelfCallSyntax selfCallExpression, ArgumentListSyntax argumentList)
+        {
+            if (expression != this.Expression || selfCallExpression != this.SelfCallExpression || argumentList != this.ArgumentList)
+            {
+                var newNode = SyntaxFactory.InvocationExpression(expression, selfCallExpression, argumentList);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new InvocationExpressionSyntax(this.Kind, this.expression, this.selfCallExpression, this.argumentList, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new InvocationExpressionSyntax(this.Kind, this.expression, this.selfCallExpression, this.argumentList, GetDiagnostics(), annotations);
+
+        internal InvocationExpressionSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var expression = (ExpressionSyntax?)reader.ReadValue();
+            if (expression != null)
+            {
+                AdjustFlagsAndWidth(expression);
+                this.expression = expression;
+            }
+            var selfCallExpression = (ImplicitSelfCallSyntax?)reader.ReadValue();
+            if (selfCallExpression != null)
+            {
+                AdjustFlagsAndWidth(selfCallExpression);
+                this.selfCallExpression = selfCallExpression;
+            }
+            var argumentList = (ArgumentListSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(argumentList);
+            this.argumentList = argumentList;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.expression);
+            writer.WriteValue(this.selfCallExpression);
+            writer.WriteValue(this.argumentList);
+        }
+
+        static InvocationExpressionSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(InvocationExpressionSyntax), r => new InvocationExpressionSyntax(r));
+        }
+    }
+
+    /// <summary>Provides the base class from which the classes that represent statement syntax nodes are derived. This is an abstract class.</summary>
+    internal abstract partial class StatementSyntax : LuaSyntaxNode
+    {
+        internal StatementSyntax(SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+        }
+
+        internal StatementSyntax(SyntaxKind kind)
+          : base(kind)
+        {
+        }
+
+        protected StatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+        }
+    }
+
+    internal sealed partial class EmptyStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken? semicolonToken;
+
+        internal EmptyStatementSyntax(SyntaxKind kind, SyntaxToken? semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 1;
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal EmptyStatementSyntax(SyntaxKind kind, SyntaxToken? semicolonToken, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 1;
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal EmptyStatementSyntax(SyntaxKind kind, SyntaxToken? semicolonToken)
+          : base(kind)
+        {
+            this.SlotCount = 1;
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        public SyntaxToken? SemicolonToken => this.semicolonToken;
+
+        internal override GreenNode? GetSlot(int index)
+            => index == 0 ? this.semicolonToken : null;
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.EmptyStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitEmptyStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitEmptyStatement(this);
+
+        public EmptyStatementSyntax Update(SyntaxToken semicolonToken)
+        {
+            if (semicolonToken != this.SemicolonToken)
+            {
+                var newNode = SyntaxFactory.EmptyStatement(semicolonToken);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new EmptyStatementSyntax(this.Kind, this.semicolonToken, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new EmptyStatementSyntax(this.Kind, this.semicolonToken, GetDiagnostics(), annotations);
+
+        internal EmptyStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 1;
+            var semicolonToken = (SyntaxToken?)reader.ReadValue();
+            if (semicolonToken != null)
+            {
+                AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.semicolonToken);
+        }
+
+        static EmptyStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(EmptyStatementSyntax), r => new EmptyStatementSyntax(r));
+        }
+    }
+
+    /// <summary>Represents a labeled statement syntax.</summary>
+    internal sealed partial class LabeledStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken leftColonColonToken;
+        internal readonly SyntaxToken identifier;
+        internal readonly SyntaxToken rightColonColonToken;
+        internal readonly StatementSyntax statement;
+
+        internal LabeledStatementSyntax(SyntaxKind kind, SyntaxToken leftColonColonToken, SyntaxToken identifier, SyntaxToken rightColonColonToken, StatementSyntax statement, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 4;
+            this.AdjustFlagsAndWidth(leftColonColonToken);
+            this.leftColonColonToken = leftColonColonToken;
+            this.AdjustFlagsAndWidth(identifier);
+            this.identifier = identifier;
+            this.AdjustFlagsAndWidth(rightColonColonToken);
+            this.rightColonColonToken = rightColonColonToken;
+            this.AdjustFlagsAndWidth(statement);
+            this.statement = statement;
+        }
+
+        internal LabeledStatementSyntax(SyntaxKind kind, SyntaxToken leftColonColonToken, SyntaxToken identifier, SyntaxToken rightColonColonToken, StatementSyntax statement, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 4;
+            this.AdjustFlagsAndWidth(leftColonColonToken);
+            this.leftColonColonToken = leftColonColonToken;
+            this.AdjustFlagsAndWidth(identifier);
+            this.identifier = identifier;
+            this.AdjustFlagsAndWidth(rightColonColonToken);
+            this.rightColonColonToken = rightColonColonToken;
+            this.AdjustFlagsAndWidth(statement);
+            this.statement = statement;
+        }
+
+        internal LabeledStatementSyntax(SyntaxKind kind, SyntaxToken leftColonColonToken, SyntaxToken identifier, SyntaxToken rightColonColonToken, StatementSyntax statement)
+          : base(kind)
+        {
+            this.SlotCount = 4;
+            this.AdjustFlagsAndWidth(leftColonColonToken);
+            this.leftColonColonToken = leftColonColonToken;
+            this.AdjustFlagsAndWidth(identifier);
+            this.identifier = identifier;
+            this.AdjustFlagsAndWidth(rightColonColonToken);
+            this.rightColonColonToken = rightColonColonToken;
+            this.AdjustFlagsAndWidth(statement);
+            this.statement = statement;
+        }
+
+        /// <summary>Gets a SyntaxToken that represents the double colons leading the statement's label.</summary>
+        public SyntaxToken LeftColonColonToken => this.leftColonColonToken;
+        /// <summary>Gets the identifier.</summary>
+        public SyntaxToken Identifier => this.identifier;
+        /// <summary>Gets a SyntaxToken that represents the double colons trailing the statement's label.</summary>
+        public SyntaxToken RightColonColonToken => this.rightColonColonToken;
+        public StatementSyntax Statement => this.statement;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.leftColonColonToken,
+                1 => this.identifier,
+                2 => this.rightColonColonToken,
+                3 => this.statement,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.LabeledStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitLabeledStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitLabeledStatement(this);
+
+        public LabeledStatementSyntax Update(SyntaxToken leftColonColonToken, SyntaxToken identifier, SyntaxToken rightColonColonToken, StatementSyntax statement)
+        {
+            if (leftColonColonToken != this.LeftColonColonToken || identifier != this.Identifier || rightColonColonToken != this.RightColonColonToken || statement != this.Statement)
+            {
+                var newNode = SyntaxFactory.LabeledStatement(leftColonColonToken, identifier, rightColonColonToken, statement);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new LabeledStatementSyntax(this.Kind, this.leftColonColonToken, this.identifier, this.rightColonColonToken, this.statement, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new LabeledStatementSyntax(this.Kind, this.leftColonColonToken, this.identifier, this.rightColonColonToken, this.statement, GetDiagnostics(), annotations);
+
+        internal LabeledStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 4;
+            var leftColonColonToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(leftColonColonToken);
+            this.leftColonColonToken = leftColonColonToken;
+            var identifier = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(identifier);
+            this.identifier = identifier;
+            var rightColonColonToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(rightColonColonToken);
+            this.rightColonColonToken = rightColonColonToken;
+            var statement = (StatementSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(statement);
+            this.statement = statement;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.leftColonColonToken);
+            writer.WriteValue(this.identifier);
+            writer.WriteValue(this.rightColonColonToken);
+            writer.WriteValue(this.statement);
+        }
+
+        static LabeledStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(LabeledStatementSyntax), r => new LabeledStatementSyntax(r));
+        }
+    }
+
+    internal sealed partial class BreakStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken breakKeyword;
+
+        internal BreakStatementSyntax(SyntaxKind kind, SyntaxToken breakKeyword, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 1;
+            this.AdjustFlagsAndWidth(breakKeyword);
+            this.breakKeyword = breakKeyword;
+        }
+
+        internal BreakStatementSyntax(SyntaxKind kind, SyntaxToken breakKeyword, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 1;
+            this.AdjustFlagsAndWidth(breakKeyword);
+            this.breakKeyword = breakKeyword;
+        }
+
+        internal BreakStatementSyntax(SyntaxKind kind, SyntaxToken breakKeyword)
+          : base(kind)
+        {
+            this.SlotCount = 1;
+            this.AdjustFlagsAndWidth(breakKeyword);
+            this.breakKeyword = breakKeyword;
+        }
+
+        public SyntaxToken BreakKeyword => this.breakKeyword;
+
+        internal override GreenNode? GetSlot(int index)
+            => index == 0 ? this.breakKeyword : null;
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.BreakStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitBreakStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitBreakStatement(this);
+
+        public BreakStatementSyntax Update(SyntaxToken breakKeyword)
+        {
+            if (breakKeyword != this.BreakKeyword)
+            {
+                var newNode = SyntaxFactory.BreakStatement(breakKeyword);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new BreakStatementSyntax(this.Kind, this.breakKeyword, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new BreakStatementSyntax(this.Kind, this.breakKeyword, GetDiagnostics(), annotations);
+
+        internal BreakStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 1;
+            var breakKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(breakKeyword);
+            this.breakKeyword = breakKeyword;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.breakKeyword);
+        }
+
+        static BreakStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(BreakStatementSyntax), r => new BreakStatementSyntax(r));
+        }
+    }
+
+    /// <summary>
+    /// Represents a goto statement syntax
+    /// </summary>
+    internal sealed partial class GotoStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken gotoKeyword;
+        internal readonly IdentifierNameSyntax name;
+        internal readonly SyntaxToken? semicolonToken;
+
+        internal GotoStatementSyntax(SyntaxKind kind, SyntaxToken gotoKeyword, IdentifierNameSyntax name, SyntaxToken? semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(gotoKeyword);
+            this.gotoKeyword = gotoKeyword;
+            this.AdjustFlagsAndWidth(name);
+            this.name = name;
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal GotoStatementSyntax(SyntaxKind kind, SyntaxToken gotoKeyword, IdentifierNameSyntax name, SyntaxToken? semicolonToken, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(gotoKeyword);
+            this.gotoKeyword = gotoKeyword;
+            this.AdjustFlagsAndWidth(name);
+            this.name = name;
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal GotoStatementSyntax(SyntaxKind kind, SyntaxToken gotoKeyword, IdentifierNameSyntax name, SyntaxToken? semicolonToken)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(gotoKeyword);
+            this.gotoKeyword = gotoKeyword;
+            this.AdjustFlagsAndWidth(name);
+            this.name = name;
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        /// <summary>
+        /// Gets a SyntaxToken that represents the goto keyword.
+        /// </summary>
+        public SyntaxToken GotoKeyword => this.gotoKeyword;
+        /// <summary>
+        /// Gets the name for a goto statement to goto.
+        /// </summary>
+        public IdentifierNameSyntax Name => this.name;
+        public SyntaxToken? SemicolonToken => this.semicolonToken;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.gotoKeyword,
+                1 => this.name,
+                2 => this.semicolonToken,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.GotoStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitGotoStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitGotoStatement(this);
+
+        public GotoStatementSyntax Update(SyntaxToken gotoKeyword, IdentifierNameSyntax name, SyntaxToken semicolonToken)
+        {
+            if (gotoKeyword != this.GotoKeyword || name != this.Name || semicolonToken != this.SemicolonToken)
+            {
+                var newNode = SyntaxFactory.GotoStatement(gotoKeyword, name, semicolonToken);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new GotoStatementSyntax(this.Kind, this.gotoKeyword, this.name, this.semicolonToken, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new GotoStatementSyntax(this.Kind, this.gotoKeyword, this.name, this.semicolonToken, GetDiagnostics(), annotations);
+
+        internal GotoStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var gotoKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(gotoKeyword);
+            this.gotoKeyword = gotoKeyword;
+            var name = (IdentifierNameSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(name);
+            this.name = name;
+            var semicolonToken = (SyntaxToken?)reader.ReadValue();
+            if (semicolonToken != null)
+            {
+                AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.gotoKeyword);
+            writer.WriteValue(this.name);
+            writer.WriteValue(this.semicolonToken);
+        }
+
+        static GotoStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(GotoStatementSyntax), r => new GotoStatementSyntax(r));
+        }
+    }
+
+    /// <summary>
+    /// Represents a goto statement syntax
+    /// </summary>
+    internal sealed partial class ReturnStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken returnKeyword;
+        internal readonly ExpressionListSyntax? values;
+        internal readonly SyntaxToken? semicolonToken;
+
+        internal ReturnStatementSyntax(SyntaxKind kind, SyntaxToken returnKeyword, ExpressionListSyntax? values, SyntaxToken? semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(returnKeyword);
+            this.returnKeyword = returnKeyword;
+            if (values != null)
+            {
+                this.AdjustFlagsAndWidth(values);
+                this.values = values;
+            }
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal ReturnStatementSyntax(SyntaxKind kind, SyntaxToken returnKeyword, ExpressionListSyntax? values, SyntaxToken? semicolonToken, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(returnKeyword);
+            this.returnKeyword = returnKeyword;
+            if (values != null)
+            {
+                this.AdjustFlagsAndWidth(values);
+                this.values = values;
+            }
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal ReturnStatementSyntax(SyntaxKind kind, SyntaxToken returnKeyword, ExpressionListSyntax? values, SyntaxToken? semicolonToken)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(returnKeyword);
+            this.returnKeyword = returnKeyword;
+            if (values != null)
+            {
+                this.AdjustFlagsAndWidth(values);
+                this.values = values;
+            }
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        /// <summary>
+        /// Gets a SyntaxToken that represents the return keyword.
+        /// </summary>
+        public SyntaxToken ReturnKeyword => this.returnKeyword;
+        /// <summary>
+        /// Gets the values to return.
+        /// </summary>
+        public ExpressionListSyntax? Values => this.values;
+        public SyntaxToken? SemicolonToken => this.semicolonToken;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.returnKeyword,
+                1 => this.values,
+                2 => this.semicolonToken,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ReturnStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitReturnStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitReturnStatement(this);
+
+        public ReturnStatementSyntax Update(SyntaxToken returnKeyword, ExpressionListSyntax values, SyntaxToken semicolonToken)
+        {
+            if (returnKeyword != this.ReturnKeyword || values != this.Values || semicolonToken != this.SemicolonToken)
+            {
+                var newNode = SyntaxFactory.ReturnStatement(returnKeyword, values, semicolonToken);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new ReturnStatementSyntax(this.Kind, this.returnKeyword, this.values, this.semicolonToken, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new ReturnStatementSyntax(this.Kind, this.returnKeyword, this.values, this.semicolonToken, GetDiagnostics(), annotations);
+
+        internal ReturnStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var returnKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(returnKeyword);
+            this.returnKeyword = returnKeyword;
+            var values = (ExpressionListSyntax?)reader.ReadValue();
+            if (values != null)
+            {
+                AdjustFlagsAndWidth(values);
+                this.values = values;
+            }
+            var semicolonToken = (SyntaxToken?)reader.ReadValue();
+            if (semicolonToken != null)
+            {
+                AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.returnKeyword);
+            writer.WriteValue(this.values);
+            writer.WriteValue(this.semicolonToken);
+        }
+
+        static ReturnStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(ReturnStatementSyntax), r => new ReturnStatementSyntax(r));
+        }
+    }
+
+    internal sealed partial class DoStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken doKeyword;
+        internal readonly BlockSyntax block;
+        internal readonly SyntaxToken endKeyword;
+
+        internal DoStatementSyntax(SyntaxKind kind, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal DoStatementSyntax(SyntaxKind kind, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal DoStatementSyntax(SyntaxKind kind, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+          : base(kind)
+        {
+            this.SlotCount = 3;
+            this.AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        public SyntaxToken DoKeyword => this.doKeyword;
+        public BlockSyntax Block => this.block;
+        public SyntaxToken EndKeyword => this.endKeyword;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.doKeyword,
+                1 => this.block,
+                2 => this.endKeyword,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.DoStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitDoStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitDoStatement(this);
+
+        public DoStatementSyntax Update(SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+        {
+            if (doKeyword != this.DoKeyword || block != this.Block || endKeyword != this.EndKeyword)
+            {
+                var newNode = SyntaxFactory.DoStatement(doKeyword, block, endKeyword);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new DoStatementSyntax(this.Kind, this.doKeyword, this.block, this.endKeyword, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new DoStatementSyntax(this.Kind, this.doKeyword, this.block, this.endKeyword, GetDiagnostics(), annotations);
+
+        internal DoStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 3;
+            var doKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            var block = (BlockSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(block);
+            this.block = block;
+            var endKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.doKeyword);
+            writer.WriteValue(this.block);
+            writer.WriteValue(this.endKeyword);
+        }
+
+        static DoStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(DoStatementSyntax), r => new DoStatementSyntax(r));
+        }
+    }
+
+    internal sealed partial class WhileStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken whileKeyword;
+        internal readonly ExpressionSyntax condition;
+        internal readonly SyntaxToken doKeyword;
+        internal readonly BlockSyntax block;
+        internal readonly SyntaxToken endKeyword;
+
+        internal WhileStatementSyntax(SyntaxKind kind, SyntaxToken whileKeyword, ExpressionSyntax condition, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 5;
+            this.AdjustFlagsAndWidth(whileKeyword);
+            this.whileKeyword = whileKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            this.AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal WhileStatementSyntax(SyntaxKind kind, SyntaxToken whileKeyword, ExpressionSyntax condition, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 5;
+            this.AdjustFlagsAndWidth(whileKeyword);
+            this.whileKeyword = whileKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            this.AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal WhileStatementSyntax(SyntaxKind kind, SyntaxToken whileKeyword, ExpressionSyntax condition, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+          : base(kind)
+        {
+            this.SlotCount = 5;
+            this.AdjustFlagsAndWidth(whileKeyword);
+            this.whileKeyword = whileKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            this.AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        public SyntaxToken WhileKeyword => this.whileKeyword;
+        public ExpressionSyntax Condition => this.condition;
+        public SyntaxToken DoKeyword => this.doKeyword;
+        public BlockSyntax Block => this.block;
+        public SyntaxToken EndKeyword => this.endKeyword;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.whileKeyword,
+                1 => this.condition,
+                2 => this.doKeyword,
+                3 => this.block,
+                4 => this.endKeyword,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.WhileStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitWhileStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitWhileStatement(this);
+
+        public WhileStatementSyntax Update(SyntaxToken whileKeyword, ExpressionSyntax condition, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+        {
+            if (whileKeyword != this.WhileKeyword || condition != this.Condition || doKeyword != this.DoKeyword || block != this.Block || endKeyword != this.EndKeyword)
+            {
+                var newNode = SyntaxFactory.WhileStatement(whileKeyword, condition, doKeyword, block, endKeyword);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new WhileStatementSyntax(this.Kind, this.whileKeyword, this.condition, this.doKeyword, this.block, this.endKeyword, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new WhileStatementSyntax(this.Kind, this.whileKeyword, this.condition, this.doKeyword, this.block, this.endKeyword, GetDiagnostics(), annotations);
+
+        internal WhileStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 5;
+            var whileKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(whileKeyword);
+            this.whileKeyword = whileKeyword;
+            var condition = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            var doKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            var block = (BlockSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(block);
+            this.block = block;
+            var endKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.whileKeyword);
+            writer.WriteValue(this.condition);
+            writer.WriteValue(this.doKeyword);
+            writer.WriteValue(this.block);
+            writer.WriteValue(this.endKeyword);
+        }
+
+        static WhileStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(WhileStatementSyntax), r => new WhileStatementSyntax(r));
+        }
+    }
+
+    internal sealed partial class RepeatStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken repeatKeyword;
+        internal readonly BlockSyntax block;
+        internal readonly SyntaxToken untilKeyword;
+        internal readonly ExpressionSyntax condition;
+        internal readonly SyntaxToken? semicolonToken;
+
+        internal RepeatStatementSyntax(SyntaxKind kind, SyntaxToken repeatKeyword, BlockSyntax block, SyntaxToken untilKeyword, ExpressionSyntax condition, SyntaxToken? semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 5;
+            this.AdjustFlagsAndWidth(repeatKeyword);
+            this.repeatKeyword = repeatKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(untilKeyword);
+            this.untilKeyword = untilKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal RepeatStatementSyntax(SyntaxKind kind, SyntaxToken repeatKeyword, BlockSyntax block, SyntaxToken untilKeyword, ExpressionSyntax condition, SyntaxToken? semicolonToken, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 5;
+            this.AdjustFlagsAndWidth(repeatKeyword);
+            this.repeatKeyword = repeatKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(untilKeyword);
+            this.untilKeyword = untilKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal RepeatStatementSyntax(SyntaxKind kind, SyntaxToken repeatKeyword, BlockSyntax block, SyntaxToken untilKeyword, ExpressionSyntax condition, SyntaxToken? semicolonToken)
+          : base(kind)
+        {
+            this.SlotCount = 5;
+            this.AdjustFlagsAndWidth(repeatKeyword);
+            this.repeatKeyword = repeatKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(untilKeyword);
+            this.untilKeyword = untilKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            if (semicolonToken != null)
+            {
+                this.AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        public SyntaxToken RepeatKeyword => this.repeatKeyword;
+        public BlockSyntax Block => this.block;
+        public SyntaxToken UntilKeyword => this.untilKeyword;
+        public ExpressionSyntax Condition => this.condition;
+        public SyntaxToken? SemicolonToken => this.semicolonToken;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.repeatKeyword,
+                1 => this.block,
+                2 => this.untilKeyword,
+                3 => this.condition,
+                4 => this.semicolonToken,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.RepeatStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitRepeatStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitRepeatStatement(this);
+
+        public RepeatStatementSyntax Update(SyntaxToken repeatKeyword, BlockSyntax block, SyntaxToken untilKeyword, ExpressionSyntax condition, SyntaxToken semicolonToken)
+        {
+            if (repeatKeyword != this.RepeatKeyword || block != this.Block || untilKeyword != this.UntilKeyword || condition != this.Condition || semicolonToken != this.SemicolonToken)
+            {
+                var newNode = SyntaxFactory.RepeatStatement(repeatKeyword, block, untilKeyword, condition, semicolonToken);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new RepeatStatementSyntax(this.Kind, this.repeatKeyword, this.block, this.untilKeyword, this.condition, this.semicolonToken, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new RepeatStatementSyntax(this.Kind, this.repeatKeyword, this.block, this.untilKeyword, this.condition, this.semicolonToken, GetDiagnostics(), annotations);
+
+        internal RepeatStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 5;
+            var repeatKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(repeatKeyword);
+            this.repeatKeyword = repeatKeyword;
+            var block = (BlockSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(block);
+            this.block = block;
+            var untilKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(untilKeyword);
+            this.untilKeyword = untilKeyword;
+            var condition = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            var semicolonToken = (SyntaxToken?)reader.ReadValue();
+            if (semicolonToken != null)
+            {
+                AdjustFlagsAndWidth(semicolonToken);
+                this.semicolonToken = semicolonToken;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.repeatKeyword);
+            writer.WriteValue(this.block);
+            writer.WriteValue(this.untilKeyword);
+            writer.WriteValue(this.condition);
+            writer.WriteValue(this.semicolonToken);
+        }
+
+        static RepeatStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(RepeatStatementSyntax), r => new RepeatStatementSyntax(r));
+        }
+    }
+
+    /// <summary>
+    /// Represents an if statement syntax.
+    /// </summary>
+    internal sealed partial class IfStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken ifKeyword;
+        internal readonly ExpressionSyntax condition;
+        internal readonly SyntaxToken thenKeyword;
+        internal readonly BlockSyntax block;
+        internal readonly GreenNode? elseIfs;
+        internal readonly ElseClauseSyntax? @else;
+        internal readonly SyntaxToken endKeyword;
+
+        internal IfStatementSyntax(SyntaxKind kind, SyntaxToken ifKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block, GreenNode? elseIfs, ElseClauseSyntax? @else, SyntaxToken endKeyword, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 7;
+            this.AdjustFlagsAndWidth(ifKeyword);
+            this.ifKeyword = ifKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            this.AdjustFlagsAndWidth(thenKeyword);
+            this.thenKeyword = thenKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            if (elseIfs != null)
+            {
+                this.AdjustFlagsAndWidth(elseIfs);
+                this.elseIfs = elseIfs;
+            }
+            if (@else != null)
+            {
+                this.AdjustFlagsAndWidth(@else);
+                this.@else = @else;
+            }
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal IfStatementSyntax(SyntaxKind kind, SyntaxToken ifKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block, GreenNode? elseIfs, ElseClauseSyntax? @else, SyntaxToken endKeyword, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 7;
+            this.AdjustFlagsAndWidth(ifKeyword);
+            this.ifKeyword = ifKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            this.AdjustFlagsAndWidth(thenKeyword);
+            this.thenKeyword = thenKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            if (elseIfs != null)
+            {
+                this.AdjustFlagsAndWidth(elseIfs);
+                this.elseIfs = elseIfs;
+            }
+            if (@else != null)
+            {
+                this.AdjustFlagsAndWidth(@else);
+                this.@else = @else;
+            }
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal IfStatementSyntax(SyntaxKind kind, SyntaxToken ifKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block, GreenNode? elseIfs, ElseClauseSyntax? @else, SyntaxToken endKeyword)
+          : base(kind)
+        {
+            this.SlotCount = 7;
+            this.AdjustFlagsAndWidth(ifKeyword);
+            this.ifKeyword = ifKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            this.AdjustFlagsAndWidth(thenKeyword);
+            this.thenKeyword = thenKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            if (elseIfs != null)
+            {
+                this.AdjustFlagsAndWidth(elseIfs);
+                this.elseIfs = elseIfs;
+            }
+            if (@else != null)
+            {
+                this.AdjustFlagsAndWidth(@else);
+                this.@else = @else;
+            }
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        /// <summary>
+        /// Gets a SyntaxToken that represents the if keyword.
+        /// </summary>
+        public SyntaxToken IfKeyword => this.ifKeyword;
+        /// <summary>
+        /// Gets an ExpressionSyntax that represents the condition of the if statement.
+        /// </summary>
+        public ExpressionSyntax Condition => this.condition;
+        public SyntaxToken ThenKeyword => this.thenKeyword;
+        /// <summary>
+        /// Gets a StatementSyntax the represents the statement to be executed when the condition is true.
+        /// </summary>
+        public BlockSyntax Block => this.block;
+        /// <summary>
+        /// Gets a list of ElseIfClauseSyntax that represents the statement to be executed when the condition is false and its condition is true if such statement exists.
+        /// </summary>
+        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<ElseIfClauseSyntax> ElseIfs => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<ElseIfClauseSyntax>(this.elseIfs);
+        /// <summary>
+        /// Gets an ElseClauseSyntax that represents the statement to be executed when the condition is false if such statement exists.
+        /// </summary>
+        public ElseClauseSyntax? Else => this.@else;
+        public SyntaxToken EndKeyword => this.endKeyword;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.ifKeyword,
+                1 => this.condition,
+                2 => this.thenKeyword,
+                3 => this.block,
+                4 => this.elseIfs,
+                5 => this.@else,
+                6 => this.endKeyword,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.IfStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitIfStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitIfStatement(this);
+
+        public IfStatementSyntax Update(SyntaxToken ifKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<ElseIfClauseSyntax> elseIfs, ElseClauseSyntax @else, SyntaxToken endKeyword)
+        {
+            if (ifKeyword != this.IfKeyword || condition != this.Condition || thenKeyword != this.ThenKeyword || block != this.Block || elseIfs != this.ElseIfs || @else != this.Else || endKeyword != this.EndKeyword)
+            {
+                var newNode = SyntaxFactory.IfStatement(ifKeyword, condition, thenKeyword, block, elseIfs, @else, endKeyword);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new IfStatementSyntax(this.Kind, this.ifKeyword, this.condition, this.thenKeyword, this.block, this.elseIfs, this.@else, this.endKeyword, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new IfStatementSyntax(this.Kind, this.ifKeyword, this.condition, this.thenKeyword, this.block, this.elseIfs, this.@else, this.endKeyword, GetDiagnostics(), annotations);
+
+        internal IfStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 7;
+            var ifKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(ifKeyword);
+            this.ifKeyword = ifKeyword;
+            var condition = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            var thenKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(thenKeyword);
+            this.thenKeyword = thenKeyword;
+            var block = (BlockSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(block);
+            this.block = block;
+            var elseIfs = (GreenNode?)reader.ReadValue();
+            if (elseIfs != null)
+            {
+                AdjustFlagsAndWidth(elseIfs);
+                this.elseIfs = elseIfs;
+            }
+            var @else = (ElseClauseSyntax?)reader.ReadValue();
+            if (@else != null)
+            {
+                AdjustFlagsAndWidth(@else);
+                this.@else = @else;
+            }
+            var endKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.ifKeyword);
+            writer.WriteValue(this.condition);
+            writer.WriteValue(this.thenKeyword);
+            writer.WriteValue(this.block);
+            writer.WriteValue(this.elseIfs);
+            writer.WriteValue(this.@else);
+            writer.WriteValue(this.endKeyword);
+        }
+
+        static IfStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(IfStatementSyntax), r => new IfStatementSyntax(r));
+        }
+    }
+
+    /// <summary>Represents an elseif clause syntax.</summary>
+    internal sealed partial class ElseIfClauseSyntax : LuaSyntaxNode
+    {
+        internal readonly SyntaxToken elseIfKeyword;
+        internal readonly ExpressionSyntax condition;
+        internal readonly SyntaxToken thenKeyword;
+        internal readonly BlockSyntax block;
+
+        internal ElseIfClauseSyntax(SyntaxKind kind, SyntaxToken elseIfKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 4;
+            this.AdjustFlagsAndWidth(elseIfKeyword);
+            this.elseIfKeyword = elseIfKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            this.AdjustFlagsAndWidth(thenKeyword);
+            this.thenKeyword = thenKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+        }
+
+        internal ElseIfClauseSyntax(SyntaxKind kind, SyntaxToken elseIfKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 4;
+            this.AdjustFlagsAndWidth(elseIfKeyword);
+            this.elseIfKeyword = elseIfKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            this.AdjustFlagsAndWidth(thenKeyword);
+            this.thenKeyword = thenKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+        }
+
+        internal ElseIfClauseSyntax(SyntaxKind kind, SyntaxToken elseIfKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block)
+          : base(kind)
+        {
+            this.SlotCount = 4;
+            this.AdjustFlagsAndWidth(elseIfKeyword);
+            this.elseIfKeyword = elseIfKeyword;
+            this.AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            this.AdjustFlagsAndWidth(thenKeyword);
+            this.thenKeyword = thenKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+        }
+
+        /// <summary>
+        /// Gets a SyntaxToken that represents the elseif keyword.
+        /// </summary>
+        public SyntaxToken ElseIfKeyword => this.elseIfKeyword;
+        /// <summary>
+        /// Gets an ExpressionSyntax that represents the condition of the elseif clause.
+        /// </summary>
+        public ExpressionSyntax Condition => this.condition;
+        public SyntaxToken ThenKeyword => this.thenKeyword;
+        /// <summary>
+        /// Gets a StatementSyntax the represents the statement to be executed when the condition is true.
+        /// </summary>
+        public BlockSyntax Block => this.block;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.elseIfKeyword,
+                1 => this.condition,
+                2 => this.thenKeyword,
+                3 => this.block,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ElseIfClauseSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitElseIfClause(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitElseIfClause(this);
+
+        public ElseIfClauseSyntax Update(SyntaxToken elseIfKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block)
+        {
+            if (elseIfKeyword != this.ElseIfKeyword || condition != this.Condition || thenKeyword != this.ThenKeyword || block != this.Block)
+            {
+                var newNode = SyntaxFactory.ElseIfClause(elseIfKeyword, condition, thenKeyword, block);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new ElseIfClauseSyntax(this.Kind, this.elseIfKeyword, this.condition, this.thenKeyword, this.block, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new ElseIfClauseSyntax(this.Kind, this.elseIfKeyword, this.condition, this.thenKeyword, this.block, GetDiagnostics(), annotations);
+
+        internal ElseIfClauseSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 4;
+            var elseIfKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(elseIfKeyword);
+            this.elseIfKeyword = elseIfKeyword;
+            var condition = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(condition);
+            this.condition = condition;
+            var thenKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(thenKeyword);
+            this.thenKeyword = thenKeyword;
+            var block = (BlockSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(block);
+            this.block = block;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.elseIfKeyword);
+            writer.WriteValue(this.condition);
+            writer.WriteValue(this.thenKeyword);
+            writer.WriteValue(this.block);
+        }
+
+        static ElseIfClauseSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(ElseIfClauseSyntax), r => new ElseIfClauseSyntax(r));
+        }
+    }
+
+    /// <summary>Represents an else statement syntax.</summary>
+    internal sealed partial class ElseClauseSyntax : LuaSyntaxNode
+    {
+        internal readonly SyntaxToken elseKeyword;
+        internal readonly StatementSyntax statement;
+
+        internal ElseClauseSyntax(SyntaxKind kind, SyntaxToken elseKeyword, StatementSyntax statement, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(elseKeyword);
+            this.elseKeyword = elseKeyword;
+            this.AdjustFlagsAndWidth(statement);
+            this.statement = statement;
+        }
+
+        internal ElseClauseSyntax(SyntaxKind kind, SyntaxToken elseKeyword, StatementSyntax statement, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(elseKeyword);
+            this.elseKeyword = elseKeyword;
+            this.AdjustFlagsAndWidth(statement);
+            this.statement = statement;
+        }
+
+        internal ElseClauseSyntax(SyntaxKind kind, SyntaxToken elseKeyword, StatementSyntax statement)
+          : base(kind)
+        {
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(elseKeyword);
+            this.elseKeyword = elseKeyword;
+            this.AdjustFlagsAndWidth(statement);
+            this.statement = statement;
+        }
+
+        /// <summary>
+        /// Gets a SyntaxToken that represents the else keyword.
+        /// </summary>
+        public SyntaxToken ElseKeyword => this.elseKeyword;
+        public StatementSyntax Statement => this.statement;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.elseKeyword,
+                1 => this.statement,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ElseClauseSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitElseClause(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitElseClause(this);
+
+        public ElseClauseSyntax Update(SyntaxToken elseKeyword, StatementSyntax statement)
+        {
+            if (elseKeyword != this.ElseKeyword || statement != this.Statement)
+            {
+                var newNode = SyntaxFactory.ElseClause(elseKeyword, statement);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new ElseClauseSyntax(this.Kind, this.elseKeyword, this.statement, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new ElseClauseSyntax(this.Kind, this.elseKeyword, this.statement, GetDiagnostics(), annotations);
+
+        internal ElseClauseSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 2;
+            var elseKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(elseKeyword);
+            this.elseKeyword = elseKeyword;
+            var statement = (StatementSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(statement);
+            this.statement = statement;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.elseKeyword);
+            writer.WriteValue(this.statement);
+        }
+
+        static ElseClauseSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(ElseClauseSyntax), r => new ElseClauseSyntax(r));
+        }
+    }
+
+    internal sealed partial class ForStatementSyntax : StatementSyntax
+    {
+        internal readonly SyntaxToken forKeyword;
+        internal readonly IdentifierNameSyntax name;
+        internal readonly SyntaxToken equalsToken;
+        internal readonly ExpressionSyntax initial;
+        internal readonly SyntaxToken firstCommaToken;
+        internal readonly ExpressionSyntax limit;
+        internal readonly SyntaxToken secondCommaToken;
+        internal readonly ExpressionSyntax step;
+        internal readonly SyntaxToken doKeyword;
+        internal readonly BlockSyntax block;
+        internal readonly SyntaxToken endKeyword;
+
+        internal ForStatementSyntax(SyntaxKind kind, SyntaxToken forKeyword, IdentifierNameSyntax name, SyntaxToken equalsToken, ExpressionSyntax initial, SyntaxToken firstCommaToken, ExpressionSyntax limit, SyntaxToken secondCommaToken, ExpressionSyntax step, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 11;
+            this.AdjustFlagsAndWidth(forKeyword);
+            this.forKeyword = forKeyword;
+            this.AdjustFlagsAndWidth(name);
+            this.name = name;
+            this.AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
+            this.AdjustFlagsAndWidth(initial);
+            this.initial = initial;
+            this.AdjustFlagsAndWidth(firstCommaToken);
+            this.firstCommaToken = firstCommaToken;
+            this.AdjustFlagsAndWidth(limit);
+            this.limit = limit;
+            this.AdjustFlagsAndWidth(secondCommaToken);
+            this.secondCommaToken = secondCommaToken;
+            this.AdjustFlagsAndWidth(step);
+            this.step = step;
+            this.AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal ForStatementSyntax(SyntaxKind kind, SyntaxToken forKeyword, IdentifierNameSyntax name, SyntaxToken equalsToken, ExpressionSyntax initial, SyntaxToken firstCommaToken, ExpressionSyntax limit, SyntaxToken secondCommaToken, ExpressionSyntax step, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 11;
+            this.AdjustFlagsAndWidth(forKeyword);
+            this.forKeyword = forKeyword;
+            this.AdjustFlagsAndWidth(name);
+            this.name = name;
+            this.AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
+            this.AdjustFlagsAndWidth(initial);
+            this.initial = initial;
+            this.AdjustFlagsAndWidth(firstCommaToken);
+            this.firstCommaToken = firstCommaToken;
+            this.AdjustFlagsAndWidth(limit);
+            this.limit = limit;
+            this.AdjustFlagsAndWidth(secondCommaToken);
+            this.secondCommaToken = secondCommaToken;
+            this.AdjustFlagsAndWidth(step);
+            this.step = step;
+            this.AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal ForStatementSyntax(SyntaxKind kind, SyntaxToken forKeyword, IdentifierNameSyntax name, SyntaxToken equalsToken, ExpressionSyntax initial, SyntaxToken firstCommaToken, ExpressionSyntax limit, SyntaxToken secondCommaToken, ExpressionSyntax step, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+          : base(kind)
+        {
+            this.SlotCount = 11;
+            this.AdjustFlagsAndWidth(forKeyword);
+            this.forKeyword = forKeyword;
+            this.AdjustFlagsAndWidth(name);
+            this.name = name;
+            this.AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
+            this.AdjustFlagsAndWidth(initial);
+            this.initial = initial;
+            this.AdjustFlagsAndWidth(firstCommaToken);
+            this.firstCommaToken = firstCommaToken;
+            this.AdjustFlagsAndWidth(limit);
+            this.limit = limit;
+            this.AdjustFlagsAndWidth(secondCommaToken);
+            this.secondCommaToken = secondCommaToken;
+            this.AdjustFlagsAndWidth(step);
+            this.step = step;
+            this.AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        public SyntaxToken ForKeyword => this.forKeyword;
+        public IdentifierNameSyntax Name => this.name;
+        public SyntaxToken EqualsToken => this.equalsToken;
+        public ExpressionSyntax Initial => this.initial;
+        public SyntaxToken FirstCommaToken => this.firstCommaToken;
+        public ExpressionSyntax Limit => this.limit;
+        public SyntaxToken SecondCommaToken => this.secondCommaToken;
+        public ExpressionSyntax Step => this.step;
+        public SyntaxToken DoKeyword => this.doKeyword;
+        public BlockSyntax Block => this.block;
+        public SyntaxToken EndKeyword => this.endKeyword;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.forKeyword,
+                1 => this.name,
+                2 => this.equalsToken,
+                3 => this.initial,
+                4 => this.firstCommaToken,
+                5 => this.limit,
+                6 => this.secondCommaToken,
+                7 => this.step,
+                8 => this.doKeyword,
+                9 => this.block,
+                10 => this.endKeyword,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ForStatementSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitForStatement(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitForStatement(this);
+
+        public ForStatementSyntax Update(SyntaxToken forKeyword, IdentifierNameSyntax name, SyntaxToken equalsToken, ExpressionSyntax initial, SyntaxToken firstCommaToken, ExpressionSyntax limit, SyntaxToken secondCommaToken, ExpressionSyntax step, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+        {
+            if (forKeyword != this.ForKeyword || name != this.Name || equalsToken != this.EqualsToken || initial != this.Initial || firstCommaToken != this.FirstCommaToken || limit != this.Limit || secondCommaToken != this.SecondCommaToken || step != this.Step || doKeyword != this.DoKeyword || block != this.Block || endKeyword != this.EndKeyword)
+            {
+                var newNode = SyntaxFactory.ForStatement(forKeyword, name, equalsToken, initial, firstCommaToken, limit, secondCommaToken, step, doKeyword, block, endKeyword);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new ForStatementSyntax(this.Kind, this.forKeyword, this.name, this.equalsToken, this.initial, this.firstCommaToken, this.limit, this.secondCommaToken, this.step, this.doKeyword, this.block, this.endKeyword, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new ForStatementSyntax(this.Kind, this.forKeyword, this.name, this.equalsToken, this.initial, this.firstCommaToken, this.limit, this.secondCommaToken, this.step, this.doKeyword, this.block, this.endKeyword, GetDiagnostics(), annotations);
+
+        internal ForStatementSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 11;
+            var forKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(forKeyword);
+            this.forKeyword = forKeyword;
+            var name = (IdentifierNameSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(name);
+            this.name = name;
+            var equalsToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(equalsToken);
+            this.equalsToken = equalsToken;
+            var initial = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(initial);
+            this.initial = initial;
+            var firstCommaToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(firstCommaToken);
+            this.firstCommaToken = firstCommaToken;
+            var limit = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(limit);
+            this.limit = limit;
+            var secondCommaToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(secondCommaToken);
+            this.secondCommaToken = secondCommaToken;
+            var step = (ExpressionSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(step);
+            this.step = step;
+            var doKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(doKeyword);
+            this.doKeyword = doKeyword;
+            var block = (BlockSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(block);
+            this.block = block;
+            var endKeyword = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(endKeyword);
+            this.endKeyword = endKeyword;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.forKeyword);
+            writer.WriteValue(this.name);
+            writer.WriteValue(this.equalsToken);
+            writer.WriteValue(this.initial);
+            writer.WriteValue(this.firstCommaToken);
+            writer.WriteValue(this.limit);
+            writer.WriteValue(this.secondCommaToken);
+            writer.WriteValue(this.step);
+            writer.WriteValue(this.doKeyword);
+            writer.WriteValue(this.block);
+            writer.WriteValue(this.endKeyword);
+        }
+
+        static ForStatementSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(ForStatementSyntax), r => new ForStatementSyntax(r));
+        }
+    }
+
+    internal sealed partial class ChunkSyntax : LuaSyntaxNode
+    {
+        internal readonly BlockSyntax block;
+        internal readonly SyntaxToken endOfFileToken;
+
+        internal ChunkSyntax(SyntaxKind kind, BlockSyntax block, SyntaxToken endOfFileToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endOfFileToken);
+            this.endOfFileToken = endOfFileToken;
+        }
+
+        internal ChunkSyntax(SyntaxKind kind, BlockSyntax block, SyntaxToken endOfFileToken, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endOfFileToken);
+            this.endOfFileToken = endOfFileToken;
+        }
+
+        internal ChunkSyntax(SyntaxKind kind, BlockSyntax block, SyntaxToken endOfFileToken)
+          : base(kind)
+        {
+            this.SlotCount = 2;
+            this.AdjustFlagsAndWidth(block);
+            this.block = block;
+            this.AdjustFlagsAndWidth(endOfFileToken);
+            this.endOfFileToken = endOfFileToken;
+        }
+
+        public BlockSyntax Block => this.block;
+        public SyntaxToken EndOfFileToken => this.endOfFileToken;
+
+        internal override GreenNode? GetSlot(int index)
+            => index switch
+            {
+                0 => this.block,
+                1 => this.endOfFileToken,
+                _ => null,
+            };
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ChunkSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitChunk(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitChunk(this);
+
+        public ChunkSyntax Update(BlockSyntax block, SyntaxToken endOfFileToken)
+        {
+            if (block != this.Block || endOfFileToken != this.EndOfFileToken)
+            {
+                var newNode = SyntaxFactory.Chunk(block, endOfFileToken);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new ChunkSyntax(this.Kind, this.block, this.endOfFileToken, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new ChunkSyntax(this.Kind, this.block, this.endOfFileToken, GetDiagnostics(), annotations);
+
+        internal ChunkSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 2;
+            var block = (BlockSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(block);
+            this.block = block;
+            var endOfFileToken = (SyntaxToken)reader.ReadValue();
+            AdjustFlagsAndWidth(endOfFileToken);
+            this.endOfFileToken = endOfFileToken;
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.block);
+            writer.WriteValue(this.endOfFileToken);
+        }
+
+        static ChunkSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(ChunkSyntax), r => new ChunkSyntax(r));
+        }
+    }
+
+    internal sealed partial class BlockSyntax : LuaSyntaxNode
+    {
+        internal readonly GreenNode? statements;
+
+        internal BlockSyntax(SyntaxKind kind, GreenNode? statements, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 1;
+            if (statements != null)
+            {
+                this.AdjustFlagsAndWidth(statements);
+                this.statements = statements;
+            }
+        }
+
+        internal BlockSyntax(SyntaxKind kind, GreenNode? statements, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 1;
+            if (statements != null)
+            {
+                this.AdjustFlagsAndWidth(statements);
+                this.statements = statements;
+            }
+        }
+
+        internal BlockSyntax(SyntaxKind kind, GreenNode? statements)
+          : base(kind)
+        {
+            this.SlotCount = 1;
+            if (statements != null)
+            {
+                this.AdjustFlagsAndWidth(statements);
+                this.statements = statements;
+            }
+        }
+
+        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> Statements => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax>(this.statements);
+
+        internal override GreenNode? GetSlot(int index)
+            => index == 0 ? this.statements : null;
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.BlockSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitBlock(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitBlock(this);
+
+        public BlockSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> statements)
+        {
+            if (statements != this.Statements)
+            {
+                var newNode = SyntaxFactory.Block(statements);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new BlockSyntax(this.Kind, this.statements, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new BlockSyntax(this.Kind, this.statements, GetDiagnostics(), annotations);
+
+        internal BlockSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 1;
+            var statements = (GreenNode?)reader.ReadValue();
+            if (statements != null)
+            {
+                AdjustFlagsAndWidth(statements);
+                this.statements = statements;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.statements);
+        }
+
+        static BlockSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(BlockSyntax), r => new BlockSyntax(r));
+        }
+    }
+
+    internal sealed partial class SkippedTokensTriviaSyntax : StructuredTriviaSyntax
+    {
+        internal readonly GreenNode? tokens;
+
+        internal SkippedTokensTriviaSyntax(SyntaxKind kind, GreenNode? tokens, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 1;
+            if (tokens != null)
+            {
+                this.AdjustFlagsAndWidth(tokens);
+                this.tokens = tokens;
+            }
+        }
+
+        internal SkippedTokensTriviaSyntax(SyntaxKind kind, GreenNode? tokens, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 1;
+            if (tokens != null)
+            {
+                this.AdjustFlagsAndWidth(tokens);
+                this.tokens = tokens;
+            }
+        }
+
+        internal SkippedTokensTriviaSyntax(SyntaxKind kind, GreenNode? tokens)
+          : base(kind)
+        {
+            this.SlotCount = 1;
+            if (tokens != null)
+            {
+                this.AdjustFlagsAndWidth(tokens);
+                this.tokens = tokens;
+            }
+        }
+
+        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken> Tokens => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken>(this.tokens);
+
+        internal override GreenNode? GetSlot(int index)
+            => index == 0 ? this.tokens : null;
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.SkippedTokensTriviaSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitSkippedTokensTrivia(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitSkippedTokensTrivia(this);
+
+        public SkippedTokensTriviaSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken> tokens)
+        {
+            if (tokens != this.Tokens)
+            {
+                var newNode = SyntaxFactory.SkippedTokensTrivia(tokens);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new SkippedTokensTriviaSyntax(this.Kind, this.tokens, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new SkippedTokensTriviaSyntax(this.Kind, this.tokens, GetDiagnostics(), annotations);
+
+        internal SkippedTokensTriviaSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 1;
+            var tokens = (GreenNode?)reader.ReadValue();
+            if (tokens != null)
+            {
+                AdjustFlagsAndWidth(tokens);
+                this.tokens = tokens;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.tokens);
+        }
+
+        static SkippedTokensTriviaSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(SkippedTokensTriviaSyntax), r => new SkippedTokensTriviaSyntax(r));
         }
     }
 
@@ -421,7 +3457,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 _ => null,
             };
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.BracketedExpressionSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.BracketedExpressionSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitBracketedExpression(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitBracketedExpression(this);
@@ -475,125 +3511,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         static BracketedExpressionSyntax()
         {
             ObjectBinder.RegisterTypeReader(typeof(BracketedExpressionSyntax), r => new BracketedExpressionSyntax(r));
-        }
-    }
-
-    /// <summary>Provides the base class from which the classes that represent expression list syntax nodes are derived. This is an abstract class.</summary>
-    internal abstract partial class BaseExpressionListSyntax : LuaSyntaxNode
-    {
-        internal BaseExpressionListSyntax(SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-        }
-
-        internal BaseExpressionListSyntax(SyntaxKind kind)
-          : base(kind)
-        {
-        }
-
-        protected BaseExpressionListSyntax(ObjectReader reader)
-          : base(reader)
-        {
-        }
-
-        /// <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of expressions.</summary>
-        public abstract Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> Expressions { get; }
-    }
-
-    /// <summary>Class which represents the syntax node for the list of expressions.</summary>
-    internal sealed partial class ExpressionListSyntax : BaseExpressionListSyntax
-    {
-        internal readonly GreenNode? expressions;
-
-        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 1;
-            if (expressions != null)
-            {
-                this.AdjustFlagsAndWidth(expressions);
-                this.expressions = expressions;
-            }
-        }
-
-        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 1;
-            if (expressions != null)
-            {
-                this.AdjustFlagsAndWidth(expressions);
-                this.expressions = expressions;
-            }
-        }
-
-        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions)
-          : base(kind)
-        {
-            this.SlotCount = 1;
-            if (expressions != null)
-            {
-                this.AdjustFlagsAndWidth(expressions);
-                this.expressions = expressions;
-            }
-        }
-
-        /// <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of expressions.</summary>
-        public override Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> Expressions => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.expressions));
-
-        internal override GreenNode? GetSlot(int index)
-            => index == 0 ? this.expressions : null;
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ExpressionListSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitExpressionList(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitExpressionList(this);
-
-        public ExpressionListSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
-        {
-            if (expressions != this.Expressions)
-            {
-                var newNode = SyntaxFactory.ExpressionList(expressions);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ExpressionListSyntax(this.Kind, this.expressions, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ExpressionListSyntax(this.Kind, this.expressions, GetDiagnostics(), annotations);
-
-        internal ExpressionListSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 1;
-            var expressions = (GreenNode?)reader.ReadValue();
-            if (expressions != null)
-            {
-                AdjustFlagsAndWidth(expressions);
-                this.expressions = expressions;
-            }
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.expressions);
-        }
-
-        static ExpressionListSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ExpressionListSyntax), r => new ExpressionListSyntax(r));
         }
     }
 
@@ -665,7 +3582,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 _ => null,
             };
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ParameterListSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ParameterListSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitParameterList(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitParameterList(this);
@@ -761,7 +3678,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         internal override GreenNode? GetSlot(int index)
             => index == 0 ? this.identifier : null;
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ParameterSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ParameterSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitParameter(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitParameter(this);
@@ -810,156 +3727,8 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         }
     }
 
-    internal sealed partial class FunctionDefinitionExpressionSyntax : ExpressionSyntax
-    {
-        internal readonly SyntaxToken functionKeyword;
-        internal readonly ParameterListSyntax parameters;
-        internal readonly BlockSyntax body;
-        internal readonly SyntaxToken endKeyword;
-
-        internal FunctionDefinitionExpressionSyntax(SyntaxKind kind, SyntaxToken functionKeyword, ParameterListSyntax parameters, BlockSyntax body, SyntaxToken endKeyword, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 4;
-            this.AdjustFlagsAndWidth(functionKeyword);
-            this.functionKeyword = functionKeyword;
-            this.AdjustFlagsAndWidth(parameters);
-            this.parameters = parameters;
-            this.AdjustFlagsAndWidth(body);
-            this.body = body;
-            this.AdjustFlagsAndWidth(endKeyword);
-            this.endKeyword = endKeyword;
-        }
-
-        internal FunctionDefinitionExpressionSyntax(SyntaxKind kind, SyntaxToken functionKeyword, ParameterListSyntax parameters, BlockSyntax body, SyntaxToken endKeyword, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 4;
-            this.AdjustFlagsAndWidth(functionKeyword);
-            this.functionKeyword = functionKeyword;
-            this.AdjustFlagsAndWidth(parameters);
-            this.parameters = parameters;
-            this.AdjustFlagsAndWidth(body);
-            this.body = body;
-            this.AdjustFlagsAndWidth(endKeyword);
-            this.endKeyword = endKeyword;
-        }
-
-        internal FunctionDefinitionExpressionSyntax(SyntaxKind kind, SyntaxToken functionKeyword, ParameterListSyntax parameters, BlockSyntax body, SyntaxToken endKeyword)
-          : base(kind)
-        {
-            this.SlotCount = 4;
-            this.AdjustFlagsAndWidth(functionKeyword);
-            this.functionKeyword = functionKeyword;
-            this.AdjustFlagsAndWidth(parameters);
-            this.parameters = parameters;
-            this.AdjustFlagsAndWidth(body);
-            this.body = body;
-            this.AdjustFlagsAndWidth(endKeyword);
-            this.endKeyword = endKeyword;
-        }
-
-        public SyntaxToken FunctionKeyword => this.functionKeyword;
-        public ParameterListSyntax Parameters => this.parameters;
-        public BlockSyntax Body => this.body;
-        public SyntaxToken EndKeyword => this.endKeyword;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.functionKeyword,
-                1 => this.parameters,
-                2 => this.body,
-                3 => this.endKeyword,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.FunctionDefinitionExpressionSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitFunctionDefinitionExpression(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitFunctionDefinitionExpression(this);
-
-        public FunctionDefinitionExpressionSyntax Update(SyntaxToken functionKeyword, ParameterListSyntax parameters, BlockSyntax body, SyntaxToken endKeyword)
-        {
-            if (functionKeyword != this.FunctionKeyword || parameters != this.Parameters || body != this.Body || endKeyword != this.EndKeyword)
-            {
-                var newNode = SyntaxFactory.FunctionDefinitionExpression(functionKeyword, parameters, body, endKeyword);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new FunctionDefinitionExpressionSyntax(this.Kind, this.functionKeyword, this.parameters, this.body, this.endKeyword, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new FunctionDefinitionExpressionSyntax(this.Kind, this.functionKeyword, this.parameters, this.body, this.endKeyword, GetDiagnostics(), annotations);
-
-        internal FunctionDefinitionExpressionSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 4;
-            var functionKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(functionKeyword);
-            this.functionKeyword = functionKeyword;
-            var parameters = (ParameterListSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(parameters);
-            this.parameters = parameters;
-            var body = (BlockSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(body);
-            this.body = body;
-            var endKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(endKeyword);
-            this.endKeyword = endKeyword;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.functionKeyword);
-            writer.WriteValue(this.parameters);
-            writer.WriteValue(this.body);
-            writer.WriteValue(this.endKeyword);
-        }
-
-        static FunctionDefinitionExpressionSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(FunctionDefinitionExpressionSyntax), r => new FunctionDefinitionExpressionSyntax(r));
-        }
-    }
-
-    /// <summary>Provides the base class from which the classes that represent field list syntax nodes are derived. This is an abstract class.</summary>
-    internal abstract partial class BaseFieldListSyntax : LuaSyntaxNode
-    {
-        internal BaseFieldListSyntax(SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-        }
-
-        internal BaseFieldListSyntax(SyntaxKind kind)
-          : base(kind)
-        {
-        }
-
-        protected BaseFieldListSyntax(ObjectReader reader)
-          : base(reader)
-        {
-        }
-
-        /// <summary>SeparatedSyntaxList of FieldSyntax nodes representing the list of fields.</summary>
-        public abstract Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldSyntax> Fields { get; }
-    }
-
     /// <summary>Class which represents the syntax node for the list of fields.</summary>
-    internal sealed partial class FieldListSyntax : BaseFieldListSyntax
+    internal sealed partial class FieldListSyntax : LuaSyntaxNode
     {
         internal readonly GreenNode? fields;
 
@@ -998,12 +3767,12 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         }
 
         /// <summary>SeparatedSyntaxList of FieldSyntax nodes representing the list of fields.</summary>
-        public override Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldSyntax> Fields => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.fields));
+        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldSyntax> Fields => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.fields));
 
         internal override GreenNode? GetSlot(int index)
             => index == 0 ? this.fields : null;
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.FieldListSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.FieldListSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitFieldList(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitFieldList(this);
@@ -1177,7 +3946,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 _ => null,
             };
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.FieldSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.FieldSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitField(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitField(this);
@@ -1257,994 +4026,8 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         }
     }
 
-    /// <summary>Class which represents the syntax node for the table constructor expression.</summary>
-    internal sealed partial class TableConstructorExpressionSyntax : ExpressionSyntax
-    {
-        internal readonly SyntaxToken openBrace;
-        internal readonly GreenNode? fields;
-        internal readonly SyntaxToken closeBrace;
-
-        internal TableConstructorExpressionSyntax(SyntaxKind kind, SyntaxToken openBrace, GreenNode? fields, SyntaxToken closeBrace, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(openBrace);
-            this.openBrace = openBrace;
-            if (fields != null)
-            {
-                this.AdjustFlagsAndWidth(fields);
-                this.fields = fields;
-            }
-            this.AdjustFlagsAndWidth(closeBrace);
-            this.closeBrace = closeBrace;
-        }
-
-        internal TableConstructorExpressionSyntax(SyntaxKind kind, SyntaxToken openBrace, GreenNode? fields, SyntaxToken closeBrace, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(openBrace);
-            this.openBrace = openBrace;
-            if (fields != null)
-            {
-                this.AdjustFlagsAndWidth(fields);
-                this.fields = fields;
-            }
-            this.AdjustFlagsAndWidth(closeBrace);
-            this.closeBrace = closeBrace;
-        }
-
-        internal TableConstructorExpressionSyntax(SyntaxKind kind, SyntaxToken openBrace, GreenNode? fields, SyntaxToken closeBrace)
-          : base(kind)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(openBrace);
-            this.openBrace = openBrace;
-            if (fields != null)
-            {
-                this.AdjustFlagsAndWidth(fields);
-                this.fields = fields;
-            }
-            this.AdjustFlagsAndWidth(closeBrace);
-            this.closeBrace = closeBrace;
-        }
-
-        /// <summary>SyntaxToken representing open brace.</summary>
-        public SyntaxToken OpenBrace => this.openBrace;
-        /// <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of fields.</summary>
-        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldListSyntax> Fields => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldListSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.fields));
-        /// <summary>SyntaxToken representing close brace.</summary>
-        public SyntaxToken CloseBrace => this.closeBrace;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.openBrace,
-                1 => this.fields,
-                2 => this.closeBrace,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.TableConstructorExpressionSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitTableConstructorExpression(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitTableConstructorExpression(this);
-
-        public TableConstructorExpressionSyntax Update(SyntaxToken openBrace, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldListSyntax> fields, SyntaxToken closeBrace)
-        {
-            if (openBrace != this.OpenBrace || fields != this.Fields || closeBrace != this.CloseBrace)
-            {
-                var newNode = SyntaxFactory.TableConstructorExpression(openBrace, fields, closeBrace);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new TableConstructorExpressionSyntax(this.Kind, this.openBrace, this.fields, this.closeBrace, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new TableConstructorExpressionSyntax(this.Kind, this.openBrace, this.fields, this.closeBrace, GetDiagnostics(), annotations);
-
-        internal TableConstructorExpressionSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 3;
-            var openBrace = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(openBrace);
-            this.openBrace = openBrace;
-            var fields = (GreenNode?)reader.ReadValue();
-            if (fields != null)
-            {
-                AdjustFlagsAndWidth(fields);
-                this.fields = fields;
-            }
-            var closeBrace = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(closeBrace);
-            this.closeBrace = closeBrace;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.openBrace);
-            writer.WriteValue(this.fields);
-            writer.WriteValue(this.closeBrace);
-        }
-
-        static TableConstructorExpressionSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(TableConstructorExpressionSyntax), r => new TableConstructorExpressionSyntax(r));
-        }
-    }
-
-    internal sealed partial class ImplicitSelfCallSyntax : LuaSyntaxNode
-    {
-        internal readonly ExpressionSyntax expression;
-        internal readonly SyntaxToken colonToken;
-        internal readonly IdentifierNameSyntax name;
-
-        internal ImplicitSelfCallSyntax(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(colonToken);
-            this.colonToken = colonToken;
-            this.AdjustFlagsAndWidth(name);
-            this.name = name;
-        }
-
-        internal ImplicitSelfCallSyntax(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(colonToken);
-            this.colonToken = colonToken;
-            this.AdjustFlagsAndWidth(name);
-            this.name = name;
-        }
-
-        internal ImplicitSelfCallSyntax(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name)
-          : base(kind)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(colonToken);
-            this.colonToken = colonToken;
-            this.AdjustFlagsAndWidth(name);
-            this.name = name;
-        }
-
-        /// <summary>ExpressionSyntax node representing the expression part of the implicit self call.</summary>
-        public ExpressionSyntax Expression => this.expression;
-        public SyntaxToken ColonToken => this.colonToken;
-        /// <summary>IdentifierNameSyntax representing the identifier name.</summary>
-        public IdentifierNameSyntax Name => this.name;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.expression,
-                1 => this.colonToken,
-                2 => this.name,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ImplicitSelfCallSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitImplicitSelfCall(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitImplicitSelfCall(this);
-
-        public ImplicitSelfCallSyntax Update(ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name)
-        {
-            if (expression != this.Expression || colonToken != this.ColonToken || name != this.Name)
-            {
-                var newNode = SyntaxFactory.ImplicitSelfCall(expression, colonToken, name);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ImplicitSelfCallSyntax(this.Kind, this.expression, this.colonToken, this.name, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ImplicitSelfCallSyntax(this.Kind, this.expression, this.colonToken, this.name, GetDiagnostics(), annotations);
-
-        internal ImplicitSelfCallSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 3;
-            var expression = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            var colonToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(colonToken);
-            this.colonToken = colonToken;
-            var name = (IdentifierNameSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(name);
-            this.name = name;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.expression);
-            writer.WriteValue(this.colonToken);
-            writer.WriteValue(this.name);
-        }
-
-        static ImplicitSelfCallSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ImplicitSelfCallSyntax), r => new ImplicitSelfCallSyntax(r));
-        }
-    }
-
-    /// <summary>Class which represents an expression that has a binary operator.</summary>
-    internal sealed partial class BinaryExpressionSyntax : ExpressionSyntax
-    {
-        internal readonly ExpressionSyntax left;
-        internal readonly SyntaxToken operatorToken;
-        internal readonly ExpressionSyntax right;
-
-        internal BinaryExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(left);
-            this.left = left;
-            this.AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            this.AdjustFlagsAndWidth(right);
-            this.right = right;
-        }
-
-        internal BinaryExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(left);
-            this.left = left;
-            this.AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            this.AdjustFlagsAndWidth(right);
-            this.right = right;
-        }
-
-        internal BinaryExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right)
-          : base(kind)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(left);
-            this.left = left;
-            this.AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            this.AdjustFlagsAndWidth(right);
-            this.right = right;
-        }
-
-        /// <summary>ExpressionSyntax node representing the expression on the left of the binary operator.</summary>
-        public ExpressionSyntax Left => this.left;
-        /// <summary>SyntaxToken representing the operator of the binary expression.</summary>
-        public SyntaxToken OperatorToken => this.operatorToken;
-        /// <summary>ExpressionSyntax node representing the expression on the right of the binary operator.</summary>
-        public ExpressionSyntax Right => this.right;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.left,
-                1 => this.operatorToken,
-                2 => this.right,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.BinaryExpressionSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitBinaryExpression(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitBinaryExpression(this);
-
-        public BinaryExpressionSyntax Update(ExpressionSyntax left, SyntaxToken operatorToken, ExpressionSyntax right)
-        {
-            if (left != this.Left || operatorToken != this.OperatorToken || right != this.Right)
-            {
-                var newNode = SyntaxFactory.BinaryExpression(this.Kind, left, operatorToken, right);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new BinaryExpressionSyntax(this.Kind, this.left, this.operatorToken, this.right, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new BinaryExpressionSyntax(this.Kind, this.left, this.operatorToken, this.right, GetDiagnostics(), annotations);
-
-        internal BinaryExpressionSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 3;
-            var left = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(left);
-            this.left = left;
-            var operatorToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            var right = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(right);
-            this.right = right;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.left);
-            writer.WriteValue(this.operatorToken);
-            writer.WriteValue(this.right);
-        }
-
-        static BinaryExpressionSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(BinaryExpressionSyntax), r => new BinaryExpressionSyntax(r));
-        }
-    }
-
-    /// <summary>Class which represents the syntax node for prefix unary expression.</summary>
-    internal sealed partial class UnaryExpressionSyntax : ExpressionSyntax
-    {
-        internal readonly SyntaxToken operatorToken;
-        internal readonly ExpressionSyntax operand;
-
-        internal UnaryExpressionSyntax(SyntaxKind kind, SyntaxToken operatorToken, ExpressionSyntax operand, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            this.AdjustFlagsAndWidth(operand);
-            this.operand = operand;
-        }
-
-        internal UnaryExpressionSyntax(SyntaxKind kind, SyntaxToken operatorToken, ExpressionSyntax operand, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            this.AdjustFlagsAndWidth(operand);
-            this.operand = operand;
-        }
-
-        internal UnaryExpressionSyntax(SyntaxKind kind, SyntaxToken operatorToken, ExpressionSyntax operand)
-          : base(kind)
-        {
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            this.AdjustFlagsAndWidth(operand);
-            this.operand = operand;
-        }
-
-        /// <summary>SyntaxToken representing the kind of the operator of the prefix unary expression.</summary>
-        public SyntaxToken OperatorToken => this.operatorToken;
-        /// <summary>ExpressionSyntax representing the operand of the prefix unary expression.</summary>
-        public ExpressionSyntax Operand => this.operand;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.operatorToken,
-                1 => this.operand,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.UnaryExpressionSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitUnaryExpression(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitUnaryExpression(this);
-
-        public UnaryExpressionSyntax Update(SyntaxToken operatorToken, ExpressionSyntax operand)
-        {
-            if (operatorToken != this.OperatorToken || operand != this.Operand)
-            {
-                var newNode = SyntaxFactory.UnaryExpression(this.Kind, operatorToken, operand);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new UnaryExpressionSyntax(this.Kind, this.operatorToken, this.operand, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new UnaryExpressionSyntax(this.Kind, this.operatorToken, this.operand, GetDiagnostics(), annotations);
-
-        internal UnaryExpressionSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 2;
-            var operatorToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            var operand = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(operand);
-            this.operand = operand;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.operatorToken);
-            writer.WriteValue(this.operand);
-        }
-
-        static UnaryExpressionSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(UnaryExpressionSyntax), r => new UnaryExpressionSyntax(r));
-        }
-    }
-
-    /// <summary>Class which represents an expression that has an assignment operator.</summary>
-    internal sealed partial class AssignmentExpressionSyntax : ExpressionSyntax
-    {
-        internal readonly ExpressionSyntax left;
-        internal readonly SyntaxToken equalsToken;
-        internal readonly ExpressionSyntax right;
-
-        internal AssignmentExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken equalsToken, ExpressionSyntax right, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(left);
-            this.left = left;
-            this.AdjustFlagsAndWidth(equalsToken);
-            this.equalsToken = equalsToken;
-            this.AdjustFlagsAndWidth(right);
-            this.right = right;
-        }
-
-        internal AssignmentExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken equalsToken, ExpressionSyntax right, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(left);
-            this.left = left;
-            this.AdjustFlagsAndWidth(equalsToken);
-            this.equalsToken = equalsToken;
-            this.AdjustFlagsAndWidth(right);
-            this.right = right;
-        }
-
-        internal AssignmentExpressionSyntax(SyntaxKind kind, ExpressionSyntax left, SyntaxToken equalsToken, ExpressionSyntax right)
-          : base(kind)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(left);
-            this.left = left;
-            this.AdjustFlagsAndWidth(equalsToken);
-            this.equalsToken = equalsToken;
-            this.AdjustFlagsAndWidth(right);
-            this.right = right;
-        }
-
-        /// <summary>ExpressionSyntax node representing the expression on the left of the assignment operator.</summary>
-        public ExpressionSyntax Left => this.left;
-        /// <summary>SyntaxToken representing the operator of the assignment expression.</summary>
-        public SyntaxToken EqualsToken => this.equalsToken;
-        /// <summary>ExpressionSyntax node representing the expression on the right of the assignment operator.</summary>
-        public ExpressionSyntax Right => this.right;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.left,
-                1 => this.equalsToken,
-                2 => this.right,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.AssignmentExpressionSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitAssignmentExpression(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitAssignmentExpression(this);
-
-        public AssignmentExpressionSyntax Update(ExpressionSyntax left, SyntaxToken equalsToken, ExpressionSyntax right)
-        {
-            if (left != this.Left || equalsToken != this.EqualsToken || right != this.Right)
-            {
-                var newNode = SyntaxFactory.AssignmentExpression(left, equalsToken, right);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new AssignmentExpressionSyntax(this.Kind, this.left, this.equalsToken, this.right, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new AssignmentExpressionSyntax(this.Kind, this.left, this.equalsToken, this.right, GetDiagnostics(), annotations);
-
-        internal AssignmentExpressionSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 3;
-            var left = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(left);
-            this.left = left;
-            var equalsToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(equalsToken);
-            this.equalsToken = equalsToken;
-            var right = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(right);
-            this.right = right;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.left);
-            writer.WriteValue(this.equalsToken);
-            writer.WriteValue(this.right);
-        }
-
-        static AssignmentExpressionSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(AssignmentExpressionSyntax), r => new AssignmentExpressionSyntax(r));
-        }
-    }
-
-    internal abstract partial class MemberAccessExpressionSyntax : ExpressionSyntax
-    {
-        internal MemberAccessExpressionSyntax(SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-        }
-
-        internal MemberAccessExpressionSyntax(SyntaxKind kind)
-          : base(kind)
-        {
-        }
-
-        protected MemberAccessExpressionSyntax(ObjectReader reader)
-          : base(reader)
-        {
-        }
-
-        /// <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
-        public abstract ExpressionSyntax Expression { get; }
-
-        /// <summary>SimpleNameSyntax node representing the member being accessed.</summary>
-        public abstract ExpressionSyntax MemberExpression { get; }
-    }
-
-    /// <summary>Class which represents the syntax node for member access expression.</summary>
-    internal sealed partial class SimpleMemberAccessExpression : MemberAccessExpressionSyntax
-    {
-        internal readonly ExpressionSyntax expression;
-        internal readonly SyntaxToken operatorToken;
-        internal readonly ExpressionSyntax memberExpression;
-
-        internal SimpleMemberAccessExpression(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken operatorToken, ExpressionSyntax memberExpression, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            this.AdjustFlagsAndWidth(memberExpression);
-            this.memberExpression = memberExpression;
-        }
-
-        internal SimpleMemberAccessExpression(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken operatorToken, ExpressionSyntax memberExpression, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            this.AdjustFlagsAndWidth(memberExpression);
-            this.memberExpression = memberExpression;
-        }
-
-        internal SimpleMemberAccessExpression(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken operatorToken, ExpressionSyntax memberExpression)
-          : base(kind)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            this.AdjustFlagsAndWidth(memberExpression);
-            this.memberExpression = memberExpression;
-        }
-
-        /// <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
-        public override ExpressionSyntax Expression => this.expression;
-        /// <summary>SyntaxToken representing the kind of the operator in the member access expression.</summary>
-        public SyntaxToken OperatorToken => this.operatorToken;
-        /// <summary>SimpleNameSyntax node representing the member being accessed.</summary>
-        public override ExpressionSyntax MemberExpression => this.memberExpression;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.expression,
-                1 => this.operatorToken,
-                2 => this.memberExpression,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.SimpleMemberAccessExpression(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitSimpleMemberAccessExpression(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitSimpleMemberAccessExpression(this);
-
-        public SimpleMemberAccessExpression Update(ExpressionSyntax expression, SyntaxToken operatorToken, ExpressionSyntax memberExpression)
-        {
-            if (expression != this.Expression || operatorToken != this.OperatorToken || memberExpression != this.MemberExpression)
-            {
-                var newNode = SyntaxFactory.SimpleMemberAccessExpression(expression, operatorToken, memberExpression);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new SimpleMemberAccessExpression(this.Kind, this.expression, this.operatorToken, this.memberExpression, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new SimpleMemberAccessExpression(this.Kind, this.expression, this.operatorToken, this.memberExpression, GetDiagnostics(), annotations);
-
-        internal SimpleMemberAccessExpression(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 3;
-            var expression = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            var operatorToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(operatorToken);
-            this.operatorToken = operatorToken;
-            var memberExpression = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(memberExpression);
-            this.memberExpression = memberExpression;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.expression);
-            writer.WriteValue(this.operatorToken);
-            writer.WriteValue(this.memberExpression);
-        }
-
-        static SimpleMemberAccessExpression()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(SimpleMemberAccessExpression), r => new SimpleMemberAccessExpression(r));
-        }
-    }
-
-    /// <summary>Class which represents the syntax node for member access expression.</summary>
-    internal sealed partial class IndexMemberAccessExpressionSyntax : MemberAccessExpressionSyntax
-    {
-        internal readonly ExpressionSyntax expression;
-        internal readonly BracketedExpressionSyntax key;
-
-        internal IndexMemberAccessExpressionSyntax(SyntaxKind kind, ExpressionSyntax expression, BracketedExpressionSyntax key, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(key);
-            this.key = key;
-        }
-
-        internal IndexMemberAccessExpressionSyntax(SyntaxKind kind, ExpressionSyntax expression, BracketedExpressionSyntax key, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(key);
-            this.key = key;
-        }
-
-        internal IndexMemberAccessExpressionSyntax(SyntaxKind kind, ExpressionSyntax expression, BracketedExpressionSyntax key)
-          : base(kind)
-        {
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(key);
-            this.key = key;
-        }
-
-        /// <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
-        public override ExpressionSyntax Expression => this.expression;
-        public BracketedExpressionSyntax Key => this.key;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.expression,
-                1 => this.key,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.IndexMemberAccessExpressionSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitIndexMemberAccessExpression(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitIndexMemberAccessExpression(this);
-
-        public IndexMemberAccessExpressionSyntax Update(ExpressionSyntax expression, BracketedExpressionSyntax key)
-        {
-            if (expression != this.Expression || key != this.Key)
-            {
-                var newNode = SyntaxFactory.IndexMemberAccessExpression(expression, key);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new IndexMemberAccessExpressionSyntax(this.Kind, this.expression, this.key, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new IndexMemberAccessExpressionSyntax(this.Kind, this.expression, this.key, GetDiagnostics(), annotations);
-
-        internal IndexMemberAccessExpressionSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 2;
-            var expression = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            var key = (BracketedExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(key);
-            this.key = key;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.expression);
-            writer.WriteValue(this.key);
-        }
-
-        static IndexMemberAccessExpressionSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(IndexMemberAccessExpressionSyntax), r => new IndexMemberAccessExpressionSyntax(r));
-        }
-    }
-
-    /// <summary>Class which represents the syntax node for invocation expression.</summary>
-    internal sealed partial class InvocationExpressionSyntax : ExpressionSyntax
-    {
-        internal readonly ExpressionSyntax? expression;
-        internal readonly ImplicitSelfCallSyntax? selfCallExpression;
-        internal readonly ArgumentListSyntax argumentList;
-
-        internal InvocationExpressionSyntax(SyntaxKind kind, ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCallExpression, ArgumentListSyntax argumentList, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 3;
-            if (expression != null)
-            {
-                this.AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            if (selfCallExpression != null)
-            {
-                this.AdjustFlagsAndWidth(selfCallExpression);
-                this.selfCallExpression = selfCallExpression;
-            }
-            this.AdjustFlagsAndWidth(argumentList);
-            this.argumentList = argumentList;
-        }
-
-        internal InvocationExpressionSyntax(SyntaxKind kind, ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCallExpression, ArgumentListSyntax argumentList, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 3;
-            if (expression != null)
-            {
-                this.AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            if (selfCallExpression != null)
-            {
-                this.AdjustFlagsAndWidth(selfCallExpression);
-                this.selfCallExpression = selfCallExpression;
-            }
-            this.AdjustFlagsAndWidth(argumentList);
-            this.argumentList = argumentList;
-        }
-
-        internal InvocationExpressionSyntax(SyntaxKind kind, ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCallExpression, ArgumentListSyntax argumentList)
-          : base(kind)
-        {
-            this.SlotCount = 3;
-            if (expression != null)
-            {
-                this.AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            if (selfCallExpression != null)
-            {
-                this.AdjustFlagsAndWidth(selfCallExpression);
-                this.selfCallExpression = selfCallExpression;
-            }
-            this.AdjustFlagsAndWidth(argumentList);
-            this.argumentList = argumentList;
-        }
-
-        /// <summary>ExpressionSyntax node representing the expression part of the invocation.</summary>
-        public ExpressionSyntax? Expression => this.expression;
-        public ImplicitSelfCallSyntax? SelfCallExpression => this.selfCallExpression;
-        /// <summary>ArgumentListSyntax node representing the list of arguments of the invocation expression.</summary>
-        public ArgumentListSyntax ArgumentList => this.argumentList;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.expression,
-                1 => this.selfCallExpression,
-                2 => this.argumentList,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.InvocationExpressionSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitInvocationExpression(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitInvocationExpression(this);
-
-        public InvocationExpressionSyntax Update(ExpressionSyntax expression, ImplicitSelfCallSyntax selfCallExpression, ArgumentListSyntax argumentList)
-        {
-            if (expression != this.Expression || selfCallExpression != this.SelfCallExpression || argumentList != this.ArgumentList)
-            {
-                var newNode = SyntaxFactory.InvocationExpression(expression, selfCallExpression, argumentList);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new InvocationExpressionSyntax(this.Kind, this.expression, this.selfCallExpression, this.argumentList, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new InvocationExpressionSyntax(this.Kind, this.expression, this.selfCallExpression, this.argumentList, GetDiagnostics(), annotations);
-
-        internal InvocationExpressionSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 3;
-            var expression = (ExpressionSyntax?)reader.ReadValue();
-            if (expression != null)
-            {
-                AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            var selfCallExpression = (ImplicitSelfCallSyntax?)reader.ReadValue();
-            if (selfCallExpression != null)
-            {
-                AdjustFlagsAndWidth(selfCallExpression);
-                this.selfCallExpression = selfCallExpression;
-            }
-            var argumentList = (ArgumentListSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(argumentList);
-            this.argumentList = argumentList;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.expression);
-            writer.WriteValue(this.selfCallExpression);
-            writer.WriteValue(this.argumentList);
-        }
-
-        static InvocationExpressionSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(InvocationExpressionSyntax), r => new InvocationExpressionSyntax(r));
-        }
-    }
-
-    /// <summary>Provides the base class from which the classes that represent argument list syntax nodes are derived. This is an abstract class.</summary>
-    internal abstract partial class BaseArgumentListSyntax : LuaSyntaxNode
-    {
-        internal BaseArgumentListSyntax(SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-        }
-
-        internal BaseArgumentListSyntax(SyntaxKind kind)
-          : base(kind)
-        {
-        }
-
-        protected BaseArgumentListSyntax(ObjectReader reader)
-          : base(reader)
-        {
-        }
-
-        /// <summary>SeparatedSyntaxList of ArgumentSyntax nodes representing the list of arguments.</summary>
-        public abstract Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ArgumentSyntax> Arguments { get; }
-    }
-
     /// <summary>Class which represents the syntax node for the list of arguments.</summary>
-    internal sealed partial class ArgumentListSyntax : BaseArgumentListSyntax
+    internal sealed partial class ArgumentListSyntax : LuaSyntaxNode
     {
         internal readonly TableConstructorExpressionSyntax? argumentTable;
         internal readonly SyntaxToken? openParenToken;
@@ -2334,7 +4117,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         /// <summary>SyntaxToken representing open parenthesis.</summary>
         public SyntaxToken? OpenParenToken => this.openParenToken;
         /// <summary>SeparatedSyntaxList of ArgumentSyntax representing the list of arguments.</summary>
-        public override Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ArgumentSyntax> Arguments => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ArgumentSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.arguments));
+        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ArgumentSyntax> Arguments => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ArgumentSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.arguments));
         /// <summary>SyntaxToken representing close parenthesis.</summary>
         public SyntaxToken? CloseParenToken => this.closeParenToken;
 
@@ -2348,7 +4131,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 _ => null,
             };
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ArgumentListSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ArgumentListSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitArgumentList(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitArgumentList(this);
@@ -2457,7 +4240,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         internal override GreenNode? GetSlot(int index)
             => index == 0 ? this.expression : null;
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ArgumentSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ArgumentSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitArgument(this);
         public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitArgument(this);
@@ -2506,207 +4289,74 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         }
     }
 
-    /// <summary>Provides the base class from which the classes that represent statement syntax nodes are derived. This is an abstract class.</summary>
-    internal abstract partial class StatementSyntax : LuaSyntaxNode
-    {
-        internal StatementSyntax(SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-        }
-
-        internal StatementSyntax(SyntaxKind kind)
-          : base(kind)
-        {
-        }
-
-        protected StatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-        }
-    }
-
-    internal sealed partial class BlockSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken openBraceToken;
-        internal readonly GreenNode? statements;
-        internal readonly SyntaxToken closeBraceToken;
-
-        internal BlockSyntax(SyntaxKind kind, SyntaxToken openBraceToken, GreenNode? statements, SyntaxToken closeBraceToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(openBraceToken);
-            this.openBraceToken = openBraceToken;
-            if (statements != null)
-            {
-                this.AdjustFlagsAndWidth(statements);
-                this.statements = statements;
-            }
-            this.AdjustFlagsAndWidth(closeBraceToken);
-            this.closeBraceToken = closeBraceToken;
-        }
-
-        internal BlockSyntax(SyntaxKind kind, SyntaxToken openBraceToken, GreenNode? statements, SyntaxToken closeBraceToken, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(openBraceToken);
-            this.openBraceToken = openBraceToken;
-            if (statements != null)
-            {
-                this.AdjustFlagsAndWidth(statements);
-                this.statements = statements;
-            }
-            this.AdjustFlagsAndWidth(closeBraceToken);
-            this.closeBraceToken = closeBraceToken;
-        }
-
-        internal BlockSyntax(SyntaxKind kind, SyntaxToken openBraceToken, GreenNode? statements, SyntaxToken closeBraceToken)
-          : base(kind)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(openBraceToken);
-            this.openBraceToken = openBraceToken;
-            if (statements != null)
-            {
-                this.AdjustFlagsAndWidth(statements);
-                this.statements = statements;
-            }
-            this.AdjustFlagsAndWidth(closeBraceToken);
-            this.closeBraceToken = closeBraceToken;
-        }
-
-        public SyntaxToken OpenBraceToken => this.openBraceToken;
-        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> Statements => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax>(this.statements);
-        public SyntaxToken CloseBraceToken => this.closeBraceToken;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.openBraceToken,
-                1 => this.statements,
-                2 => this.closeBraceToken,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.BlockSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitBlock(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitBlock(this);
-
-        public BlockSyntax Update(SyntaxToken openBraceToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> statements, SyntaxToken closeBraceToken)
-        {
-            if (openBraceToken != this.OpenBraceToken || statements != this.Statements || closeBraceToken != this.CloseBraceToken)
-            {
-                var newNode = SyntaxFactory.Block(openBraceToken, statements, closeBraceToken);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new BlockSyntax(this.Kind, this.openBraceToken, this.statements, this.closeBraceToken, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new BlockSyntax(this.Kind, this.openBraceToken, this.statements, this.closeBraceToken, GetDiagnostics(), annotations);
-
-        internal BlockSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 3;
-            var openBraceToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(openBraceToken);
-            this.openBraceToken = openBraceToken;
-            var statements = (GreenNode?)reader.ReadValue();
-            if (statements != null)
-            {
-                AdjustFlagsAndWidth(statements);
-                this.statements = statements;
-            }
-            var closeBraceToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(closeBraceToken);
-            this.closeBraceToken = closeBraceToken;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.openBraceToken);
-            writer.WriteValue(this.statements);
-            writer.WriteValue(this.closeBraceToken);
-        }
-
-        static BlockSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(BlockSyntax), r => new BlockSyntax(r));
-        }
-    }
-
-    internal sealed partial class ExpressionStatementSyntax : StatementSyntax
+    internal sealed partial class ImplicitSelfCallSyntax : LuaSyntaxNode
     {
         internal readonly ExpressionSyntax expression;
-        internal readonly SyntaxToken semicolonToken;
+        internal readonly SyntaxToken colonToken;
+        internal readonly IdentifierNameSyntax name;
 
-        internal ExpressionStatementSyntax(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+        internal ImplicitSelfCallSyntax(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
           : base(kind, diagnostics, annotations)
         {
-            this.SlotCount = 2;
+            this.SlotCount = 3;
             this.AdjustFlagsAndWidth(expression);
             this.expression = expression;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
+            this.AdjustFlagsAndWidth(colonToken);
+            this.colonToken = colonToken;
+            this.AdjustFlagsAndWidth(name);
+            this.name = name;
         }
 
-        internal ExpressionStatementSyntax(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken semicolonToken, SyntaxFactoryContext context)
+        internal ImplicitSelfCallSyntax(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name, SyntaxFactoryContext context)
           : base(kind)
         {
             this.SetFactoryContext(context);
-            this.SlotCount = 2;
+            this.SlotCount = 3;
             this.AdjustFlagsAndWidth(expression);
             this.expression = expression;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
+            this.AdjustFlagsAndWidth(colonToken);
+            this.colonToken = colonToken;
+            this.AdjustFlagsAndWidth(name);
+            this.name = name;
         }
 
-        internal ExpressionStatementSyntax(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken semicolonToken)
+        internal ImplicitSelfCallSyntax(SyntaxKind kind, ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name)
           : base(kind)
         {
-            this.SlotCount = 2;
+            this.SlotCount = 3;
             this.AdjustFlagsAndWidth(expression);
             this.expression = expression;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
+            this.AdjustFlagsAndWidth(colonToken);
+            this.colonToken = colonToken;
+            this.AdjustFlagsAndWidth(name);
+            this.name = name;
         }
 
+        /// <summary>ExpressionSyntax node representing the expression part of the implicit self call.</summary>
         public ExpressionSyntax Expression => this.expression;
-        public SyntaxToken SemicolonToken => this.semicolonToken;
+        public SyntaxToken ColonToken => this.colonToken;
+        /// <summary>IdentifierNameSyntax representing the identifier name.</summary>
+        public IdentifierNameSyntax Name => this.name;
 
         internal override GreenNode? GetSlot(int index)
             => index switch
             {
                 0 => this.expression,
-                1 => this.semicolonToken,
+                1 => this.colonToken,
+                2 => this.name,
                 _ => null,
             };
 
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ExpressionStatementSyntax(this, parent, position);
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ImplicitSelfCallSyntax(this, parent as Lua.LuaSyntaxNode, position);
 
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitExpressionStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitExpressionStatement(this);
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitImplicitSelfCall(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitImplicitSelfCall(this);
 
-        public ExpressionStatementSyntax Update(ExpressionSyntax expression, SyntaxToken semicolonToken)
+        public ImplicitSelfCallSyntax Update(ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name)
         {
-            if (expression != this.Expression || semicolonToken != this.SemicolonToken)
+            if (expression != this.Expression || colonToken != this.ColonToken || name != this.Name)
             {
-                var newNode = SyntaxFactory.ExpressionStatement(expression, semicolonToken);
+                var newNode = SyntaxFactory.ImplicitSelfCall(expression, colonToken, name);
                 var diags = GetDiagnostics();
                 if (diags?.Length > 0)
                     newNode = newNode.WithDiagnosticsGreen(diags);
@@ -2720,2068 +4370,37 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         }
 
         internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ExpressionStatementSyntax(this.Kind, this.expression, this.semicolonToken, diagnostics, GetAnnotations());
+            => new ImplicitSelfCallSyntax(this.Kind, this.expression, this.colonToken, this.name, diagnostics, GetAnnotations());
 
         internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ExpressionStatementSyntax(this.Kind, this.expression, this.semicolonToken, GetDiagnostics(), annotations);
+            => new ImplicitSelfCallSyntax(this.Kind, this.expression, this.colonToken, this.name, GetDiagnostics(), annotations);
 
-        internal ExpressionStatementSyntax(ObjectReader reader)
+        internal ImplicitSelfCallSyntax(ObjectReader reader)
           : base(reader)
         {
-            this.SlotCount = 2;
+            this.SlotCount = 3;
             var expression = (ExpressionSyntax)reader.ReadValue();
             AdjustFlagsAndWidth(expression);
             this.expression = expression;
-            var semicolonToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.expression);
-            writer.WriteValue(this.semicolonToken);
-        }
-
-        static ExpressionStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ExpressionStatementSyntax), r => new ExpressionStatementSyntax(r));
-        }
-    }
-
-    internal sealed partial class EmptyStatementSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken semicolonToken;
-
-        internal EmptyStatementSyntax(SyntaxKind kind, SyntaxToken semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 1;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal EmptyStatementSyntax(SyntaxKind kind, SyntaxToken semicolonToken, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 1;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal EmptyStatementSyntax(SyntaxKind kind, SyntaxToken semicolonToken)
-          : base(kind)
-        {
-            this.SlotCount = 1;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        public SyntaxToken SemicolonToken => this.semicolonToken;
-
-        internal override GreenNode? GetSlot(int index)
-            => index == 0 ? this.semicolonToken : null;
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.EmptyStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitEmptyStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitEmptyStatement(this);
-
-        public EmptyStatementSyntax Update(SyntaxToken semicolonToken)
-        {
-            if (semicolonToken != this.SemicolonToken)
-            {
-                var newNode = SyntaxFactory.EmptyStatement(semicolonToken);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new EmptyStatementSyntax(this.Kind, this.semicolonToken, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new EmptyStatementSyntax(this.Kind, this.semicolonToken, GetDiagnostics(), annotations);
-
-        internal EmptyStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 1;
-            var semicolonToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.semicolonToken);
-        }
-
-        static EmptyStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(EmptyStatementSyntax), r => new EmptyStatementSyntax(r));
-        }
-    }
-
-    /// <summary>Represents a labeled statement syntax.</summary>
-    internal sealed partial class LabeledStatementSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken identifier;
-        internal readonly SyntaxToken colonToken;
-        internal readonly StatementSyntax statement;
-
-        internal LabeledStatementSyntax(SyntaxKind kind, SyntaxToken identifier, SyntaxToken colonToken, StatementSyntax statement, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(identifier);
-            this.identifier = identifier;
-            this.AdjustFlagsAndWidth(colonToken);
-            this.colonToken = colonToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal LabeledStatementSyntax(SyntaxKind kind, SyntaxToken identifier, SyntaxToken colonToken, StatementSyntax statement, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(identifier);
-            this.identifier = identifier;
-            this.AdjustFlagsAndWidth(colonToken);
-            this.colonToken = colonToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal LabeledStatementSyntax(SyntaxKind kind, SyntaxToken identifier, SyntaxToken colonToken, StatementSyntax statement)
-          : base(kind)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(identifier);
-            this.identifier = identifier;
-            this.AdjustFlagsAndWidth(colonToken);
-            this.colonToken = colonToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        /// <summary>Gets the identifier.</summary>
-        public SyntaxToken Identifier => this.identifier;
-        /// <summary>Gets a SyntaxToken that represents the colon following the statement's label.</summary>
-        public SyntaxToken ColonToken => this.colonToken;
-        public StatementSyntax Statement => this.statement;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.identifier,
-                1 => this.colonToken,
-                2 => this.statement,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.LabeledStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitLabeledStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitLabeledStatement(this);
-
-        public LabeledStatementSyntax Update(SyntaxToken identifier, SyntaxToken colonToken, StatementSyntax statement)
-        {
-            if (identifier != this.Identifier || colonToken != this.ColonToken || statement != this.Statement)
-            {
-                var newNode = SyntaxFactory.LabeledStatement(identifier, colonToken, statement);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new LabeledStatementSyntax(this.Kind, this.identifier, this.colonToken, this.statement, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new LabeledStatementSyntax(this.Kind, this.identifier, this.colonToken, this.statement, GetDiagnostics(), annotations);
-
-        internal LabeledStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 3;
-            var identifier = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(identifier);
-            this.identifier = identifier;
             var colonToken = (SyntaxToken)reader.ReadValue();
             AdjustFlagsAndWidth(colonToken);
             this.colonToken = colonToken;
-            var statement = (StatementSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(statement);
-            this.statement = statement;
+            var name = (IdentifierNameSyntax)reader.ReadValue();
+            AdjustFlagsAndWidth(name);
+            this.name = name;
         }
 
         internal override void WriteTo(ObjectWriter writer)
         {
             base.WriteTo(writer);
-            writer.WriteValue(this.identifier);
+            writer.WriteValue(this.expression);
             writer.WriteValue(this.colonToken);
-            writer.WriteValue(this.statement);
+            writer.WriteValue(this.name);
         }
 
-        static LabeledStatementSyntax()
+        static ImplicitSelfCallSyntax()
         {
-            ObjectBinder.RegisterTypeReader(typeof(LabeledStatementSyntax), r => new LabeledStatementSyntax(r));
-        }
-    }
-
-    /// <summary>
-    /// Represents a goto statement syntax
-    /// </summary>
-    internal sealed partial class GotoStatementSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken gotoKeyword;
-        internal readonly SyntaxToken? caseOrDefaultKeyword;
-        internal readonly ExpressionSyntax? expression;
-        internal readonly SyntaxToken semicolonToken;
-
-        internal GotoStatementSyntax(SyntaxKind kind, SyntaxToken gotoKeyword, SyntaxToken? caseOrDefaultKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 4;
-            this.AdjustFlagsAndWidth(gotoKeyword);
-            this.gotoKeyword = gotoKeyword;
-            if (caseOrDefaultKeyword != null)
-            {
-                this.AdjustFlagsAndWidth(caseOrDefaultKeyword);
-                this.caseOrDefaultKeyword = caseOrDefaultKeyword;
-            }
-            if (expression != null)
-            {
-                this.AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal GotoStatementSyntax(SyntaxKind kind, SyntaxToken gotoKeyword, SyntaxToken? caseOrDefaultKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 4;
-            this.AdjustFlagsAndWidth(gotoKeyword);
-            this.gotoKeyword = gotoKeyword;
-            if (caseOrDefaultKeyword != null)
-            {
-                this.AdjustFlagsAndWidth(caseOrDefaultKeyword);
-                this.caseOrDefaultKeyword = caseOrDefaultKeyword;
-            }
-            if (expression != null)
-            {
-                this.AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal GotoStatementSyntax(SyntaxKind kind, SyntaxToken gotoKeyword, SyntaxToken? caseOrDefaultKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken)
-          : base(kind)
-        {
-            this.SlotCount = 4;
-            this.AdjustFlagsAndWidth(gotoKeyword);
-            this.gotoKeyword = gotoKeyword;
-            if (caseOrDefaultKeyword != null)
-            {
-                this.AdjustFlagsAndWidth(caseOrDefaultKeyword);
-                this.caseOrDefaultKeyword = caseOrDefaultKeyword;
-            }
-            if (expression != null)
-            {
-                this.AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        /// <summary>
-        /// Gets a SyntaxToken that represents the goto keyword.
-        /// </summary>
-        public SyntaxToken GotoKeyword => this.gotoKeyword;
-        /// <summary>
-        /// Gets a SyntaxToken that represents the case or default keywords if any exists.
-        /// </summary>
-        public SyntaxToken? CaseOrDefaultKeyword => this.caseOrDefaultKeyword;
-        /// <summary>
-        /// Gets a constant expression for a goto case statement.
-        /// </summary>
-        public ExpressionSyntax? Expression => this.expression;
-        /// <summary>
-        /// Gets a SyntaxToken that represents the semi-colon at the end of the statement.
-        /// </summary>
-        public SyntaxToken SemicolonToken => this.semicolonToken;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.gotoKeyword,
-                1 => this.caseOrDefaultKeyword,
-                2 => this.expression,
-                3 => this.semicolonToken,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.GotoStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitGotoStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitGotoStatement(this);
-
-        public GotoStatementSyntax Update(SyntaxToken gotoKeyword, SyntaxToken caseOrDefaultKeyword, ExpressionSyntax expression, SyntaxToken semicolonToken)
-        {
-            if (gotoKeyword != this.GotoKeyword || caseOrDefaultKeyword != this.CaseOrDefaultKeyword || expression != this.Expression || semicolonToken != this.SemicolonToken)
-            {
-                var newNode = SyntaxFactory.GotoStatement(this.Kind, gotoKeyword, caseOrDefaultKeyword, expression, semicolonToken);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new GotoStatementSyntax(this.Kind, this.gotoKeyword, this.caseOrDefaultKeyword, this.expression, this.semicolonToken, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new GotoStatementSyntax(this.Kind, this.gotoKeyword, this.caseOrDefaultKeyword, this.expression, this.semicolonToken, GetDiagnostics(), annotations);
-
-        internal GotoStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 4;
-            var gotoKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(gotoKeyword);
-            this.gotoKeyword = gotoKeyword;
-            var caseOrDefaultKeyword = (SyntaxToken?)reader.ReadValue();
-            if (caseOrDefaultKeyword != null)
-            {
-                AdjustFlagsAndWidth(caseOrDefaultKeyword);
-                this.caseOrDefaultKeyword = caseOrDefaultKeyword;
-            }
-            var expression = (ExpressionSyntax?)reader.ReadValue();
-            if (expression != null)
-            {
-                AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            var semicolonToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.gotoKeyword);
-            writer.WriteValue(this.caseOrDefaultKeyword);
-            writer.WriteValue(this.expression);
-            writer.WriteValue(this.semicolonToken);
-        }
-
-        static GotoStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(GotoStatementSyntax), r => new GotoStatementSyntax(r));
-        }
-    }
-
-    internal sealed partial class BreakStatementSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken breakKeyword;
-        internal readonly SyntaxToken semicolonToken;
-
-        internal BreakStatementSyntax(SyntaxKind kind, SyntaxToken breakKeyword, SyntaxToken semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(breakKeyword);
-            this.breakKeyword = breakKeyword;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal BreakStatementSyntax(SyntaxKind kind, SyntaxToken breakKeyword, SyntaxToken semicolonToken, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(breakKeyword);
-            this.breakKeyword = breakKeyword;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal BreakStatementSyntax(SyntaxKind kind, SyntaxToken breakKeyword, SyntaxToken semicolonToken)
-          : base(kind)
-        {
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(breakKeyword);
-            this.breakKeyword = breakKeyword;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        public SyntaxToken BreakKeyword => this.breakKeyword;
-        public SyntaxToken SemicolonToken => this.semicolonToken;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.breakKeyword,
-                1 => this.semicolonToken,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.BreakStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitBreakStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitBreakStatement(this);
-
-        public BreakStatementSyntax Update(SyntaxToken breakKeyword, SyntaxToken semicolonToken)
-        {
-            if (breakKeyword != this.BreakKeyword || semicolonToken != this.SemicolonToken)
-            {
-                var newNode = SyntaxFactory.BreakStatement(breakKeyword, semicolonToken);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new BreakStatementSyntax(this.Kind, this.breakKeyword, this.semicolonToken, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new BreakStatementSyntax(this.Kind, this.breakKeyword, this.semicolonToken, GetDiagnostics(), annotations);
-
-        internal BreakStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 2;
-            var breakKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(breakKeyword);
-            this.breakKeyword = breakKeyword;
-            var semicolonToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.breakKeyword);
-            writer.WriteValue(this.semicolonToken);
-        }
-
-        static BreakStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(BreakStatementSyntax), r => new BreakStatementSyntax(r));
-        }
-    }
-
-    internal sealed partial class ReturnStatementSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken returnKeyword;
-        internal readonly ExpressionSyntax? expression;
-        internal readonly SyntaxToken semicolonToken;
-
-        internal ReturnStatementSyntax(SyntaxKind kind, SyntaxToken returnKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(returnKeyword);
-            this.returnKeyword = returnKeyword;
-            if (expression != null)
-            {
-                this.AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal ReturnStatementSyntax(SyntaxKind kind, SyntaxToken returnKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(returnKeyword);
-            this.returnKeyword = returnKeyword;
-            if (expression != null)
-            {
-                this.AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal ReturnStatementSyntax(SyntaxKind kind, SyntaxToken returnKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken)
-          : base(kind)
-        {
-            this.SlotCount = 3;
-            this.AdjustFlagsAndWidth(returnKeyword);
-            this.returnKeyword = returnKeyword;
-            if (expression != null)
-            {
-                this.AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        public SyntaxToken ReturnKeyword => this.returnKeyword;
-        public ExpressionSyntax? Expression => this.expression;
-        public SyntaxToken SemicolonToken => this.semicolonToken;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.returnKeyword,
-                1 => this.expression,
-                2 => this.semicolonToken,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ReturnStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitReturnStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitReturnStatement(this);
-
-        public ReturnStatementSyntax Update(SyntaxToken returnKeyword, ExpressionSyntax expression, SyntaxToken semicolonToken)
-        {
-            if (returnKeyword != this.ReturnKeyword || expression != this.Expression || semicolonToken != this.SemicolonToken)
-            {
-                var newNode = SyntaxFactory.ReturnStatement(returnKeyword, expression, semicolonToken);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ReturnStatementSyntax(this.Kind, this.returnKeyword, this.expression, this.semicolonToken, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ReturnStatementSyntax(this.Kind, this.returnKeyword, this.expression, this.semicolonToken, GetDiagnostics(), annotations);
-
-        internal ReturnStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 3;
-            var returnKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(returnKeyword);
-            this.returnKeyword = returnKeyword;
-            var expression = (ExpressionSyntax?)reader.ReadValue();
-            if (expression != null)
-            {
-                AdjustFlagsAndWidth(expression);
-                this.expression = expression;
-            }
-            var semicolonToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.returnKeyword);
-            writer.WriteValue(this.expression);
-            writer.WriteValue(this.semicolonToken);
-        }
-
-        static ReturnStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ReturnStatementSyntax), r => new ReturnStatementSyntax(r));
-        }
-    }
-
-    internal sealed partial class WhileStatementSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken whileKeyword;
-        internal readonly SyntaxToken openParenToken;
-        internal readonly ExpressionSyntax condition;
-        internal readonly SyntaxToken closeParenToken;
-        internal readonly StatementSyntax statement;
-
-        internal WhileStatementSyntax(SyntaxKind kind, SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 5;
-            this.AdjustFlagsAndWidth(whileKeyword);
-            this.whileKeyword = whileKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal WhileStatementSyntax(SyntaxKind kind, SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 5;
-            this.AdjustFlagsAndWidth(whileKeyword);
-            this.whileKeyword = whileKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal WhileStatementSyntax(SyntaxKind kind, SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement)
-          : base(kind)
-        {
-            this.SlotCount = 5;
-            this.AdjustFlagsAndWidth(whileKeyword);
-            this.whileKeyword = whileKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        public SyntaxToken WhileKeyword => this.whileKeyword;
-        public SyntaxToken OpenParenToken => this.openParenToken;
-        public ExpressionSyntax Condition => this.condition;
-        public SyntaxToken CloseParenToken => this.closeParenToken;
-        public StatementSyntax Statement => this.statement;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.whileKeyword,
-                1 => this.openParenToken,
-                2 => this.condition,
-                3 => this.closeParenToken,
-                4 => this.statement,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.WhileStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitWhileStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitWhileStatement(this);
-
-        public WhileStatementSyntax Update(SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-            if (whileKeyword != this.WhileKeyword || openParenToken != this.OpenParenToken || condition != this.Condition || closeParenToken != this.CloseParenToken || statement != this.Statement)
-            {
-                var newNode = SyntaxFactory.WhileStatement(whileKeyword, openParenToken, condition, closeParenToken, statement);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new WhileStatementSyntax(this.Kind, this.whileKeyword, this.openParenToken, this.condition, this.closeParenToken, this.statement, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new WhileStatementSyntax(this.Kind, this.whileKeyword, this.openParenToken, this.condition, this.closeParenToken, this.statement, GetDiagnostics(), annotations);
-
-        internal WhileStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 5;
-            var whileKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(whileKeyword);
-            this.whileKeyword = whileKeyword;
-            var openParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            var condition = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            var closeParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            var statement = (StatementSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.whileKeyword);
-            writer.WriteValue(this.openParenToken);
-            writer.WriteValue(this.condition);
-            writer.WriteValue(this.closeParenToken);
-            writer.WriteValue(this.statement);
-        }
-
-        static WhileStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(WhileStatementSyntax), r => new WhileStatementSyntax(r));
-        }
-    }
-
-    internal sealed partial class DoStatementSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken doKeyword;
-        internal readonly StatementSyntax statement;
-        internal readonly SyntaxToken whileKeyword;
-        internal readonly SyntaxToken openParenToken;
-        internal readonly ExpressionSyntax condition;
-        internal readonly SyntaxToken closeParenToken;
-        internal readonly SyntaxToken semicolonToken;
-
-        internal DoStatementSyntax(SyntaxKind kind, SyntaxToken doKeyword, StatementSyntax statement, SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, SyntaxToken semicolonToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 7;
-            this.AdjustFlagsAndWidth(doKeyword);
-            this.doKeyword = doKeyword;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-            this.AdjustFlagsAndWidth(whileKeyword);
-            this.whileKeyword = whileKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal DoStatementSyntax(SyntaxKind kind, SyntaxToken doKeyword, StatementSyntax statement, SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, SyntaxToken semicolonToken, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 7;
-            this.AdjustFlagsAndWidth(doKeyword);
-            this.doKeyword = doKeyword;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-            this.AdjustFlagsAndWidth(whileKeyword);
-            this.whileKeyword = whileKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal DoStatementSyntax(SyntaxKind kind, SyntaxToken doKeyword, StatementSyntax statement, SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, SyntaxToken semicolonToken)
-          : base(kind)
-        {
-            this.SlotCount = 7;
-            this.AdjustFlagsAndWidth(doKeyword);
-            this.doKeyword = doKeyword;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-            this.AdjustFlagsAndWidth(whileKeyword);
-            this.whileKeyword = whileKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        public SyntaxToken DoKeyword => this.doKeyword;
-        public StatementSyntax Statement => this.statement;
-        public SyntaxToken WhileKeyword => this.whileKeyword;
-        public SyntaxToken OpenParenToken => this.openParenToken;
-        public ExpressionSyntax Condition => this.condition;
-        public SyntaxToken CloseParenToken => this.closeParenToken;
-        public SyntaxToken SemicolonToken => this.semicolonToken;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.doKeyword,
-                1 => this.statement,
-                2 => this.whileKeyword,
-                3 => this.openParenToken,
-                4 => this.condition,
-                5 => this.closeParenToken,
-                6 => this.semicolonToken,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.DoStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitDoStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitDoStatement(this);
-
-        public DoStatementSyntax Update(SyntaxToken doKeyword, StatementSyntax statement, SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, SyntaxToken semicolonToken)
-        {
-            if (doKeyword != this.DoKeyword || statement != this.Statement || whileKeyword != this.WhileKeyword || openParenToken != this.OpenParenToken || condition != this.Condition || closeParenToken != this.CloseParenToken || semicolonToken != this.SemicolonToken)
-            {
-                var newNode = SyntaxFactory.DoStatement(doKeyword, statement, whileKeyword, openParenToken, condition, closeParenToken, semicolonToken);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new DoStatementSyntax(this.Kind, this.doKeyword, this.statement, this.whileKeyword, this.openParenToken, this.condition, this.closeParenToken, this.semicolonToken, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new DoStatementSyntax(this.Kind, this.doKeyword, this.statement, this.whileKeyword, this.openParenToken, this.condition, this.closeParenToken, this.semicolonToken, GetDiagnostics(), annotations);
-
-        internal DoStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 7;
-            var doKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(doKeyword);
-            this.doKeyword = doKeyword;
-            var statement = (StatementSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-            var whileKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(whileKeyword);
-            this.whileKeyword = whileKeyword;
-            var openParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            var condition = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            var closeParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            var semicolonToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(semicolonToken);
-            this.semicolonToken = semicolonToken;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.doKeyword);
-            writer.WriteValue(this.statement);
-            writer.WriteValue(this.whileKeyword);
-            writer.WriteValue(this.openParenToken);
-            writer.WriteValue(this.condition);
-            writer.WriteValue(this.closeParenToken);
-            writer.WriteValue(this.semicolonToken);
-        }
-
-        static DoStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(DoStatementSyntax), r => new DoStatementSyntax(r));
-        }
-    }
-
-    internal sealed partial class ForStatementSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken forKeyword;
-        internal readonly SyntaxToken openParenToken;
-        internal readonly GreenNode? initializers;
-        internal readonly SyntaxToken firstSemicolonToken;
-        internal readonly ExpressionSyntax? condition;
-        internal readonly SyntaxToken secondSemicolonToken;
-        internal readonly GreenNode? incrementors;
-        internal readonly SyntaxToken closeParenToken;
-        internal readonly StatementSyntax statement;
-
-        internal ForStatementSyntax(SyntaxKind kind, SyntaxToken forKeyword, SyntaxToken openParenToken, GreenNode? initializers, SyntaxToken firstSemicolonToken, ExpressionSyntax? condition, SyntaxToken secondSemicolonToken, GreenNode? incrementors, SyntaxToken closeParenToken, StatementSyntax statement, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 9;
-            this.AdjustFlagsAndWidth(forKeyword);
-            this.forKeyword = forKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            if (initializers != null)
-            {
-                this.AdjustFlagsAndWidth(initializers);
-                this.initializers = initializers;
-            }
-            this.AdjustFlagsAndWidth(firstSemicolonToken);
-            this.firstSemicolonToken = firstSemicolonToken;
-            if (condition != null)
-            {
-                this.AdjustFlagsAndWidth(condition);
-                this.condition = condition;
-            }
-            this.AdjustFlagsAndWidth(secondSemicolonToken);
-            this.secondSemicolonToken = secondSemicolonToken;
-            if (incrementors != null)
-            {
-                this.AdjustFlagsAndWidth(incrementors);
-                this.incrementors = incrementors;
-            }
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal ForStatementSyntax(SyntaxKind kind, SyntaxToken forKeyword, SyntaxToken openParenToken, GreenNode? initializers, SyntaxToken firstSemicolonToken, ExpressionSyntax? condition, SyntaxToken secondSemicolonToken, GreenNode? incrementors, SyntaxToken closeParenToken, StatementSyntax statement, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 9;
-            this.AdjustFlagsAndWidth(forKeyword);
-            this.forKeyword = forKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            if (initializers != null)
-            {
-                this.AdjustFlagsAndWidth(initializers);
-                this.initializers = initializers;
-            }
-            this.AdjustFlagsAndWidth(firstSemicolonToken);
-            this.firstSemicolonToken = firstSemicolonToken;
-            if (condition != null)
-            {
-                this.AdjustFlagsAndWidth(condition);
-                this.condition = condition;
-            }
-            this.AdjustFlagsAndWidth(secondSemicolonToken);
-            this.secondSemicolonToken = secondSemicolonToken;
-            if (incrementors != null)
-            {
-                this.AdjustFlagsAndWidth(incrementors);
-                this.incrementors = incrementors;
-            }
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal ForStatementSyntax(SyntaxKind kind, SyntaxToken forKeyword, SyntaxToken openParenToken, GreenNode? initializers, SyntaxToken firstSemicolonToken, ExpressionSyntax? condition, SyntaxToken secondSemicolonToken, GreenNode? incrementors, SyntaxToken closeParenToken, StatementSyntax statement)
-          : base(kind)
-        {
-            this.SlotCount = 9;
-            this.AdjustFlagsAndWidth(forKeyword);
-            this.forKeyword = forKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            if (initializers != null)
-            {
-                this.AdjustFlagsAndWidth(initializers);
-                this.initializers = initializers;
-            }
-            this.AdjustFlagsAndWidth(firstSemicolonToken);
-            this.firstSemicolonToken = firstSemicolonToken;
-            if (condition != null)
-            {
-                this.AdjustFlagsAndWidth(condition);
-                this.condition = condition;
-            }
-            this.AdjustFlagsAndWidth(secondSemicolonToken);
-            this.secondSemicolonToken = secondSemicolonToken;
-            if (incrementors != null)
-            {
-                this.AdjustFlagsAndWidth(incrementors);
-                this.incrementors = incrementors;
-            }
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        public SyntaxToken ForKeyword => this.forKeyword;
-        public SyntaxToken OpenParenToken => this.openParenToken;
-        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> Initializers => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.initializers));
-        public SyntaxToken FirstSemicolonToken => this.firstSemicolonToken;
-        public ExpressionSyntax? Condition => this.condition;
-        public SyntaxToken SecondSemicolonToken => this.secondSemicolonToken;
-        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> Incrementors => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.incrementors));
-        public SyntaxToken CloseParenToken => this.closeParenToken;
-        public StatementSyntax Statement => this.statement;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.forKeyword,
-                1 => this.openParenToken,
-                2 => this.initializers,
-                3 => this.firstSemicolonToken,
-                4 => this.condition,
-                5 => this.secondSemicolonToken,
-                6 => this.incrementors,
-                7 => this.closeParenToken,
-                8 => this.statement,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ForStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitForStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitForStatement(this);
-
-        public ForStatementSyntax Update(SyntaxToken forKeyword, SyntaxToken openParenToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> initializers, SyntaxToken firstSemicolonToken, ExpressionSyntax condition, SyntaxToken secondSemicolonToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> incrementors, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-            if (forKeyword != this.ForKeyword || openParenToken != this.OpenParenToken || initializers != this.Initializers || firstSemicolonToken != this.FirstSemicolonToken || condition != this.Condition || secondSemicolonToken != this.SecondSemicolonToken || incrementors != this.Incrementors || closeParenToken != this.CloseParenToken || statement != this.Statement)
-            {
-                var newNode = SyntaxFactory.ForStatement(forKeyword, openParenToken, initializers, firstSemicolonToken, condition, secondSemicolonToken, incrementors, closeParenToken, statement);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ForStatementSyntax(this.Kind, this.forKeyword, this.openParenToken, this.initializers, this.firstSemicolonToken, this.condition, this.secondSemicolonToken, this.incrementors, this.closeParenToken, this.statement, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ForStatementSyntax(this.Kind, this.forKeyword, this.openParenToken, this.initializers, this.firstSemicolonToken, this.condition, this.secondSemicolonToken, this.incrementors, this.closeParenToken, this.statement, GetDiagnostics(), annotations);
-
-        internal ForStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 9;
-            var forKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(forKeyword);
-            this.forKeyword = forKeyword;
-            var openParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            var initializers = (GreenNode?)reader.ReadValue();
-            if (initializers != null)
-            {
-                AdjustFlagsAndWidth(initializers);
-                this.initializers = initializers;
-            }
-            var firstSemicolonToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(firstSemicolonToken);
-            this.firstSemicolonToken = firstSemicolonToken;
-            var condition = (ExpressionSyntax?)reader.ReadValue();
-            if (condition != null)
-            {
-                AdjustFlagsAndWidth(condition);
-                this.condition = condition;
-            }
-            var secondSemicolonToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(secondSemicolonToken);
-            this.secondSemicolonToken = secondSemicolonToken;
-            var incrementors = (GreenNode?)reader.ReadValue();
-            if (incrementors != null)
-            {
-                AdjustFlagsAndWidth(incrementors);
-                this.incrementors = incrementors;
-            }
-            var closeParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            var statement = (StatementSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.forKeyword);
-            writer.WriteValue(this.openParenToken);
-            writer.WriteValue(this.initializers);
-            writer.WriteValue(this.firstSemicolonToken);
-            writer.WriteValue(this.condition);
-            writer.WriteValue(this.secondSemicolonToken);
-            writer.WriteValue(this.incrementors);
-            writer.WriteValue(this.closeParenToken);
-            writer.WriteValue(this.statement);
-        }
-
-        static ForStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ForStatementSyntax), r => new ForStatementSyntax(r));
-        }
-    }
-
-    internal abstract partial class CommonForEachStatementSyntax : StatementSyntax
-    {
-        internal CommonForEachStatementSyntax(SyntaxKind kind, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-        }
-
-        internal CommonForEachStatementSyntax(SyntaxKind kind)
-          : base(kind)
-        {
-        }
-
-        protected CommonForEachStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-        }
-
-        public abstract SyntaxToken? AwaitKeyword { get; }
-
-        public abstract SyntaxToken ForEachKeyword { get; }
-
-        public abstract SyntaxToken OpenParenToken { get; }
-
-        public abstract SyntaxToken InKeyword { get; }
-
-        public abstract ExpressionSyntax Expression { get; }
-
-        public abstract SyntaxToken CloseParenToken { get; }
-
-        public abstract StatementSyntax Statement { get; }
-    }
-
-    internal sealed partial class ForEachStatementSyntax : CommonForEachStatementSyntax
-    {
-        internal readonly SyntaxToken? awaitKeyword;
-        internal readonly SyntaxToken forEachKeyword;
-        internal readonly SyntaxToken openParenToken;
-        internal readonly SyntaxToken identifier;
-        internal readonly SyntaxToken inKeyword;
-        internal readonly ExpressionSyntax expression;
-        internal readonly SyntaxToken closeParenToken;
-        internal readonly StatementSyntax statement;
-
-        internal ForEachStatementSyntax(SyntaxKind kind, SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, SyntaxToken identifier, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 8;
-            if (awaitKeyword != null)
-            {
-                this.AdjustFlagsAndWidth(awaitKeyword);
-                this.awaitKeyword = awaitKeyword;
-            }
-            this.AdjustFlagsAndWidth(forEachKeyword);
-            this.forEachKeyword = forEachKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(identifier);
-            this.identifier = identifier;
-            this.AdjustFlagsAndWidth(inKeyword);
-            this.inKeyword = inKeyword;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal ForEachStatementSyntax(SyntaxKind kind, SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, SyntaxToken identifier, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 8;
-            if (awaitKeyword != null)
-            {
-                this.AdjustFlagsAndWidth(awaitKeyword);
-                this.awaitKeyword = awaitKeyword;
-            }
-            this.AdjustFlagsAndWidth(forEachKeyword);
-            this.forEachKeyword = forEachKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(identifier);
-            this.identifier = identifier;
-            this.AdjustFlagsAndWidth(inKeyword);
-            this.inKeyword = inKeyword;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal ForEachStatementSyntax(SyntaxKind kind, SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, SyntaxToken identifier, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement)
-          : base(kind)
-        {
-            this.SlotCount = 8;
-            if (awaitKeyword != null)
-            {
-                this.AdjustFlagsAndWidth(awaitKeyword);
-                this.awaitKeyword = awaitKeyword;
-            }
-            this.AdjustFlagsAndWidth(forEachKeyword);
-            this.forEachKeyword = forEachKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(identifier);
-            this.identifier = identifier;
-            this.AdjustFlagsAndWidth(inKeyword);
-            this.inKeyword = inKeyword;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        public override SyntaxToken? AwaitKeyword => this.awaitKeyword;
-        public override SyntaxToken ForEachKeyword => this.forEachKeyword;
-        public override SyntaxToken OpenParenToken => this.openParenToken;
-        /// <summary>Gets the identifier.</summary>
-        public SyntaxToken Identifier => this.identifier;
-        public override SyntaxToken InKeyword => this.inKeyword;
-        public override ExpressionSyntax Expression => this.expression;
-        public override SyntaxToken CloseParenToken => this.closeParenToken;
-        public override StatementSyntax Statement => this.statement;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.awaitKeyword,
-                1 => this.forEachKeyword,
-                2 => this.openParenToken,
-                3 => this.identifier,
-                4 => this.inKeyword,
-                5 => this.expression,
-                6 => this.closeParenToken,
-                7 => this.statement,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ForEachStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitForEachStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitForEachStatement(this);
-
-        public ForEachStatementSyntax Update(SyntaxToken awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, SyntaxToken identifier, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-            if (awaitKeyword != this.AwaitKeyword || forEachKeyword != this.ForEachKeyword || openParenToken != this.OpenParenToken || identifier != this.Identifier || inKeyword != this.InKeyword || expression != this.Expression || closeParenToken != this.CloseParenToken || statement != this.Statement)
-            {
-                var newNode = SyntaxFactory.ForEachStatement(awaitKeyword, forEachKeyword, openParenToken, identifier, inKeyword, expression, closeParenToken, statement);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ForEachStatementSyntax(this.Kind, this.awaitKeyword, this.forEachKeyword, this.openParenToken, this.identifier, this.inKeyword, this.expression, this.closeParenToken, this.statement, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ForEachStatementSyntax(this.Kind, this.awaitKeyword, this.forEachKeyword, this.openParenToken, this.identifier, this.inKeyword, this.expression, this.closeParenToken, this.statement, GetDiagnostics(), annotations);
-
-        internal ForEachStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 8;
-            var awaitKeyword = (SyntaxToken?)reader.ReadValue();
-            if (awaitKeyword != null)
-            {
-                AdjustFlagsAndWidth(awaitKeyword);
-                this.awaitKeyword = awaitKeyword;
-            }
-            var forEachKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(forEachKeyword);
-            this.forEachKeyword = forEachKeyword;
-            var openParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            var identifier = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(identifier);
-            this.identifier = identifier;
-            var inKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(inKeyword);
-            this.inKeyword = inKeyword;
-            var expression = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            var closeParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            var statement = (StatementSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.awaitKeyword);
-            writer.WriteValue(this.forEachKeyword);
-            writer.WriteValue(this.openParenToken);
-            writer.WriteValue(this.identifier);
-            writer.WriteValue(this.inKeyword);
-            writer.WriteValue(this.expression);
-            writer.WriteValue(this.closeParenToken);
-            writer.WriteValue(this.statement);
-        }
-
-        static ForEachStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ForEachStatementSyntax), r => new ForEachStatementSyntax(r));
-        }
-    }
-
-    internal sealed partial class ForEachVariableStatementSyntax : CommonForEachStatementSyntax
-    {
-        internal readonly SyntaxToken? awaitKeyword;
-        internal readonly SyntaxToken forEachKeyword;
-        internal readonly SyntaxToken openParenToken;
-        internal readonly ExpressionSyntax variable;
-        internal readonly SyntaxToken inKeyword;
-        internal readonly ExpressionSyntax expression;
-        internal readonly SyntaxToken closeParenToken;
-        internal readonly StatementSyntax statement;
-
-        internal ForEachVariableStatementSyntax(SyntaxKind kind, SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, ExpressionSyntax variable, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 8;
-            if (awaitKeyword != null)
-            {
-                this.AdjustFlagsAndWidth(awaitKeyword);
-                this.awaitKeyword = awaitKeyword;
-            }
-            this.AdjustFlagsAndWidth(forEachKeyword);
-            this.forEachKeyword = forEachKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(variable);
-            this.variable = variable;
-            this.AdjustFlagsAndWidth(inKeyword);
-            this.inKeyword = inKeyword;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal ForEachVariableStatementSyntax(SyntaxKind kind, SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, ExpressionSyntax variable, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 8;
-            if (awaitKeyword != null)
-            {
-                this.AdjustFlagsAndWidth(awaitKeyword);
-                this.awaitKeyword = awaitKeyword;
-            }
-            this.AdjustFlagsAndWidth(forEachKeyword);
-            this.forEachKeyword = forEachKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(variable);
-            this.variable = variable;
-            this.AdjustFlagsAndWidth(inKeyword);
-            this.inKeyword = inKeyword;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal ForEachVariableStatementSyntax(SyntaxKind kind, SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, ExpressionSyntax variable, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement)
-          : base(kind)
-        {
-            this.SlotCount = 8;
-            if (awaitKeyword != null)
-            {
-                this.AdjustFlagsAndWidth(awaitKeyword);
-                this.awaitKeyword = awaitKeyword;
-            }
-            this.AdjustFlagsAndWidth(forEachKeyword);
-            this.forEachKeyword = forEachKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(variable);
-            this.variable = variable;
-            this.AdjustFlagsAndWidth(inKeyword);
-            this.inKeyword = inKeyword;
-            this.AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        public override SyntaxToken? AwaitKeyword => this.awaitKeyword;
-        public override SyntaxToken ForEachKeyword => this.forEachKeyword;
-        public override SyntaxToken OpenParenToken => this.openParenToken;
-        /// <summary>
-        /// The variable(s) of the loop. In correct code this is a tuple
-        /// literal, declaration expression with a tuple designator, or
-        /// a discard syntax in the form of a simple identifier. In broken
-        /// code it could be something else.
-        /// </summary>
-        public ExpressionSyntax Variable => this.variable;
-        public override SyntaxToken InKeyword => this.inKeyword;
-        public override ExpressionSyntax Expression => this.expression;
-        public override SyntaxToken CloseParenToken => this.closeParenToken;
-        public override StatementSyntax Statement => this.statement;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.awaitKeyword,
-                1 => this.forEachKeyword,
-                2 => this.openParenToken,
-                3 => this.variable,
-                4 => this.inKeyword,
-                5 => this.expression,
-                6 => this.closeParenToken,
-                7 => this.statement,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ForEachVariableStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitForEachVariableStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitForEachVariableStatement(this);
-
-        public ForEachVariableStatementSyntax Update(SyntaxToken awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, ExpressionSyntax variable, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-            if (awaitKeyword != this.AwaitKeyword || forEachKeyword != this.ForEachKeyword || openParenToken != this.OpenParenToken || variable != this.Variable || inKeyword != this.InKeyword || expression != this.Expression || closeParenToken != this.CloseParenToken || statement != this.Statement)
-            {
-                var newNode = SyntaxFactory.ForEachVariableStatement(awaitKeyword, forEachKeyword, openParenToken, variable, inKeyword, expression, closeParenToken, statement);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ForEachVariableStatementSyntax(this.Kind, this.awaitKeyword, this.forEachKeyword, this.openParenToken, this.variable, this.inKeyword, this.expression, this.closeParenToken, this.statement, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ForEachVariableStatementSyntax(this.Kind, this.awaitKeyword, this.forEachKeyword, this.openParenToken, this.variable, this.inKeyword, this.expression, this.closeParenToken, this.statement, GetDiagnostics(), annotations);
-
-        internal ForEachVariableStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 8;
-            var awaitKeyword = (SyntaxToken?)reader.ReadValue();
-            if (awaitKeyword != null)
-            {
-                AdjustFlagsAndWidth(awaitKeyword);
-                this.awaitKeyword = awaitKeyword;
-            }
-            var forEachKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(forEachKeyword);
-            this.forEachKeyword = forEachKeyword;
-            var openParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            var variable = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(variable);
-            this.variable = variable;
-            var inKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(inKeyword);
-            this.inKeyword = inKeyword;
-            var expression = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(expression);
-            this.expression = expression;
-            var closeParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            var statement = (StatementSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.awaitKeyword);
-            writer.WriteValue(this.forEachKeyword);
-            writer.WriteValue(this.openParenToken);
-            writer.WriteValue(this.variable);
-            writer.WriteValue(this.inKeyword);
-            writer.WriteValue(this.expression);
-            writer.WriteValue(this.closeParenToken);
-            writer.WriteValue(this.statement);
-        }
-
-        static ForEachVariableStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ForEachVariableStatementSyntax), r => new ForEachVariableStatementSyntax(r));
-        }
-    }
-
-    /// <summary>
-    /// Represents an if statement syntax.
-    /// </summary>
-    internal sealed partial class IfStatementSyntax : StatementSyntax
-    {
-        internal readonly SyntaxToken ifKeyword;
-        internal readonly SyntaxToken openParenToken;
-        internal readonly ExpressionSyntax condition;
-        internal readonly SyntaxToken closeParenToken;
-        internal readonly StatementSyntax statement;
-        internal readonly ElseClauseSyntax? @else;
-
-        internal IfStatementSyntax(SyntaxKind kind, SyntaxToken ifKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement, ElseClauseSyntax? @else, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 6;
-            this.AdjustFlagsAndWidth(ifKeyword);
-            this.ifKeyword = ifKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-            if (@else != null)
-            {
-                this.AdjustFlagsAndWidth(@else);
-                this.@else = @else;
-            }
-        }
-
-        internal IfStatementSyntax(SyntaxKind kind, SyntaxToken ifKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement, ElseClauseSyntax? @else, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 6;
-            this.AdjustFlagsAndWidth(ifKeyword);
-            this.ifKeyword = ifKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-            if (@else != null)
-            {
-                this.AdjustFlagsAndWidth(@else);
-                this.@else = @else;
-            }
-        }
-
-        internal IfStatementSyntax(SyntaxKind kind, SyntaxToken ifKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement, ElseClauseSyntax? @else)
-          : base(kind)
-        {
-            this.SlotCount = 6;
-            this.AdjustFlagsAndWidth(ifKeyword);
-            this.ifKeyword = ifKeyword;
-            this.AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            this.AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            this.AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-            if (@else != null)
-            {
-                this.AdjustFlagsAndWidth(@else);
-                this.@else = @else;
-            }
-        }
-
-        /// <summary>
-        /// Gets a SyntaxToken that represents the if keyword.
-        /// </summary>
-        public SyntaxToken IfKeyword => this.ifKeyword;
-        /// <summary>
-        /// Gets a SyntaxToken that represents the open parenthesis before the if statement's condition expression.
-        /// </summary>
-        public SyntaxToken OpenParenToken => this.openParenToken;
-        /// <summary>
-        /// Gets an ExpressionSyntax that represents the condition of the if statement.
-        /// </summary>
-        public ExpressionSyntax Condition => this.condition;
-        /// <summary>
-        /// Gets a SyntaxToken that represents the close parenthesis after the if statement's condition expression.
-        /// </summary>
-        public SyntaxToken CloseParenToken => this.closeParenToken;
-        /// <summary>
-        /// Gets a StatementSyntax the represents the statement to be executed when the condition is true.
-        /// </summary>
-        public StatementSyntax Statement => this.statement;
-        /// <summary>
-        /// Gets an ElseClauseSyntax that represents the statement to be executed when the condition is false if such statement exists.
-        /// </summary>
-        public ElseClauseSyntax? Else => this.@else;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.ifKeyword,
-                1 => this.openParenToken,
-                2 => this.condition,
-                3 => this.closeParenToken,
-                4 => this.statement,
-                5 => this.@else,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.IfStatementSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitIfStatement(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitIfStatement(this);
-
-        public IfStatementSyntax Update(SyntaxToken ifKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement, ElseClauseSyntax @else)
-        {
-            if (ifKeyword != this.IfKeyword || openParenToken != this.OpenParenToken || condition != this.Condition || closeParenToken != this.CloseParenToken || statement != this.Statement || @else != this.Else)
-            {
-                var newNode = SyntaxFactory.IfStatement(ifKeyword, openParenToken, condition, closeParenToken, statement, @else);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new IfStatementSyntax(this.Kind, this.ifKeyword, this.openParenToken, this.condition, this.closeParenToken, this.statement, this.@else, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new IfStatementSyntax(this.Kind, this.ifKeyword, this.openParenToken, this.condition, this.closeParenToken, this.statement, this.@else, GetDiagnostics(), annotations);
-
-        internal IfStatementSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 6;
-            var ifKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(ifKeyword);
-            this.ifKeyword = ifKeyword;
-            var openParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(openParenToken);
-            this.openParenToken = openParenToken;
-            var condition = (ExpressionSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(condition);
-            this.condition = condition;
-            var closeParenToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(closeParenToken);
-            this.closeParenToken = closeParenToken;
-            var statement = (StatementSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-            var @else = (ElseClauseSyntax?)reader.ReadValue();
-            if (@else != null)
-            {
-                AdjustFlagsAndWidth(@else);
-                this.@else = @else;
-            }
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.ifKeyword);
-            writer.WriteValue(this.openParenToken);
-            writer.WriteValue(this.condition);
-            writer.WriteValue(this.closeParenToken);
-            writer.WriteValue(this.statement);
-            writer.WriteValue(this.@else);
-        }
-
-        static IfStatementSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(IfStatementSyntax), r => new IfStatementSyntax(r));
-        }
-    }
-
-    /// <summary>Represents an else statement syntax.</summary>
-    internal sealed partial class ElseClauseSyntax : LuaSyntaxNode
-    {
-        internal readonly SyntaxToken elseKeyword;
-        internal readonly StatementSyntax statement;
-
-        internal ElseClauseSyntax(SyntaxKind kind, SyntaxToken elseKeyword, StatementSyntax statement, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(elseKeyword);
-            this.elseKeyword = elseKeyword;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal ElseClauseSyntax(SyntaxKind kind, SyntaxToken elseKeyword, StatementSyntax statement, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(elseKeyword);
-            this.elseKeyword = elseKeyword;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal ElseClauseSyntax(SyntaxKind kind, SyntaxToken elseKeyword, StatementSyntax statement)
-          : base(kind)
-        {
-            this.SlotCount = 2;
-            this.AdjustFlagsAndWidth(elseKeyword);
-            this.elseKeyword = elseKeyword;
-            this.AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        /// <summary>
-        /// Gets a syntax token
-        /// </summary>
-        public SyntaxToken ElseKeyword => this.elseKeyword;
-        public StatementSyntax Statement => this.statement;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.elseKeyword,
-                1 => this.statement,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ElseClauseSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitElseClause(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitElseClause(this);
-
-        public ElseClauseSyntax Update(SyntaxToken elseKeyword, StatementSyntax statement)
-        {
-            if (elseKeyword != this.ElseKeyword || statement != this.Statement)
-            {
-                var newNode = SyntaxFactory.ElseClause(elseKeyword, statement);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ElseClauseSyntax(this.Kind, this.elseKeyword, this.statement, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ElseClauseSyntax(this.Kind, this.elseKeyword, this.statement, GetDiagnostics(), annotations);
-
-        internal ElseClauseSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 2;
-            var elseKeyword = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(elseKeyword);
-            this.elseKeyword = elseKeyword;
-            var statement = (StatementSyntax)reader.ReadValue();
-            AdjustFlagsAndWidth(statement);
-            this.statement = statement;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.elseKeyword);
-            writer.WriteValue(this.statement);
-        }
-
-        static ElseClauseSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ElseClauseSyntax), r => new ElseClauseSyntax(r));
-        }
-    }
-
-    internal sealed partial class ChunkSyntax : LuaSyntaxNode
-    {
-        internal readonly GreenNode? statements;
-        internal readonly SyntaxToken endOfFileToken;
-
-        internal ChunkSyntax(SyntaxKind kind, GreenNode? statements, SyntaxToken endOfFileToken, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 2;
-            if (statements != null)
-            {
-                this.AdjustFlagsAndWidth(statements);
-                this.statements = statements;
-            }
-            this.AdjustFlagsAndWidth(endOfFileToken);
-            this.endOfFileToken = endOfFileToken;
-        }
-
-        internal ChunkSyntax(SyntaxKind kind, GreenNode? statements, SyntaxToken endOfFileToken, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 2;
-            if (statements != null)
-            {
-                this.AdjustFlagsAndWidth(statements);
-                this.statements = statements;
-            }
-            this.AdjustFlagsAndWidth(endOfFileToken);
-            this.endOfFileToken = endOfFileToken;
-        }
-
-        internal ChunkSyntax(SyntaxKind kind, GreenNode? statements, SyntaxToken endOfFileToken)
-          : base(kind)
-        {
-            this.SlotCount = 2;
-            if (statements != null)
-            {
-                this.AdjustFlagsAndWidth(statements);
-                this.statements = statements;
-            }
-            this.AdjustFlagsAndWidth(endOfFileToken);
-            this.endOfFileToken = endOfFileToken;
-        }
-
-        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> Statements => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax>(this.statements);
-        public SyntaxToken EndOfFileToken => this.endOfFileToken;
-
-        internal override GreenNode? GetSlot(int index)
-            => index switch
-            {
-                0 => this.statements,
-                1 => this.endOfFileToken,
-                _ => null,
-            };
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ChunkSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitChunk(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitChunk(this);
-
-        public ChunkSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> statements, SyntaxToken endOfFileToken)
-        {
-            if (statements != this.Statements || endOfFileToken != this.EndOfFileToken)
-            {
-                var newNode = SyntaxFactory.Chunk(statements, endOfFileToken);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ChunkSyntax(this.Kind, this.statements, this.endOfFileToken, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ChunkSyntax(this.Kind, this.statements, this.endOfFileToken, GetDiagnostics(), annotations);
-
-        internal ChunkSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 2;
-            var statements = (GreenNode?)reader.ReadValue();
-            if (statements != null)
-            {
-                AdjustFlagsAndWidth(statements);
-                this.statements = statements;
-            }
-            var endOfFileToken = (SyntaxToken)reader.ReadValue();
-            AdjustFlagsAndWidth(endOfFileToken);
-            this.endOfFileToken = endOfFileToken;
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.statements);
-            writer.WriteValue(this.endOfFileToken);
-        }
-
-        static ChunkSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ChunkSyntax), r => new ChunkSyntax(r));
-        }
-    }
-
-    internal sealed partial class SkippedTokensTriviaSyntax : StructuredTriviaSyntax
-    {
-        internal readonly GreenNode? tokens;
-
-        internal SkippedTokensTriviaSyntax(SyntaxKind kind, GreenNode? tokens, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 1;
-            if (tokens != null)
-            {
-                this.AdjustFlagsAndWidth(tokens);
-                this.tokens = tokens;
-            }
-        }
-
-        internal SkippedTokensTriviaSyntax(SyntaxKind kind, GreenNode? tokens, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 1;
-            if (tokens != null)
-            {
-                this.AdjustFlagsAndWidth(tokens);
-                this.tokens = tokens;
-            }
-        }
-
-        internal SkippedTokensTriviaSyntax(SyntaxKind kind, GreenNode? tokens)
-          : base(kind)
-        {
-            this.SlotCount = 1;
-            if (tokens != null)
-            {
-                this.AdjustFlagsAndWidth(tokens);
-                this.tokens = tokens;
-            }
-        }
-
-        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken> Tokens => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken>(this.tokens);
-
-        internal override GreenNode? GetSlot(int index)
-            => index == 0 ? this.tokens : null;
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.SkippedTokensTriviaSyntax(this, parent, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitSkippedTokensTrivia(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitSkippedTokensTrivia(this);
-
-        public SkippedTokensTriviaSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken> tokens)
-        {
-            if (tokens != this.Tokens)
-            {
-                var newNode = SyntaxFactory.SkippedTokensTrivia(tokens);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new SkippedTokensTriviaSyntax(this.Kind, this.tokens, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new SkippedTokensTriviaSyntax(this.Kind, this.tokens, GetDiagnostics(), annotations);
-
-        internal SkippedTokensTriviaSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 1;
-            var tokens = (GreenNode?)reader.ReadValue();
-            if (tokens != null)
-            {
-                AdjustFlagsAndWidth(tokens);
-                this.tokens = tokens;
-            }
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.tokens);
-        }
-
-        static SkippedTokensTriviaSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(SkippedTokensTriviaSyntax), r => new SkippedTokensTriviaSyntax(r));
+            ObjectBinder.RegisterTypeReader(typeof(ImplicitSelfCallSyntax), r => new ImplicitSelfCallSyntax(r));
         }
     }
 
@@ -4790,39 +4409,38 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         public virtual TResult VisitIdentifierName(IdentifierNameSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitLiteralExpression(LiteralExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitParenthesizedExpression(ParenthesizedExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitBracketedExpression(BracketedExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitParameterList(ParameterListSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitParameter(ParameterSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitFunctionDefinitionExpression(FunctionDefinitionExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitFieldList(FieldListSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitField(FieldSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitTableConstructorExpression(TableConstructorExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitImplicitSelfCall(ImplicitSelfCallSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitBinaryExpression(BinaryExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitUnaryExpression(UnaryExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitAssignmentExpression(AssignmentExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitSimpleMemberAccessExpression(SimpleMemberAccessExpression node) => this.DefaultVisit(node);
         public virtual TResult VisitIndexMemberAccessExpression(IndexMemberAccessExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitInvocationExpression(InvocationExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitArgumentList(ArgumentListSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitArgument(ArgumentSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitBlock(BlockSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitExpressionStatement(ExpressionStatementSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitEmptyStatement(EmptyStatementSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitLabeledStatement(LabeledStatementSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitGotoStatement(GotoStatementSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitBreakStatement(BreakStatementSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitGotoStatement(GotoStatementSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitReturnStatement(ReturnStatementSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitWhileStatement(WhileStatementSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitDoStatement(DoStatementSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitForStatement(ForStatementSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitForEachStatement(ForEachStatementSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitForEachVariableStatement(ForEachVariableStatementSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitWhileStatement(WhileStatementSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitRepeatStatement(RepeatStatementSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitIfStatement(IfStatementSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitElseIfClause(ElseIfClauseSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitElseClause(ElseClauseSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitForStatement(ForStatementSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitChunk(ChunkSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitBlock(BlockSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitBracketedExpression(BracketedExpressionSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitParameterList(ParameterListSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitParameter(ParameterSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitFieldList(FieldListSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitField(FieldSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitArgumentList(ArgumentListSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitArgument(ArgumentSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitImplicitSelfCall(ImplicitSelfCallSyntax node) => this.DefaultVisit(node);
     }
 
     internal partial class LuaSyntaxVisitor
@@ -4830,39 +4448,38 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         public virtual void VisitIdentifierName(IdentifierNameSyntax node) => this.DefaultVisit(node);
         public virtual void VisitLiteralExpression(LiteralExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitParenthesizedExpression(ParenthesizedExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitBracketedExpression(BracketedExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitParameterList(ParameterListSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitParameter(ParameterSyntax node) => this.DefaultVisit(node);
         public virtual void VisitFunctionDefinitionExpression(FunctionDefinitionExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitFieldList(FieldListSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitField(FieldSyntax node) => this.DefaultVisit(node);
         public virtual void VisitTableConstructorExpression(TableConstructorExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitImplicitSelfCall(ImplicitSelfCallSyntax node) => this.DefaultVisit(node);
         public virtual void VisitBinaryExpression(BinaryExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitUnaryExpression(UnaryExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitAssignmentExpression(AssignmentExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitSimpleMemberAccessExpression(SimpleMemberAccessExpression node) => this.DefaultVisit(node);
         public virtual void VisitIndexMemberAccessExpression(IndexMemberAccessExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitInvocationExpression(InvocationExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitArgumentList(ArgumentListSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitArgument(ArgumentSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitBlock(BlockSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitExpressionStatement(ExpressionStatementSyntax node) => this.DefaultVisit(node);
         public virtual void VisitEmptyStatement(EmptyStatementSyntax node) => this.DefaultVisit(node);
         public virtual void VisitLabeledStatement(LabeledStatementSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitGotoStatement(GotoStatementSyntax node) => this.DefaultVisit(node);
         public virtual void VisitBreakStatement(BreakStatementSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitGotoStatement(GotoStatementSyntax node) => this.DefaultVisit(node);
         public virtual void VisitReturnStatement(ReturnStatementSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitWhileStatement(WhileStatementSyntax node) => this.DefaultVisit(node);
         public virtual void VisitDoStatement(DoStatementSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitForStatement(ForStatementSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitForEachStatement(ForEachStatementSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitForEachVariableStatement(ForEachVariableStatementSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitWhileStatement(WhileStatementSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitRepeatStatement(RepeatStatementSyntax node) => this.DefaultVisit(node);
         public virtual void VisitIfStatement(IfStatementSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitElseIfClause(ElseIfClauseSyntax node) => this.DefaultVisit(node);
         public virtual void VisitElseClause(ElseClauseSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitForStatement(ForStatementSyntax node) => this.DefaultVisit(node);
         public virtual void VisitChunk(ChunkSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitBlock(BlockSyntax node) => this.DefaultVisit(node);
         public virtual void VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitBracketedExpression(BracketedExpressionSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitParameterList(ParameterListSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitParameter(ParameterSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitFieldList(FieldListSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitField(FieldSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitArgumentList(ArgumentListSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitArgument(ArgumentSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitImplicitSelfCall(ImplicitSelfCallSyntax node) => this.DefaultVisit(node);
     }
 
     internal partial class LuaSyntaxRewriter : LuaSyntaxVisitor<LuaSyntaxNode>
@@ -4876,32 +4493,14 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         public override LuaSyntaxNode VisitParenthesizedExpression(ParenthesizedExpressionSyntax node)
             => node.Update((SyntaxToken)Visit(node.OpenParenToken), (ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.CloseParenToken));
 
-        public override LuaSyntaxNode VisitBracketedExpression(BracketedExpressionSyntax node)
-            => node.Update((SyntaxToken)Visit(node.OpenParenToken), (ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.CloseParenToken));
-
         public override LuaSyntaxNode VisitExpressionList(ExpressionListSyntax node)
             => node.Update(VisitList(node.Expressions));
-
-        public override LuaSyntaxNode VisitParameterList(ParameterListSyntax node)
-            => node.Update((SyntaxToken)Visit(node.OpenParenToken), VisitList(node.Parameters), (SyntaxToken)Visit(node.CloseParenToken));
-
-        public override LuaSyntaxNode VisitParameter(ParameterSyntax node)
-            => node.Update((SyntaxToken)Visit(node.Identifier));
 
         public override LuaSyntaxNode VisitFunctionDefinitionExpression(FunctionDefinitionExpressionSyntax node)
             => node.Update((SyntaxToken)Visit(node.FunctionKeyword), (ParameterListSyntax)Visit(node.Parameters), (BlockSyntax)Visit(node.Body), (SyntaxToken)Visit(node.EndKeyword));
 
-        public override LuaSyntaxNode VisitFieldList(FieldListSyntax node)
-            => node.Update(VisitList(node.Fields));
-
-        public override LuaSyntaxNode VisitField(FieldSyntax node)
-            => node.Update((ExpressionSyntax)Visit(node.Expression), (IdentifierNameSyntax)Visit(node.Name), (BracketedExpressionSyntax)Visit(node.Key), (SyntaxToken)Visit(node.EqualsToken), (ExpressionSyntax)Visit(node.Value));
-
         public override LuaSyntaxNode VisitTableConstructorExpression(TableConstructorExpressionSyntax node)
             => node.Update((SyntaxToken)Visit(node.OpenBrace), VisitList(node.Fields), (SyntaxToken)Visit(node.CloseBrace));
-
-        public override LuaSyntaxNode VisitImplicitSelfCall(ImplicitSelfCallSyntax node)
-            => node.Update((ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.ColonToken), (IdentifierNameSyntax)Visit(node.Name));
 
         public override LuaSyntaxNode VisitBinaryExpression(BinaryExpressionSyntax node)
             => node.Update((ExpressionSyntax)Visit(node.Left), (SyntaxToken)Visit(node.OperatorToken), (ExpressionSyntax)Visit(node.Right));
@@ -4921,59 +4520,74 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         public override LuaSyntaxNode VisitInvocationExpression(InvocationExpressionSyntax node)
             => node.Update((ExpressionSyntax)Visit(node.Expression), (ImplicitSelfCallSyntax)Visit(node.SelfCallExpression), (ArgumentListSyntax)Visit(node.ArgumentList));
 
+        public override LuaSyntaxNode VisitEmptyStatement(EmptyStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.SemicolonToken));
+
+        public override LuaSyntaxNode VisitLabeledStatement(LabeledStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.LeftColonColonToken), (SyntaxToken)Visit(node.Identifier), (SyntaxToken)Visit(node.RightColonColonToken), (StatementSyntax)Visit(node.Statement));
+
+        public override LuaSyntaxNode VisitBreakStatement(BreakStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.BreakKeyword));
+
+        public override LuaSyntaxNode VisitGotoStatement(GotoStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.GotoKeyword), (IdentifierNameSyntax)Visit(node.Name), (SyntaxToken)Visit(node.SemicolonToken));
+
+        public override LuaSyntaxNode VisitReturnStatement(ReturnStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.ReturnKeyword), (ExpressionListSyntax)Visit(node.Values), (SyntaxToken)Visit(node.SemicolonToken));
+
+        public override LuaSyntaxNode VisitDoStatement(DoStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.DoKeyword), (BlockSyntax)Visit(node.Block), (SyntaxToken)Visit(node.EndKeyword));
+
+        public override LuaSyntaxNode VisitWhileStatement(WhileStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.WhileKeyword), (ExpressionSyntax)Visit(node.Condition), (SyntaxToken)Visit(node.DoKeyword), (BlockSyntax)Visit(node.Block), (SyntaxToken)Visit(node.EndKeyword));
+
+        public override LuaSyntaxNode VisitRepeatStatement(RepeatStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.RepeatKeyword), (BlockSyntax)Visit(node.Block), (SyntaxToken)Visit(node.UntilKeyword), (ExpressionSyntax)Visit(node.Condition), (SyntaxToken)Visit(node.SemicolonToken));
+
+        public override LuaSyntaxNode VisitIfStatement(IfStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.IfKeyword), (ExpressionSyntax)Visit(node.Condition), (SyntaxToken)Visit(node.ThenKeyword), (BlockSyntax)Visit(node.Block), VisitList(node.ElseIfs), (ElseClauseSyntax)Visit(node.Else), (SyntaxToken)Visit(node.EndKeyword));
+
+        public override LuaSyntaxNode VisitElseIfClause(ElseIfClauseSyntax node)
+            => node.Update((SyntaxToken)Visit(node.ElseIfKeyword), (ExpressionSyntax)Visit(node.Condition), (SyntaxToken)Visit(node.ThenKeyword), (BlockSyntax)Visit(node.Block));
+
+        public override LuaSyntaxNode VisitElseClause(ElseClauseSyntax node)
+            => node.Update((SyntaxToken)Visit(node.ElseKeyword), (StatementSyntax)Visit(node.Statement));
+
+        public override LuaSyntaxNode VisitForStatement(ForStatementSyntax node)
+            => node.Update((SyntaxToken)Visit(node.ForKeyword), (IdentifierNameSyntax)Visit(node.Name), (SyntaxToken)Visit(node.EqualsToken), (ExpressionSyntax)Visit(node.Initial), (SyntaxToken)Visit(node.FirstCommaToken), (ExpressionSyntax)Visit(node.Limit), (SyntaxToken)Visit(node.SecondCommaToken), (ExpressionSyntax)Visit(node.Step), (SyntaxToken)Visit(node.DoKeyword), (BlockSyntax)Visit(node.Block), (SyntaxToken)Visit(node.EndKeyword));
+
+        public override LuaSyntaxNode VisitChunk(ChunkSyntax node)
+            => node.Update((BlockSyntax)Visit(node.Block), (SyntaxToken)Visit(node.EndOfFileToken));
+
+        public override LuaSyntaxNode VisitBlock(BlockSyntax node)
+            => node.Update(VisitList(node.Statements));
+
+        public override LuaSyntaxNode VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node)
+            => node.Update(VisitList(node.Tokens));
+
+        public override LuaSyntaxNode VisitBracketedExpression(BracketedExpressionSyntax node)
+            => node.Update((SyntaxToken)Visit(node.OpenParenToken), (ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.CloseParenToken));
+
+        public override LuaSyntaxNode VisitParameterList(ParameterListSyntax node)
+            => node.Update((SyntaxToken)Visit(node.OpenParenToken), VisitList(node.Parameters), (SyntaxToken)Visit(node.CloseParenToken));
+
+        public override LuaSyntaxNode VisitParameter(ParameterSyntax node)
+            => node.Update((SyntaxToken)Visit(node.Identifier));
+
+        public override LuaSyntaxNode VisitFieldList(FieldListSyntax node)
+            => node.Update(VisitList(node.Fields));
+
+        public override LuaSyntaxNode VisitField(FieldSyntax node)
+            => node.Update((ExpressionSyntax)Visit(node.Expression), (IdentifierNameSyntax)Visit(node.Name), (BracketedExpressionSyntax)Visit(node.Key), (SyntaxToken)Visit(node.EqualsToken), (ExpressionSyntax)Visit(node.Value));
+
         public override LuaSyntaxNode VisitArgumentList(ArgumentListSyntax node)
             => node.Update((TableConstructorExpressionSyntax)Visit(node.ArgumentTable), (SyntaxToken)Visit(node.OpenParenToken), VisitList(node.Arguments), (SyntaxToken)Visit(node.CloseParenToken));
 
         public override LuaSyntaxNode VisitArgument(ArgumentSyntax node)
             => node.Update((ExpressionSyntax)Visit(node.Expression));
 
-        public override LuaSyntaxNode VisitBlock(BlockSyntax node)
-            => node.Update((SyntaxToken)Visit(node.OpenBraceToken), VisitList(node.Statements), (SyntaxToken)Visit(node.CloseBraceToken));
-
-        public override LuaSyntaxNode VisitExpressionStatement(ExpressionStatementSyntax node)
-            => node.Update((ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.SemicolonToken));
-
-        public override LuaSyntaxNode VisitEmptyStatement(EmptyStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.SemicolonToken));
-
-        public override LuaSyntaxNode VisitLabeledStatement(LabeledStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.Identifier), (SyntaxToken)Visit(node.ColonToken), (StatementSyntax)Visit(node.Statement));
-
-        public override LuaSyntaxNode VisitGotoStatement(GotoStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.GotoKeyword), (SyntaxToken)Visit(node.CaseOrDefaultKeyword), (ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.SemicolonToken));
-
-        public override LuaSyntaxNode VisitBreakStatement(BreakStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.BreakKeyword), (SyntaxToken)Visit(node.SemicolonToken));
-
-        public override LuaSyntaxNode VisitReturnStatement(ReturnStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.ReturnKeyword), (ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.SemicolonToken));
-
-        public override LuaSyntaxNode VisitWhileStatement(WhileStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.WhileKeyword), (SyntaxToken)Visit(node.OpenParenToken), (ExpressionSyntax)Visit(node.Condition), (SyntaxToken)Visit(node.CloseParenToken), (StatementSyntax)Visit(node.Statement));
-
-        public override LuaSyntaxNode VisitDoStatement(DoStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.DoKeyword), (StatementSyntax)Visit(node.Statement), (SyntaxToken)Visit(node.WhileKeyword), (SyntaxToken)Visit(node.OpenParenToken), (ExpressionSyntax)Visit(node.Condition), (SyntaxToken)Visit(node.CloseParenToken), (SyntaxToken)Visit(node.SemicolonToken));
-
-        public override LuaSyntaxNode VisitForStatement(ForStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.ForKeyword), (SyntaxToken)Visit(node.OpenParenToken), VisitList(node.Initializers), (SyntaxToken)Visit(node.FirstSemicolonToken), (ExpressionSyntax)Visit(node.Condition), (SyntaxToken)Visit(node.SecondSemicolonToken), VisitList(node.Incrementors), (SyntaxToken)Visit(node.CloseParenToken), (StatementSyntax)Visit(node.Statement));
-
-        public override LuaSyntaxNode VisitForEachStatement(ForEachStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.AwaitKeyword), (SyntaxToken)Visit(node.ForEachKeyword), (SyntaxToken)Visit(node.OpenParenToken), (SyntaxToken)Visit(node.Identifier), (SyntaxToken)Visit(node.InKeyword), (ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.CloseParenToken), (StatementSyntax)Visit(node.Statement));
-
-        public override LuaSyntaxNode VisitForEachVariableStatement(ForEachVariableStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.AwaitKeyword), (SyntaxToken)Visit(node.ForEachKeyword), (SyntaxToken)Visit(node.OpenParenToken), (ExpressionSyntax)Visit(node.Variable), (SyntaxToken)Visit(node.InKeyword), (ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.CloseParenToken), (StatementSyntax)Visit(node.Statement));
-
-        public override LuaSyntaxNode VisitIfStatement(IfStatementSyntax node)
-            => node.Update((SyntaxToken)Visit(node.IfKeyword), (SyntaxToken)Visit(node.OpenParenToken), (ExpressionSyntax)Visit(node.Condition), (SyntaxToken)Visit(node.CloseParenToken), (StatementSyntax)Visit(node.Statement), (ElseClauseSyntax)Visit(node.Else));
-
-        public override LuaSyntaxNode VisitElseClause(ElseClauseSyntax node)
-            => node.Update((SyntaxToken)Visit(node.ElseKeyword), (StatementSyntax)Visit(node.Statement));
-
-        public override LuaSyntaxNode VisitChunk(ChunkSyntax node)
-            => node.Update(VisitList(node.Statements), (SyntaxToken)Visit(node.EndOfFileToken));
-
-        public override LuaSyntaxNode VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node)
-            => node.Update(VisitList(node.Tokens));
+        public override LuaSyntaxNode VisitImplicitSelfCall(ImplicitSelfCallSyntax node)
+            => node.Update((ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.ColonToken), (IdentifierNameSyntax)Visit(node.Name));
     }
 
     internal partial class ContextAwareSyntax
@@ -5032,7 +4646,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 case SyntaxKind.NumericLiteralToken:
                 case SyntaxKind.StringLiteralToken:
                 case SyntaxKind.MultiLineRawStringLiteralToken:
-                case SyntaxKind.DotDotDotLiteralToken: break;
+                case SyntaxKind.DotDotDotToken: break;
                 default: throw new ArgumentException(nameof(token));
             }
 #endif
@@ -5073,29 +4687,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return result;
         }
 
-        public BracketedExpressionSyntax BracketedExpression(SyntaxToken openParenToken, ExpressionSyntax expression, SyntaxToken closeParenToken)
-        {
-#if DEBUG
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.BracketedExpression, openParenToken, expression, closeParenToken, this.context, out hash);
-            if (cached != null) return (BracketedExpressionSyntax)cached;
-
-            var result = new BracketedExpressionSyntax(SyntaxKind.BracketedExpression, openParenToken, expression, closeParenToken, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
         public ExpressionListSyntax ExpressionList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
         {
 #if DEBUG
@@ -5106,53 +4697,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             if (cached != null) return (ExpressionListSyntax)cached;
 
             var result = new ExpressionListSyntax(SyntaxKind.ExpressionList, expressions.Node, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public ParameterListSyntax ParameterList(SyntaxToken openParenToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ParameterSyntax> parameters, SyntaxToken closeParenToken)
-        {
-#if DEBUG
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ParameterList, openParenToken, parameters.Node, closeParenToken, this.context, out hash);
-            if (cached != null) return (ParameterListSyntax)cached;
-
-            var result = new ParameterListSyntax(SyntaxKind.ParameterList, openParenToken, parameters.Node, closeParenToken, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public ParameterSyntax Parameter(SyntaxToken identifier)
-        {
-#if DEBUG
-            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
-            switch (identifier.Kind)
-            {
-                case SyntaxKind.IdentifierToken:
-                case SyntaxKind.DotDotDotToken: break;
-                default: throw new ArgumentException(nameof(identifier));
-            }
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.Parameter, identifier, this.context, out hash);
-            if (cached != null) return (ParameterSyntax)cached;
-
-            var result = new ParameterSyntax(SyntaxKind.Parameter, identifier, this.context);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
@@ -5175,41 +4719,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return new FunctionDefinitionExpressionSyntax(SyntaxKind.FunctionDefinitionExpression, functionKeyword, parameters, body, endKeyword, this.context);
         }
 
-        public FieldListSyntax FieldList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldSyntax> fields)
-        {
-#if DEBUG
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.FieldList, fields.Node, this.context, out hash);
-            if (cached != null) return (FieldListSyntax)cached;
-
-            var result = new FieldListSyntax(SyntaxKind.FieldList, fields.Node, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public FieldSyntax Field(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? key, SyntaxToken? equalsToken, ExpressionSyntax? value)
-        {
-#if DEBUG
-            if (equalsToken != null)
-            {
-                switch (equalsToken.Kind)
-                {
-                    case SyntaxKind.EqualsToken:
-                    case SyntaxKind.None: break;
-                    default: throw new ArgumentException(nameof(equalsToken));
-                }
-            }
-#endif
-
-            return new FieldSyntax(SyntaxKind.Field, expression, name, key, equalsToken, value, this.context);
-        }
-
         public TableConstructorExpressionSyntax TableConstructorExpression(SyntaxToken openBrace, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldListSyntax> fields, SyntaxToken closeBrace)
         {
 #if DEBUG
@@ -5224,28 +4733,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             if (cached != null) return (TableConstructorExpressionSyntax)cached;
 
             var result = new TableConstructorExpressionSyntax(SyntaxKind.TableConstructorExpression, openBrace, fields.Node, closeBrace, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public ImplicitSelfCallSyntax ImplicitSelfCall(ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name)
-        {
-#if DEBUG
-            if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (colonToken == null) throw new ArgumentNullException(nameof(colonToken));
-            if (colonToken.Kind != SyntaxKind.ColonToken) throw new ArgumentException(nameof(colonToken));
-            if (name == null) throw new ArgumentNullException(nameof(name));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ImplicitSelfCall, expression, colonToken, name, this.context, out hash);
-            if (cached != null) return (ImplicitSelfCallSyntax)cached;
-
-            var result = new ImplicitSelfCallSyntax(SyntaxKind.ImplicitSelfCall, expression, colonToken, name, this.context);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
@@ -5444,6 +4931,417 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return result;
         }
 
+        public EmptyStatementSyntax EmptyStatement(SyntaxToken? semicolonToken)
+        {
+#if DEBUG
+            if (semicolonToken != null)
+            {
+                switch (semicolonToken.Kind)
+                {
+                    case SyntaxKind.SemicolonToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(semicolonToken));
+                }
+            }
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.EmptyStatement, semicolonToken, this.context, out hash);
+            if (cached != null) return (EmptyStatementSyntax)cached;
+
+            var result = new EmptyStatementSyntax(SyntaxKind.EmptyStatement, semicolonToken, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public LabeledStatementSyntax LabeledStatement(SyntaxToken leftColonColonToken, SyntaxToken identifier, SyntaxToken rightColonColonToken, StatementSyntax statement)
+        {
+#if DEBUG
+            if (leftColonColonToken == null) throw new ArgumentNullException(nameof(leftColonColonToken));
+            if (leftColonColonToken.Kind != SyntaxKind.ColonColonToken) throw new ArgumentException(nameof(leftColonColonToken));
+            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+            if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
+            if (rightColonColonToken == null) throw new ArgumentNullException(nameof(rightColonColonToken));
+            if (rightColonColonToken.Kind != SyntaxKind.ColonColonToken) throw new ArgumentException(nameof(rightColonColonToken));
+            if (statement == null) throw new ArgumentNullException(nameof(statement));
+#endif
+
+            return new LabeledStatementSyntax(SyntaxKind.LabeledStatement, leftColonColonToken, identifier, rightColonColonToken, statement, this.context);
+        }
+
+        public BreakStatementSyntax BreakStatement(SyntaxToken breakKeyword)
+        {
+#if DEBUG
+            if (breakKeyword == null) throw new ArgumentNullException(nameof(breakKeyword));
+            if (breakKeyword.Kind != SyntaxKind.BreakKeyword) throw new ArgumentException(nameof(breakKeyword));
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.BreakStatement, breakKeyword, this.context, out hash);
+            if (cached != null) return (BreakStatementSyntax)cached;
+
+            var result = new BreakStatementSyntax(SyntaxKind.BreakStatement, breakKeyword, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public GotoStatementSyntax GotoStatement(SyntaxToken gotoKeyword, IdentifierNameSyntax name, SyntaxToken? semicolonToken)
+        {
+#if DEBUG
+            if (gotoKeyword == null) throw new ArgumentNullException(nameof(gotoKeyword));
+            if (gotoKeyword.Kind != SyntaxKind.GotoKeyword) throw new ArgumentException(nameof(gotoKeyword));
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (semicolonToken != null)
+            {
+                switch (semicolonToken.Kind)
+                {
+                    case SyntaxKind.SemicolonToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(semicolonToken));
+                }
+            }
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.GotoStatement, gotoKeyword, name, semicolonToken, this.context, out hash);
+            if (cached != null) return (GotoStatementSyntax)cached;
+
+            var result = new GotoStatementSyntax(SyntaxKind.GotoStatement, gotoKeyword, name, semicolonToken, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public ReturnStatementSyntax ReturnStatement(SyntaxToken returnKeyword, ExpressionListSyntax? values, SyntaxToken? semicolonToken)
+        {
+#if DEBUG
+            if (returnKeyword == null) throw new ArgumentNullException(nameof(returnKeyword));
+            if (returnKeyword.Kind != SyntaxKind.ReturnKeyword) throw new ArgumentException(nameof(returnKeyword));
+            if (semicolonToken != null)
+            {
+                switch (semicolonToken.Kind)
+                {
+                    case SyntaxKind.SemicolonToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(semicolonToken));
+                }
+            }
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ReturnStatement, returnKeyword, values, semicolonToken, this.context, out hash);
+            if (cached != null) return (ReturnStatementSyntax)cached;
+
+            var result = new ReturnStatementSyntax(SyntaxKind.ReturnStatement, returnKeyword, values, semicolonToken, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public DoStatementSyntax DoStatement(SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+        {
+#if DEBUG
+            if (doKeyword == null) throw new ArgumentNullException(nameof(doKeyword));
+            if (doKeyword.Kind != SyntaxKind.DoKeyword) throw new ArgumentException(nameof(doKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endKeyword == null) throw new ArgumentNullException(nameof(endKeyword));
+            if (endKeyword.Kind != SyntaxKind.EndKeyword) throw new ArgumentException(nameof(endKeyword));
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.DoStatement, doKeyword, block, endKeyword, this.context, out hash);
+            if (cached != null) return (DoStatementSyntax)cached;
+
+            var result = new DoStatementSyntax(SyntaxKind.DoStatement, doKeyword, block, endKeyword, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public WhileStatementSyntax WhileStatement(SyntaxToken whileKeyword, ExpressionSyntax condition, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+        {
+#if DEBUG
+            if (whileKeyword == null) throw new ArgumentNullException(nameof(whileKeyword));
+            if (whileKeyword.Kind != SyntaxKind.WhileKeyword) throw new ArgumentException(nameof(whileKeyword));
+            if (condition == null) throw new ArgumentNullException(nameof(condition));
+            if (doKeyword == null) throw new ArgumentNullException(nameof(doKeyword));
+            if (doKeyword.Kind != SyntaxKind.DoKeyword) throw new ArgumentException(nameof(doKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endKeyword == null) throw new ArgumentNullException(nameof(endKeyword));
+            if (endKeyword.Kind != SyntaxKind.EndKeyword) throw new ArgumentException(nameof(endKeyword));
+#endif
+
+            return new WhileStatementSyntax(SyntaxKind.WhileStatement, whileKeyword, condition, doKeyword, block, endKeyword, this.context);
+        }
+
+        public RepeatStatementSyntax RepeatStatement(SyntaxToken repeatKeyword, BlockSyntax block, SyntaxToken untilKeyword, ExpressionSyntax condition, SyntaxToken? semicolonToken)
+        {
+#if DEBUG
+            if (repeatKeyword == null) throw new ArgumentNullException(nameof(repeatKeyword));
+            if (repeatKeyword.Kind != SyntaxKind.RepeatKeyword) throw new ArgumentException(nameof(repeatKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (untilKeyword == null) throw new ArgumentNullException(nameof(untilKeyword));
+            if (untilKeyword.Kind != SyntaxKind.UntilKeyword) throw new ArgumentException(nameof(untilKeyword));
+            if (condition == null) throw new ArgumentNullException(nameof(condition));
+            if (semicolonToken != null)
+            {
+                switch (semicolonToken.Kind)
+                {
+                    case SyntaxKind.SemicolonToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(semicolonToken));
+                }
+            }
+#endif
+
+            return new RepeatStatementSyntax(SyntaxKind.RepeatStatement, repeatKeyword, block, untilKeyword, condition, semicolonToken, this.context);
+        }
+
+        public IfStatementSyntax IfStatement(SyntaxToken ifKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<ElseIfClauseSyntax> elseIfs, ElseClauseSyntax? @else, SyntaxToken endKeyword)
+        {
+#if DEBUG
+            if (ifKeyword == null) throw new ArgumentNullException(nameof(ifKeyword));
+            if (ifKeyword.Kind != SyntaxKind.IfKeyword) throw new ArgumentException(nameof(ifKeyword));
+            if (condition == null) throw new ArgumentNullException(nameof(condition));
+            if (thenKeyword == null) throw new ArgumentNullException(nameof(thenKeyword));
+            if (thenKeyword.Kind != SyntaxKind.ThenKeyword) throw new ArgumentException(nameof(thenKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endKeyword == null) throw new ArgumentNullException(nameof(endKeyword));
+            if (endKeyword.Kind != SyntaxKind.EndKeyword) throw new ArgumentException(nameof(endKeyword));
+#endif
+
+            return new IfStatementSyntax(SyntaxKind.IfStatement, ifKeyword, condition, thenKeyword, block, elseIfs.Node, @else, endKeyword, this.context);
+        }
+
+        public ElseIfClauseSyntax ElseIfClause(SyntaxToken elseIfKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block)
+        {
+#if DEBUG
+            if (elseIfKeyword == null) throw new ArgumentNullException(nameof(elseIfKeyword));
+            if (elseIfKeyword.Kind != SyntaxKind.ElseIfKeyword) throw new ArgumentException(nameof(elseIfKeyword));
+            if (condition == null) throw new ArgumentNullException(nameof(condition));
+            if (thenKeyword == null) throw new ArgumentNullException(nameof(thenKeyword));
+            if (thenKeyword.Kind != SyntaxKind.ThenKeyword) throw new ArgumentException(nameof(thenKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+#endif
+
+            return new ElseIfClauseSyntax(SyntaxKind.ElseIfClause, elseIfKeyword, condition, thenKeyword, block, this.context);
+        }
+
+        public ElseClauseSyntax ElseClause(SyntaxToken elseKeyword, StatementSyntax statement)
+        {
+#if DEBUG
+            if (elseKeyword == null) throw new ArgumentNullException(nameof(elseKeyword));
+            if (elseKeyword.Kind != SyntaxKind.ElseKeyword) throw new ArgumentException(nameof(elseKeyword));
+            if (statement == null) throw new ArgumentNullException(nameof(statement));
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ElseClause, elseKeyword, statement, this.context, out hash);
+            if (cached != null) return (ElseClauseSyntax)cached;
+
+            var result = new ElseClauseSyntax(SyntaxKind.ElseClause, elseKeyword, statement, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public ForStatementSyntax ForStatement(SyntaxToken forKeyword, IdentifierNameSyntax name, SyntaxToken equalsToken, ExpressionSyntax initial, SyntaxToken firstCommaToken, ExpressionSyntax limit, SyntaxToken secondCommaToken, ExpressionSyntax step, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+        {
+#if DEBUG
+            if (forKeyword == null) throw new ArgumentNullException(nameof(forKeyword));
+            if (forKeyword.Kind != SyntaxKind.ForKeyword) throw new ArgumentException(nameof(forKeyword));
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (equalsToken == null) throw new ArgumentNullException(nameof(equalsToken));
+            if (equalsToken.Kind != SyntaxKind.EqualsToken) throw new ArgumentException(nameof(equalsToken));
+            if (initial == null) throw new ArgumentNullException(nameof(initial));
+            if (firstCommaToken == null) throw new ArgumentNullException(nameof(firstCommaToken));
+            if (firstCommaToken.Kind != SyntaxKind.CommaToken) throw new ArgumentException(nameof(firstCommaToken));
+            if (limit == null) throw new ArgumentNullException(nameof(limit));
+            if (secondCommaToken == null) throw new ArgumentNullException(nameof(secondCommaToken));
+            if (secondCommaToken.Kind != SyntaxKind.CommaToken) throw new ArgumentException(nameof(secondCommaToken));
+            if (step == null) throw new ArgumentNullException(nameof(step));
+            if (doKeyword == null) throw new ArgumentNullException(nameof(doKeyword));
+            if (doKeyword.Kind != SyntaxKind.DoKeyword) throw new ArgumentException(nameof(doKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endKeyword == null) throw new ArgumentNullException(nameof(endKeyword));
+            if (endKeyword.Kind != SyntaxKind.EndKeyword) throw new ArgumentException(nameof(endKeyword));
+#endif
+
+            return new ForStatementSyntax(SyntaxKind.ForStatement, forKeyword, name, equalsToken, initial, firstCommaToken, limit, secondCommaToken, step, doKeyword, block, endKeyword, this.context);
+        }
+
+        public ChunkSyntax Chunk(BlockSyntax block, SyntaxToken endOfFileToken)
+        {
+#if DEBUG
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endOfFileToken == null) throw new ArgumentNullException(nameof(endOfFileToken));
+            if (endOfFileToken.Kind != SyntaxKind.EndOfFileToken) throw new ArgumentException(nameof(endOfFileToken));
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.Chunk, block, endOfFileToken, this.context, out hash);
+            if (cached != null) return (ChunkSyntax)cached;
+
+            var result = new ChunkSyntax(SyntaxKind.Chunk, block, endOfFileToken, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public BlockSyntax Block(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> statements)
+        {
+#if DEBUG
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.Block, statements.Node, this.context, out hash);
+            if (cached != null) return (BlockSyntax)cached;
+
+            var result = new BlockSyntax(SyntaxKind.Block, statements.Node, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public SkippedTokensTriviaSyntax SkippedTokensTrivia(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken> tokens)
+        {
+#if DEBUG
+#endif
+
+            return new SkippedTokensTriviaSyntax(SyntaxKind.SkippedTokensTrivia, tokens.Node, this.context);
+        }
+
+        public BracketedExpressionSyntax BracketedExpression(SyntaxToken openParenToken, ExpressionSyntax expression, SyntaxToken closeParenToken)
+        {
+#if DEBUG
+            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
+            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
+            if (expression == null) throw new ArgumentNullException(nameof(expression));
+            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
+            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.BracketedExpression, openParenToken, expression, closeParenToken, this.context, out hash);
+            if (cached != null) return (BracketedExpressionSyntax)cached;
+
+            var result = new BracketedExpressionSyntax(SyntaxKind.BracketedExpression, openParenToken, expression, closeParenToken, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public ParameterListSyntax ParameterList(SyntaxToken openParenToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ParameterSyntax> parameters, SyntaxToken closeParenToken)
+        {
+#if DEBUG
+            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
+            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
+            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
+            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ParameterList, openParenToken, parameters.Node, closeParenToken, this.context, out hash);
+            if (cached != null) return (ParameterListSyntax)cached;
+
+            var result = new ParameterListSyntax(SyntaxKind.ParameterList, openParenToken, parameters.Node, closeParenToken, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public ParameterSyntax Parameter(SyntaxToken identifier)
+        {
+#if DEBUG
+            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+            switch (identifier.Kind)
+            {
+                case SyntaxKind.IdentifierToken:
+                case SyntaxKind.DotDotDotToken: break;
+                default: throw new ArgumentException(nameof(identifier));
+            }
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.Parameter, identifier, this.context, out hash);
+            if (cached != null) return (ParameterSyntax)cached;
+
+            var result = new ParameterSyntax(SyntaxKind.Parameter, identifier, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public FieldListSyntax FieldList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldSyntax> fields)
+        {
+#if DEBUG
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.FieldList, fields.Node, this.context, out hash);
+            if (cached != null) return (FieldListSyntax)cached;
+
+            var result = new FieldListSyntax(SyntaxKind.FieldList, fields.Node, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public FieldSyntax Field(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? key, SyntaxToken? equalsToken, ExpressionSyntax? value)
+        {
+#if DEBUG
+            if (equalsToken != null)
+            {
+                switch (equalsToken.Kind)
+                {
+                    case SyntaxKind.EqualsToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(equalsToken));
+                }
+            }
+#endif
+
+            return new FieldSyntax(SyntaxKind.Field, expression, name, key, equalsToken, value, this.context);
+        }
+
         public ArgumentListSyntax ArgumentList(TableConstructorExpressionSyntax? argumentTable, SyntaxToken? openParenToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ArgumentSyntax> arguments, SyntaxToken? closeParenToken)
         {
 #if DEBUG
@@ -5489,340 +5387,26 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return result;
         }
 
-        public BlockSyntax Block(SyntaxToken openBraceToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> statements, SyntaxToken closeBraceToken)
-        {
-#if DEBUG
-            if (openBraceToken == null) throw new ArgumentNullException(nameof(openBraceToken));
-            if (openBraceToken.Kind != SyntaxKind.OpenBraceToken) throw new ArgumentException(nameof(openBraceToken));
-            if (closeBraceToken == null) throw new ArgumentNullException(nameof(closeBraceToken));
-            if (closeBraceToken.Kind != SyntaxKind.CloseBraceToken) throw new ArgumentException(nameof(closeBraceToken));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.Block, openBraceToken, statements.Node, closeBraceToken, this.context, out hash);
-            if (cached != null) return (BlockSyntax)cached;
-
-            var result = new BlockSyntax(SyntaxKind.Block, openBraceToken, statements.Node, closeBraceToken, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public ExpressionStatementSyntax ExpressionStatement(ExpressionSyntax expression, SyntaxToken semicolonToken)
+        public ImplicitSelfCallSyntax ImplicitSelfCall(ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name)
         {
 #if DEBUG
             if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ExpressionStatement, expression, semicolonToken, this.context, out hash);
-            if (cached != null) return (ExpressionStatementSyntax)cached;
-
-            var result = new ExpressionStatementSyntax(SyntaxKind.ExpressionStatement, expression, semicolonToken, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public EmptyStatementSyntax EmptyStatement(SyntaxToken semicolonToken)
-        {
-#if DEBUG
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.EmptyStatement, semicolonToken, this.context, out hash);
-            if (cached != null) return (EmptyStatementSyntax)cached;
-
-            var result = new EmptyStatementSyntax(SyntaxKind.EmptyStatement, semicolonToken, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public LabeledStatementSyntax LabeledStatement(SyntaxToken identifier, SyntaxToken colonToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
-            if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
             if (colonToken == null) throw new ArgumentNullException(nameof(colonToken));
             if (colonToken.Kind != SyntaxKind.ColonToken) throw new ArgumentException(nameof(colonToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
+            if (name == null) throw new ArgumentNullException(nameof(name));
 #endif
 
             int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.LabeledStatement, identifier, colonToken, statement, this.context, out hash);
-            if (cached != null) return (LabeledStatementSyntax)cached;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ImplicitSelfCall, expression, colonToken, name, this.context, out hash);
+            if (cached != null) return (ImplicitSelfCallSyntax)cached;
 
-            var result = new LabeledStatementSyntax(SyntaxKind.LabeledStatement, identifier, colonToken, statement, this.context);
+            var result = new ImplicitSelfCallSyntax(SyntaxKind.ImplicitSelfCall, expression, colonToken, name, this.context);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
             }
 
             return result;
-        }
-
-        public GotoStatementSyntax GotoStatement(SyntaxKind kind, SyntaxToken gotoKeyword, SyntaxToken? caseOrDefaultKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken)
-        {
-            switch (kind)
-            {
-                case SyntaxKind.GotoStatement:
-                case SyntaxKind.GotoCaseStatement:
-                case SyntaxKind.GotoDefaultStatement: break;
-                default: throw new ArgumentException(nameof(kind));
-            }
-#if DEBUG
-            if (gotoKeyword == null) throw new ArgumentNullException(nameof(gotoKeyword));
-            if (gotoKeyword.Kind != SyntaxKind.GotoKeyword) throw new ArgumentException(nameof(gotoKeyword));
-            if (caseOrDefaultKeyword != null)
-            {
-                switch (caseOrDefaultKeyword.Kind)
-                {
-                    case SyntaxKind.CaseKeyword:
-                    case SyntaxKind.DefaultKeyword:
-                    case SyntaxKind.None: break;
-                    default: throw new ArgumentException(nameof(caseOrDefaultKeyword));
-                }
-            }
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            return new GotoStatementSyntax(kind, gotoKeyword, caseOrDefaultKeyword, expression, semicolonToken, this.context);
-        }
-
-        public BreakStatementSyntax BreakStatement(SyntaxToken breakKeyword, SyntaxToken semicolonToken)
-        {
-#if DEBUG
-            if (breakKeyword == null) throw new ArgumentNullException(nameof(breakKeyword));
-            if (breakKeyword.Kind != SyntaxKind.BreakKeyword) throw new ArgumentException(nameof(breakKeyword));
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.BreakStatement, breakKeyword, semicolonToken, this.context, out hash);
-            if (cached != null) return (BreakStatementSyntax)cached;
-
-            var result = new BreakStatementSyntax(SyntaxKind.BreakStatement, breakKeyword, semicolonToken, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public ReturnStatementSyntax ReturnStatement(SyntaxToken returnKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken)
-        {
-#if DEBUG
-            if (returnKeyword == null) throw new ArgumentNullException(nameof(returnKeyword));
-            if (returnKeyword.Kind != SyntaxKind.ReturnKeyword) throw new ArgumentException(nameof(returnKeyword));
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ReturnStatement, returnKeyword, expression, semicolonToken, this.context, out hash);
-            if (cached != null) return (ReturnStatementSyntax)cached;
-
-            var result = new ReturnStatementSyntax(SyntaxKind.ReturnStatement, returnKeyword, expression, semicolonToken, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public WhileStatementSyntax WhileStatement(SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (whileKeyword == null) throw new ArgumentNullException(nameof(whileKeyword));
-            if (whileKeyword.Kind != SyntaxKind.WhileKeyword) throw new ArgumentException(nameof(whileKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (condition == null) throw new ArgumentNullException(nameof(condition));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new WhileStatementSyntax(SyntaxKind.WhileStatement, whileKeyword, openParenToken, condition, closeParenToken, statement, this.context);
-        }
-
-        public DoStatementSyntax DoStatement(SyntaxToken doKeyword, StatementSyntax statement, SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, SyntaxToken semicolonToken)
-        {
-#if DEBUG
-            if (doKeyword == null) throw new ArgumentNullException(nameof(doKeyword));
-            if (doKeyword.Kind != SyntaxKind.DoKeyword) throw new ArgumentException(nameof(doKeyword));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-            if (whileKeyword == null) throw new ArgumentNullException(nameof(whileKeyword));
-            if (whileKeyword.Kind != SyntaxKind.WhileKeyword) throw new ArgumentException(nameof(whileKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (condition == null) throw new ArgumentNullException(nameof(condition));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            return new DoStatementSyntax(SyntaxKind.DoStatement, doKeyword, statement, whileKeyword, openParenToken, condition, closeParenToken, semicolonToken, this.context);
-        }
-
-        public ForStatementSyntax ForStatement(SyntaxToken forKeyword, SyntaxToken openParenToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> initializers, SyntaxToken firstSemicolonToken, ExpressionSyntax? condition, SyntaxToken secondSemicolonToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> incrementors, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (forKeyword == null) throw new ArgumentNullException(nameof(forKeyword));
-            if (forKeyword.Kind != SyntaxKind.ForKeyword) throw new ArgumentException(nameof(forKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (firstSemicolonToken == null) throw new ArgumentNullException(nameof(firstSemicolonToken));
-            if (firstSemicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(firstSemicolonToken));
-            if (secondSemicolonToken == null) throw new ArgumentNullException(nameof(secondSemicolonToken));
-            if (secondSemicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(secondSemicolonToken));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new ForStatementSyntax(SyntaxKind.ForStatement, forKeyword, openParenToken, initializers.Node, firstSemicolonToken, condition, secondSemicolonToken, incrementors.Node, closeParenToken, statement, this.context);
-        }
-
-        public ForEachStatementSyntax ForEachStatement(SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, SyntaxToken identifier, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (awaitKeyword != null)
-            {
-                switch (awaitKeyword.Kind)
-                {
-                    case SyntaxKind.AwaitKeyword:
-                    case SyntaxKind.None: break;
-                    default: throw new ArgumentException(nameof(awaitKeyword));
-                }
-            }
-            if (forEachKeyword == null) throw new ArgumentNullException(nameof(forEachKeyword));
-            if (forEachKeyword.Kind != SyntaxKind.ForEachKeyword) throw new ArgumentException(nameof(forEachKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
-            if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
-            if (inKeyword == null) throw new ArgumentNullException(nameof(inKeyword));
-            if (inKeyword.Kind != SyntaxKind.InKeyword) throw new ArgumentException(nameof(inKeyword));
-            if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new ForEachStatementSyntax(SyntaxKind.ForEachStatement, awaitKeyword, forEachKeyword, openParenToken, identifier, inKeyword, expression, closeParenToken, statement, this.context);
-        }
-
-        public ForEachVariableStatementSyntax ForEachVariableStatement(SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, ExpressionSyntax variable, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (awaitKeyword != null)
-            {
-                switch (awaitKeyword.Kind)
-                {
-                    case SyntaxKind.AwaitKeyword:
-                    case SyntaxKind.None: break;
-                    default: throw new ArgumentException(nameof(awaitKeyword));
-                }
-            }
-            if (forEachKeyword == null) throw new ArgumentNullException(nameof(forEachKeyword));
-            if (forEachKeyword.Kind != SyntaxKind.ForEachKeyword) throw new ArgumentException(nameof(forEachKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (variable == null) throw new ArgumentNullException(nameof(variable));
-            if (inKeyword == null) throw new ArgumentNullException(nameof(inKeyword));
-            if (inKeyword.Kind != SyntaxKind.InKeyword) throw new ArgumentException(nameof(inKeyword));
-            if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new ForEachVariableStatementSyntax(SyntaxKind.ForEachVariableStatement, awaitKeyword, forEachKeyword, openParenToken, variable, inKeyword, expression, closeParenToken, statement, this.context);
-        }
-
-        public IfStatementSyntax IfStatement(SyntaxToken ifKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement, ElseClauseSyntax? @else)
-        {
-#if DEBUG
-            if (ifKeyword == null) throw new ArgumentNullException(nameof(ifKeyword));
-            if (ifKeyword.Kind != SyntaxKind.IfKeyword) throw new ArgumentException(nameof(ifKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (condition == null) throw new ArgumentNullException(nameof(condition));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new IfStatementSyntax(SyntaxKind.IfStatement, ifKeyword, openParenToken, condition, closeParenToken, statement, @else, this.context);
-        }
-
-        public ElseClauseSyntax ElseClause(SyntaxToken elseKeyword, StatementSyntax statement)
-        {
-#if DEBUG
-            if (elseKeyword == null) throw new ArgumentNullException(nameof(elseKeyword));
-            if (elseKeyword.Kind != SyntaxKind.ElseKeyword) throw new ArgumentException(nameof(elseKeyword));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ElseClause, elseKeyword, statement, this.context, out hash);
-            if (cached != null) return (ElseClauseSyntax)cached;
-
-            var result = new ElseClauseSyntax(SyntaxKind.ElseClause, elseKeyword, statement, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public ChunkSyntax Chunk(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> statements, SyntaxToken endOfFileToken)
-        {
-#if DEBUG
-            if (endOfFileToken == null) throw new ArgumentNullException(nameof(endOfFileToken));
-            if (endOfFileToken.Kind != SyntaxKind.EndOfFileToken) throw new ArgumentException(nameof(endOfFileToken));
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.Chunk, statements.Node, endOfFileToken, this.context, out hash);
-            if (cached != null) return (ChunkSyntax)cached;
-
-            var result = new ChunkSyntax(SyntaxKind.Chunk, statements.Node, endOfFileToken, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public SkippedTokensTriviaSyntax SkippedTokensTrivia(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken> tokens)
-        {
-#if DEBUG
-#endif
-
-            return new SkippedTokensTriviaSyntax(SyntaxKind.SkippedTokensTrivia, tokens.Node, this.context);
         }
     }
 
@@ -5877,7 +5461,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 case SyntaxKind.NumericLiteralToken:
                 case SyntaxKind.StringLiteralToken:
                 case SyntaxKind.MultiLineRawStringLiteralToken:
-                case SyntaxKind.DotDotDotLiteralToken: break;
+                case SyntaxKind.DotDotDotToken: break;
                 default: throw new ArgumentException(nameof(token));
             }
 #endif
@@ -5918,29 +5502,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return result;
         }
 
-        public static BracketedExpressionSyntax BracketedExpression(SyntaxToken openParenToken, ExpressionSyntax expression, SyntaxToken closeParenToken)
-        {
-#if DEBUG
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.BracketedExpression, openParenToken, expression, closeParenToken, out hash);
-            if (cached != null) return (BracketedExpressionSyntax)cached;
-
-            var result = new BracketedExpressionSyntax(SyntaxKind.BracketedExpression, openParenToken, expression, closeParenToken);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
         public static ExpressionListSyntax ExpressionList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
         {
 #if DEBUG
@@ -5951,53 +5512,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             if (cached != null) return (ExpressionListSyntax)cached;
 
             var result = new ExpressionListSyntax(SyntaxKind.ExpressionList, expressions.Node);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static ParameterListSyntax ParameterList(SyntaxToken openParenToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ParameterSyntax> parameters, SyntaxToken closeParenToken)
-        {
-#if DEBUG
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ParameterList, openParenToken, parameters.Node, closeParenToken, out hash);
-            if (cached != null) return (ParameterListSyntax)cached;
-
-            var result = new ParameterListSyntax(SyntaxKind.ParameterList, openParenToken, parameters.Node, closeParenToken);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static ParameterSyntax Parameter(SyntaxToken identifier)
-        {
-#if DEBUG
-            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
-            switch (identifier.Kind)
-            {
-                case SyntaxKind.IdentifierToken:
-                case SyntaxKind.DotDotDotToken: break;
-                default: throw new ArgumentException(nameof(identifier));
-            }
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.Parameter, identifier, out hash);
-            if (cached != null) return (ParameterSyntax)cached;
-
-            var result = new ParameterSyntax(SyntaxKind.Parameter, identifier);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
@@ -6020,41 +5534,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return new FunctionDefinitionExpressionSyntax(SyntaxKind.FunctionDefinitionExpression, functionKeyword, parameters, body, endKeyword);
         }
 
-        public static FieldListSyntax FieldList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldSyntax> fields)
-        {
-#if DEBUG
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.FieldList, fields.Node, out hash);
-            if (cached != null) return (FieldListSyntax)cached;
-
-            var result = new FieldListSyntax(SyntaxKind.FieldList, fields.Node);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static FieldSyntax Field(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? key, SyntaxToken? equalsToken, ExpressionSyntax? value)
-        {
-#if DEBUG
-            if (equalsToken != null)
-            {
-                switch (equalsToken.Kind)
-                {
-                    case SyntaxKind.EqualsToken:
-                    case SyntaxKind.None: break;
-                    default: throw new ArgumentException(nameof(equalsToken));
-                }
-            }
-#endif
-
-            return new FieldSyntax(SyntaxKind.Field, expression, name, key, equalsToken, value);
-        }
-
         public static TableConstructorExpressionSyntax TableConstructorExpression(SyntaxToken openBrace, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldListSyntax> fields, SyntaxToken closeBrace)
         {
 #if DEBUG
@@ -6069,28 +5548,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             if (cached != null) return (TableConstructorExpressionSyntax)cached;
 
             var result = new TableConstructorExpressionSyntax(SyntaxKind.TableConstructorExpression, openBrace, fields.Node, closeBrace);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static ImplicitSelfCallSyntax ImplicitSelfCall(ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name)
-        {
-#if DEBUG
-            if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (colonToken == null) throw new ArgumentNullException(nameof(colonToken));
-            if (colonToken.Kind != SyntaxKind.ColonToken) throw new ArgumentException(nameof(colonToken));
-            if (name == null) throw new ArgumentNullException(nameof(name));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ImplicitSelfCall, expression, colonToken, name, out hash);
-            if (cached != null) return (ImplicitSelfCallSyntax)cached;
-
-            var result = new ImplicitSelfCallSyntax(SyntaxKind.ImplicitSelfCall, expression, colonToken, name);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
@@ -6289,6 +5746,417 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return result;
         }
 
+        public static EmptyStatementSyntax EmptyStatement(SyntaxToken? semicolonToken)
+        {
+#if DEBUG
+            if (semicolonToken != null)
+            {
+                switch (semicolonToken.Kind)
+                {
+                    case SyntaxKind.SemicolonToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(semicolonToken));
+                }
+            }
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.EmptyStatement, semicolonToken, out hash);
+            if (cached != null) return (EmptyStatementSyntax)cached;
+
+            var result = new EmptyStatementSyntax(SyntaxKind.EmptyStatement, semicolonToken);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static LabeledStatementSyntax LabeledStatement(SyntaxToken leftColonColonToken, SyntaxToken identifier, SyntaxToken rightColonColonToken, StatementSyntax statement)
+        {
+#if DEBUG
+            if (leftColonColonToken == null) throw new ArgumentNullException(nameof(leftColonColonToken));
+            if (leftColonColonToken.Kind != SyntaxKind.ColonColonToken) throw new ArgumentException(nameof(leftColonColonToken));
+            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+            if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
+            if (rightColonColonToken == null) throw new ArgumentNullException(nameof(rightColonColonToken));
+            if (rightColonColonToken.Kind != SyntaxKind.ColonColonToken) throw new ArgumentException(nameof(rightColonColonToken));
+            if (statement == null) throw new ArgumentNullException(nameof(statement));
+#endif
+
+            return new LabeledStatementSyntax(SyntaxKind.LabeledStatement, leftColonColonToken, identifier, rightColonColonToken, statement);
+        }
+
+        public static BreakStatementSyntax BreakStatement(SyntaxToken breakKeyword)
+        {
+#if DEBUG
+            if (breakKeyword == null) throw new ArgumentNullException(nameof(breakKeyword));
+            if (breakKeyword.Kind != SyntaxKind.BreakKeyword) throw new ArgumentException(nameof(breakKeyword));
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.BreakStatement, breakKeyword, out hash);
+            if (cached != null) return (BreakStatementSyntax)cached;
+
+            var result = new BreakStatementSyntax(SyntaxKind.BreakStatement, breakKeyword);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static GotoStatementSyntax GotoStatement(SyntaxToken gotoKeyword, IdentifierNameSyntax name, SyntaxToken? semicolonToken)
+        {
+#if DEBUG
+            if (gotoKeyword == null) throw new ArgumentNullException(nameof(gotoKeyword));
+            if (gotoKeyword.Kind != SyntaxKind.GotoKeyword) throw new ArgumentException(nameof(gotoKeyword));
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (semicolonToken != null)
+            {
+                switch (semicolonToken.Kind)
+                {
+                    case SyntaxKind.SemicolonToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(semicolonToken));
+                }
+            }
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.GotoStatement, gotoKeyword, name, semicolonToken, out hash);
+            if (cached != null) return (GotoStatementSyntax)cached;
+
+            var result = new GotoStatementSyntax(SyntaxKind.GotoStatement, gotoKeyword, name, semicolonToken);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static ReturnStatementSyntax ReturnStatement(SyntaxToken returnKeyword, ExpressionListSyntax? values, SyntaxToken? semicolonToken)
+        {
+#if DEBUG
+            if (returnKeyword == null) throw new ArgumentNullException(nameof(returnKeyword));
+            if (returnKeyword.Kind != SyntaxKind.ReturnKeyword) throw new ArgumentException(nameof(returnKeyword));
+            if (semicolonToken != null)
+            {
+                switch (semicolonToken.Kind)
+                {
+                    case SyntaxKind.SemicolonToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(semicolonToken));
+                }
+            }
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ReturnStatement, returnKeyword, values, semicolonToken, out hash);
+            if (cached != null) return (ReturnStatementSyntax)cached;
+
+            var result = new ReturnStatementSyntax(SyntaxKind.ReturnStatement, returnKeyword, values, semicolonToken);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static DoStatementSyntax DoStatement(SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+        {
+#if DEBUG
+            if (doKeyword == null) throw new ArgumentNullException(nameof(doKeyword));
+            if (doKeyword.Kind != SyntaxKind.DoKeyword) throw new ArgumentException(nameof(doKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endKeyword == null) throw new ArgumentNullException(nameof(endKeyword));
+            if (endKeyword.Kind != SyntaxKind.EndKeyword) throw new ArgumentException(nameof(endKeyword));
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.DoStatement, doKeyword, block, endKeyword, out hash);
+            if (cached != null) return (DoStatementSyntax)cached;
+
+            var result = new DoStatementSyntax(SyntaxKind.DoStatement, doKeyword, block, endKeyword);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static WhileStatementSyntax WhileStatement(SyntaxToken whileKeyword, ExpressionSyntax condition, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+        {
+#if DEBUG
+            if (whileKeyword == null) throw new ArgumentNullException(nameof(whileKeyword));
+            if (whileKeyword.Kind != SyntaxKind.WhileKeyword) throw new ArgumentException(nameof(whileKeyword));
+            if (condition == null) throw new ArgumentNullException(nameof(condition));
+            if (doKeyword == null) throw new ArgumentNullException(nameof(doKeyword));
+            if (doKeyword.Kind != SyntaxKind.DoKeyword) throw new ArgumentException(nameof(doKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endKeyword == null) throw new ArgumentNullException(nameof(endKeyword));
+            if (endKeyword.Kind != SyntaxKind.EndKeyword) throw new ArgumentException(nameof(endKeyword));
+#endif
+
+            return new WhileStatementSyntax(SyntaxKind.WhileStatement, whileKeyword, condition, doKeyword, block, endKeyword);
+        }
+
+        public static RepeatStatementSyntax RepeatStatement(SyntaxToken repeatKeyword, BlockSyntax block, SyntaxToken untilKeyword, ExpressionSyntax condition, SyntaxToken? semicolonToken)
+        {
+#if DEBUG
+            if (repeatKeyword == null) throw new ArgumentNullException(nameof(repeatKeyword));
+            if (repeatKeyword.Kind != SyntaxKind.RepeatKeyword) throw new ArgumentException(nameof(repeatKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (untilKeyword == null) throw new ArgumentNullException(nameof(untilKeyword));
+            if (untilKeyword.Kind != SyntaxKind.UntilKeyword) throw new ArgumentException(nameof(untilKeyword));
+            if (condition == null) throw new ArgumentNullException(nameof(condition));
+            if (semicolonToken != null)
+            {
+                switch (semicolonToken.Kind)
+                {
+                    case SyntaxKind.SemicolonToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(semicolonToken));
+                }
+            }
+#endif
+
+            return new RepeatStatementSyntax(SyntaxKind.RepeatStatement, repeatKeyword, block, untilKeyword, condition, semicolonToken);
+        }
+
+        public static IfStatementSyntax IfStatement(SyntaxToken ifKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<ElseIfClauseSyntax> elseIfs, ElseClauseSyntax? @else, SyntaxToken endKeyword)
+        {
+#if DEBUG
+            if (ifKeyword == null) throw new ArgumentNullException(nameof(ifKeyword));
+            if (ifKeyword.Kind != SyntaxKind.IfKeyword) throw new ArgumentException(nameof(ifKeyword));
+            if (condition == null) throw new ArgumentNullException(nameof(condition));
+            if (thenKeyword == null) throw new ArgumentNullException(nameof(thenKeyword));
+            if (thenKeyword.Kind != SyntaxKind.ThenKeyword) throw new ArgumentException(nameof(thenKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endKeyword == null) throw new ArgumentNullException(nameof(endKeyword));
+            if (endKeyword.Kind != SyntaxKind.EndKeyword) throw new ArgumentException(nameof(endKeyword));
+#endif
+
+            return new IfStatementSyntax(SyntaxKind.IfStatement, ifKeyword, condition, thenKeyword, block, elseIfs.Node, @else, endKeyword);
+        }
+
+        public static ElseIfClauseSyntax ElseIfClause(SyntaxToken elseIfKeyword, ExpressionSyntax condition, SyntaxToken thenKeyword, BlockSyntax block)
+        {
+#if DEBUG
+            if (elseIfKeyword == null) throw new ArgumentNullException(nameof(elseIfKeyword));
+            if (elseIfKeyword.Kind != SyntaxKind.ElseIfKeyword) throw new ArgumentException(nameof(elseIfKeyword));
+            if (condition == null) throw new ArgumentNullException(nameof(condition));
+            if (thenKeyword == null) throw new ArgumentNullException(nameof(thenKeyword));
+            if (thenKeyword.Kind != SyntaxKind.ThenKeyword) throw new ArgumentException(nameof(thenKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+#endif
+
+            return new ElseIfClauseSyntax(SyntaxKind.ElseIfClause, elseIfKeyword, condition, thenKeyword, block);
+        }
+
+        public static ElseClauseSyntax ElseClause(SyntaxToken elseKeyword, StatementSyntax statement)
+        {
+#if DEBUG
+            if (elseKeyword == null) throw new ArgumentNullException(nameof(elseKeyword));
+            if (elseKeyword.Kind != SyntaxKind.ElseKeyword) throw new ArgumentException(nameof(elseKeyword));
+            if (statement == null) throw new ArgumentNullException(nameof(statement));
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ElseClause, elseKeyword, statement, out hash);
+            if (cached != null) return (ElseClauseSyntax)cached;
+
+            var result = new ElseClauseSyntax(SyntaxKind.ElseClause, elseKeyword, statement);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static ForStatementSyntax ForStatement(SyntaxToken forKeyword, IdentifierNameSyntax name, SyntaxToken equalsToken, ExpressionSyntax initial, SyntaxToken firstCommaToken, ExpressionSyntax limit, SyntaxToken secondCommaToken, ExpressionSyntax step, SyntaxToken doKeyword, BlockSyntax block, SyntaxToken endKeyword)
+        {
+#if DEBUG
+            if (forKeyword == null) throw new ArgumentNullException(nameof(forKeyword));
+            if (forKeyword.Kind != SyntaxKind.ForKeyword) throw new ArgumentException(nameof(forKeyword));
+            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (equalsToken == null) throw new ArgumentNullException(nameof(equalsToken));
+            if (equalsToken.Kind != SyntaxKind.EqualsToken) throw new ArgumentException(nameof(equalsToken));
+            if (initial == null) throw new ArgumentNullException(nameof(initial));
+            if (firstCommaToken == null) throw new ArgumentNullException(nameof(firstCommaToken));
+            if (firstCommaToken.Kind != SyntaxKind.CommaToken) throw new ArgumentException(nameof(firstCommaToken));
+            if (limit == null) throw new ArgumentNullException(nameof(limit));
+            if (secondCommaToken == null) throw new ArgumentNullException(nameof(secondCommaToken));
+            if (secondCommaToken.Kind != SyntaxKind.CommaToken) throw new ArgumentException(nameof(secondCommaToken));
+            if (step == null) throw new ArgumentNullException(nameof(step));
+            if (doKeyword == null) throw new ArgumentNullException(nameof(doKeyword));
+            if (doKeyword.Kind != SyntaxKind.DoKeyword) throw new ArgumentException(nameof(doKeyword));
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endKeyword == null) throw new ArgumentNullException(nameof(endKeyword));
+            if (endKeyword.Kind != SyntaxKind.EndKeyword) throw new ArgumentException(nameof(endKeyword));
+#endif
+
+            return new ForStatementSyntax(SyntaxKind.ForStatement, forKeyword, name, equalsToken, initial, firstCommaToken, limit, secondCommaToken, step, doKeyword, block, endKeyword);
+        }
+
+        public static ChunkSyntax Chunk(BlockSyntax block, SyntaxToken endOfFileToken)
+        {
+#if DEBUG
+            if (block == null) throw new ArgumentNullException(nameof(block));
+            if (endOfFileToken == null) throw new ArgumentNullException(nameof(endOfFileToken));
+            if (endOfFileToken.Kind != SyntaxKind.EndOfFileToken) throw new ArgumentException(nameof(endOfFileToken));
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.Chunk, block, endOfFileToken, out hash);
+            if (cached != null) return (ChunkSyntax)cached;
+
+            var result = new ChunkSyntax(SyntaxKind.Chunk, block, endOfFileToken);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static BlockSyntax Block(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> statements)
+        {
+#if DEBUG
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.Block, statements.Node, out hash);
+            if (cached != null) return (BlockSyntax)cached;
+
+            var result = new BlockSyntax(SyntaxKind.Block, statements.Node);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static SkippedTokensTriviaSyntax SkippedTokensTrivia(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken> tokens)
+        {
+#if DEBUG
+#endif
+
+            return new SkippedTokensTriviaSyntax(SyntaxKind.SkippedTokensTrivia, tokens.Node);
+        }
+
+        public static BracketedExpressionSyntax BracketedExpression(SyntaxToken openParenToken, ExpressionSyntax expression, SyntaxToken closeParenToken)
+        {
+#if DEBUG
+            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
+            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
+            if (expression == null) throw new ArgumentNullException(nameof(expression));
+            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
+            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.BracketedExpression, openParenToken, expression, closeParenToken, out hash);
+            if (cached != null) return (BracketedExpressionSyntax)cached;
+
+            var result = new BracketedExpressionSyntax(SyntaxKind.BracketedExpression, openParenToken, expression, closeParenToken);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static ParameterListSyntax ParameterList(SyntaxToken openParenToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ParameterSyntax> parameters, SyntaxToken closeParenToken)
+        {
+#if DEBUG
+            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
+            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
+            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
+            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ParameterList, openParenToken, parameters.Node, closeParenToken, out hash);
+            if (cached != null) return (ParameterListSyntax)cached;
+
+            var result = new ParameterListSyntax(SyntaxKind.ParameterList, openParenToken, parameters.Node, closeParenToken);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static ParameterSyntax Parameter(SyntaxToken identifier)
+        {
+#if DEBUG
+            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+            switch (identifier.Kind)
+            {
+                case SyntaxKind.IdentifierToken:
+                case SyntaxKind.DotDotDotToken: break;
+                default: throw new ArgumentException(nameof(identifier));
+            }
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.Parameter, identifier, out hash);
+            if (cached != null) return (ParameterSyntax)cached;
+
+            var result = new ParameterSyntax(SyntaxKind.Parameter, identifier);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static FieldListSyntax FieldList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<FieldSyntax> fields)
+        {
+#if DEBUG
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.FieldList, fields.Node, out hash);
+            if (cached != null) return (FieldListSyntax)cached;
+
+            var result = new FieldListSyntax(SyntaxKind.FieldList, fields.Node);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
+        public static FieldSyntax Field(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? key, SyntaxToken? equalsToken, ExpressionSyntax? value)
+        {
+#if DEBUG
+            if (equalsToken != null)
+            {
+                switch (equalsToken.Kind)
+                {
+                    case SyntaxKind.EqualsToken:
+                    case SyntaxKind.None: break;
+                    default: throw new ArgumentException(nameof(equalsToken));
+                }
+            }
+#endif
+
+            return new FieldSyntax(SyntaxKind.Field, expression, name, key, equalsToken, value);
+        }
+
         public static ArgumentListSyntax ArgumentList(TableConstructorExpressionSyntax? argumentTable, SyntaxToken? openParenToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ArgumentSyntax> arguments, SyntaxToken? closeParenToken)
         {
 #if DEBUG
@@ -6334,340 +6202,26 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return result;
         }
 
-        public static BlockSyntax Block(SyntaxToken openBraceToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> statements, SyntaxToken closeBraceToken)
-        {
-#if DEBUG
-            if (openBraceToken == null) throw new ArgumentNullException(nameof(openBraceToken));
-            if (openBraceToken.Kind != SyntaxKind.OpenBraceToken) throw new ArgumentException(nameof(openBraceToken));
-            if (closeBraceToken == null) throw new ArgumentNullException(nameof(closeBraceToken));
-            if (closeBraceToken.Kind != SyntaxKind.CloseBraceToken) throw new ArgumentException(nameof(closeBraceToken));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.Block, openBraceToken, statements.Node, closeBraceToken, out hash);
-            if (cached != null) return (BlockSyntax)cached;
-
-            var result = new BlockSyntax(SyntaxKind.Block, openBraceToken, statements.Node, closeBraceToken);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static ExpressionStatementSyntax ExpressionStatement(ExpressionSyntax expression, SyntaxToken semicolonToken)
+        public static ImplicitSelfCallSyntax ImplicitSelfCall(ExpressionSyntax expression, SyntaxToken colonToken, IdentifierNameSyntax name)
         {
 #if DEBUG
             if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ExpressionStatement, expression, semicolonToken, out hash);
-            if (cached != null) return (ExpressionStatementSyntax)cached;
-
-            var result = new ExpressionStatementSyntax(SyntaxKind.ExpressionStatement, expression, semicolonToken);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static EmptyStatementSyntax EmptyStatement(SyntaxToken semicolonToken)
-        {
-#if DEBUG
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.EmptyStatement, semicolonToken, out hash);
-            if (cached != null) return (EmptyStatementSyntax)cached;
-
-            var result = new EmptyStatementSyntax(SyntaxKind.EmptyStatement, semicolonToken);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static LabeledStatementSyntax LabeledStatement(SyntaxToken identifier, SyntaxToken colonToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
-            if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
             if (colonToken == null) throw new ArgumentNullException(nameof(colonToken));
             if (colonToken.Kind != SyntaxKind.ColonToken) throw new ArgumentException(nameof(colonToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
+            if (name == null) throw new ArgumentNullException(nameof(name));
 #endif
 
             int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.LabeledStatement, identifier, colonToken, statement, out hash);
-            if (cached != null) return (LabeledStatementSyntax)cached;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ImplicitSelfCall, expression, colonToken, name, out hash);
+            if (cached != null) return (ImplicitSelfCallSyntax)cached;
 
-            var result = new LabeledStatementSyntax(SyntaxKind.LabeledStatement, identifier, colonToken, statement);
+            var result = new ImplicitSelfCallSyntax(SyntaxKind.ImplicitSelfCall, expression, colonToken, name);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
             }
 
             return result;
-        }
-
-        public static GotoStatementSyntax GotoStatement(SyntaxKind kind, SyntaxToken gotoKeyword, SyntaxToken? caseOrDefaultKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken)
-        {
-            switch (kind)
-            {
-                case SyntaxKind.GotoStatement:
-                case SyntaxKind.GotoCaseStatement:
-                case SyntaxKind.GotoDefaultStatement: break;
-                default: throw new ArgumentException(nameof(kind));
-            }
-#if DEBUG
-            if (gotoKeyword == null) throw new ArgumentNullException(nameof(gotoKeyword));
-            if (gotoKeyword.Kind != SyntaxKind.GotoKeyword) throw new ArgumentException(nameof(gotoKeyword));
-            if (caseOrDefaultKeyword != null)
-            {
-                switch (caseOrDefaultKeyword.Kind)
-                {
-                    case SyntaxKind.CaseKeyword:
-                    case SyntaxKind.DefaultKeyword:
-                    case SyntaxKind.None: break;
-                    default: throw new ArgumentException(nameof(caseOrDefaultKeyword));
-                }
-            }
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            return new GotoStatementSyntax(kind, gotoKeyword, caseOrDefaultKeyword, expression, semicolonToken);
-        }
-
-        public static BreakStatementSyntax BreakStatement(SyntaxToken breakKeyword, SyntaxToken semicolonToken)
-        {
-#if DEBUG
-            if (breakKeyword == null) throw new ArgumentNullException(nameof(breakKeyword));
-            if (breakKeyword.Kind != SyntaxKind.BreakKeyword) throw new ArgumentException(nameof(breakKeyword));
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.BreakStatement, breakKeyword, semicolonToken, out hash);
-            if (cached != null) return (BreakStatementSyntax)cached;
-
-            var result = new BreakStatementSyntax(SyntaxKind.BreakStatement, breakKeyword, semicolonToken);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static ReturnStatementSyntax ReturnStatement(SyntaxToken returnKeyword, ExpressionSyntax? expression, SyntaxToken semicolonToken)
-        {
-#if DEBUG
-            if (returnKeyword == null) throw new ArgumentNullException(nameof(returnKeyword));
-            if (returnKeyword.Kind != SyntaxKind.ReturnKeyword) throw new ArgumentException(nameof(returnKeyword));
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ReturnStatement, returnKeyword, expression, semicolonToken, out hash);
-            if (cached != null) return (ReturnStatementSyntax)cached;
-
-            var result = new ReturnStatementSyntax(SyntaxKind.ReturnStatement, returnKeyword, expression, semicolonToken);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static WhileStatementSyntax WhileStatement(SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (whileKeyword == null) throw new ArgumentNullException(nameof(whileKeyword));
-            if (whileKeyword.Kind != SyntaxKind.WhileKeyword) throw new ArgumentException(nameof(whileKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (condition == null) throw new ArgumentNullException(nameof(condition));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new WhileStatementSyntax(SyntaxKind.WhileStatement, whileKeyword, openParenToken, condition, closeParenToken, statement);
-        }
-
-        public static DoStatementSyntax DoStatement(SyntaxToken doKeyword, StatementSyntax statement, SyntaxToken whileKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, SyntaxToken semicolonToken)
-        {
-#if DEBUG
-            if (doKeyword == null) throw new ArgumentNullException(nameof(doKeyword));
-            if (doKeyword.Kind != SyntaxKind.DoKeyword) throw new ArgumentException(nameof(doKeyword));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-            if (whileKeyword == null) throw new ArgumentNullException(nameof(whileKeyword));
-            if (whileKeyword.Kind != SyntaxKind.WhileKeyword) throw new ArgumentException(nameof(whileKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (condition == null) throw new ArgumentNullException(nameof(condition));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (semicolonToken == null) throw new ArgumentNullException(nameof(semicolonToken));
-            if (semicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(semicolonToken));
-#endif
-
-            return new DoStatementSyntax(SyntaxKind.DoStatement, doKeyword, statement, whileKeyword, openParenToken, condition, closeParenToken, semicolonToken);
-        }
-
-        public static ForStatementSyntax ForStatement(SyntaxToken forKeyword, SyntaxToken openParenToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> initializers, SyntaxToken firstSemicolonToken, ExpressionSyntax? condition, SyntaxToken secondSemicolonToken, Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> incrementors, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (forKeyword == null) throw new ArgumentNullException(nameof(forKeyword));
-            if (forKeyword.Kind != SyntaxKind.ForKeyword) throw new ArgumentException(nameof(forKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (firstSemicolonToken == null) throw new ArgumentNullException(nameof(firstSemicolonToken));
-            if (firstSemicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(firstSemicolonToken));
-            if (secondSemicolonToken == null) throw new ArgumentNullException(nameof(secondSemicolonToken));
-            if (secondSemicolonToken.Kind != SyntaxKind.SemicolonToken) throw new ArgumentException(nameof(secondSemicolonToken));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new ForStatementSyntax(SyntaxKind.ForStatement, forKeyword, openParenToken, initializers.Node, firstSemicolonToken, condition, secondSemicolonToken, incrementors.Node, closeParenToken, statement);
-        }
-
-        public static ForEachStatementSyntax ForEachStatement(SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, SyntaxToken identifier, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (awaitKeyword != null)
-            {
-                switch (awaitKeyword.Kind)
-                {
-                    case SyntaxKind.AwaitKeyword:
-                    case SyntaxKind.None: break;
-                    default: throw new ArgumentException(nameof(awaitKeyword));
-                }
-            }
-            if (forEachKeyword == null) throw new ArgumentNullException(nameof(forEachKeyword));
-            if (forEachKeyword.Kind != SyntaxKind.ForEachKeyword) throw new ArgumentException(nameof(forEachKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (identifier == null) throw new ArgumentNullException(nameof(identifier));
-            if (identifier.Kind != SyntaxKind.IdentifierToken) throw new ArgumentException(nameof(identifier));
-            if (inKeyword == null) throw new ArgumentNullException(nameof(inKeyword));
-            if (inKeyword.Kind != SyntaxKind.InKeyword) throw new ArgumentException(nameof(inKeyword));
-            if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new ForEachStatementSyntax(SyntaxKind.ForEachStatement, awaitKeyword, forEachKeyword, openParenToken, identifier, inKeyword, expression, closeParenToken, statement);
-        }
-
-        public static ForEachVariableStatementSyntax ForEachVariableStatement(SyntaxToken? awaitKeyword, SyntaxToken forEachKeyword, SyntaxToken openParenToken, ExpressionSyntax variable, SyntaxToken inKeyword, ExpressionSyntax expression, SyntaxToken closeParenToken, StatementSyntax statement)
-        {
-#if DEBUG
-            if (awaitKeyword != null)
-            {
-                switch (awaitKeyword.Kind)
-                {
-                    case SyntaxKind.AwaitKeyword:
-                    case SyntaxKind.None: break;
-                    default: throw new ArgumentException(nameof(awaitKeyword));
-                }
-            }
-            if (forEachKeyword == null) throw new ArgumentNullException(nameof(forEachKeyword));
-            if (forEachKeyword.Kind != SyntaxKind.ForEachKeyword) throw new ArgumentException(nameof(forEachKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (variable == null) throw new ArgumentNullException(nameof(variable));
-            if (inKeyword == null) throw new ArgumentNullException(nameof(inKeyword));
-            if (inKeyword.Kind != SyntaxKind.InKeyword) throw new ArgumentException(nameof(inKeyword));
-            if (expression == null) throw new ArgumentNullException(nameof(expression));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new ForEachVariableStatementSyntax(SyntaxKind.ForEachVariableStatement, awaitKeyword, forEachKeyword, openParenToken, variable, inKeyword, expression, closeParenToken, statement);
-        }
-
-        public static IfStatementSyntax IfStatement(SyntaxToken ifKeyword, SyntaxToken openParenToken, ExpressionSyntax condition, SyntaxToken closeParenToken, StatementSyntax statement, ElseClauseSyntax? @else)
-        {
-#if DEBUG
-            if (ifKeyword == null) throw new ArgumentNullException(nameof(ifKeyword));
-            if (ifKeyword.Kind != SyntaxKind.IfKeyword) throw new ArgumentException(nameof(ifKeyword));
-            if (openParenToken == null) throw new ArgumentNullException(nameof(openParenToken));
-            if (openParenToken.Kind != SyntaxKind.OpenParenToken) throw new ArgumentException(nameof(openParenToken));
-            if (condition == null) throw new ArgumentNullException(nameof(condition));
-            if (closeParenToken == null) throw new ArgumentNullException(nameof(closeParenToken));
-            if (closeParenToken.Kind != SyntaxKind.CloseParenToken) throw new ArgumentException(nameof(closeParenToken));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            return new IfStatementSyntax(SyntaxKind.IfStatement, ifKeyword, openParenToken, condition, closeParenToken, statement, @else);
-        }
-
-        public static ElseClauseSyntax ElseClause(SyntaxToken elseKeyword, StatementSyntax statement)
-        {
-#if DEBUG
-            if (elseKeyword == null) throw new ArgumentNullException(nameof(elseKeyword));
-            if (elseKeyword.Kind != SyntaxKind.ElseKeyword) throw new ArgumentException(nameof(elseKeyword));
-            if (statement == null) throw new ArgumentNullException(nameof(statement));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ElseClause, elseKeyword, statement, out hash);
-            if (cached != null) return (ElseClauseSyntax)cached;
-
-            var result = new ElseClauseSyntax(SyntaxKind.ElseClause, elseKeyword, statement);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static ChunkSyntax Chunk(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<StatementSyntax> statements, SyntaxToken endOfFileToken)
-        {
-#if DEBUG
-            if (endOfFileToken == null) throw new ArgumentNullException(nameof(endOfFileToken));
-            if (endOfFileToken.Kind != SyntaxKind.EndOfFileToken) throw new ArgumentException(nameof(endOfFileToken));
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.Chunk, statements.Node, endOfFileToken, out hash);
-            if (cached != null) return (ChunkSyntax)cached;
-
-            var result = new ChunkSyntax(SyntaxKind.Chunk, statements.Node, endOfFileToken);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static SkippedTokensTriviaSyntax SkippedTokensTrivia(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken> tokens)
-        {
-#if DEBUG
-#endif
-
-            return new SkippedTokensTriviaSyntax(SyntaxKind.SkippedTokensTrivia, tokens.Node);
         }
 
         internal static IEnumerable<Type> GetNodeTypes()
@@ -6676,39 +6230,38 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 typeof(IdentifierNameSyntax),
                 typeof(LiteralExpressionSyntax),
                 typeof(ParenthesizedExpressionSyntax),
-                typeof(BracketedExpressionSyntax),
                 typeof(ExpressionListSyntax),
-                typeof(ParameterListSyntax),
-                typeof(ParameterSyntax),
                 typeof(FunctionDefinitionExpressionSyntax),
-                typeof(FieldListSyntax),
-                typeof(FieldSyntax),
                 typeof(TableConstructorExpressionSyntax),
-                typeof(ImplicitSelfCallSyntax),
                 typeof(BinaryExpressionSyntax),
                 typeof(UnaryExpressionSyntax),
                 typeof(AssignmentExpressionSyntax),
                 typeof(SimpleMemberAccessExpression),
                 typeof(IndexMemberAccessExpressionSyntax),
                 typeof(InvocationExpressionSyntax),
-                typeof(ArgumentListSyntax),
-                typeof(ArgumentSyntax),
-                typeof(BlockSyntax),
-                typeof(ExpressionStatementSyntax),
                 typeof(EmptyStatementSyntax),
                 typeof(LabeledStatementSyntax),
-                typeof(GotoStatementSyntax),
                 typeof(BreakStatementSyntax),
+                typeof(GotoStatementSyntax),
                 typeof(ReturnStatementSyntax),
-                typeof(WhileStatementSyntax),
                 typeof(DoStatementSyntax),
-                typeof(ForStatementSyntax),
-                typeof(ForEachStatementSyntax),
-                typeof(ForEachVariableStatementSyntax),
+                typeof(WhileStatementSyntax),
+                typeof(RepeatStatementSyntax),
                 typeof(IfStatementSyntax),
+                typeof(ElseIfClauseSyntax),
                 typeof(ElseClauseSyntax),
+                typeof(ForStatementSyntax),
                 typeof(ChunkSyntax),
+                typeof(BlockSyntax),
                 typeof(SkippedTokensTriviaSyntax),
+                typeof(BracketedExpressionSyntax),
+                typeof(ParameterListSyntax),
+                typeof(ParameterSyntax),
+                typeof(FieldListSyntax),
+                typeof(FieldSyntax),
+                typeof(ArgumentListSyntax),
+                typeof(ArgumentSyntax),
+                typeof(ImplicitSelfCallSyntax),
             };
     }
 }
