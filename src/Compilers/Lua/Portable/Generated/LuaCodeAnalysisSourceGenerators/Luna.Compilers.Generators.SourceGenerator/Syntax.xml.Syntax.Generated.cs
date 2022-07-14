@@ -695,7 +695,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
     public sealed partial class InvocationExpressionSyntax : ExpressionSyntax
     {
         private ExpressionSyntax? expression;
-        private ImplicitSelfCallSyntax? selfCallExpression;
+        private ImplicitSelfCallSyntax? selfCall;
         private ArgumentListSyntax? argumentList;
 
         internal InvocationExpressionSyntax(InternalSyntax.LuaSyntaxNode green, LuaSyntaxNode? parent, int position)
@@ -706,7 +706,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
         /// <summary>ExpressionSyntax node representing the expression part of the invocation.</summary>
         public ExpressionSyntax? Expression => GetRedAtZero(ref this.expression);
 
-        public ImplicitSelfCallSyntax? SelfCallExpression => GetRed(ref this.selfCallExpression, 1);
+        public ImplicitSelfCallSyntax? SelfCall => GetRed(ref this.selfCall, 1);
 
         /// <summary>ArgumentListSyntax node representing the list of arguments of the invocation expression.</summary>
         public ArgumentListSyntax ArgumentList => GetRed(ref this.argumentList, 2)!;
@@ -715,7 +715,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
             => index switch
             {
                 0 => GetRedAtZero(ref this.expression),
-                1 => GetRed(ref this.selfCallExpression, 1),
+                1 => GetRed(ref this.selfCall, 1),
                 2 => GetRed(ref this.argumentList, 2)!,
                 _ => null,
             };
@@ -724,7 +724,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
             => index switch
             {
                 0 => this.expression,
-                1 => this.selfCallExpression,
+                1 => this.selfCall,
                 2 => this.argumentList,
                 _ => null,
             };
@@ -732,11 +732,11 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitInvocationExpression(this);
         public override TResult? Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitInvocationExpression(this);
 
-        public InvocationExpressionSyntax Update(ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCallExpression, ArgumentListSyntax argumentList)
+        public InvocationExpressionSyntax Update(ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCall, ArgumentListSyntax argumentList)
         {
-            if (expression != this.Expression || selfCallExpression != this.SelfCallExpression || argumentList != this.ArgumentList)
+            if (expression != this.Expression || selfCall != this.SelfCall || argumentList != this.ArgumentList)
             {
-                var newNode = SyntaxFactory.InvocationExpression(expression, selfCallExpression, argumentList);
+                var newNode = SyntaxFactory.InvocationExpression(expression, selfCall, argumentList);
                 var annotations = GetAnnotations();
                 return annotations?.Length > 0 ? newNode.WithAnnotations(annotations) : newNode;
             }
@@ -744,9 +744,9 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
             return this;
         }
 
-        public InvocationExpressionSyntax WithExpression(ExpressionSyntax? expression) => Update(expression, this.SelfCallExpression, this.ArgumentList);
-        public InvocationExpressionSyntax WithSelfCallExpression(ImplicitSelfCallSyntax? selfCallExpression) => Update(this.Expression, selfCallExpression, this.ArgumentList);
-        public InvocationExpressionSyntax WithArgumentList(ArgumentListSyntax argumentList) => Update(this.Expression, this.SelfCallExpression, argumentList);
+        public InvocationExpressionSyntax WithExpression(ExpressionSyntax? expression) => Update(expression, this.SelfCall, this.ArgumentList);
+        public InvocationExpressionSyntax WithSelfCall(ImplicitSelfCallSyntax? selfCall) => Update(this.Expression, selfCall, this.ArgumentList);
+        public InvocationExpressionSyntax WithArgumentList(ArgumentListSyntax argumentList) => Update(this.Expression, this.SelfCall, argumentList);
 
         public InvocationExpressionSyntax AddArgumentListArguments(params ArgumentSyntax[] items) => WithArgumentList(this.ArgumentList.WithArguments(this.ArgumentList.Arguments.AddRange(items)));
     }
@@ -1856,8 +1856,8 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
     {
         private ExpressionSyntax? expression;
         private IdentifierNameSyntax? name;
-        private BracketedExpressionSyntax? key;
-        private ExpressionSyntax? value;
+        private BracketedExpressionSyntax? fieldKey;
+        private ExpressionSyntax? fieldValue;
 
         internal FieldSyntax(InternalSyntax.LuaSyntaxNode green, LuaSyntaxNode? parent, int position)
           : base(green, parent, position)
@@ -1869,7 +1869,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
         /// <summary>IdentifierNameSyntax representing the field name.</summary>
         public IdentifierNameSyntax? Name => GetRed(ref this.name, 1);
 
-        public BracketedExpressionSyntax? Key => GetRed(ref this.key, 2);
+        public BracketedExpressionSyntax? FieldKey => GetRed(ref this.fieldKey, 2);
 
         /// <summary>SyntaxToken representing the operator of the assignment expression.</summary>
         public SyntaxToken EqualsToken
@@ -1882,15 +1882,15 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
         }
 
         /// <summary>ExpressionSyntax node representing the expression on the right of the assignment operator.</summary>
-        public ExpressionSyntax? Value => GetRed(ref this.value, 4);
+        public ExpressionSyntax? FieldValue => GetRed(ref this.fieldValue, 4);
 
         internal override SyntaxNode? GetNodeSlot(int index)
             => index switch
             {
                 0 => GetRedAtZero(ref this.expression),
                 1 => GetRed(ref this.name, 1),
-                2 => GetRed(ref this.key, 2),
-                4 => GetRed(ref this.value, 4),
+                2 => GetRed(ref this.fieldKey, 2),
+                4 => GetRed(ref this.fieldValue, 4),
                 _ => null,
             };
 
@@ -1899,19 +1899,19 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
             {
                 0 => this.expression,
                 1 => this.name,
-                2 => this.key,
-                4 => this.value,
+                2 => this.fieldKey,
+                4 => this.fieldValue,
                 _ => null,
             };
 
         public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitField(this);
         public override TResult? Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitField(this);
 
-        public FieldSyntax Update(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? key, SyntaxToken equalsToken, ExpressionSyntax? value)
+        public FieldSyntax Update(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? fieldKey, SyntaxToken equalsToken, ExpressionSyntax? fieldValue)
         {
-            if (expression != this.Expression || name != this.Name || key != this.Key || equalsToken != this.EqualsToken || value != this.Value)
+            if (expression != this.Expression || name != this.Name || fieldKey != this.FieldKey || equalsToken != this.EqualsToken || fieldValue != this.FieldValue)
             {
-                var newNode = SyntaxFactory.Field(expression, name, key, equalsToken, value);
+                var newNode = SyntaxFactory.Field(expression, name, fieldKey, equalsToken, fieldValue);
                 var annotations = GetAnnotations();
                 return annotations?.Length > 0 ? newNode.WithAnnotations(annotations) : newNode;
             }
@@ -1919,11 +1919,11 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
             return this;
         }
 
-        public FieldSyntax WithExpression(ExpressionSyntax? expression) => Update(expression, this.Name, this.Key, this.EqualsToken, this.Value);
-        public FieldSyntax WithName(IdentifierNameSyntax? name) => Update(this.Expression, name, this.Key, this.EqualsToken, this.Value);
-        public FieldSyntax WithKey(BracketedExpressionSyntax? key) => Update(this.Expression, this.Name, key, this.EqualsToken, this.Value);
-        public FieldSyntax WithEqualsToken(SyntaxToken equalsToken) => Update(this.Expression, this.Name, this.Key, equalsToken, this.Value);
-        public FieldSyntax WithValue(ExpressionSyntax? value) => Update(this.Expression, this.Name, this.Key, this.EqualsToken, value);
+        public FieldSyntax WithExpression(ExpressionSyntax? expression) => Update(expression, this.Name, this.FieldKey, this.EqualsToken, this.FieldValue);
+        public FieldSyntax WithName(IdentifierNameSyntax? name) => Update(this.Expression, name, this.FieldKey, this.EqualsToken, this.FieldValue);
+        public FieldSyntax WithFieldKey(BracketedExpressionSyntax? fieldKey) => Update(this.Expression, this.Name, fieldKey, this.EqualsToken, this.FieldValue);
+        public FieldSyntax WithEqualsToken(SyntaxToken equalsToken) => Update(this.Expression, this.Name, this.FieldKey, equalsToken, this.FieldValue);
+        public FieldSyntax WithFieldValue(ExpressionSyntax? fieldValue) => Update(this.Expression, this.Name, this.FieldKey, this.EqualsToken, fieldValue);
     }
 
     /// <summary>Class which represents the syntax node for the list of arguments.</summary>

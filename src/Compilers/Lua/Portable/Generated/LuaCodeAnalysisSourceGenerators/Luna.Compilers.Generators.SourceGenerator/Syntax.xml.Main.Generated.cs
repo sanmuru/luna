@@ -268,7 +268,7 @@ namespace SamLu.CodeAnalysis.Lua
             => node.Update((ExpressionSyntax?)Visit(node.Expression) ?? throw new ArgumentNullException("expression"), (BracketedExpressionSyntax?)Visit(node.Key) ?? throw new ArgumentNullException("key"));
 
         public override LuaSyntaxNode? VisitInvocationExpression(InvocationExpressionSyntax node)
-            => node.Update((ExpressionSyntax?)Visit(node.Expression), (ImplicitSelfCallSyntax?)Visit(node.SelfCallExpression), (ArgumentListSyntax?)Visit(node.ArgumentList) ?? throw new ArgumentNullException("argumentList"));
+            => node.Update((ExpressionSyntax?)Visit(node.Expression), (ImplicitSelfCallSyntax?)Visit(node.SelfCall), (ArgumentListSyntax?)Visit(node.ArgumentList) ?? throw new ArgumentNullException("argumentList"));
 
         public override LuaSyntaxNode? VisitEmptyStatement(EmptyStatementSyntax node)
             => node.Update(VisitToken(node.SemicolonToken));
@@ -328,7 +328,7 @@ namespace SamLu.CodeAnalysis.Lua
             => node.Update(VisitList(node.Fields));
 
         public override LuaSyntaxNode? VisitField(FieldSyntax node)
-            => node.Update((ExpressionSyntax?)Visit(node.Expression), (IdentifierNameSyntax?)Visit(node.Name), (BracketedExpressionSyntax?)Visit(node.Key), VisitToken(node.EqualsToken), (ExpressionSyntax?)Visit(node.Value));
+            => node.Update((ExpressionSyntax?)Visit(node.Expression), (IdentifierNameSyntax?)Visit(node.Name), (BracketedExpressionSyntax?)Visit(node.FieldKey), VisitToken(node.EqualsToken), (ExpressionSyntax?)Visit(node.FieldValue));
 
         public override LuaSyntaxNode? VisitArgumentList(ArgumentListSyntax node)
             => node.Update((TableConstructorExpressionSyntax?)Visit(node.ArgumentTable), VisitToken(node.OpenParenToken), VisitList(node.Arguments), VisitToken(node.CloseParenToken));
@@ -597,10 +597,10 @@ namespace SamLu.CodeAnalysis.Lua
         }
 
         /// <summary>Creates a new InvocationExpressionSyntax instance.</summary>
-        public static InvocationExpressionSyntax InvocationExpression(ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCallExpression, ArgumentListSyntax argumentList)
+        public static InvocationExpressionSyntax InvocationExpression(ExpressionSyntax? expression, ImplicitSelfCallSyntax? selfCall, ArgumentListSyntax argumentList)
         {
             if (argumentList == null) throw new ArgumentNullException(nameof(argumentList));
-            return (InvocationExpressionSyntax)Syntax.InternalSyntax.SyntaxFactory.InvocationExpression(expression == null ? null : (Syntax.InternalSyntax.ExpressionSyntax)expression.Green, selfCallExpression == null ? null : (Syntax.InternalSyntax.ImplicitSelfCallSyntax)selfCallExpression.Green, (Syntax.InternalSyntax.ArgumentListSyntax)argumentList.Green).CreateRed();
+            return (InvocationExpressionSyntax)Syntax.InternalSyntax.SyntaxFactory.InvocationExpression(expression == null ? null : (Syntax.InternalSyntax.ExpressionSyntax)expression.Green, selfCall == null ? null : (Syntax.InternalSyntax.ImplicitSelfCallSyntax)selfCall.Green, (Syntax.InternalSyntax.ArgumentListSyntax)argumentList.Green).CreateRed();
         }
 
         /// <summary>Creates a new InvocationExpressionSyntax instance.</summary>
@@ -905,7 +905,7 @@ namespace SamLu.CodeAnalysis.Lua
             => SyntaxFactory.FieldList(default);
 
         /// <summary>Creates a new FieldSyntax instance.</summary>
-        public static FieldSyntax Field(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? key, SyntaxToken equalsToken, ExpressionSyntax? value)
+        public static FieldSyntax Field(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? fieldKey, SyntaxToken equalsToken, ExpressionSyntax? fieldValue)
         {
             switch (equalsToken.Kind())
             {
@@ -913,12 +913,12 @@ namespace SamLu.CodeAnalysis.Lua
                 case SyntaxKind.None: break;
                 default: throw new ArgumentException(nameof(equalsToken));
             }
-            return (FieldSyntax)Syntax.InternalSyntax.SyntaxFactory.Field(expression == null ? null : (Syntax.InternalSyntax.ExpressionSyntax)expression.Green, name == null ? null : (Syntax.InternalSyntax.IdentifierNameSyntax)name.Green, key == null ? null : (Syntax.InternalSyntax.BracketedExpressionSyntax)key.Green, (Syntax.InternalSyntax.SyntaxToken?)equalsToken.Node, value == null ? null : (Syntax.InternalSyntax.ExpressionSyntax)value.Green).CreateRed();
+            return (FieldSyntax)Syntax.InternalSyntax.SyntaxFactory.Field(expression == null ? null : (Syntax.InternalSyntax.ExpressionSyntax)expression.Green, name == null ? null : (Syntax.InternalSyntax.IdentifierNameSyntax)name.Green, fieldKey == null ? null : (Syntax.InternalSyntax.BracketedExpressionSyntax)fieldKey.Green, (Syntax.InternalSyntax.SyntaxToken?)equalsToken.Node, fieldValue == null ? null : (Syntax.InternalSyntax.ExpressionSyntax)fieldValue.Green).CreateRed();
         }
 
         /// <summary>Creates a new FieldSyntax instance.</summary>
-        public static FieldSyntax Field(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? key, ExpressionSyntax? value)
-            => SyntaxFactory.Field(expression, name, key, default, value);
+        public static FieldSyntax Field(ExpressionSyntax? expression, IdentifierNameSyntax? name, BracketedExpressionSyntax? fieldKey, ExpressionSyntax? fieldValue)
+            => SyntaxFactory.Field(expression, name, fieldKey, default, fieldValue);
 
         /// <summary>Creates a new FieldSyntax instance.</summary>
         public static FieldSyntax Field()
