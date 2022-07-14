@@ -329,7 +329,7 @@
           <summary>ExpressionSyntax node representing the expression part of the invocation.</summary>
         </PropertyComment>
       </Field>
-      <Field Name="SelfCallExpression" Type="ImplicitSelfCallSyntax"/>
+      <Field Name="SelfCall" Type="ImplicitSelfCallSyntax"/>
     </Choice>
     <Field Name="ArgumentList" Type="ArgumentListSyntax">
       <PropertyComment>
@@ -728,7 +728,7 @@
               <summary>IdentifierNameSyntax representing the field name.</summary>
             </PropertyComment>
           </Field>
-          <Field Name="Key" Type="BracketedExpressionSyntax">
+          <Field Name="FieldKey" Type="BracketedExpressionSyntax">
             <Kind Name="BracketedExpression"/>
           </Field>
         </Choice>
@@ -738,7 +738,7 @@
             <summary>SyntaxToken representing the operator of the assignment expression.</summary>
           </PropertyComment>
         </Field>
-        <Field Name="Value" Type="ExpressionSyntax">
+        <Field Name="FieldValue" Type="ExpressionSyntax">
           <PropertyComment>
             <summary>ExpressionSyntax node representing the expression on the right of the assignment operator.</summary>
           </PropertyComment>
