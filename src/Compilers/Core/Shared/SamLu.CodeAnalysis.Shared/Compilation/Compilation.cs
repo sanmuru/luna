@@ -1,5 +1,4 @@
-﻿#if LANG_LUA
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Reflection.Metadata;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeGen;
@@ -8,6 +7,7 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Symbols;
 
+#if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
@@ -26,7 +26,13 @@ public sealed partial class
 
     public LanguageVersion LanguageVersion { get; }
 
-    public LuaCompilation() : base(null, default, null, false, null, null) { }
+    public
+#if LANG_LUA
+        LuaCompilation
+#elif LANG_MOONSCRIPT
+        MoonScriptCompilation
+#endif
+        () : base(null, default, null, false, null, null) { }
 
     public override bool IsCaseSensitive => throw new NotImplementedException();
 

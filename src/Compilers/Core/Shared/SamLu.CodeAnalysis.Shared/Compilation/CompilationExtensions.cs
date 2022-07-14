@@ -1,6 +1,6 @@
-﻿#if LANG_LUA
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
+#if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
 
 using ThisParseOptions = LuaParseOptions;

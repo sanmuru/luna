@@ -5,15 +5,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax;
-using SamLu.CodeAnalysis.Lua.Syntax;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+namespace SamLu.CodeAnalysis.Lua;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript;
 #endif
-    ;
+
+using Syntax;
 
 public abstract partial class
 #if LANG_LUA

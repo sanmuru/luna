@@ -34,6 +34,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Parser\LanguageParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\Lexer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\LexerCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parser\QuickScanner.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\SlidingTextWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\SyntaxFactoryContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Parser\SyntaxParser.cs" />

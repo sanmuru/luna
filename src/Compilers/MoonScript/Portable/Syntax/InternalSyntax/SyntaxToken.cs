@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
 internal partial class SyntaxToken
 {
