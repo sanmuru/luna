@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace SamLu.CodeAnalysis.Lua;
+namespace SamLu.CodeAnalysis.MoonScript;
 
 using Syntax;
 
@@ -12,14 +12,14 @@ public static partial class SyntaxFactory
         switch (kind)
         {
             case SyntaxKind.IdentifierToken:
-                throw new ArgumentException(LuaResources.UseIdentifierForTokens, nameof(kind));
+                throw new ArgumentException(MoonScriptResources.UseIdentifierForTokens, nameof(kind));
 
             case SyntaxKind.NumericLiteralToken:
-                throw new ArgumentException(LuaResources.UseLiteralForNumeric, nameof(kind));
+                throw new ArgumentException(MoonScriptResources.UseLiteralForNumeric, nameof(kind));
         }
 
         if (!SyntaxFacts.IsAnyToken(kind))
-            throw new ArgumentException(string.Format(LuaResources.ThisMethodCanOnlyBeUsedToCreateTokens, kind), nameof(kind));
+            throw new ArgumentException(string.Format(MoonScriptResources.ThisMethodCanOnlyBeUsedToCreateTokens, kind), nameof(kind));
     }
 
     #region 字面量
@@ -109,7 +109,7 @@ public static partial class SyntaxFactory
     #endregion
     #endregion
 
-    public static ChunkSyntax ParseCompilationUnit(string text, int offset = 0, LuaParseOptions? options = null)
+    public static ChunkSyntax ParseCompilationUnit(string text, int offset = 0, MoonScriptParseOptions? options = null)
     {
         using var lexer = SyntaxFactory.MakeLexer(text, offset, options);
         using var parser = SyntaxFactory.MakeParser(lexer);

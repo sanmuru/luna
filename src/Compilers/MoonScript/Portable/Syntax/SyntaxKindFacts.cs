@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace SamLu.CodeAnalysis.Lua;
+namespace SamLu.CodeAnalysis.MoonScript;
 
 public static partial class SyntaxFacts
 {
@@ -34,45 +34,75 @@ public static partial class SyntaxFacts
             SyntaxKind.CloseBracketToken => "]",
             SyntaxKind.ColonToken => ":",
             SyntaxKind.SemicolonToken => ";",
-            SyntaxKind.CommanToken => ",",
+            SyntaxKind.CommaToken => ",",
             SyntaxKind.DotToken => ".",
+            SyntaxKind.CommercialAtToken => "@",
+            SyntaxKind.PlusEqualsToken => "+=",
+            SyntaxKind.MinusGreaterThanToken => "->",
+            SyntaxKind.MinusEqualsToken => "-=",
+            SyntaxKind.AsteriskEqualsToken => "*=",
+            SyntaxKind.SlashEqualsToken => "/=",
+            SyntaxKind.CaretEqualsToken => "^=",
+            SyntaxKind.PersentEqualsToken => "%=",
+            SyntaxKind.AmpersandEqualsToken => "&=",
+            SyntaxKind.TildeEqualsToken => "~=",
+            SyntaxKind.BarEqualsToken => "|=",
             SyntaxKind.LessThanLessThanToken => "<<",
+            SyntaxKind.LessThanLessThanEqualsToken => "<<=",
             SyntaxKind.LessThanEqualsToken => "<=",
             SyntaxKind.GreaterThanGreaterThanToken => ">>",
+            SyntaxKind.GreaterThanGreaterThanEqualsToken => ">>=",
             SyntaxKind.GreaterThanEqualsToken => ">=",
             SyntaxKind.SlashSlashToken => "//",
+            SyntaxKind.EqualsGreaterThanToken => "=>",
             SyntaxKind.EqualsEqualsToken => "==",
-            SyntaxKind.TildeEqualsToken => "~=",
-            SyntaxKind.ColonColonToken => "::",
+            SyntaxKind.ExclamationEqualsToken => "!=",
             SyntaxKind.DotDotToken => "..",
+            SyntaxKind.DotDotEqualsToken => "..=",
             SyntaxKind.DotDotDotToken => "...",
+            SyntaxKind.CommercialAtCommercialAtToken => "@@",
+            SyntaxKind.AndEqualsToken => "and=",
+            SyntaxKind.OrEqualsToken => "or=",
 
             // 关键字
             SyntaxKind.AndKeyword => "and",
             SyntaxKind.BreakKeyword => "break",
+            SyntaxKind.ClassKeyword => "class",
+            SyntaxKind.ContinueKeyword => "continue",
             SyntaxKind.DoKeyword => "do",
             SyntaxKind.ElseKeyword => "else",
             SyntaxKind.ElseIfKeyword => "elseif",
             SyntaxKind.EndKeyword => "end",
+            SyntaxKind.ExportKeyword => "export",
+            SyntaxKind.ExtendsKeyword => "extend",
             SyntaxKind.FalseKeyword => "false",
             SyntaxKind.ForKeyword => "for",
-            SyntaxKind.FunctionKeyword => "function",
-            SyntaxKind.GotoKeyword => "goto",
             SyntaxKind.IfKeyword => "if",
+            SyntaxKind.ImportKeyword => "import",
             SyntaxKind.InKeyword => "in",
             SyntaxKind.LocalKeyword => "local",
             SyntaxKind.NilKeyword => "nil",
             SyntaxKind.NotKeyword => "not",
             SyntaxKind.OrKeyword => "or",
-            SyntaxKind.RepeatKeyword => "repeat",
             SyntaxKind.ReturnKeyword => "return",
+            SyntaxKind.SwitchKeyword => "switch",
             SyntaxKind.ThenKeyword => "then",
             SyntaxKind.TrueKeyword => "true",
-            SyntaxKind.UntilKeyword => "until",
+            SyntaxKind.UnlessKeyword => "unless",
+            SyntaxKind.UsingKeyword => "using",
+            SyntaxKind.WhenKeyword => "when",
             SyntaxKind.WhileKeyword => "while",
+            SyntaxKind.WithKeyword => "with",
             SyntaxKind.GlobalEnvironmentKeyword => "_G",
             SyntaxKind.EnvironmentKeyword => "_ENV",
+            SyntaxKind.SelfKeyword => "self",
+            SyntaxKind.SuperKeyword => "super",
             SyntaxKind.MetatableMetafield => "__metatable",
+            SyntaxKind.ClassMetafield => "__class",
+            SyntaxKind.NameMetafield => "__name",
+            SyntaxKind.InheritedMetamethod => "__inherited",
+            SyntaxKind.BaseMetafield => "__base",
+            SyntaxKind.ParentMetafield => "__parent",
             SyntaxKind.AdditionMetamethod => "__add",
             SyntaxKind.SubtractionMetamethod => "__sub",
             SyntaxKind.MultiplicationMetamethod => "__mul",
@@ -99,7 +129,6 @@ public static partial class SyntaxFacts
             SyntaxKind.GarbageCollectionMetamethod => "__gc",
             SyntaxKind.ToBeClosedMetamethod => "__close",
             SyntaxKind.WeakModeMetafield => "__mode",
-            SyntaxKind.NameMetafield => "__name",
 
             _ => string.Empty
         };
@@ -126,7 +155,7 @@ public static partial class SyntaxFacts
     /// <returns>所有保留关键字语法种类。</returns>
     public static IEnumerable<SyntaxKind> GetReservedKeywordKinds()
     {
-        for (int i = (int)SyntaxKind.AndKeyword; i <= (int)SyntaxKind.WhileKeyword; i++)
+        for (int i = (int)SyntaxKind.AndKeyword; i <= (int)SyntaxKind.WithKeyword; i++)
             yield return (SyntaxKind)i;
     }
 
@@ -138,7 +167,7 @@ public static partial class SyntaxFacts
     public static bool IsReservedKeyword(SyntaxKind kind) =>
         kind switch
         {
-            >= SyntaxKind.AndKeyword and <= SyntaxKind.WhileKeyword => true,
+            >= SyntaxKind.AndKeyword and <= SyntaxKind.WithKeyword => true,
 
             _ => false
         };
@@ -148,26 +177,32 @@ public static partial class SyntaxFacts
         {
             "and" => SyntaxKind.AndKeyword,
             "break" => SyntaxKind.BreakKeyword,
+            "class" => SyntaxKind.ClassKeyword,
+            "continue" => SyntaxKind.ContinueKeyword,
             "do" => SyntaxKind.DoKeyword,
             "else" => SyntaxKind.ElseKeyword,
             "elseif" => SyntaxKind.ElseIfKeyword,
             "end" => SyntaxKind.EndKeyword,
+            "export" => SyntaxKind.ExportKeyword,
+            "extends" => SyntaxKind.ExtendsKeyword,
             "false" => SyntaxKind.FalseKeyword,
             "for" => SyntaxKind.ForKeyword,
-            "function" => SyntaxKind.FunctionKeyword,
-            "goto" => SyntaxKind.GotoKeyword,
             "if" => SyntaxKind.IfKeyword,
+            "import" => SyntaxKind.ImportKeyword,
             "in" => SyntaxKind.InKeyword,
             "local" => SyntaxKind.LocalKeyword,
             "nil" => SyntaxKind.NilKeyword,
             "not" => SyntaxKind.NotKeyword,
             "or" => SyntaxKind.OrKeyword,
-            "repeat" => SyntaxKind.RepeatKeyword,
             "return" => SyntaxKind.ReturnKeyword,
+            "switch" => SyntaxKind.SwitchKeyword,
             "then" => SyntaxKind.ThenKeyword,
             "true" => SyntaxKind.TrueKeyword,
-            "until" => SyntaxKind.UntilKeyword,
+            "unless" => SyntaxKind.UnlessKeyword,
+            "using" => SyntaxKind.UsingKeyword,
+            "when" => SyntaxKind.WhenKeyword,
             "while" => SyntaxKind.WhileKeyword,
+            "with" => SyntaxKind.WithKeyword,
 
             _ => SyntaxKind.None
         };
@@ -181,11 +216,11 @@ public static partial class SyntaxFacts
     public static IEnumerable<SyntaxKind> GetContextualKeywordKinds()
     {
         // 上下文关键词
-        for (int i = (int)SyntaxKind.GlobalEnvironmentKeyword; i <= (int)SyntaxKind.EnvironmentKeyword; i++)
+        for (int i = (int)SyntaxKind.GlobalEnvironmentKeyword; i <= (int)SyntaxKind.SuperKeyword; i++)
             yield return (SyntaxKind)i;
 
         // 元字段和元方法
-        for (int i = (int)SyntaxKind.MetatableMetafield; i <= (int)SyntaxKind.NameMetafield; i++)
+        for (int i = (int)SyntaxKind.MetatableMetafield; i <= (int)SyntaxKind.WeakModeMetafield; i++)
             yield return (SyntaxKind)i;
     }
 
@@ -201,7 +236,7 @@ public static partial class SyntaxFacts
         // 上下文关键词
         kind switch
         {
-            >= SyntaxKind.GlobalEnvironmentKeyword and <= SyntaxKind.EnvironmentKeyword => true,
+            >= SyntaxKind.GlobalEnvironmentKeyword and <= SyntaxKind.SuperKeyword => true,
 
             _ => false
         };
@@ -214,7 +249,7 @@ public static partial class SyntaxFacts
     public static bool IsMetafield(SyntaxKind kind) =>
         kind switch
         {
-            >= SyntaxKind.MetatableMetafield and <= SyntaxKind.NameMetafield => true,
+            >= SyntaxKind.MetatableMetafield and <= SyntaxKind.WeakModeMetafield => true,
 
             _ => false
         };
@@ -225,6 +260,8 @@ public static partial class SyntaxFacts
             // 上下文关键字
             "_G" => SyntaxKind.GlobalEnvironmentKeyword,
             "_ENV" => SyntaxKind.EnvironmentKeyword,
+            "self" => SyntaxKind.SelfKeyword,
+            "super" => SyntaxKind.SuperKeyword,
 
             // 元字段和元方法
             _ => SyntaxFacts.GetMetafieldKind(text)
@@ -238,7 +275,7 @@ public static partial class SyntaxFacts
     /// <returns>所有标点语法种类。</returns>
     public static IEnumerable<SyntaxKind> GetPunctuationKinds()
     {
-        for (int i = (int)SyntaxKind.PlusToken; i <= (int)SyntaxKind.DotDotDotToken; i++)
+        for (int i = (int)SyntaxKind.PlusToken; i <= (int)SyntaxKind.OrEqualsToken; i++)
             yield return (SyntaxKind)i;
     }
 
@@ -250,7 +287,7 @@ public static partial class SyntaxFacts
     public static bool IsPunctuation(SyntaxKind kind) =>
         kind switch
         {
-            >= SyntaxKind.PlusToken and <= SyntaxKind.DotDotDotToken => true,
+            >= SyntaxKind.PlusToken and <= SyntaxKind.OrEqualsToken => true,
 
             _ => false
         };
@@ -274,7 +311,7 @@ public static partial class SyntaxFacts
     internal static bool IsLiteral(SyntaxKind kind) =>
         kind switch
         {
-            >= SyntaxKind.NumericLiteralToken and <= SyntaxKind.MultiLineRawStringLiteralToken => true,
+            >= SyntaxKind.NumericLiteralToken and <= SyntaxKind.InterpolatedStringTextToken => true,
 
             _ => false
         };
@@ -316,10 +353,15 @@ public static partial class SyntaxFacts
     public static bool IsName(SyntaxKind kind) =>
         kind switch
         {
-            SyntaxKind.IdentifierName or
-            SyntaxKind.GenericName or
-            SyntaxKind.QualifiedName or
-            SyntaxKind.AliasQualifiedName => true,
+            SyntaxKind.IdentifierName => true,
+
+            _ => false
+        };
+
+    public static bool IsClassDeclaration(SyntaxKind kind) =>
+        kind switch
+        {
+            SyntaxKind.ClassDeclaration => true,
 
             _ => false
         };
@@ -336,6 +378,7 @@ public static partial class SyntaxFacts
             SyntaxKind.NotKeyword => SyntaxKind.LogicalNotExpression,
             SyntaxKind.HashToken => SyntaxKind.LengthExpression,
             SyntaxKind.TildeToken => SyntaxKind.BitwiseNotExpression,
+            SyntaxKind.AsteriskToken => SyntaxKind.NumericallyIterateExpression,
 
             _ => SyntaxKind.None
         };
@@ -357,6 +400,18 @@ public static partial class SyntaxFacts
             _ => SyntaxKind.None
         };
 
+    public static bool IsInstanceExpression(SyntaxKind token) =>
+        SyntaxFacts.GetInstanceExpression(token) != SyntaxKind.None;
+
+    public static SyntaxKind GetInstanceExpression(SyntaxKind token) =>
+        token switch
+        {
+            SyntaxKind.SelfKeyword => SyntaxKind.SelfExpression,
+            SyntaxKind.SuperKeyword => SyntaxKind.SuperExpression,
+
+            _ => SyntaxKind.None,
+        };
+
     public static bool IsBinaryExpression(SyntaxKind token) =>
         SyntaxFacts.GetBinaryExpression(token) != SyntaxKind.None;
 
@@ -373,8 +428,8 @@ public static partial class SyntaxFacts
             SyntaxKind.AmpersandToken => SyntaxKind.BitwiseAndExpression,
             SyntaxKind.TildeToken => SyntaxKind.BitwiseExclusiveOrExpression,
             SyntaxKind.BarToken => SyntaxKind.BitwiseOrExpression,
-            SyntaxKind.LessThanLessThanToken => SyntaxKind.BitwiseLeftShiftExpression,
             SyntaxKind.GreaterThanGreaterThanToken => SyntaxKind.BitwiseRightShiftExpression,
+            SyntaxKind.LessThanLessThanToken => SyntaxKind.BitwiseLeftShiftExpression,
             SyntaxKind.DotDotToken => SyntaxKind.ConcatenationExpression,
             SyntaxKind.LessThanToken => SyntaxKind.LessThanExpression,
             SyntaxKind.LessThanEqualsToken => SyntaxKind.LessThanOrEqualExpression,
@@ -391,7 +446,25 @@ public static partial class SyntaxFacts
     public static bool IsAssignmentExpression(SyntaxKind kind) =>
         kind switch
         {
+            // 赋值表达式
             SyntaxKind.SimpleAssignmentExpression => true,
+
+            // 更新赋值表达式
+            SyntaxKind.AdditionAssignmentExpression or
+            SyntaxKind.SubtractionAssignmentExpression or
+            SyntaxKind.MultiplicationAssignmentExpression or
+            SyntaxKind.DivisionAssignmentExpression or
+            SyntaxKind.FloorDivisionAssignmentExpression or
+            SyntaxKind.ExponentiationAssignmentExpression or
+            SyntaxKind.ModuloAssignmentExpression or
+            SyntaxKind.BitwiseAndAssignmentExpression or
+            SyntaxKind.BitwiseExclusiveOrAssignmentExpression or
+            SyntaxKind.BitwiseOrAssignmentExpression or
+            SyntaxKind.BitwiseRightShiftAssignmentExpression or
+            SyntaxKind.BitwiseLeftShiftAssignmentExpression or
+            SyntaxKind.ConcatenationAssignmentExpression or
+            SyntaxKind.AndAssignmentExpression or
+            SyntaxKind.OrAssignmentExpression => true,
 
             _ => false
         };
@@ -402,7 +475,24 @@ public static partial class SyntaxFacts
     public static SyntaxKind GetAssignmentExpression(SyntaxKind token) =>
         token switch
         {
+            // 赋值表达式
             SyntaxKind.EqualsToken => SyntaxKind.SimpleAssignmentExpression,
+
+            // 更新赋值表达式
+            SyntaxKind.PlusEqualsToken => SyntaxKind.AdditionAssignmentExpression,
+            SyntaxKind.MinusEqualsToken => SyntaxKind.SubtractionAssignmentExpression,
+            SyntaxKind.AsteriskEqualsToken => SyntaxKind.MultiplicationAssignmentExpression,
+            SyntaxKind.SlashEqualsToken => SyntaxKind.DivisionAssignmentExpression,
+            SyntaxKind.SlashSlashEqualsToken => SyntaxKind.FloorDivisionAssignmentExpression,
+            SyntaxKind.CaretEqualsToken => SyntaxKind.ExponentiationAssignmentExpression,
+            SyntaxKind.PersentEqualsToken => SyntaxKind.ModuloAssignmentExpression,
+            SyntaxKind.AmpersandEqualsToken => SyntaxKind.BitwiseAndAssignmentExpression,
+            SyntaxKind.BarEqualsToken => SyntaxKind.BitwiseOrAssignmentExpression,
+            SyntaxKind.LessThanLessThanEqualsToken => SyntaxKind.BitwiseLeftShiftAssignmentExpression,
+            SyntaxKind.GreaterThanGreaterThanEqualsToken => SyntaxKind.BitwiseRightShiftAssignmentExpression,
+            SyntaxKind.DotDotEqualsToken => SyntaxKind.ConcatenationAssignmentExpression,
+            SyntaxKind.AndEqualsToken => SyntaxKind.AndAssignmentExpression,
+            SyntaxKind.OrEqualsToken => SyntaxKind.OrAssignmentExpression,
 
             _ => SyntaxKind.None
         };
@@ -411,6 +501,11 @@ public static partial class SyntaxFacts
         metafieldname switch
         {
             "__metatable" => SyntaxKind.MetatableMetafield,
+            "__class" => SyntaxKind.ClassMetafield,
+            "__name" => SyntaxKind.NameMetafield,
+            "__inherited" => SyntaxKind.InheritedMetamethod,
+            "__base" => SyntaxKind.BaseMetafield,
+            "__parent" => SyntaxKind.ParentMetafield,
             "__add" => SyntaxKind.AdditionMetamethod,
             "__sub" => SyntaxKind.SubtractionMetamethod,
             "__mul" => SyntaxKind.MultiplicationMetamethod,
@@ -437,7 +532,6 @@ public static partial class SyntaxFacts
             "__gc" => SyntaxKind.GarbageCollectionMetamethod,
             "__close" => SyntaxKind.ToBeClosedMetamethod,
             "__mode" => SyntaxKind.WeakModeMetafield,
-            "__name" => SyntaxKind.NameMetafield,
 
             _ => SyntaxKind.None
         };

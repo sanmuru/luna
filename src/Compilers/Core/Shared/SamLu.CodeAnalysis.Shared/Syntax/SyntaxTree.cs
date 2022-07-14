@@ -8,17 +8,18 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Roslyn.Utilities;
 using System.Diagnostics;
-using SamLu.CodeAnalysis.Lua.Syntax;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
 
+using SamLu.CodeAnalysis.Lua.Syntax;
 using ThisSyntaxTree = LuaSyntaxTree;
 using ThisSyntaxNode = LuaSyntaxNode;
 using ThisParseOptions = LuaParseOptions;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
 
+using SamLu.CodeAnalysis.MoonScript.Syntax;
 using ThisSyntaxTree = MoonScriptSyntaxTree;
 using ThisSyntaxNode = MoonScriptSyntaxNode;
 using ThisParseOptions = MoonScriptParseOptions;

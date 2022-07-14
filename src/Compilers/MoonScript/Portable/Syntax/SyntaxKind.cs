@@ -51,7 +51,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示<c>;</c>标记。</summary>
     SemicolonToken,
     /// <summary>表示<c>,</c>标记。</summary>
-    CommanToken,
+    CommaToken,
     /// <summary>表示<c>.</c>标记。</summary>
     DotToken,
     /// <summary>表示<c>@</c>标记。</summary>
@@ -105,8 +105,6 @@ public enum SyntaxKind : ushort
     EqualsEqualsToken,
     /// <summary>表示<c>!=</c>标记。</summary>
     ExclamationEqualsToken,
-    /// <summary>表示<c>::</c>标记。</summary>
-    ColonColonToken,
     /// <summary>表示<c>..</c>标记。</summary>
     DotDotToken,
     /// <summary>表示<c>..=</c>标记。</summary>
@@ -302,14 +300,6 @@ public enum SyntaxKind : ushort
     #region 名称和类型名称
     /// <summary>表示标识符名称。</summary>
     IdentifierName = 9473,
-    /// <summary>表示限定符名称。</summary>
-    QualifiedName,
-    /// <summary>表示泛型名称。</summary>
-    GenericName,
-    /// <summary>表示类型列表。</summary>
-    TypeArgumentList,
-    /// <summary>表示别名限定符名称。</summary>
-    AliasQualifiedName,
     #endregion
 
     #region 表达式
@@ -437,8 +427,6 @@ public enum SyntaxKind : ushort
     // 赋值表达式
     /// <summary>表示一般赋值表达式。</summary>
     SimpleAssignmentExpression = 9697,
-    /// <summary>表示解构赋值表达式。</summary>
-    DestructuringAssignment,
 
     // 更新赋值表达式
     /// <summary>表示加法更新赋值表达式。</summary>
@@ -518,6 +506,9 @@ public enum SyntaxKind : ushort
     WhileStatement,
     /// <summary>表示<see langword="with"/>限定语句。</summary>
     WithStatement,
+
+    /// <summary>表示解构赋值表达式。</summary>
+    DestructuringAssignment,
     #endregion
 
     #region 声明

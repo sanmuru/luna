@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Roslyn.Utilities;
 
-namespace SamLu.CodeAnalysis.Lua;
+namespace SamLu.CodeAnalysis.MoonScript;
 
 internal enum MessageID
 {
@@ -9,7 +9,10 @@ internal enum MessageID
     MessageBase = 1200,
 
     IDS_FeatureHexadecimalFloatConstant,
-    IDS_FeatureBinaryExponent
+    IDS_FeatureBinaryExponent,
+
+    IDS_FeatureMultiLineRawStringLiteral,
+    IDS_FeatureMultiLineComment,
 }
 
 internal static partial class MessageIDExtensions
@@ -24,14 +27,8 @@ internal static partial class MessageIDExtensions
     {
         Debug.Assert(MessageIDExtensions.RequiredFeature(feature) is null);
 
-        // 在语言分析器中检查特性的支持版本。
         return feature switch
         {
-            // Lua 5.2的特性
-            MessageID.IDS_FeatureHexadecimalFloatConstant or
-            MessageID.IDS_FeatureBinaryExponent
-                => LanguageVersion.Lua5_2,
-
             _ => throw ExceptionUtilities.UnexpectedValue(feature)
         };
     }

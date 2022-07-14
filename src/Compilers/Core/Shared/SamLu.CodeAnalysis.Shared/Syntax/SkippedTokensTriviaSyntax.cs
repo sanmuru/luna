@@ -1,12 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+namespace SamLu.CodeAnalysis.Lua.Syntax;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript.Syntax;
 #endif
-    .Syntax;
 
 public sealed partial class SkippedTokensTriviaSyntax : StructuredTriviaSyntax, ISkippedTokensTriviaSyntax
 {
@@ -16,13 +14,25 @@ public sealed partial class SkippedTokensTriviaSyntax : StructuredTriviaSyntax, 
 
     public SkippedTokensTriviaSyntax() : base(null, null, 0) { }
 
-    public override TResult? Accept<TResult>(LuaSyntaxVisitor<TResult> visitor)
+    public override TResult? Accept<TResult>(
+#if LANG_LUA
+        LuaSyntaxVisitor<TResult>
+#elif LANG_MOONSCRIPT
+        MoonScriptSyntaxVisitor<TResult>
+#endif
+        visitor)
         where TResult : default
     {
         throw new NotImplementedException();
     }
 
-    public override void Accept(LuaSyntaxVisitor visitor)
+    public override void Accept(
+#if LANG_LUA
+        LuaSyntaxVisitor
+#elif LANG_MOONSCRIPT
+        MoonScriptSyntaxVisitor
+#endif
+        visitor)
     {
         throw new NotImplementedException();
     }
@@ -36,5 +46,5 @@ public sealed partial class SkippedTokensTriviaSyntax : StructuredTriviaSyntax, 
     {
         throw new NotImplementedException();
     }
-    #endregion
+#endregion
 }

@@ -1,4 +1,4 @@
-﻿namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+﻿namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
 partial class LanguageParser
 {

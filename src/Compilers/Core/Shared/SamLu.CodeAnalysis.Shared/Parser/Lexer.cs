@@ -247,22 +247,22 @@ internal partial class Lexer : AbstractLexer
     private partial bool ScanNumericLiteral(ref TokenInfo info);
 
     /// <summary>
-    /// 扫描一个单行字符串字面量。
+    /// 扫描一个字符串字面量。
     /// </summary>
     /// <param name="info">指定的标志信息，它将在扫描过程中被修改。</param>
     /// <returns>
     /// 若扫描成功，则返回<see langword="true"/>；否则返回<see langword="false"/>。
     /// </returns>
-    private partial bool ScanSingleLineStringLiteral(ref TokenInfo info);
+    private partial bool ScanStringLiteral(ref TokenInfo info);
 
     /// <summary>
-    /// 扫描一个多行字符串字面量。
+    /// 扫描一个多行原始字符串字面量。
     /// </summary>
     /// <param name="info">指定的标志信息，它将在扫描过程中被修改。</param>
     /// <returns>
     /// 若扫描成功，则返回<see langword="true"/>；否则返回<see langword="false"/>。
     /// </returns>
-    private partial bool ScanMultiLineStringLiteral(ref TokenInfo info, int level = -1);
+    private partial bool ScanMultiLineRawStringLiteral(ref TokenInfo info, int level = -1);
 
     /// <summary>
     /// 扫描一个标识符或关键字。
@@ -411,5 +411,12 @@ internal partial class Lexer : AbstractLexer
         // 代码执行到这里的情况都是格式不符的情况。
         isTerminal = default;
         return false;
+    }
+
+    private void CheckFeatureAvaliability(MessageID feature)
+    {
+        var info = feature.GetFeatureAvailabilityDiagnosticInfo(this.Options);
+        if (info is not null)
+            this.AddError(info.Code, info.Arguments);
     }
 }

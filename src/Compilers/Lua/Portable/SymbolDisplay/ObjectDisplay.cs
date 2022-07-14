@@ -1,10 +1,13 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.PooledObjects;
 
+#if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
+#elif LANG_MOONSCRIPT
+namespace SamLu.CodeAnalysis.MoonScript;
+#endif
 
 internal static class ObjectDisplay
 {

@@ -1,6 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 
+#if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+#elif LANG_MOONSCRIPT
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
+#endif
 
 internal partial class Lexer
 {
