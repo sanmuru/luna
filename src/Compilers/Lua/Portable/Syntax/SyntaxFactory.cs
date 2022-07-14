@@ -2,6 +2,8 @@
 
 namespace SamLu.CodeAnalysis.Lua;
 
+using Syntax;
+
 public static partial class SyntaxFactory
 {
     #region 标志
@@ -35,6 +37,27 @@ public static partial class SyntaxFactory
         SyntaxTriviaList leading,
         string text,
         long value,
+        SyntaxTriviaList trailing) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
+            leading.Node,
+            text,
+            value,
+            trailing.Node));
+
+    public static partial SyntaxToken Literal(ulong value) =>
+        SyntaxFactory.Literal(ObjectDisplay.FormatLiteral(value, ObjectDisplayOptions.None), value);
+
+    public static partial SyntaxToken Literal(string text, ulong value) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.Literal(
+            SyntaxFactory.ElasticMarker.UnderlyingNode,
+            text,
+            value,
+            SyntaxFactory.ElasticMarker.UnderlyingNode));
+
+    public static partial SyntaxToken Literal(
+        SyntaxTriviaList leading,
+        string text,
+        ulong value,
         SyntaxTriviaList trailing) =>
         new(Syntax.InternalSyntax.SyntaxFactory.Literal(
             leading.Node,
@@ -85,4 +108,12 @@ public static partial class SyntaxFactory
             trailing.Node));
     #endregion
     #endregion
+
+    public static ChunkSyntax ParseCompilationUnit(string text, int offset = 0, LuaParseOptions? options = null)
+    {
+        using var lexer = SyntaxFactory.MakeLexer(text, offset, options);
+        using var parser = SyntaxFactory.MakeParser(lexer);
+        var node = parser.ParseCompilationUnit();
+        return (ChunkSyntax)node.CreateRed();
+    }
 }

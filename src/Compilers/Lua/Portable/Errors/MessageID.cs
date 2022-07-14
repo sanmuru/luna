@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua;

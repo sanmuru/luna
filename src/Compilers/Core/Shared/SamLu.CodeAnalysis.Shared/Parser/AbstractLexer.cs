@@ -24,7 +24,7 @@ internal abstract partial class AbstractLexer : IDisposable
     /// 若为<see langword="true"/>时，表示收集到错误；若为<see langword="false"/>时，表示未收集到错误。
     /// </value>
     [MemberNotNullWhen(true, nameof(AbstractLexer._errors))]
-    protected bool HasErros => this._errors is not null;
+    protected bool HasErrors => this._errors is not null;
 
     /// <summary>
     /// 创建<see cref="AbstractLexer"/>的新实例。
@@ -53,7 +53,7 @@ internal abstract partial class AbstractLexer : IDisposable
     /// </remarks>
     protected SyntaxDiagnosticInfo[]? GetErrors(int leadingTriviaWidth)
     {
-        if (!this.HasErros) return null;
+        if (!this.HasErrors) return null;
 
         if (leadingTriviaWidth > 0)
         {
@@ -79,7 +79,7 @@ internal abstract partial class AbstractLexer : IDisposable
     {
         if (error is null) return;
 
-        if (!this.HasErros) this._errors = new(8);
+        if (!this.HasErrors) this._errors = new(8);
 
         this._errors.Add(error);
     }

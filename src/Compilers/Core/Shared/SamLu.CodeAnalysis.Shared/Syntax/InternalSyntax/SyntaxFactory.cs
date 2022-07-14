@@ -14,7 +14,7 @@ namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 
 /// <summary>
-/// 此类型提供构造各种内部的语法节点、标识和琐碎内容的工厂方法。
+/// 此类型提供构造各种内部的语法节点、标志和琐碎内容的工厂方法。
 /// </summary>
 internal static partial class SyntaxFactory
 {
@@ -44,17 +44,17 @@ internal static partial class SyntaxFactory
     internal static readonly SyntaxTrivia ElasticFormFeed = SyntaxFactory.FormFeed.AsElastic();
 
     /// <summary>表示空格符的语法琐碎内容。</summary>
-    internal static readonly SyntaxTrivia Space = SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, " ");
+    internal static readonly SyntaxTrivia Space = SyntaxTrivia.Create(SyntaxKind.WhiteSpaceTrivia, " ");
     /// <summary>表示可变的空格符的语法琐碎内容。</summary>
     internal static readonly SyntaxTrivia ElasticSpace = SyntaxFactory.Space.AsElastic();
 
     /// <summary>表示制表符的语法琐碎内容。</summary>
-    internal static readonly SyntaxTrivia Tab = SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, "\t");
+    internal static readonly SyntaxTrivia Tab = SyntaxTrivia.Create(SyntaxKind.WhiteSpaceTrivia, "\t");
     /// <summary>表示可变的制表符的语法琐碎内容。</summary>
     internal static readonly SyntaxTrivia ElasticTab = SyntaxFactory.Tab.AsElastic();
 
     /// <summary>表示可变的零空格符的语法琐碎内容。</summary>
-    internal static readonly SyntaxTrivia ElasticZeroSpace = SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, string.Empty).AsElastic();
+    internal static readonly SyntaxTrivia ElasticZeroSpace = SyntaxTrivia.Create(SyntaxKind.WhiteSpaceTrivia, string.Empty).AsElastic();
 
     /// <summary>
     /// 将语法琐碎内容转换为可变的。
@@ -90,7 +90,7 @@ internal static partial class SyntaxFactory
     /// <param name="text">表示空白内容的字符串。</param>
     /// <param name="elastic">生成的语法琐碎内容是否为可变的。</param>
     /// <returns>表示空白内容的内部语法琐碎内容。</returns>
-    internal static SyntaxTrivia Whitespace(string text, bool elastic = false) =>
+    internal static SyntaxTrivia WhiteSpace(string text, bool elastic = false) =>
         (text, elastic) switch
         {
             (" ", _) => elastic ? SyntaxFactory.ElasticSpace : SyntaxFactory.Space,
@@ -98,8 +98,8 @@ internal static partial class SyntaxFactory
             ("", true) => SyntaxFactory.ElasticZeroSpace,
             _ => elastic switch
             {
-                false => SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, text),
-                true => SyntaxTrivia.Create(SyntaxKind.WhitespaceTrivia, text).AsElastic()
+                false => SyntaxTrivia.Create(SyntaxKind.WhiteSpaceTrivia, text),
+                true => SyntaxTrivia.Create(SyntaxKind.WhiteSpaceTrivia, text).AsElastic()
             }
         };
 
@@ -155,6 +155,8 @@ internal static partial class SyntaxFactory
 
     internal static SyntaxToken Literal(GreenNode? leading, string text, long value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
 
+    internal static SyntaxToken Literal(GreenNode? leading, string text, ulong value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
+
     internal static SyntaxToken Literal(GreenNode? leading, string text, double value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
 
     internal static SyntaxToken Literal(GreenNode? leading, string text, string value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.NumericLiteralToken, leading, text, value, trailing);
@@ -162,6 +164,12 @@ internal static partial class SyntaxFactory
     internal static SyntaxToken Literal(GreenNode? leading, string text, SyntaxKind kind, string value, GreenNode? trailing) => SyntaxToken.WithValue(kind, leading, text, value, trailing);
 
     internal static SyntaxToken BadToken(GreenNode? leading, string text, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.BadToken, leading, text, text, trailing);
+
+    internal static SyntaxTrivia SkippedTokensTrivia(SyntaxToken token)
+    {
+#warning 未实现。
+        throw new NotImplementedException();
+    }
 
     #region SyntaxKind到SyntaxToken的转换方法
     // 各种语法部分的转换方法在各语言的独立项目中定义

@@ -1,10 +1,13 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.PooledObjects;
 
+#if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
+#elif LANG_MOONSCRIPT
+namespace SamLu.CodeAnalysis.MoonScript;
+#endif
 
 internal static class ObjectDisplay
 {
@@ -41,7 +44,7 @@ internal static class ObjectDisplay
         value ? "true" : "false";
 
     /// <summary>
-    /// 格式化整数字面量。
+    /// 格式化64位有符号整数字面量。
     /// </summary>
     /// <param name="value">要格式化的字面量。</param>
     /// <returns><paramref name="value"/>的字符串表示。</returns>
@@ -49,6 +52,32 @@ internal static class ObjectDisplay
     /// 当<paramref name="options"/>包含<see cref="ObjectDisplayOptions.UseHexadecimalNumbers"/>时，返回十六进制格式。
     /// </remarks>
     internal static string FormatLiteral(long value, ObjectDisplayOptions options, CultureInfo? cultureInfo = null)
+    {
+        var pooledBuilder = PooledStringBuilder.GetInstance();
+        var sb = pooledBuilder.Builder;
+
+        if (options.IncludesOption(ObjectDisplayOptions.UseHexadecimalNumbers))
+        {
+            sb.Append("0x");
+            sb.Append(value.ToHexString());
+        }
+        else
+        {
+            sb.Append(value.ToString(ObjectDisplay.GetFormatCulture(cultureInfo)));
+        }
+
+        return pooledBuilder.ToStringAndFree();
+    }
+
+    /// <summary>
+    /// 格式化64位无符号整数字面量。
+    /// </summary>
+    /// <param name="value">要格式化的字面量。</param>
+    /// <returns><paramref name="value"/>的字符串表示。</returns>
+    /// <remarks>
+    /// 当<paramref name="options"/>包含<see cref="ObjectDisplayOptions.UseHexadecimalNumbers"/>时，返回十六进制格式。
+    /// </remarks>
+    internal static string FormatLiteral(ulong value, ObjectDisplayOptions options, CultureInfo? cultureInfo = null)
     {
         var pooledBuilder = PooledStringBuilder.GetInstance();
         var sb = pooledBuilder.Builder;
@@ -98,6 +127,11 @@ internal static class ObjectDisplay
     public static string ToHexString(this long value) => value.ToString("X");
 
     /// <summary>
+    /// 将64位无符号整数转化为十六进制字符串格式。
+    /// </summary>
+    public static string ToHexString(this ulong value) => value.ToString("X");
+
+    /// <summary>
     /// 将双精度浮点数转化为十六进制字符串格式。
     /// </summary>
     public static string ToHexString(this double value)
@@ -123,53 +157,25 @@ internal static class ObjectDisplay
             }
             else
             {
-                sb.Append("0x");
+                sb.Append("0x1");
 
-                var pooledBuilder2 = PooledStringBuilder.GetInstance();
-                var sb2 = pooledBuilder2.Builder;
+                long longValue = BitConverter.DoubleToInt64Bits(value);
+                long mantissa = longValue & 0xFFFFFFFFFFFFF;
+                long exponent = (longValue >> 52) - 0x3FF;
 
-                #region 整数部分
-                double trunc = Math.Floor(value);
-                value -= trunc;
-                while (trunc >= 16)
+                string mantissaStr = mantissa.ToString("X");
+                mantissaStr = mantissaStr.TrimEnd('0');
+                if (mantissaStr.Length != 0)
                 {
-                    byte reminder = (byte)(trunc % 16);
-                    sb2.Append(reminder.ToString("X"));
-                    trunc = Math.Floor(trunc / 16);
+                    sb.Append('.');
+                    sb.Append(mantissaStr);
                 }
-                if ((int)trunc != 0)
-                    sb2.Append(Convert.ToString((int)trunc, 16));
 
-                char[] buff = new char[sb2.Length];
-                sb2.CopyTo(0, buff, 0, buff.Length);
-                Array.Reverse(buff);
-                #endregion
-
-                sb2.Clear();
-
-                #region 小数部分
-                byte hexdigit;
-                while (value != 0)
+                if (exponent != 0)
                 {
-                    value *= 16;
-                    hexdigit = (byte)value;
-                    sb2.Append(hexdigit.ToString("X"));
-                    value -= hexdigit;
+                    sb.Append('P');
+                    sb.Append(exponent);
                 }
-                char[] buff2 = pooledBuilder2.ToStringAndFree().TrimEnd('0').ToCharArray();
-                #endregion
-
-                if (buff.Length == 0)
-                    sb.Append('0');
-                else
-                    sb.Append(buff);
-
-                sb.Append('.');
-
-                if (buff2.Length == 0)
-                    sb.Append('0');
-                else
-                    sb.Append(buff2);
             }
         }
 
@@ -279,7 +285,8 @@ internal static class ObjectDisplay
                 while (disabledLevels.Contains(avaliableLevel)) avaliableLevel++;
 
                 char[] chars = new char[avaliableLevel + 2];
-                Array.Fill(chars, '=', 1, avaliableLevel);
+                for (int i = 1; i <= avaliableLevel; i++)
+                    chars[i] = '=';
 
                 chars[0] = chars[^1] = '[';
                 sb.Insert(0, chars);

@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
@@ -16,7 +18,7 @@ using ThisParseOptions = MoonScriptParseOptions;
 #endif
 
 /// <summary>
-/// 此类型提供构造各种语法节点、标识和琐碎内容的工厂方法。
+/// 此类型提供构造各种语法节点、标志和琐碎内容的工厂方法。
 /// </summary>
 public static partial class SyntaxFactory
 {
@@ -78,14 +80,14 @@ public static partial class SyntaxFactory
     /// 获取包含空格符的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的语法琐碎内容，其包含单个空格符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的语法琐碎内容，其包含单个空格符。
     /// </value>
     public static SyntaxTrivia Space { get; } = Syntax.InternalSyntax.SyntaxFactory.Space;
     /// <summary>
     /// 获取包含空格符的可变的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的可变的语法琐碎内容，其包含单个空格符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的可变的语法琐碎内容，其包含单个空格符。
     /// </value>
     /// <remarks>
     /// 可变的语法琐碎内容用于表示那些不是从解析代码文本过程中产生的琐碎内容，它们一般在格式化时不会被保留。
@@ -96,14 +98,14 @@ public static partial class SyntaxFactory
     /// 获取包含制表符的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的语法琐碎内容，其包含单个制表符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的语法琐碎内容，其包含单个制表符。
     /// </value>
     public static SyntaxTrivia Tab { get; } = Syntax.InternalSyntax.SyntaxFactory.Tab;
     /// <summary>
     /// 获取包含制表符的可变的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的可变的语法琐碎内容，其包含单个制表符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的可变的语法琐碎内容，其包含单个制表符。
     /// </value>
     /// <remarks>
     /// 可变的语法琐碎内容用于表示那些不是从解析代码文本过程中产生的琐碎内容，它们一般在格式化时不会被保留。
@@ -114,7 +116,7 @@ public static partial class SyntaxFactory
     /// 获取表示可变记号的语法琐碎内容。
     /// </summary>
     /// <value>
-    /// 一个语法类型为<see cref="SyntaxKind.WhitespaceTrivia"/>的可变的语法琐碎内容，其不包含任何字符。
+    /// 一个语法类型为<see cref="SyntaxKind.WhiteSpaceTrivia"/>的可变的语法琐碎内容，其不包含任何字符。
     /// </value>
     /// <remarks>
     /// 当语法琐碎内容没有明确时，工厂方法将自动置入可变记号。在语法格式化阶段，可变记号将会被替换为合适的语法琐碎内容。
@@ -126,9 +128,9 @@ public static partial class SyntaxFactory
 
     public static SyntaxTrivia ElasticEndOfLine(string text) => Syntax.InternalSyntax.SyntaxFactory.EndOfLine(text, elastic: true);
 
-    public static SyntaxTrivia Whitespace(string text) => Syntax.InternalSyntax.SyntaxFactory.Whitespace(text, elastic: false);
+    public static SyntaxTrivia WhiteSpace(string text) => Syntax.InternalSyntax.SyntaxFactory.WhiteSpace(text, elastic: false);
 
-    public static SyntaxTrivia ElasticWhitespace(string text) => Syntax.InternalSyntax.SyntaxFactory.Whitespace(text, elastic: true);
+    public static SyntaxTrivia ElasticWhiteSpace(string text) => Syntax.InternalSyntax.SyntaxFactory.WhiteSpace(text, elastic: true);
 
     public static SyntaxTrivia Comment(string text) => Syntax.InternalSyntax.SyntaxFactory.Comment(text);
 
@@ -139,7 +141,7 @@ public static partial class SyntaxFactory
         return kind switch
         {
             SyntaxKind.EndOfLineTrivia or
-            SyntaxKind.WhitespaceTrivia or
+            SyntaxKind.WhiteSpaceTrivia or
             SyntaxKind.SingleLineCommentTrivia or
             SyntaxKind.MultiLineCommentTrivia =>
                 new(default, new Syntax.InternalSyntax.SyntaxTrivia(kind, text), 0, 0),
@@ -230,32 +232,61 @@ public static partial class SyntaxFactory
 
     #region 字面量
     /// <summary>
-    /// 构造表示64位整数的语法标志。
+    /// 构造表示64位有符号整数的语法标志。
     /// </summary>
-    /// <param name="value">表示的64位整数。</param>
-    /// <returns>表示64位整数的语法标志。</returns>
+    /// <param name="value">表示的64位有符号整数。</param>
+    /// <returns>表示64位有符号整数的语法标志。</returns>
     public static partial SyntaxToken Literal(long value);
 
     /// <summary>
-    /// 构造表示64位整数的语法标志，使用指定的字符串表示。
+    /// 构造表示64位有符号整数的语法标志，使用指定的字符串表示。
     /// </summary>
     /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
-    /// <param name="value">表示的64位整数。</param>
-    /// <returns>表示64位整数的语法标志。</returns>
+    /// <param name="value">表示的64位有符号整数。</param>
+    /// <returns>表示64位有符号整数的语法标志。</returns>
     public static partial SyntaxToken Literal(string text, long value);
 
     /// <summary>
-    /// 构造表示64位整数的语法标志，使用指定的字符串表示以及前后方语法琐碎内容。
+    /// 构造表示64位有符号整数的语法标志，使用指定的字符串表示以及前后方语法琐碎内容。
     /// </summary>
     /// <param name="leading">指定的前方语法琐碎内容。</param>
     /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
-    /// <param name="value">表示的64位整数。</param>
+    /// <param name="value">表示的64位有符号整数。</param>
     /// <param name="trailing">指定的后方语法琐碎内容。</param>
-    /// <returns>表示64位整数的语法标志。</returns>
+    /// <returns>表示64位有符号整数的语法标志。</returns>
     public static partial SyntaxToken Literal(
         SyntaxTriviaList leading,
         string text,
         long value,
+        SyntaxTriviaList trailing);
+
+    /// <summary>
+    /// 构造表示64位无符号整数的语法标志。
+    /// </summary>
+    /// <param name="value">表示的64位无符号整数。</param>
+    /// <returns>表示64位无符号整数的语法标志。</returns>
+    public static partial SyntaxToken Literal(ulong value);
+
+    /// <summary>
+    /// 构造表示64位无符号整数的语法标志，使用指定的字符串表示。
+    /// </summary>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的64位无符号整数。</param>
+    /// <returns>表示64位无符号整数的语法标志。</returns>
+    public static partial SyntaxToken Literal(string text, ulong value);
+
+    /// <summary>
+    /// 构造表示64位无符号整数的语法标志，使用指定的字符串表示以及前后方语法琐碎内容。
+    /// </summary>
+    /// <param name="leading">指定的前方语法琐碎内容。</param>
+    /// <param name="text">指定的<paramref name="value"/>的字符串表示。</param>
+    /// <param name="value">表示的64位无符号整数。</param>
+    /// <param name="trailing">指定的后方语法琐碎内容。</param>
+    /// <returns>表示64位无符号整数的语法标志。</returns>
+    public static partial SyntaxToken Literal(
+        SyntaxTriviaList leading,
+        string text,
+        ulong value,
         SyntaxTriviaList trailing);
 
     /// <summary>
@@ -318,7 +349,49 @@ public static partial class SyntaxFactory
     #endregion
     #endregion
 
+    public static SyntaxToken BadToken(
+        SyntaxTriviaList leading,
+        string text,
+        SyntaxTriviaList trailing) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.BadToken(
+            leading.Node,
+            text,
+            trailing.Node));
+
+    public static SyntaxList<TNode> List<TNode>() where TNode : SyntaxNode => default;
+
+    public static SyntaxList<TNode> SingletonList<TNode>(TNode node) where TNode : SyntaxNode => new(node);
+
+    public static SyntaxList<TNode> List<TNode>(IEnumerable<TNode> nodes) where TNode : SyntaxNode => new(nodes);
+
+    public static SyntaxTokenList TokenList() => default;
+
+    public static SyntaxTokenList TokenList(SyntaxToken token) => new(token);
+
+    public static SyntaxTokenList TokenList(params SyntaxToken[] tokens) => new(tokens);
+
+    public static SyntaxTokenList TokenList(IEnumerable<SyntaxToken> tokens) => new(tokens);
+
+    public static SyntaxTrivia Trivia(Syntax.StructuredTriviaSyntax node) => new(default, node.Green, position: 0, index: 0);
+
+    public static SyntaxTriviaList TriviaList() => default;
+
+    public static SyntaxTriviaList TriviaList(SyntaxTrivia trivia) => new(trivia);
+
+    public static SyntaxTriviaList TriviaList(params SyntaxTrivia[] trivia) => new(trivia);
+
+    public static SyntaxTriviaList TriviaList(IEnumerable<SyntaxTrivia> trivia) => new(trivia);
+
 #warning 未完成
+
+    public static SyntaxTree ParseSyntaxTree(
+            SourceText text,
+            ThisParseOptions? options,
+            string path,
+            CancellationToken cancellationToken)
+    {
+        return ThisSyntaxTree.ParseText(text, options, path, cancellationToken);
+    }
 
     public static SyntaxTree SyntaxTree(
         SyntaxNode root,
@@ -330,4 +403,64 @@ public static partial class SyntaxFactory
             (ThisParseOptions?)options,
             path,
             encoding);
+
+    #region 语法树相等判断
+    public static bool AreEquivalent(SyntaxTree? oldTree, SyntaxTree? newTree, bool topLevel)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent(SyntaxNode? oldNode, SyntaxNode? newNode, bool topLevel)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent(SyntaxNode? oldNode, SyntaxNode? newNode, Func<SyntaxKind, bool>? ignoreChildNode = null)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent(SyntaxToken oldToken, SyntaxToken newToken)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent(SyntaxTokenList oldList, SyntaxTokenList newList)
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent<TNode>(SyntaxList<TNode> oldList, SyntaxList<TNode> newList, bool topLevel)
+        where TNode : ThisSyntaxNode
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent<TNode>(SyntaxList<TNode> oldList, SyntaxList<TNode> newList, Func<SyntaxKind, bool>? ignoreChildNode = null)
+        where TNode : SyntaxNode
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent<TNode>(SeparatedSyntaxList<TNode> oldList, SeparatedSyntaxList<TNode> newList, bool topLevel)
+        where TNode : SyntaxNode
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+
+    public static bool AreEquivalent<TNode>(SeparatedSyntaxList<TNode> oldList, SeparatedSyntaxList<TNode> newList, Func<SyntaxKind, bool>? ignoreChildNode = null)
+        where TNode : SyntaxNode
+    {
+#warning 未完成。
+        throw new NotImplementedException();
+    }
+    #endregion
 }

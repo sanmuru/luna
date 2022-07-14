@@ -1,6 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 
+#if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
+#elif LANG_MOONSCRIPT
+namespace SamLu.CodeAnalysis.MoonScript;
+#endif
 
 public static partial class SymbolDisplay
 {

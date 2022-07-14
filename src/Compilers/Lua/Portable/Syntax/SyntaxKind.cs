@@ -52,7 +52,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示<c>;</c>标记。</summary>
     SemicolonToken,
     /// <summary>表示<c>,</c>标记。</summary>
-    CommanToken,
+    CommaToken,
     /// <summary>表示<c>.</c>标记。</summary>
     DotToken,
 
@@ -190,7 +190,7 @@ public enum SyntaxKind : ushort
     #endregion
 
     /// <summary>表示文件的结尾。</summary>
-    EndOfFileToken = 9216, // 假定此类型为最后一个无文本标识。
+    EndOfFileToken = 9216, // 假定此类型为最后一个无文本标志。
 
     #region 文本标记
     /// <summary>表示不应出现在此位置的错误标记。</summary>
@@ -201,10 +201,7 @@ public enum SyntaxKind : ushort
     NumericLiteralToken,
     /// <summary>表示字符串字面量标记。</summary>
     StringLiteralToken,
-
-    /// <summary>表示单行字符串字面量标记。</summary>
-    SingleLineRawStringLiteralToken,
-    /// <summary>表示多行字符串字面量标记。</summary>
+    /// <summary>表示多行原始字符串字面量标记。</summary>
     MultiLineRawStringLiteralToken,
     #endregion
 
@@ -212,7 +209,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示换行。</summary>
     EndOfLineTrivia = 9249,
     /// <summary>表示空白字符。</summary>
-    WhitespaceTrivia,
+    WhiteSpaceTrivia,
     /// <summary>表示单行注释。</summary>
     SingleLineCommentTrivia,
     /// <summary>表示多行注释。</summary>
@@ -228,17 +225,10 @@ public enum SyntaxKind : ushort
     #region 名称和类型名称
     /// <summary>表示标识符名称。</summary>
     IdentifierName = 9473,
-    /// <summary>表示限定符名称。</summary>
-    QualifiedName,
-    /// <summary>表示泛型名称。</summary>
-    GenericName,
-    /// <summary>表示类型列表。</summary>
-    TypeArgumentList,
-    /// <summary>表示别名限定符名称。</summary>
-    AliasQualifiedName,
     #endregion
 
     #region 表达式
+    // 基本表达式
     /// <summary>表示<see langword="nil"/>关键词字面量表达式。</summary>
     NilLiteralExpression = 9537,
     /// <summary>表示<see langword="false"/>关键词字面量表达式。</summary>
@@ -251,12 +241,14 @@ public enum SyntaxKind : ushort
     StringLiteralExpression,
     /// <summary>表示可变参数列表表达式。</summary>
     VariousArgumentsExpression,
+    /// <summary>表示带圆括号的表达式。</summary>
+    ParenthesizedExpression,
     /// <summary>表示函数定义表达式。</summary>
     FunctionDefinitionExpression,
-    /// <summary>表示前置表达式。</summary>
-    PrefixExpression,
     /// <summary>表示表初始化表达式。</summary>
     TableConstructorExpression,
+    /// <summary>表示调用表达式。</summary>
+    InvocationExpression,
 
     // 二元运算符表达式
     /// <summary>表示加法表达式。</summary>
@@ -279,10 +271,10 @@ public enum SyntaxKind : ushort
     BitwiseExclusiveOrExpression,
     /// <summary>表示按位或表达式。</summary>
     BitwiseOrExpression,
-    /// <summary>表示按位右移表达式。</summary>
-    BitwiseRightShiftExpression,
     /// <summary>表示按位左移表达式。</summary>
     BitwiseLeftShiftExpression,
+    /// <summary>表示按位右移表达式。</summary>
+    BitwiseRightShiftExpression,
     /// <summary>表示连接表达式。</summary>
     ConcatenationExpression,
     /// <summary>表示小于表达式。</summary>
@@ -313,8 +305,8 @@ public enum SyntaxKind : ushort
     BitwiseNotExpression,
 
     // 赋值表达式
-    /// <summary>表示一般赋值表达式。</summary>
-    SimpleAssignmentExpression = 9697,
+    /// <summary>表示赋值表达式。</summary>
+    AssignmentExpression = 9697,
 
     // 成员操作表达式
     /// <summary>表示一般成员操作表达式。</summary>
@@ -324,20 +316,16 @@ public enum SyntaxKind : ushort
     #endregion
 
     #region 语句
-    /// <summary>表示程序块（编译单元）。</summary>
-    Chunk = 9761,
-    /// <summary>表示代码块。</summary>
-    Block,
     /// <summary>表示仅有分隔符（<c>;</c>）的空语句。</summary>
-    ColonStatement,
-    /// <summary>表示包含表达式的语句。</summary>
-    ExpressionStatement,
+    EmptyStatement = 9761,
     /// <summary>表示标签语句。</summary>
     LabeledStatement,
     /// <summary>表示中断流程（<see langword="break"/>）语句。</summary>
     BreakStatement,
     /// <summary>表示跳转标签（<see langword="goto"/>）语句。</summary>
     GotoStatement,
+    /// <summary>表示返回（<see langword="return"/>）语句。</summary>
+    ReturnStatement,
     /// <summary>表示执行代码块语句。</summary>
     DoStatement,
     /// <summary>表示<see langword="while"/>循环语句。</summary>
@@ -347,7 +335,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示<see langword="if"/>条件语句。</summary>
     IfStatement,
     /// <summary>表示<see langword="elseif"/>条件从句。</summary>
-    ElseifClause,
+    ElseIfClause,
     /// <summary>表示<see langword="else"/>条件从句。</summary>
     ElseClause,
     /// <summary>表示逐量<see langword="for"/>循环语句。</summary>
@@ -363,6 +351,29 @@ public enum SyntaxKind : ushort
     #endregion
 
     #region 声明
-    // = 9889,
+    /// <summary>表示程序块（编译单元）。</summary>
+    Chunk = 9889,
+    /// <summary>表示代码块。</summary>
+    Block,
+    /// <summary>表示带方括号的表达式。</summary>
+    BracketedExpression,
+    /// <summary>表示表达式列表。</summary>
+    ExpressionList,
+    /// <summary>表示带花括号的表达式列表。</summary>
+    BracedExpressionList,
+    /// <summary>表示表字段列表。</summary>
+    FieldList,
+    /// <summary>表示表字段。</summary>
+    Field,
+    /// <summary>表示函数参数列表。</summary>
+    ParameterList,
+    /// <summary>表示函数参数。</summary>
+    Parameter,
+    /// <summary>表示调用参数列表。</summary>
+    ArgumentList,
+    /// <summary>表示调用参数。</summary>
+    Argument,
+    /// <summary>表示传入隐式self参数的调用头。</summary>
+    ImplicitSelfCall,
     #endregion
 }

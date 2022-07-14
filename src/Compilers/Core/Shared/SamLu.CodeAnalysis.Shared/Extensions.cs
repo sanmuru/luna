@@ -81,8 +81,8 @@ namespace SamLu.CodeAnalysis.
 
         public static bool IsKeyword(this SyntaxToken token) => SyntaxFacts.IsKeywordKind(token.Kind());
 
-        public static bool IsContexturalKeyword(this SyntaxToken token) => SyntaxFacts.IsContexturalKeyword(token.Kind());
-
+        public static bool IsContextualKeyword(this SyntaxToken token) => SyntaxFacts.IsContextualKeyword(token.Kind());
+        
         public static bool IsReservedKeyword(this SyntaxToken token) => SyntaxFacts.IsReservedKeyword(token.Kind());
 
 #warning 未完成

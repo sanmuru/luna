@@ -1,20 +1,17 @@
 ﻿using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
-#elif LANG_MOONSCRIPT
-    MoonScript
-#endif
-    .Syntax.InternalSyntax;
+namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
-internal abstract partial class StructuredTriviaSyntax :
-#if LANG_LUA
-    LuaSyntaxNode
+using ThisInternalSyntaxNode = LuaSyntaxNode;
 #elif LANG_MOONSCRIPT
-    MoonScriptSyntaxNode
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
+
+using ThisInternalSyntaxNode = MoonScriptSyntaxNode;
 #endif
+
+internal abstract partial class StructuredTriviaSyntax : ThisInternalSyntaxNode
 {
     internal StructuredTriviaSyntax(SyntaxKind kind, DiagnosticInfo[]? diagnostics = null, SyntaxAnnotation[]? annotations = null) : base(kind, diagnostics, annotations) => this.Initialize();
 

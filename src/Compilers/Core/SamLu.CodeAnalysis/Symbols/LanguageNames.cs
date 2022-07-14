@@ -3,7 +3,7 @@
 /// <summary>
 /// 提供通用语言名称常量的类。
 /// </summary>
-public static class LanguageNames
+public static partial class LanguageNames
 {
     /// <summary>
     /// Lua语言的通用名称。

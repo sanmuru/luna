@@ -26,7 +26,7 @@ public partial class
 {
     internal sealed class DummySyntaxTree : ThisSyntaxTree
     {
-        private readonly Syntax.BlockSyntax _node;
+        private readonly Syntax.ChunkSyntax _node;
 
         public override Encoding? Encoding => Encoding.UTF8;
 
@@ -39,7 +39,7 @@ public partial class
         public override bool HasCompilationUnitRoot => true;
 
         public DummySyntaxTree() =>
-            this._node = this.CloneNodeAsRoot(SyntaxFactory.ParseBlock(string.Empty));
+            this._node = this.CloneNodeAsRoot(SyntaxFactory.ParseCompilationUnit(string.Empty));
 
         public override string ToString() => string.Empty;
 

@@ -3,13 +3,11 @@ using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
-    .Syntax.InternalSyntax;
 
 internal partial class SyntaxToken
 {

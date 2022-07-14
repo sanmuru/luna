@@ -1,18 +1,18 @@
-﻿
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 
 #if LANG_LUA
-using ThisInternalSyntaxNode = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.LuaSyntaxNode;
-
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+
+using ThisInternalSyntaxNode = LuaSyntaxNode;
 #elif LANG_MOONSCRIPT
-using ThisInternalSyntaxNode = SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax.MoonScriptSyntaxNode;
 
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
+
+using ThisInternalSyntaxNode = MoonScriptSyntaxNode;
 #endif
 
 internal partial class SyntaxToken : ThisInternalSyntaxNode
@@ -84,7 +84,7 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
     private void SetFullWidth() => this.FullWidth = this.Text.Length;
 
     /// <summary>
-    /// 在此基类上添加<see cref="Microsoft.CodeAnalysis.GreenNode.NodeFlags.IsNotMissing"/>标志。若子类要表示缺失的语法标识，则在子类中移除这个标志。
+    /// 在此基类上添加<see cref="Microsoft.CodeAnalysis.GreenNode.NodeFlags.IsNotMissing"/>标志。若子类要表示缺失的语法标志，则在子类中移除这个标志。
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SetIsNotMissingFlag() => this.SetFlags(NodeFlags.IsNotMissing);
@@ -99,7 +99,7 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
     // s_tokensWithSingleTrailingCRLF字段
 
     /// <summary>
-    /// 在<see cref="SyntaxToken"/>的静态构造函数中初始化所有已知文本的标识。
+    /// 在<see cref="SyntaxToken"/>的静态构造函数中初始化所有已知文本的标志。
     /// </summary>
     protected static partial void InitializeTokensWithWellKnownText();
     #endregion
@@ -171,16 +171,55 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
     internal static SyntaxToken StringLiteral(ThisInternalSyntaxNode leading, string text, ThisInternalSyntaxNode trailing) => new SyntaxTokenWithValueAndTrivia<string>(SyntaxKind.StringLiteralToken, text, text, leading, trailing);
 
     /// <summary>
-    /// 表示语法标识在序列化过程中是否应被重用。
+    /// 表示语法标志在序列化过程中是否应被重用。
     /// </summary>
     internal override bool ShouldReuseInSerialization => base.ShouldReuseInSerialization &&
-        // 同时不应超过词法器的最大缓存标识空间。
+        // 同时不应超过词法器的最大缓存标志空间。
         this.FullWidth < Lexer.MaxCachedTokenSize;
 
     /// <exception cref="InvalidOperationException">此方法永远不会被调用。</exception>
     internal sealed override GreenNode? GetSlot(int index) => throw ExceptionUtilities.Unreachable;
 
-    internal static partial IEnumerable<SyntaxToken> GetWellKnownTokens();
+    #region 常见标志
+    private static readonly ArrayElement<SyntaxToken>[] s_tokensWithNoTrivia = new ArrayElement<SyntaxToken>[(int)SyntaxToken.LastTokenWithWellKnownText + 1];
+    private static readonly ArrayElement<SyntaxToken>[] s_tokensWithElasticTrivia = new ArrayElement<SyntaxToken>[(int)SyntaxToken.LastTokenWithWellKnownText + 1];
+    private static readonly ArrayElement<SyntaxToken>[] s_tokensWithSingleTrailingSpace = new ArrayElement<SyntaxToken>[(int)SyntaxToken.LastTokenWithWellKnownText + 1];
+    private static readonly ArrayElement<SyntaxToken>[] s_tokensWithSingleTrailingCRLF = new ArrayElement<SyntaxToken>[(int)SyntaxToken.LastTokenWithWellKnownText + 1];
+
+    protected static partial void InitializeTokensWithWellKnownText()
+    {
+        for (var kind = SyntaxToken.FirstTokenWithWellKnownText; kind <= SyntaxToken.LastTokenWithWellKnownText; kind++)
+        {
+            SyntaxToken.s_tokensWithNoTrivia[(int)kind].Value = new SyntaxToken(kind);
+            SyntaxToken.s_tokensWithElasticTrivia[(int)kind].Value = new SyntaxTokenWithTrivia(kind, SyntaxFactory.ElasticZeroSpace, SyntaxFactory.ElasticZeroSpace);
+            SyntaxToken.s_tokensWithSingleTrailingSpace[(int)kind].Value = new SyntaxTokenWithTrivia(kind, null, SyntaxFactory.Space);
+            SyntaxToken.s_tokensWithSingleTrailingCRLF[(int)kind].Value = new SyntaxTokenWithTrivia(kind, null, SyntaxFactory.CarriageReturnLineFeed);
+        }
+    }
+
+    internal static IEnumerable<SyntaxToken> GetWellKnownTokens()
+    {
+        foreach (var token in SyntaxToken.s_tokensWithNoTrivia)
+        {
+            if (token.Value is not null) yield return token.Value;
+        }
+
+        foreach (var token in SyntaxToken.s_tokensWithElasticTrivia)
+        {
+            if (token.Value is not null) yield return token.Value;
+        }
+
+        foreach (var token in SyntaxToken.s_tokensWithSingleTrailingSpace)
+        {
+            if (token.Value is not null) yield return token.Value;
+        }
+
+        foreach (var token in SyntaxToken.s_tokensWithSingleTrailingCRLF)
+        {
+            if (token.Value is not null) yield return token.Value;
+        }
+    }
+    #endregion
 
     public override object? GetValue() => this.Value;
 

@@ -1,13 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+namespace SamLu.CodeAnalysis.Lua.Syntax;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript.Syntax;
 #endif
-    .Syntax;
 
-public sealed partial class SkippedTokensTriviaSyntax : StructuredTriviaSyntax, ISkippedTokensTriviaSyntax
-{
-}
+public sealed partial class SkippedTokensTriviaSyntax : ISkippedTokensTriviaSyntax { }

@@ -7,14 +7,29 @@ namespace SamLu.CodeAnalysis.Lua
         Void = InternalErrorCode.Void,
         Unknown = InternalErrorCode.Unknown,
 
-        [Obsolete("Lua.NET不支持预处理指令", false)]
-        ERR_InvalidPreprocessingSymbol = 1,
-        ERR_InvalidInstrumentationKind,
+        ERR_InternalError,
+
+        ERR_InvalidInstrumentationKind = 1,
         ERR_BadSourceCodeKind,
         ERR_BadDocumentationMode,
         ERR_BadLanguageVersion,
+        /// <summary>意外的字符</summary>
         ERR_UnexpectedCharacter,
+        /// <summary>语法错误。</summary>
         ERR_SyntaxError,
+        /// <summary>无效的数字。</summary>
+        ERR_InvalidNumber,
+        /// <summary>数字溢出。</summary>
+        ERR_NumberOverflow,
+        /// <summary>没有结束配对的注释。</summary>
+        ERR_OpenEndedComment,
+        /// <summary>未终止的字符串常量。</summary>
+        ERR_UnterminatedStringLiteral,
+        /// <summary>字符串常量中有换行符。</summary>
+        ERR_NewlineInConst,
+        /// <summary>不合法的转义序列。</summary>
+        ERR_IllegalEscape,
+        WRN_ErrorOverride,
 
         #region Lua 1.0的消息
         ERR_FeatureNotAvailableInVersion1 = 501,
@@ -78,6 +93,11 @@ namespace SamLu.CodeAnalysis.Lua
 
         #region Lua 5.4的消息
         ERR_FeatureNotAvailableInVersion5_4 = 8001,
+        #endregion
+
+        #region Lua实验性版本的消息
+        ERR_FeatureIsExperimental = 8501,
+        ERR_FeatureInPreview
         #endregion
 
         // 更新编译器的警告后应手动运行（eng\generate-compiler-code.cmd）。

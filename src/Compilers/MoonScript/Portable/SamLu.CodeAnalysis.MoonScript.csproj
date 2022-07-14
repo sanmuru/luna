@@ -17,8 +17,11 @@
     <!-- Enable output of generated files back into our Generated directory -->
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <Authors>Sam Lu</Authors>
-    <Company />
+    <Company></Company>
     <Copyright>© Sam Lu, All rights reserved.</Copyright>
     <PackageTags>Luna CodeAnalysis Compiler Lua MoonScript Parser Scanner Lexer Emit CodeGeneration Metadata IL Compilation Scripting Syntax Semantics</PackageTags>
     <NeutralLanguage>zh-CN</NeutralLanguage>
@@ -26,25 +29,45 @@
     <FileVersion></FileVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
-    <DefineConstants>LANG_MOONSCRIPT;$(DefineConstants)TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp3.1|AnyCPU'">
-    <DefineConstants>LANG_MOONSCRIPT;$(DefineConstants)TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
-    <DefineConstants>LANG_MOONSCRIPT;$(DefineConstants)TRACE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netstandard2.0|AnyCPU'">
+  <PropertyGroup>
     <DefineConstants>LANG_MOONSCRIPT;$(DefineConstants)TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="Syntax\Syntax.xml" />
+
+    <!-- 不将上一个源代码生成器产生的输出结果包含进入后续的运行流程。 -->
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="MoonScriptResources.resx" GenerateSource="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Lua\Portable\Parser\CharacterInfo.cs" Link="Parser\CharacterInfo.cs" />
+    <Compile Include="..\..\Lua\Portable\Parser\Lexer.EndOfLine.cs" Link="Parser\Lexer.EndOfLine.cs" />
+    <Compile Include="..\..\Lua\Portable\Parser\Lexer.Identifier.cs" Link="Parser\Lexer.Identifier.cs" />
+    <Compile Include="..\..\Lua\Portable\Parser\Lexer.NumericLiteral.cs" Link="Parser\Lexer.NumericLiteral.cs" />
+    <Compile Include="..\..\Lua\Portable\Parser\Lexer.StringLiteral.EscapeSequence.cs" Link="Parser\Lexer.StringLiteral.EscapeSequence.cs" />
+    <Compile Include="..\..\Lua\Portable\Parser\Lexer.TokenInfo.cs" Link="Parser\Lexer.TokenInfo.cs" />
+    <Compile Include="..\..\Lua\Portable\Parser\Lexer.WhiteSpace.cs" Link="Parser\Lexer.WhiteSpace.cs" />
+    <Compile Include="..\..\Lua\Portable\SymbolDisplay\ObjectDisplay.cs" Link="SymbolDisplay\ObjectDisplay.cs" />
+    <Compile Include="..\..\Lua\Portable\SymbolDisplay\SymbolDisplay.cs" Link="SymbolDisplay\SymbolDisplay.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />
     <ProjectReference Include="..\..\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj" />
+    <ProjectReference Include="..\..\..\Tools\Source\CompilerGeneratorTools\src\MoonScriptCodeAnalysisSourceGenerators\MoonScriptCodeAnalysisSourceGenerators.csproj">
+      <OutputItemType>Analyzer</OutputItemType>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.2.0" />
+    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.3.37" />
   </ItemGroup>
 
   <Import Project="..\..\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems" Label="Shared" />

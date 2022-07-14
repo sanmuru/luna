@@ -1,10 +1,8 @@
-﻿namespace SamLu.CodeAnalysis.
-#if LANG_LUA
-    Lua
+﻿#if LANG_LUA
+namespace SamLu.CodeAnalysis.Lua;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript;
 #endif
-    ;
 
 public class
 #if LANG_LUA

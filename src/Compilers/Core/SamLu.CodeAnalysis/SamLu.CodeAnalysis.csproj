@@ -30,9 +30,14 @@
   <ItemGroup>
     <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua" />
     <InternalsVisibleTo Include="SamLu.CodeAnalysis.MoonScript" />
+    <InternalsVisibleTo Include="SamLu.CodeAnalysis.UnitTests" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.2.0" />
+    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.3.37" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Symbols\" />

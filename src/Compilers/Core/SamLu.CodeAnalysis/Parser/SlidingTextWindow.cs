@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
@@ -218,6 +219,7 @@ internal abstract class SlidingTextWindow : IDisposable
     /// 将当前识别的字符偏移量向前推进<paramref name="n"/>个字符，不检查最终位置是否超出范围。
     /// </summary>
     /// <param name="n"></param>
+    [DebuggerStepThrough]
     public virtual void AdvanceChar(int n = 1) => this._offset += n;
 
     /// <summary>
@@ -235,6 +237,7 @@ internal abstract class SlidingTextWindow : IDisposable
     /// 抓取下一个字符并推进字符偏移量1个字符位置。
     /// </summary>
     /// <returns>下一个字符。若已到达结尾，则返回<see cref="SlidingTextWindow.InvalidCharacter"/>。</returns>
+    [DebuggerStepThrough]
     public virtual char NextChar()
     {
         char c = this.PeekChar();
@@ -248,6 +251,7 @@ internal abstract class SlidingTextWindow : IDisposable
     /// </summary>
     /// <param name="delta">相对于当前识别的字符位置的偏移量。</param>
     /// <returns>后方第<paramref name="delta"/>位上的字符。若已到达结尾，则返回<see cref="SlidingTextWindow.InvalidCharacter"/>。</returns>
+    [DebuggerStepThrough]
     public virtual char PeekChar(int delta = 0)
     {
         int position = this.Position;
@@ -285,18 +289,21 @@ internal abstract class SlidingTextWindow : IDisposable
     /// 搜索与<see cref="StringBuilder"/>匹配的字符串。
     /// </summary>
     /// <returns>搜索到的字符串。</returns>
+    [DebuggerStepThrough]
     public virtual string Intern(StringBuilder text) => this._strings.Add(text);
 
     /// <summary>
     /// 搜索与字符数组匹配的字符串。
     /// </summary>
     /// <returns>搜索到的字符串。</returns>
+    [DebuggerStepThrough]
     public virtual string Intern(char[] array, int start, int length) => this._strings.Add(array, start, length);
 
     /// <summary>
     /// 获取与当前识别到的词素匹配的字符串。
     /// </summary>
     /// <returns>与当前识别到的词素匹配的字符串。</returns>
+    [DebuggerStepThrough]
     public virtual string GetInternedText() => this.Intern(this._characterWindow, this._lexemeStart, this.Width);
 
     /// <summary>
@@ -304,6 +311,7 @@ internal abstract class SlidingTextWindow : IDisposable
     /// </summary>
     /// <param name="intern">是否搜索匹配的字符串。</param>
     /// <returns>表示当前识别到的词素的字符串。</returns>
+    [DebuggerStepThrough]
     public virtual string GetText(bool intern) => this.GetText(this.LexemeStartPosition, this.Width, intern);
 
     /// <summary>
@@ -313,5 +321,6 @@ internal abstract class SlidingTextWindow : IDisposable
     /// <param name="length">字符范围的宽度。</param>
     /// <param name="intern">是否搜索匹配的字符串。</param>
     /// <returns></returns>
+    [DebuggerStepThrough]
     public abstract string GetText(int position, int length, bool intern);
 }

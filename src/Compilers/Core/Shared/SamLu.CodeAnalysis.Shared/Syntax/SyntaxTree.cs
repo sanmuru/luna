@@ -1,4 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿/*
+ * Latest code review on 2022.7.3.
+ */
+
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -8,12 +12,14 @@ using System.Diagnostics;
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
 
+using SamLu.CodeAnalysis.Lua.Syntax;
 using ThisSyntaxTree = LuaSyntaxTree;
 using ThisSyntaxNode = LuaSyntaxNode;
 using ThisParseOptions = LuaParseOptions;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
 
+using SamLu.CodeAnalysis.MoonScript.Syntax;
 using ThisSyntaxTree = MoonScriptSyntaxTree;
 using ThisSyntaxNode = MoonScriptSyntaxNode;
 using ThisParseOptions = MoonScriptParseOptions;
@@ -32,12 +38,49 @@ public abstract partial class
 #endif
     : SyntaxTree
 {
+#warning 需要文档注释。
     internal static readonly SyntaxTree Dummy = new DummySyntaxTree();
 
     /// <summary>
-    /// 为导出语法树的解析器使用的选项。
+    /// 获取导出语法树的解析器使用的选项集。
     /// </summary>
+    /// <value>
+    /// 导出语法树的解析器使用的选项集，包含改变解析器各项行为的选项。
+    /// </value>
     public new abstract ThisParseOptions Options { get; }
+
+    /// <summary>
+    /// 获取代码文件的路径。
+    /// </summary>
+    /// <value>
+    /// 代码文件的路径。
+    /// </value>
+    /// <inheritdoc/>
+    public abstract override string FilePath { get; }
+
+    /// <summary>
+    /// 获取一个值，指示此语法树是否含有表示编译单元的根语法节点。
+    /// </summary>
+    /// <value>
+    /// 若此语法树是否含有表示编译单元的根语法节点，则返回<see langword="true"/>；否则返回<see langword="false"/>。
+    /// </value>
+    public abstract override bool HasCompilationUnitRoot { get; }
+
+    /// <summary>
+    /// 获取代码文件的编码。
+    /// </summary>
+    /// <value>
+    /// 代码文件的编码。
+    /// </value>
+    public abstract override Encoding? Encoding { get; }
+
+    /// <summary>
+    /// 获取此语法树包含的文本的长度。
+    /// </summary>
+    /// <value>
+    /// 此语法树包含的文本的长度。
+    /// </value>
+    public abstract override int Length { get; }
 
     /// <inheritdoc cref="ThisSyntaxNode.CloneNodeAsRoot{T}(T, SyntaxTree)"/>
     /// <seealso cref="ThisSyntaxNode.CloneNodeAsRoot{T}(T, SyntaxTree)"/>
@@ -71,10 +114,30 @@ public abstract partial class
     public new virtual Task<ThisSyntaxNode> GetRootAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(this.TryGetRoot(out ThisSyntaxNode? node) ? node : this.GetRoot(cancellationToken));
 
+    /* GetCompilationUnitRoot方法在各语言特定的类库中定义。 */
+
+    /// <summary>
+    /// 判断两棵语法树是否相等，忽略可能不同的语法琐碎内容。
+    /// </summary>
+    /// <param name="tree">与此语法树进行相等比较的语法树。</param>
+    /// <param name="topLevel">
+    /// <para>设置为<see langword="true"/>时，仅要求语法树内部的定义了元数据可见符号信息的节点和标志相等，忽略位于方法体和初始化表达式内部的节点差异。</para>
+    /// <para>设置为<see langword="false"/>时，要求语法树内部的所有节点和标志必须全部相等。</para>
+    /// </param>
+    /// <returns>若此语法树与<paramref name="tree"/>相等时返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
     public override bool IsEquivalentTo(SyntaxTree tree, bool topLevel = false) =>
         SyntaxFactory.AreEquivalent(this, tree, topLevel);
 
     #region 工厂方法
+    /// <summary>
+    /// 创建一个新语法树对象，此对象使用指定的根语法节点、可选的解析器选项集、路径信息和文本编码。
+    /// </summary>
+    /// <param name="root">要设置为新语法树对象根节点的语法节点。</param>
+    /// <param name="options">新语法树对象使用的解析器导出选项。</param>
+    /// <param name="path">新语法树对象使用的代码文本的路径。</param>
+    /// <param name="encoding">新语法树对象使用的代码文本的编码。</param>
+    /// <returns>以<paramref name="root"/>为根语法节点创建的新语法树对象。</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="root"/>的值为<see langword="null"/>。</exception>
     public static SyntaxTree Create(
         ThisSyntaxNode root,
         ThisParseOptions? options = null,
@@ -83,19 +146,42 @@ public abstract partial class
     ) =>
         new ParsedSyntaxTree(
             text: null,
-            encoding: null,
+            encoding: encoding,
             checksumAlgorithm: SourceHashAlgorithm.Sha1,
             path: path,
             options: options ?? ThisParseOptions.Default,
             root: root ?? throw new ArgumentNullException(nameof(root)),
             cloneRoot: true);
 
+    /// <summary>
+    /// 创建一个用于调试的新语法树对象，此对象使用指定的根语法节点、代码文本和解析器选项集。
+    /// </summary>
+    /// <param name="root">要设置为新语法树对象根节点的语法节点。</param>
+    /// <param name="text">新语法树对象使用的代码文本。此代码文本应与<paramref name="root"/>包含的内容相等。</param>
+    /// <param name="options">新语法树对象使用的解析器导出选项。</param>
+    /// <returns>以<paramref name="root"/>为根语法节点创建的用于调试的新语法树对象。</returns>
     internal static SyntaxTree CreateForDebugger(
         ThisSyntaxNode root,
         SourceText text,
         ThisParseOptions options
     ) => new DebuggerSyntaxTree(root, text, options);
 
+    /// <summary>
+    /// 创建一个使用指定的根语法节点的新语法树对象，但不复制这个根节点。
+    /// </summary>
+    /// <param name="root">要设置为新语法树对象根节点的语法节点。</param>
+    /// <returns>以<paramref name="root"/>为根语法节点创建的新语法树对象。</returns>
+    /// <remarks>
+    /// <para>
+    /// 此方法用于<see cref="ThisSyntaxNode"/>创建以<paramref name="root"/>为根节点的新语法树对象。此方法不会复制这个节点，反而保留其引用信息。
+    /// </para>
+    /// <para>
+    /// 注意：此方法应仅由<see cref="ThisSyntaxNode.SyntaxTree"/>属性调用。
+    /// </para>
+    /// <para>
+    /// 注意：不应在其他位置调用此方法，若要创建新语法树对象，应使用<see cref="ThisSyntaxTree.Create(ThisSyntaxNode, ThisParseOptions?, string?, Encoding?)"/>。
+    /// </para>
+    /// </remarks>
     internal static SyntaxTree CreateWithoutClone(ThisSyntaxNode root) =>
         new ParsedSyntaxTree(
             text: null,
@@ -106,7 +192,20 @@ public abstract partial class
             root: root,
             cloneRoot: false);
 
-    internal static SyntaxTree ParseTextLazy(SourceText text, ThisParseOptions? options = null, string path = "") =>
+    /// <summary>
+    /// 创建一个延迟解析代码文本的新语法树对象。
+    /// </summary>
+    /// <remarks>
+    /// 语法树只有在调用<see cref="ThisSyntaxTree.GetRoot(CancellationToken)"/>时才解析。
+    /// </remarks>
+    /// <param name="text">新语法树对象使用的代码文本。</param>
+    /// <param name="options">新语法树对象使用的解析器导出选项。</param>
+    /// <param name="path">新语法树对象使用的代码文本的路径。</param>
+    /// <returns>延迟解析代码文本的新语法树对象。</returns>
+    internal static SyntaxTree ParseTextLazy(
+        SourceText text,
+        ThisParseOptions? options = null,
+        string path = "") =>
         new LazySyntaxTree(text, options ?? ThisParseOptions.Default, path);
 
     /// <inheritdoc cref="ThisSyntaxTree.ParseText(SourceText, ThisParseOptions?, string, CancellationToken)"/>
@@ -144,7 +243,7 @@ public abstract partial class
         // 创建语言解析器。
         using var parser = new Syntax.InternalSyntax.LanguageParser(lexer, oldTree: null, changes: null, cancellationToken: cancellationToken);
         // 解析并生成编译单元节点（绿树节点）对应的红树节点。
-        var block = (BlockSyntax)parser.ParseBlock().CreateRed();
+        var chunk = (ChunkSyntax)parser.ParseCompilationUnit().CreateRed();
 
         // 创建已解析的语法树，使用编译单元节点作为根节点。
         var tree = new ParsedSyntaxTree(
@@ -153,7 +252,7 @@ public abstract partial class
             text.ChecksumAlgorithm,
             path,
             options,
-            block,
+            chunk,
             cloneRoot: true);
         // 验证语法树的所有节点均匹配代码文本。
         tree.VerifySource();
@@ -191,17 +290,21 @@ public abstract partial class
             oldTree = null;
         }
 
+        // 创建词法分析器。
         using var lexer = new Syntax.InternalSyntax.Lexer(newText, this.Options);
+        // 创建语言解析器。
         using var parser = new Syntax.InternalSyntax.LanguageParser(lexer, oldTree?.GetRoot(), workingChanges);
+        // 解析并生成编译单元节点（绿树节点）对应的红树节点。
+        var chunk = (ChunkSyntax)parser.ParseCompilationUnit().CreateRed();
 
-        var block = (BlockSyntax)parser.ParseBlock().CreateRed();
+        // 创建已解析的语法树，使用编译单元节点作为根节点。
         return new ParsedSyntaxTree(
             newText,
             newText.Encoding,
             newText.ChecksumAlgorithm,
             this.FilePath,
             this.Options,
-            block,
+            chunk,
             cloneRoot: true
         );
     }

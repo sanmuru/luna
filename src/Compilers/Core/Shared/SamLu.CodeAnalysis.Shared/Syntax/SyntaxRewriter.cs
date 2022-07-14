@@ -5,15 +5,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax;
-using SamLu.CodeAnalysis.Lua.Syntax;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+namespace SamLu.CodeAnalysis.Lua;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript;
 #endif
-    ;
+
+using Syntax;
 
 public abstract partial class
 #if LANG_LUA
@@ -52,6 +51,7 @@ public abstract partial class
         StackGuard.EnsureSufficientExecutionStack(this._recursionDepth);
 
         var result = node.Accept(this); // 获取访问结果。
+        Debug.Assert(result is not null);
 
         this._recursionDepth--;
 
@@ -60,9 +60,9 @@ public abstract partial class
     #endregion
 
     /// <summary>
-    /// 处理语法标识并产生结果。
+    /// 处理语法标志并产生结果。
     /// </summary>
-    /// <param name="token">要进行处理的语法标识。</param>
+    /// <param name="token">要进行处理的语法标志。</param>
     /// <returns>产生的结果。</returns>
     public virtual SyntaxToken VisitToken(SyntaxToken token)
     {

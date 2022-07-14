@@ -30,7 +30,7 @@ partial class SyntaxParser
         };
 
 #warning Need code review.
-    protected partial TNode CheckFeatureAvailability<TNode>(TNode node, MessageID feature, bool forceWarning = false)
+    protected partial TNode CheckFeatureAvailability<TNode>(TNode node, MessageID feature, bool forceWarning)
         where TNode : GreenNode
     {
         LanguageVersion avaliableVersion = this.Options.LanguageVersion;

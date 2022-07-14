@@ -3,34 +3,31 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
 
-namespace SamLu.CodeAnalysis.
 #if LANG_LUA
-    Lua
+namespace SamLu.CodeAnalysis.Lua;
+
+using ThisParseOptions = LuaParseOptions;
 #elif LANG_MOONSCRIPT
-    MoonScript
+namespace SamLu.CodeAnalysis.MoonScript;
+
+using ThisParseOptions = MoonScriptParseOptions;
 #endif
-    ;
 
 /// <summary>
 /// 此类型储存数个与解析有关的选项，并且提供修改这些选项的值的方法。
 /// </summary>
 public sealed partial class
 #if LANG_LUA
-    LuaParseOptions : ParseOptions, IEquatable<LuaParseOptions>
+    LuaParseOptions
 #elif LANG_MOONSCRIPT
-    MoonScriptParseOptions : ParseOptions, IEquatable<MoonScriptParseOptions>
+    MoonScriptParseOptions
 #endif
+    : ParseOptions, IEquatable<ThisParseOptions>
 {
     /// <summary>
     /// 默认解析选项。
     /// </summary>
-    public static
-#if LANG_LUA
-        LuaParseOptions
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions
-#endif
-        Default { get; } = new();
+    public static ThisParseOptions Default { get; } = new();
 
     private ImmutableDictionary<string, string> _features;
 
@@ -53,18 +50,9 @@ public sealed partial class
     public LanguageVersion LanguageVersion { get; init; }
 
     /// <summary>
-    /// 获取特定的语言版本，此属性的值在创建<see cref="LuaParseOptions"/>的新实例时传入构造函数，或使用<see cref="WithLanguageVersion"/>方法设置。
+    /// 获取特定的语言版本，此属性的值在创建<see cref="ThisParseOptions"/>的新实例时传入构造函数，或使用<see cref="WithLanguageVersion"/>方法设置。
     /// </summary>
     public LanguageVersion SpecifiedLanguageVersion { get; init; }
-
-    [Obsolete("Lua.NET不支持预处理指令", false)]
-    internal ImmutableArray<string> PreprocessorSymbols { get; init; }
-
-    /// <summary>
-    /// 获取已定义的解析器符号的名称。
-    /// </summary>
-    [Obsolete("Lua.NET不支持预处理指令", false)]
-    public override IEnumerable<string> PreprocessorSymbolNames => this.PreprocessorSymbols;
 
     [Obsolete("Lua.NET不支持预处理指令", false)]
     public
@@ -76,12 +64,10 @@ public sealed partial class
         (
         LanguageVersion languageVersion = LanguageVersion.Default,
         DocumentationMode documentationMode = DocumentationMode.Parse,
-        SourceCodeKind kind = SourceCodeKind.Regular,
-        IEnumerable<string>? preprocessorSymbols = null) :
-            this(languageVersion, documentationMode, kind, preprocessorSymbols.ToImmutableArrayOrEmpty(), ImmutableDictionary<string, string>.Empty)
+        SourceCodeKind kind = SourceCodeKind.Regular) :
+            this(languageVersion, documentationMode, kind, ImmutableDictionary<string, string>.Empty)
     { }
 
-    [Obsolete("Lua.NET不支持预处理指令", false)]
     internal
 #if LANG_LUA
         LuaParseOptions
@@ -92,12 +78,10 @@ public sealed partial class
         LanguageVersion languageVersion,
         DocumentationMode documentationMode,
         SourceCodeKind kind,
-        ImmutableArray<string> preprocessorSymbols,
         IReadOnlyDictionary<string, string>? features) : base(kind, documentationMode)
     {
         this.SpecifiedLanguageVersion = languageVersion;
         this.LanguageVersion = languageVersion.MapSpecifiedToEffectiveVersion();
-        this.PreprocessorSymbols = preprocessorSymbols.ToImmutableArrayOrEmpty();
         this._features = features?.ToImmutableDictionary() ?? ImmutableDictionary<string, string>.Empty;
     }
 
@@ -112,17 +96,10 @@ public sealed partial class
         languageVersion: other.SpecifiedLanguageVersion,
         documentationMode: other.DocumentationMode,
         kind: other.Kind,
-        preprocessorSymbols: other.PreprocessorSymbols,
         features: other.Features)
     { }
 
-    public new
-#if LANG_LUA
-        LuaParseOptions
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions
-#endif
-         WithKind(SourceCodeKind kind)
+    public new ThisParseOptions WithKind(SourceCodeKind kind)
     {
         if (kind == this.SpecifiedKind) return this;
 
@@ -134,13 +111,7 @@ public sealed partial class
         };
     }
 
-    public
-#if LANG_LUA
-        LuaParseOptions
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions
-#endif
-         WithLanguageVersion(LanguageVersion version)
+    public ThisParseOptions WithLanguageVersion(LanguageVersion version)
     {
         if (version == this.SpecifiedLanguageVersion) return this;
 
@@ -152,51 +123,7 @@ public sealed partial class
         };
     }
 
-    [Obsolete("Lua.NET不支持预处理指令", false)]
-    public
-#if LANG_LUA
-        LuaParseOptions
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions
-#endif
-         WithPreprocessorSymbols(IEnumerable<string>? preprocessorSymbols) => this.WithPreprocessorSymbols(preprocessorSymbols.AsImmutableOrNull());
-
-    [Obsolete("Lua.NET不支持预处理指令", false)]
-    public
-#if LANG_LUA
-        LuaParseOptions
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions
-#endif
-         WithPreprocessorSymbols(params string[]? preprocessorSymbols) => this.WithPreprocessorSymbols(preprocessorSymbols.AsImmutableOrNull());
-
-    [Obsolete("Lua.NET不支持预处理指令", false)]
-    public
-#if LANG_LUA
-        LuaParseOptions
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions
-#endif
-         WithPreprocessorSymbols(ImmutableArray<string> symbols)
-    {
-        if (symbols.IsDefault)
-            symbols = ImmutableArray<string>.Empty;
-
-        if (symbols.Equals(this.PreprocessorSymbols)) return this;
-
-        return new(this)
-        {
-            PreprocessorSymbols = symbols
-        };
-    }
-
-    public new
-#if LANG_LUA
-        LuaParseOptions
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions
-#endif
-         WithDocumentationMode(DocumentationMode documentationMode)
+    public new ThisParseOptions WithDocumentationMode(DocumentationMode documentationMode)
     {
         if (documentationMode == this.DocumentationMode) return this;
 
@@ -206,13 +133,7 @@ public sealed partial class
         };
     }
 
-    public new
-#if LANG_LUA
-        LuaParseOptions
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions
-#endif
-         WithFeatures(IEnumerable<KeyValuePair<string, string>>? features)
+    public new ThisParseOptions WithFeatures(IEnumerable<KeyValuePair<string, string>>? features)
     {
         var dictionary = features?.ToImmutableDictionary(StringComparer.OrdinalIgnoreCase) ?? ImmutableDictionary<string, string>.Empty;
 
@@ -229,17 +150,6 @@ public sealed partial class
         // 验证当Latest/Default被转换后，LanguageVersion不是SpecifiedLanguageVersion。
         if (!this.LanguageVersion.IsValid())
             builder.Add(Diagnostic.Create(MessageProvider.Instance, (int)ErrorCode.ERR_BadLanguageVersion, LanguageVersion.ToString()));
-        
-        if (!this.PreprocessorSymbols.IsDefaultOrEmpty)
-        {
-            foreach (var symbol in this.PreprocessorSymbols)
-            {
-                if (symbol is null)
-                    builder.Add(Diagnostic.Create(MessageProvider.Instance, (int)ErrorCode.ERR_InvalidPreprocessingSymbol, "null"));
-                else if (!SyntaxFacts.IsValidIdentifier(symbol))
-                    builder.Add(Diagnostic.Create(MessageProvider.Instance, (int)ErrorCode.ERR_InvalidPreprocessingSymbol, symbol));
-            }
-        }
     }
 
     internal bool IsFeatureEnabled(MessageID feature)
@@ -252,28 +162,16 @@ public sealed partial class
         return avaliableVersion >= requiredVersion;
     }
 
-#region ParseOptions
+    #region ParseOptions
     public sealed override ParseOptions CommonWithKind(SourceCodeKind kind) => this.WithKind(kind);
 
     protected sealed override ParseOptions CommonWithDocumentationMode(DocumentationMode documentationMode) => this.WithDocumentationMode(documentationMode);
 
     protected sealed override ParseOptions CommonWithFeatures(IEnumerable<KeyValuePair<string, string>> features) => this.WithFeatures(features);
-#endregion
+    #endregion
 
-    public sealed override bool Equals(object? obj) => this.Equals(obj as
-#if LANG_LUA
-        LuaParseOptions
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions
-#endif
-        );
-    public bool Equals(
-#if LANG_LUA
-        LuaParseOptions?
-#elif LANG_MOONSCRIPT
-        MoonScriptParseOptions?
-#endif
-         other)
+    public sealed override bool Equals(object? obj) => this.Equals(obj as ThisParseOptions);
+    public bool Equals(ThisParseOptions? other)
     {
         if (object.ReferenceEquals(this, other)) return true;
         else if (!base.EqualsHelper(other)) return false;

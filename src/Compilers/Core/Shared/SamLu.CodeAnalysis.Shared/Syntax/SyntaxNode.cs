@@ -1,21 +1,26 @@
-﻿using System.Diagnostics;
+﻿/*
+ * Latest code review on 2022.7.3.
+ */
+
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Roslyn.Utilities;
-using System.Diagnostics.CodeAnalysis;
 
 #if LANG_LUA
-using ThisSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
-using ThisSyntaxTree = SamLu.CodeAnalysis.Lua.LuaSyntaxTree;
-using InternalSyntaxNode = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.LuaSyntaxNode;
-
 namespace SamLu.CodeAnalysis.Lua;
-#elif LANG_MOONSCRIPT
-using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
-using ThisSyntaxTree = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxTree;
-using InternalSyntaxNode = SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax.MoonScriptSyntaxNode;
 
+using SamLu.CodeAnalysis.Lua.Syntax;
+using ThisSyntaxNode = LuaSyntaxNode;
+using ThisSyntaxTree = LuaSyntaxTree;
+using InternalSyntaxNode = Syntax.InternalSyntax.LuaSyntaxNode;
+#elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
+
+using SamLu.CodeAnalysis.MoonScript.Syntax;
+using ThisSyntaxNode = MoonScriptSyntaxNode;
+using ThisSyntaxTree = MoonScriptSyntaxTree;
+using InternalSyntaxNode = Syntax.InternalSyntax.MoonScriptSyntaxNode;
 #endif
 
 #if LANG_LUA
@@ -97,11 +102,16 @@ public abstract partial class
     /// 新节点不存在父节点，位置为0，且位于指定的语法树上。
     /// </summary>
     /// <typeparam name="T">语法节点的类型。</typeparam>
-    /// <param name="node">要克隆的语法节点。</param>
+    /// <param name="node">要复制的语法节点。</param>
     /// <param name="syntaxTree">语法节点所在的语法树。</param>
     /// <returns><paramref name="node"/>的副本。</returns>
     internal static new T CloneNodeAsRoot<T>(T node, SyntaxTree syntaxTree) where T : ThisSyntaxNode => SyntaxNode.CloneNodeAsRoot(node, syntaxTree);
 
+    /// <summary>
+    /// 计算得到一个语法树对象，这个语法树对象以指定的语法节点为根节点。
+    /// </summary>
+    /// <param name="node">要设置为根节点的语法节点。</param>
+    /// <returns>以<paramref name="node"/>为根语法节点创建的新语法树对象。</returns>
     private static SyntaxTree ComputeSyntaxTree(ThisSyntaxNode node)
     {
         ArrayBuilder<ThisSyntaxNode>? nodes = null;
@@ -130,7 +140,9 @@ public abstract partial class
                 break;
             }
 
-            (nodes ??= ArrayBuilder<ThisSyntaxNode>.GetInstance()).Add(node);
+            nodes ??= ArrayBuilder<ThisSyntaxNode>.GetInstance();
+
+            nodes.Add(node);
             node = parent;
         }
 
@@ -161,7 +173,6 @@ public abstract partial class
     /// <returns>此节点在源代码中的位置。</returns>
     public new Location GetLocation() => new SourceLocation(this);
 
-    [return: NotNullIfNotNull("visitor")]
     public abstract TResult? Accept<TResult>(
 #if LANG_LUA
         LuaSyntaxVisitor<TResult>
@@ -183,7 +194,7 @@ public abstract partial class
     /// 从字节流中反序列化语法节点。
     /// </summary>
     /// <param name="stream">从中读取数据的流。</param>
-    /// <param name="cancellationToken">取消操作的标识。</param>
+    /// <param name="cancellationToken">取消操作的标志。</param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/>的值为<see langword="null"/>。</exception>
     /// <exception cref="InvalidOperationException"><paramref name="stream"/>流不可读。</exception>
@@ -205,22 +216,22 @@ public abstract partial class
     }
     #endregion
 
-    #region 查找标识
+    #region 查找标志
     /// <summary>
-    /// 获取以此节点为根节点的语法树的第一个标识。
+    /// 获取以此节点为根节点的语法树的第一个标志。
     /// </summary>
-    /// <param name="predicate">筛选符合条件的标识的方法。若要允许所有标识，则传入<see langword="null"/>。</param>
+    /// <param name="predicate">筛选符合条件的标志的方法。若要允许所有标志，则传入<see langword="null"/>。</param>
     /// <param name="stepInto">若值不是<see langword="null"/>时深入语法琐碎内容。仅此委托返回<see langword="true"/>时语法琐碎内容才会被包含在内。</param>
-    /// <returns>以此节点为根节点的语法树的第一个标识。</returns>
+    /// <returns>以此节点为根节点的语法树的第一个标志。</returns>
     internal SyntaxToken GetFirstToken(Func<SyntaxToken, bool>? predicate, Func<SyntaxTrivia, bool>? stepInto = null) =>
         SyntaxNavigator.Instance.GetFirstToken(this, predicate, stepInto);
 
     /// <summary>
-    /// 获取以此节点为根节点的语法树的最后一个标识。
+    /// 获取以此节点为根节点的语法树的最后一个标志。
     /// </summary>
-    /// <param name="predicate">筛选符合条件的标识的方法。</param>
+    /// <param name="predicate">筛选符合条件的标志的方法。</param>
     /// <param name="stepInto">若值不是<see langword="null"/>时深入语法琐碎内容。仅此委托返回<see langword="true"/>时语法琐碎内容才会被包含在内。</param>
-    /// <returns>以此节点为根节点的语法树的最后一个标识。</returns>
+    /// <returns>以此节点为根节点的语法树的最后一个标志。</returns>
     internal SyntaxToken GetLastToken(Func<SyntaxToken, bool> predicate, Func<SyntaxTrivia, bool>? stepInto = null) =>
         SyntaxNavigator.Instance.GetLastToken(this, predicate, stepInto);
     #endregion
@@ -250,52 +261,77 @@ public abstract partial class
         if (!typeof(ThisSyntaxNode).IsAssignableFrom(typeof(TNode)))
             throw new InvalidOperationException(string.Format(LunaResources.SyntaxNodeTypeMustBeDerivedFromCertainType, nameof(TNode), typeof(ThisSyntaxNode).FullName));
 
-        return Syntax.SyntaxReplacer.Replace(this,
+        return SyntaxReplacer.Replace(
+            this,
             nodes.Cast<ThisSyntaxNode>(), computeReplacementNode is null ? null : (node, rewritten) => (ThisSyntaxNode)computeReplacementNode((node as TNode)!, (rewritten as TNode)!),
             tokens, computeReplacementToken,
-            trivia, computeReplacementTrivia
-        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+            trivia, computeReplacementTrivia)
+            .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
     }
 
     protected internal override SyntaxNode ReplaceNodeInListCore(
         SyntaxNode originalNode,
         IEnumerable<SyntaxNode> replacementNodes) =>
-        Syntax.SyntaxReplacer.ReplaceNodeInList(this,
+        SyntaxReplacer.ReplaceNodeInList(this,
             (ThisSyntaxNode)originalNode,
-            replacementNodes.Cast<ThisSyntaxNode>()
-        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+            replacementNodes.Cast<ThisSyntaxNode>())
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode InsertNodesInListCore(
         SyntaxNode nodeInList,
         IEnumerable<SyntaxNode> nodesToInsert,
         bool insertBefore) =>
-        Syntax.SyntaxReplacer.InsertNodeInList(
+        SyntaxReplacer.InsertNodeInList(
             this,
             (ThisSyntaxNode)nodeInList,
             nodesToInsert.Cast<ThisSyntaxNode>(),
-            insertBefore
-        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+            insertBefore)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode ReplaceTokenInListCore(SyntaxToken originalToken, IEnumerable<SyntaxToken> newTokens) =>
-        Syntax.SyntaxReplacer.ReplaceTokenInList(this, originalToken, newTokens).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxReplacer.ReplaceTokenInList(
+            this,
+            originalToken,
+            newTokens)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode InsertTokensInListCore(SyntaxToken originalToken, IEnumerable<SyntaxToken> newTokens, bool insertBefore) =>
-        Syntax.SyntaxReplacer.InsertTokenList(this, originalToken, newTokens, insertBefore).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxReplacer.InsertTokenInList(
+            this,
+            originalToken,
+            newTokens,
+            insertBefore)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode ReplaceTriviaInListCore(SyntaxTrivia originalTrivia, IEnumerable<SyntaxTrivia> newTrivia) =>
-        Syntax.SyntaxReplacer.ReplaceTriviaInList(this, originalTrivia, newTrivia).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxReplacer.ReplaceTriviaInList(
+            this,
+            originalTrivia,
+            newTrivia)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode InsertTriviaInListCore(SyntaxTrivia originalTrivia, IEnumerable<SyntaxTrivia> newTrivia, bool insertBefore) =>
-        Syntax.SyntaxReplacer.InsertTriviaInList(this, originalTrivia, newTrivia, insertBefore).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxReplacer.InsertTriviaInList(
+            this,
+            originalTrivia,
+            newTrivia,
+            insertBefore)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode? RemoveNodesCore(IEnumerable<SyntaxNode> nodes, SyntaxRemoveOptions options) =>
-        Syntax.SyntaxNodeRemover.RemoveNodes(this,
+        SyntaxNodeRemover.RemoveNodes(
+            this,
             nodes.Cast<ThisSyntaxNode>(),
-            options
-        ).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+            options)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected internal override SyntaxNode NormalizeWhitespaceCore(string indentation, string eol, bool elasticTrivia) =>
-        Syntax.SyntaxNormalizer.Normalize(this, indentation, eol, elasticTrivia).AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
+        SyntaxNormalizer.Normalize(
+            this,
+            indentation,
+            eol,
+            elasticTrivia)
+        .AsRootOfNewTreeWithOptionsFrom(this.SyntaxTree);
 
     protected override bool IsEquivalentToCore(SyntaxNode node, bool topLevel = false) =>
         SyntaxFactory.AreEquivalent(this, (ThisSyntaxNode)node, topLevel);
