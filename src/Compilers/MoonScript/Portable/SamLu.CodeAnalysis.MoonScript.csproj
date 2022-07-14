@@ -17,8 +17,11 @@
     <!-- Enable output of generated files back into our Generated directory -->
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <Authors>Sam Lu</Authors>
-    <Company />
+    <Company></Company>
     <Copyright>© Sam Lu, All rights reserved.</Copyright>
     <PackageTags>Luna CodeAnalysis Compiler Lua MoonScript Parser Scanner Lexer Emit CodeGeneration Metadata IL Compilation Scripting Syntax Semantics</PackageTags>
     <NeutralLanguage>zh-CN</NeutralLanguage>
@@ -29,6 +32,17 @@
   <PropertyGroup>
     <DefineConstants>LANG_MOONSCRIPT;$(DefineConstants)TRACE</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Syntax\Syntax.xml" />
+
+    <!-- 不将上一个源代码生成器产生的输出结果包含进入后续的运行流程。 -->
+    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="MoonScriptResources.resx" GenerateSource="true" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\..\Lua\Portable\Parser\CharacterInfo.cs" Link="Parser\CharacterInfo.cs" />
@@ -45,10 +59,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Portable\Microsoft.CodeAnalysis.csproj" />
     <ProjectReference Include="..\..\Core\SamLu.CodeAnalysis\SamLu.CodeAnalysis.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="MoonScriptResources.resx" GenerateSource="true" />
+    <ProjectReference Include="..\..\..\Tools\Source\CompilerGeneratorTools\src\MoonScriptCodeAnalysisSourceGenerators\MoonScriptCodeAnalysisSourceGenerators.csproj">
+      <OutputItemType>Analyzer</OutputItemType>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

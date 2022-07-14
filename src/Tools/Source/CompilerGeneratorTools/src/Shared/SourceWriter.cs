@@ -28,7 +28,7 @@ internal class SourceWriter : AbstractFileWriter
         WriteLine("using System.Diagnostics.CodeAnalysis;");
         WriteLine("using Microsoft.CodeAnalysis;");
         WriteLine("using Microsoft.CodeAnalysis.Syntax.InternalSyntax;");
-        WriteLine("using SamLu.CodeAnalysis.Lua;");
+        WriteLine($"using SamLu.CodeAnalysis.{LanguageNames.This};");
         WriteLine("using Roslyn.Utilities;");
         WriteLine();
     }

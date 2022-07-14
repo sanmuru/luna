@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Tree Root="SyntaxNode">
+
+  <PredefinedNode Name="MoonScriptSyntaxNode" Base="SyntaxNode"/>
+  <PredefinedNode Name="SyntaxToken" Base="MoonScriptSyntaxNode"/>
+  <PredefinedNode Name="StructuredTriviaSyntax" Base="MoonScriptSyntaxNode"/>
+
+
+
+  <!-- 名称 -->
+  <AbstractNode Name="NameSyntax" Base="MoonScriptSyntaxNode">
+    <TypeComment>
+      <summary>提供表示名称语法节点继承用的父类，此类必须被继承。</summary>
+    </TypeComment>
+  </AbstractNode>
+  <AbstractNode Name="SimpleNameSyntax" Base="NameSyntax">
+    <Field Name="Identifier" Type="SyntaxToken">
+      <PropertyComment>
+        <summary>表示简单名称的语法标志。</summary>
+      </PropertyComment>
+      <Kind Name="IdentifierToken" />
+    </Field>
+    <TypeComment>
+      <summary>提供表示简单名称语法节点继承用的父类，此类必须被继承。</summary>
+    </TypeComment>
+  </AbstractNode>
+
+
+
+  <!-- 语句 -->
+  <AbstractNode Name="ExpressionSyntax" Base="MoonScriptSyntaxNode">
+    <TypeComment>
+      <summary>Provides the base class from which the classes that represent expression syntax nodes are derived. This is an abstract class.</summary>
+    </TypeComment>
+  </AbstractNode>
+
+
+
+  <!-- 语句 -->
+  <AbstractNode Name="StatementSyntax" Base="MoonScriptSyntaxNode">
+    <TypeComment>
+      <summary>Provides the base class from which the classes that represent statement syntax nodes are derived. This is an abstract class.</summary>
+    </TypeComment>
+  </AbstractNode>
+
+
+
+  <!-- 声明 -->
+  <Node Name="ChunkSyntax" Base="MoonScriptSyntaxNode">
+    <Kind Name="Chunk"/>
+    <Field Name="Block" Type="BlockSyntax"/>
+    <Field Name="EndOfFileToken" Type="SyntaxToken">
+      <Kind Name="EndOfFileToken"/>
+    </Field>
+  </Node>
+  <Node Name="BlockSyntax" Base="MoonScriptSyntaxNode">
+    <Kind Name="Block"/>
+    <Field Name="Statements" Type="SyntaxList&lt;StatementSyntax&gt;"/>
+  </Node>
+  <Node Name="SkippedTokensTriviaSyntax" Base="StructuredTriviaSyntax">
+    <Kind Name="SkippedTokensTrivia"/>
+    <Field Name="Tokens" Type="SyntaxList&lt;SyntaxToken&gt;"/>
+  </Node>
+  
+</Tree>

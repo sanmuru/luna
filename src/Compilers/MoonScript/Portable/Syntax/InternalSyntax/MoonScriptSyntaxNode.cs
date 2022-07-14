@@ -12,6 +12,8 @@ internal partial class MoonScriptSyntaxNode
         _ => this.KindText
     };
 
+    internal static partial NodeFlags SetFactoryContext(NodeFlags flags, SyntaxFactoryContext context) => flags;
+
     public override partial Microsoft.CodeAnalysis.SyntaxToken CreateSeparator<TNode>(SyntaxNode element) => MoonScript.SyntaxFactory.Token(SyntaxKind.CommaToken);
 
     public override partial bool IsTriviaWithEndOfLine() =>
