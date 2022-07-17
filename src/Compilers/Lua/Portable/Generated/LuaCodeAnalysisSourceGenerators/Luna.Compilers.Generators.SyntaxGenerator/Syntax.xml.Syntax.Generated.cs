@@ -181,56 +181,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
         public ParenthesizedExpressionSyntax WithCloseParenToken(SyntaxToken closeParenToken) => Update(this.OpenParenToken, this.Expression, closeParenToken);
     }
 
-    /// <summary>Class which represents the syntax node for the list of expressions.</summary>
-    /// <remarks>
-    /// <para>This node is associated with the following syntax kinds:</para>
-    /// <list type="bullet">
-    /// <item><description><see cref="SyntaxKind.ExpressionList"/></description></item>
-    /// </list>
-    /// </remarks>
-    public sealed partial class ExpressionListSyntax : LuaSyntaxNode
-    {
-        private SyntaxNode? expressions;
-
-        internal ExpressionListSyntax(InternalSyntax.LuaSyntaxNode green, LuaSyntaxNode? parent, int position)
-          : base(green, parent, position)
-        {
-        }
-
-        /// <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of expressions.</summary>
-        public SeparatedSyntaxList<ExpressionSyntax> Expressions
-        {
-            get
-            {
-                var red = GetRed(ref this.expressions, 0);
-                return red != null ? new SeparatedSyntaxList<ExpressionSyntax>(red, 0) : default;
-            }
-        }
-
-        internal override SyntaxNode? GetNodeSlot(int index) => index == 0 ? GetRedAtZero(ref this.expressions)! : null;
-
-        internal override SyntaxNode? GetCachedSlot(int index) => index == 0 ? this.expressions : null;
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitExpressionList(this);
-        public override TResult? Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitExpressionList(this);
-
-        public ExpressionListSyntax Update(SeparatedSyntaxList<ExpressionSyntax> expressions)
-        {
-            if (expressions != this.Expressions)
-            {
-                var newNode = SyntaxFactory.ExpressionList(expressions);
-                var annotations = GetAnnotations();
-                return annotations?.Length > 0 ? newNode.WithAnnotations(annotations) : newNode;
-            }
-
-            return this;
-        }
-
-        public ExpressionListSyntax WithExpressions(SeparatedSyntaxList<ExpressionSyntax> expressions) => Update(expressions);
-
-        public ExpressionListSyntax AddExpressions(params ExpressionSyntax[] items) => WithExpressions(this.Expressions.AddRange(items));
-    }
-
     /// <remarks>
     /// <para>This node is associated with the following syntax kinds:</para>
     /// <list type="bullet">
@@ -1648,6 +1598,56 @@ namespace SamLu.CodeAnalysis.Lua.Syntax
         public SkippedTokensTriviaSyntax WithTokens(SyntaxTokenList tokens) => Update(tokens);
 
         public SkippedTokensTriviaSyntax AddTokens(params SyntaxToken[] items) => WithTokens(this.Tokens.AddRange(items));
+    }
+
+    /// <summary>Class which represents the syntax node for the list of expressions.</summary>
+    /// <remarks>
+    /// <para>This node is associated with the following syntax kinds:</para>
+    /// <list type="bullet">
+    /// <item><description><see cref="SyntaxKind.ExpressionList"/></description></item>
+    /// </list>
+    /// </remarks>
+    public sealed partial class ExpressionListSyntax : LuaSyntaxNode
+    {
+        private SyntaxNode? expressions;
+
+        internal ExpressionListSyntax(InternalSyntax.LuaSyntaxNode green, LuaSyntaxNode? parent, int position)
+          : base(green, parent, position)
+        {
+        }
+
+        /// <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of expressions.</summary>
+        public SeparatedSyntaxList<ExpressionSyntax> Expressions
+        {
+            get
+            {
+                var red = GetRed(ref this.expressions, 0);
+                return red != null ? new SeparatedSyntaxList<ExpressionSyntax>(red, 0) : default;
+            }
+        }
+
+        internal override SyntaxNode? GetNodeSlot(int index) => index == 0 ? GetRedAtZero(ref this.expressions)! : null;
+
+        internal override SyntaxNode? GetCachedSlot(int index) => index == 0 ? this.expressions : null;
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitExpressionList(this);
+        public override TResult? Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) where TResult : default => visitor.VisitExpressionList(this);
+
+        public ExpressionListSyntax Update(SeparatedSyntaxList<ExpressionSyntax> expressions)
+        {
+            if (expressions != this.Expressions)
+            {
+                var newNode = SyntaxFactory.ExpressionList(expressions);
+                var annotations = GetAnnotations();
+                return annotations?.Length > 0 ? newNode.WithAnnotations(annotations) : newNode;
+            }
+
+            return this;
+        }
+
+        public ExpressionListSyntax WithExpressions(SeparatedSyntaxList<ExpressionSyntax> expressions) => Update(expressions);
+
+        public ExpressionListSyntax AddExpressions(params ExpressionSyntax[] items) => WithExpressions(this.Expressions.AddRange(items));
     }
 
     /// <summary>Class which represents the syntax node for parenthesized expression.</summary>

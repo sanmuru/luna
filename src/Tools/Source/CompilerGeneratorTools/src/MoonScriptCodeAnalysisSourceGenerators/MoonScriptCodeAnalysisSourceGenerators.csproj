@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\..\..\..\Compilers\Core\SamLu.CodeAnalysis\Symbols\LanguageNames.cs" Link="LanguageNames.cs" />
+    <Compile Include="..\..\..\..\..\Compilers\MoonScript\Portable\Errors\ErrorCode.cs" Link="ErrorCode.cs" />
     <Compile Include="..\..\..\..\..\Compilers\MoonScript\Portable\Syntax\SyntaxKind.cs" Link="SyntaxKind.cs" />
     <Compile Include="..\..\..\..\..\Compilers\MoonScript\Portable\Syntax\SyntaxKindFacts.cs" Link="SyntaxKindFacts.cs" />
   </ItemGroup>
@@ -27,6 +28,10 @@
     <!-- Make sure to reference the same version of Microsoft.CodeAnalysis.Analyzers as the rest of the build -->
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.2.0" PrivateAssets="all" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageReference Include="Nullable" Version="1.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   
   <Import Project="..\Shared\CodeAnalysisGenerator.Shared.projitems" Label="Shared" />

@@ -44,7 +44,7 @@
 
 
 
-  <!-- 语句 -->
+  <!-- 表达式 -->
   <AbstractNode Name="ExpressionSyntax" Base="MoonScriptSyntaxNode">
     <TypeComment>
       <summary>Provides the base class from which the classes that represent expression syntax nodes are derived. This is an abstract class.</summary>
@@ -123,7 +123,8 @@
       <summary>Creates a ParenthesizedExpressionSyntax node.</summary>
     </FactoryComment>
   </Node>
-  <AbstractNode Name="BaseClassExpressionSyntax" Base="ExpressionSyntax">
+  <Node Name="ClassExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="ClassExpression"/>
     <Field Name="ClassKeyword" Type="SyntaxToken">
       <Kind Name="ClassKeyword"/>
     </Field>
@@ -134,30 +135,17 @@
       </Field>
       <Field Name="BaseName" Type="IdentifierNameSyntax"/>
     </Sequence>
-  </AbstractNode>
-  <Node Name="ClassExpressionSyntax" Base="BaseClassExpressionSyntax">
-    <Kind Name="ClassExpression"/>
-    <Field Name="ClassKeyword" Type="SyntaxToken" Override="true">
-      <Kind Name="ClassKeyword"/>
-    </Field>
-    <Field Name="Name" Type="IdentifierNameSyntax" Override="true"/>
-    <Sequence Optional="true">
-      <Field Name="ExtendsKeyword" Type="SyntaxToken" Override="true">
-        <Kind Name="ExtendsKeyword"/>
-      </Field>
-      <Field Name="BaseName" Type="IdentifierNameSyntax" Override="true"/>
-    </Sequence>
   </Node>
-  <Node Name="AnomymousClassExpressionSyntax" Base="BaseClassExpressionSyntax">
+  <Node Name="AnomymousClassExpressionSyntax" Base="ExpressionSyntax">
     <Kind Name="AnomymousClassExpression"/>
-    <Field Name="ClassKeyword" Type="SyntaxToken" Override="true">
+    <Field Name="ClassKeyword" Type="SyntaxToken">
       <Kind Name="ClassKeyword"/>
     </Field>
     <Sequence Optional="true">
-      <Field Name="ExtendsKeyword" Type="SyntaxToken" Override="true">
+      <Field Name="ExtendsKeyword" Type="SyntaxToken">
         <Kind Name="ExtendsKeyword"/>
       </Field>
-      <Field Name="BaseName" Type="IdentifierNameSyntax" Override="true"/>
+      <Field Name="BaseName" Type="IdentifierNameSyntax"/>
     </Sequence>
   </Node>
   <Node Name="DoExpressionSyntax" Base="ExpressionSyntax">
@@ -165,6 +153,40 @@
     <Field Name="DoKeyword" Type="SyntaxToken">
       <Kind Name="DoKeyword"/>
     </Field>
+    <Field Name="Block" Type="BlockSyntax"/>
+  </Node>
+  <Node Name="ForExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="ForExpression"/>
+    <Field Name="ForKeyword" Type="SyntaxToken">
+      <Kind Name="ForKeyword"/>
+    </Field>
+    <Field Name="Name" Type="IdentifierNameSyntax"/>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
+    </Field>
+    <Field Name="Initial" Type="ExpressionSyntax"/>
+    <Field Name="FirstCommaToken" Type="SyntaxToken">
+      <Kind Name="CommaToken"/>
+    </Field>
+    <Field Name="Limit" Type="ExpressionSyntax"/>
+    <Sequence Optional="true">
+      <Field Name="SecondCommaToken" Type="SyntaxToken">
+        <Kind Name="CommaToken"/>
+      </Field>
+      <Field Name="Step" Type="ExpressionSyntax"/>
+    </Sequence>
+    <Field Name="Block" Type="BlockSyntax"/>
+  </Node>
+  <Node Name="ForInExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="ForInExpression"/>
+    <Field Name="ForKeyword" Type="SyntaxToken">
+      <Kind Name="ForKeyword"/>
+    </Field>
+    <Field Name="Names" Type="SeparatedSyntaxList&lt;ParameterSyntax&gt;" MinCount="1"/>
+    <Field Name="InKeyword" Type="SyntaxToken">
+      <Kind Name="InKeyword"/>
+    </Field>
+    <Field Name="Iteration" Type="ExpressionSyntax"/>
     <Field Name="Block" Type="BlockSyntax"/>
   </Node>
 
@@ -195,7 +217,7 @@
     <Kind Name="SkippedTokensTrivia"/>
     <Field Name="Tokens" Type="SyntaxList&lt;SyntaxToken&gt;"/>
   </Node>
-  <Node Name="ExpressionListSyntax" Base="LuaSyntaxNode">
+  <Node Name="ExpressionListSyntax" Base="MoonScriptSyntaxNode">
     <Kind Name="ExpressionList"/>
     <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;">
       <PropertyComment>
@@ -208,6 +230,19 @@
     <FactoryComment>
       <summary>Creates an ExpressionListSyntax node.</summary>
     </FactoryComment>
+  </Node>
+  <Node Name="ParameterSyntax" Base="MoonScriptSyntaxNode">
+    <TypeComment>
+      <summary>Parameter syntax.</summary>
+    </TypeComment>
+    <Kind Name="Parameter"/>
+    <Field Name="Identifier" Type="SyntaxToken">
+      <PropertyComment>
+        <summary>Gets the identifier.</summary>
+      </PropertyComment>
+      <Kind Name="IdentifierToken"/>
+      <Kind Name="DotDotDotToken"/>
+    </Field>
   </Node>
   
 </Tree>

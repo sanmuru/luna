@@ -361,103 +361,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         }
     }
 
-    /// <summary>Class which represents the syntax node for the list of expressions.</summary>
-    internal sealed partial class ExpressionListSyntax : LuaSyntaxNode
-    {
-        internal readonly GreenNode? expressions;
-
-        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
-          : base(kind, diagnostics, annotations)
-        {
-            this.SlotCount = 1;
-            if (expressions != null)
-            {
-                this.AdjustFlagsAndWidth(expressions);
-                this.expressions = expressions;
-            }
-        }
-
-        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions, SyntaxFactoryContext context)
-          : base(kind)
-        {
-            this.SetFactoryContext(context);
-            this.SlotCount = 1;
-            if (expressions != null)
-            {
-                this.AdjustFlagsAndWidth(expressions);
-                this.expressions = expressions;
-            }
-        }
-
-        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions)
-          : base(kind)
-        {
-            this.SlotCount = 1;
-            if (expressions != null)
-            {
-                this.AdjustFlagsAndWidth(expressions);
-                this.expressions = expressions;
-            }
-        }
-
-        /// <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of expressions.</summary>
-        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> Expressions => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.expressions));
-
-        internal override GreenNode? GetSlot(int index)
-            => index == 0 ? this.expressions : null;
-
-        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ExpressionListSyntax(this, parent as Lua.LuaSyntaxNode, position);
-
-        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitExpressionList(this);
-        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitExpressionList(this);
-
-        public ExpressionListSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
-        {
-            if (expressions != this.Expressions)
-            {
-                var newNode = SyntaxFactory.ExpressionList(expressions);
-                var diags = GetDiagnostics();
-                if (diags?.Length > 0)
-                    newNode = newNode.WithDiagnosticsGreen(diags);
-                var annotations = GetAnnotations();
-                if (annotations?.Length > 0)
-                    newNode = newNode.WithAnnotationsGreen(annotations);
-                return newNode;
-            }
-
-            return this;
-        }
-
-        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
-            => new ExpressionListSyntax(this.Kind, this.expressions, diagnostics, GetAnnotations());
-
-        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
-            => new ExpressionListSyntax(this.Kind, this.expressions, GetDiagnostics(), annotations);
-
-        internal ExpressionListSyntax(ObjectReader reader)
-          : base(reader)
-        {
-            this.SlotCount = 1;
-            var expressions = (GreenNode?)reader.ReadValue();
-            if (expressions != null)
-            {
-                AdjustFlagsAndWidth(expressions);
-                this.expressions = expressions;
-            }
-        }
-
-        internal override void WriteTo(ObjectWriter writer)
-        {
-            base.WriteTo(writer);
-            writer.WriteValue(this.expressions);
-        }
-
-        static ExpressionListSyntax()
-        {
-            ObjectBinder.RegisterTypeReader(typeof(ExpressionListSyntax), r => new ExpressionListSyntax(r));
-        }
-    }
-
     internal sealed partial class FunctionDefinitionExpressionSyntax : ExpressionSyntax
     {
         internal readonly SyntaxToken functionKeyword;
@@ -3397,6 +3300,103 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         }
     }
 
+    /// <summary>Class which represents the syntax node for the list of expressions.</summary>
+    internal sealed partial class ExpressionListSyntax : LuaSyntaxNode
+    {
+        internal readonly GreenNode? expressions;
+
+        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions, DiagnosticInfo[]? diagnostics, SyntaxAnnotation[]? annotations)
+          : base(kind, diagnostics, annotations)
+        {
+            this.SlotCount = 1;
+            if (expressions != null)
+            {
+                this.AdjustFlagsAndWidth(expressions);
+                this.expressions = expressions;
+            }
+        }
+
+        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions, SyntaxFactoryContext context)
+          : base(kind)
+        {
+            this.SetFactoryContext(context);
+            this.SlotCount = 1;
+            if (expressions != null)
+            {
+                this.AdjustFlagsAndWidth(expressions);
+                this.expressions = expressions;
+            }
+        }
+
+        internal ExpressionListSyntax(SyntaxKind kind, GreenNode? expressions)
+          : base(kind)
+        {
+            this.SlotCount = 1;
+            if (expressions != null)
+            {
+                this.AdjustFlagsAndWidth(expressions);
+                this.expressions = expressions;
+            }
+        }
+
+        /// <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of expressions.</summary>
+        public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> Expressions => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax>(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>(this.expressions));
+
+        internal override GreenNode? GetSlot(int index)
+            => index == 0 ? this.expressions : null;
+
+        internal override SyntaxNode CreateRed(SyntaxNode? parent, int position) => new Lua.Syntax.ExpressionListSyntax(this, parent as Lua.LuaSyntaxNode, position);
+
+        public override void Accept(LuaSyntaxVisitor visitor) => visitor.VisitExpressionList(this);
+        public override TResult Accept<TResult>(LuaSyntaxVisitor<TResult> visitor) => visitor.VisitExpressionList(this);
+
+        public ExpressionListSyntax Update(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
+        {
+            if (expressions != this.Expressions)
+            {
+                var newNode = SyntaxFactory.ExpressionList(expressions);
+                var diags = GetDiagnostics();
+                if (diags?.Length > 0)
+                    newNode = newNode.WithDiagnosticsGreen(diags);
+                var annotations = GetAnnotations();
+                if (annotations?.Length > 0)
+                    newNode = newNode.WithAnnotationsGreen(annotations);
+                return newNode;
+            }
+
+            return this;
+        }
+
+        internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics)
+            => new ExpressionListSyntax(this.Kind, this.expressions, diagnostics, GetAnnotations());
+
+        internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations)
+            => new ExpressionListSyntax(this.Kind, this.expressions, GetDiagnostics(), annotations);
+
+        internal ExpressionListSyntax(ObjectReader reader)
+          : base(reader)
+        {
+            this.SlotCount = 1;
+            var expressions = (GreenNode?)reader.ReadValue();
+            if (expressions != null)
+            {
+                AdjustFlagsAndWidth(expressions);
+                this.expressions = expressions;
+            }
+        }
+
+        internal override void WriteTo(ObjectWriter writer)
+        {
+            base.WriteTo(writer);
+            writer.WriteValue(this.expressions);
+        }
+
+        static ExpressionListSyntax()
+        {
+            ObjectBinder.RegisterTypeReader(typeof(ExpressionListSyntax), r => new ExpressionListSyntax(r));
+        }
+    }
+
     /// <summary>Class which represents the syntax node for parenthesized expression.</summary>
     internal sealed partial class BracketedExpressionSyntax : LuaSyntaxNode
     {
@@ -4409,7 +4409,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         public virtual TResult VisitIdentifierName(IdentifierNameSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitLiteralExpression(LiteralExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitParenthesizedExpression(ParenthesizedExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual TResult VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitFunctionDefinitionExpression(FunctionDefinitionExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitTableConstructorExpression(TableConstructorExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitBinaryExpression(BinaryExpressionSyntax node) => this.DefaultVisit(node);
@@ -4433,6 +4432,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         public virtual TResult VisitChunk(ChunkSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitBlock(BlockSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node) => this.DefaultVisit(node);
+        public virtual TResult VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitBracketedExpression(BracketedExpressionSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitParameterList(ParameterListSyntax node) => this.DefaultVisit(node);
         public virtual TResult VisitParameter(ParameterSyntax node) => this.DefaultVisit(node);
@@ -4448,7 +4448,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         public virtual void VisitIdentifierName(IdentifierNameSyntax node) => this.DefaultVisit(node);
         public virtual void VisitLiteralExpression(LiteralExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitParenthesizedExpression(ParenthesizedExpressionSyntax node) => this.DefaultVisit(node);
-        public virtual void VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
         public virtual void VisitFunctionDefinitionExpression(FunctionDefinitionExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitTableConstructorExpression(TableConstructorExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitBinaryExpression(BinaryExpressionSyntax node) => this.DefaultVisit(node);
@@ -4472,6 +4471,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
         public virtual void VisitChunk(ChunkSyntax node) => this.DefaultVisit(node);
         public virtual void VisitBlock(BlockSyntax node) => this.DefaultVisit(node);
         public virtual void VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node) => this.DefaultVisit(node);
+        public virtual void VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
         public virtual void VisitBracketedExpression(BracketedExpressionSyntax node) => this.DefaultVisit(node);
         public virtual void VisitParameterList(ParameterListSyntax node) => this.DefaultVisit(node);
         public virtual void VisitParameter(ParameterSyntax node) => this.DefaultVisit(node);
@@ -4492,9 +4492,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
 
         public override LuaSyntaxNode VisitParenthesizedExpression(ParenthesizedExpressionSyntax node)
             => node.Update((SyntaxToken)Visit(node.OpenParenToken), (ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.CloseParenToken));
-
-        public override LuaSyntaxNode VisitExpressionList(ExpressionListSyntax node)
-            => node.Update(VisitList(node.Expressions));
 
         public override LuaSyntaxNode VisitFunctionDefinitionExpression(FunctionDefinitionExpressionSyntax node)
             => node.Update((SyntaxToken)Visit(node.FunctionKeyword), (ParameterListSyntax)Visit(node.Parameters), (BlockSyntax)Visit(node.Body), (SyntaxToken)Visit(node.EndKeyword));
@@ -4564,6 +4561,9 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
 
         public override LuaSyntaxNode VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node)
             => node.Update(VisitList(node.Tokens));
+
+        public override LuaSyntaxNode VisitExpressionList(ExpressionListSyntax node)
+            => node.Update(VisitList(node.Expressions));
 
         public override LuaSyntaxNode VisitBracketedExpression(BracketedExpressionSyntax node)
             => node.Update((SyntaxToken)Visit(node.OpenParenToken), (ExpressionSyntax)Visit(node.Expression), (SyntaxToken)Visit(node.CloseParenToken));
@@ -4679,24 +4679,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             if (cached != null) return (ParenthesizedExpressionSyntax)cached;
 
             var result = new ParenthesizedExpressionSyntax(SyntaxKind.ParenthesizedExpression, openParenToken, expression, closeParenToken, this.context);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public ExpressionListSyntax ExpressionList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
-        {
-#if DEBUG
-#endif
-
-            int hash;
-            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ExpressionList, expressions.Node, this.context, out hash);
-            if (cached != null) return (ExpressionListSyntax)cached;
-
-            var result = new ExpressionListSyntax(SyntaxKind.ExpressionList, expressions.Node, this.context);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
@@ -5237,6 +5219,24 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return new SkippedTokensTriviaSyntax(SyntaxKind.SkippedTokensTrivia, tokens.Node, this.context);
         }
 
+        public ExpressionListSyntax ExpressionList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
+        {
+#if DEBUG
+#endif
+
+            int hash;
+            var cached = LuaSyntaxNodeCache.TryGetNode((int)SyntaxKind.ExpressionList, expressions.Node, this.context, out hash);
+            if (cached != null) return (ExpressionListSyntax)cached;
+
+            var result = new ExpressionListSyntax(SyntaxKind.ExpressionList, expressions.Node, this.context);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
         public BracketedExpressionSyntax BracketedExpression(SyntaxToken openParenToken, ExpressionSyntax expression, SyntaxToken closeParenToken)
         {
 #if DEBUG
@@ -5494,24 +5494,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             if (cached != null) return (ParenthesizedExpressionSyntax)cached;
 
             var result = new ParenthesizedExpressionSyntax(SyntaxKind.ParenthesizedExpression, openParenToken, expression, closeParenToken);
-            if (hash >= 0)
-            {
-                SyntaxNodeCache.AddNode(result, hash);
-            }
-
-            return result;
-        }
-
-        public static ExpressionListSyntax ExpressionList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
-        {
-#if DEBUG
-#endif
-
-            int hash;
-            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ExpressionList, expressions.Node, out hash);
-            if (cached != null) return (ExpressionListSyntax)cached;
-
-            var result = new ExpressionListSyntax(SyntaxKind.ExpressionList, expressions.Node);
             if (hash >= 0)
             {
                 SyntaxNodeCache.AddNode(result, hash);
@@ -6052,6 +6034,24 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
             return new SkippedTokensTriviaSyntax(SyntaxKind.SkippedTokensTrivia, tokens.Node);
         }
 
+        public static ExpressionListSyntax ExpressionList(Microsoft.CodeAnalysis.Syntax.InternalSyntax.SeparatedSyntaxList<ExpressionSyntax> expressions)
+        {
+#if DEBUG
+#endif
+
+            int hash;
+            var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.ExpressionList, expressions.Node, out hash);
+            if (cached != null) return (ExpressionListSyntax)cached;
+
+            var result = new ExpressionListSyntax(SyntaxKind.ExpressionList, expressions.Node);
+            if (hash >= 0)
+            {
+                SyntaxNodeCache.AddNode(result, hash);
+            }
+
+            return result;
+        }
+
         public static BracketedExpressionSyntax BracketedExpression(SyntaxToken openParenToken, ExpressionSyntax expression, SyntaxToken closeParenToken)
         {
 #if DEBUG
@@ -6230,7 +6230,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 typeof(IdentifierNameSyntax),
                 typeof(LiteralExpressionSyntax),
                 typeof(ParenthesizedExpressionSyntax),
-                typeof(ExpressionListSyntax),
                 typeof(FunctionDefinitionExpressionSyntax),
                 typeof(TableConstructorExpressionSyntax),
                 typeof(BinaryExpressionSyntax),
@@ -6254,6 +6253,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax
                 typeof(ChunkSyntax),
                 typeof(BlockSyntax),
                 typeof(SkippedTokensTriviaSyntax),
+                typeof(ExpressionListSyntax),
                 typeof(BracketedExpressionSyntax),
                 typeof(ParameterListSyntax),
                 typeof(ParameterSyntax),
