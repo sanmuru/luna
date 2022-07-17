@@ -11,7 +11,9 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AbstractFileWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachingSourceGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ErrorFactsGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GreenNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InternalErrorCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsExternalInit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\AbstractNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Comment.cs" />
@@ -21,7 +23,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\PredefinedNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Tree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\TreeType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SourceGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SourceTextReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StringBuilderReader.cs" />
+    <Compile Include="..\Shared\SyntaxGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SourceWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\TreeFlattening.cs" />
   </ItemGroup>

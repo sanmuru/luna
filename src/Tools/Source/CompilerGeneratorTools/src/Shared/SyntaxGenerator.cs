@@ -10,9 +10,9 @@ using Microsoft.CodeAnalysis.Text;
 namespace Luna.Compilers.Generators;
 
 [Generator]
-public sealed class SourceGenerator : CachingSourceGenerator
+public sealed class SyntaxGenerator : CachingSourceGenerator
 {
-    private static readonly DiagnosticDescriptor s_MissingSyntaxXml = new DiagnosticDescriptor(
+    private static readonly DiagnosticDescriptor s_MissingSyntaxXml = new(
         "CSSG1001",
         title: "Syntax.xml is missing",
         messageFormat: "The Syntax.xml file was not included in the project, so we are not generating source.",
@@ -20,7 +20,7 @@ public sealed class SourceGenerator : CachingSourceGenerator
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
 
-    private static readonly DiagnosticDescriptor s_UnableToReadSyntaxXml = new DiagnosticDescriptor(
+    private static readonly DiagnosticDescriptor s_UnableToReadSyntaxXml = new(
         "CSSG1002",
         title: "Syntax.xml could not be read",
         messageFormat: "The Syntax.xml file could not even be read. Does it exist?",
@@ -28,7 +28,7 @@ public sealed class SourceGenerator : CachingSourceGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    private static readonly DiagnosticDescriptor s_SyntaxXmlError = new DiagnosticDescriptor(
+    private static readonly DiagnosticDescriptor s_SyntaxXmlError = new(
         "CSSG1003",
         title: "Syntax.xml has a syntax error",
         messageFormat: "{0}",
@@ -36,31 +36,35 @@ public sealed class SourceGenerator : CachingSourceGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    /// <inheritdoc/>
     protected override bool TryGetRelevantInput(
         in GeneratorExecutionContext context,
-        [NotNullWhen(true)] out AdditionalText? input,
+        out string? inputPath,
         [NotNullWhen(true)] out SourceText? inputText)
     {
-        input = context.AdditionalFiles.SingleOrDefault(a => Path.GetFileName(a.Path) == "Syntax.xml");
-        if (input == null)
+        var input = context.AdditionalFiles.SingleOrDefault(a => Path.GetFileName(a.Path) == "Syntax.xml"); // 限定定义语法树节点的附加文件名为“Syntax.xml”。
+        if (input is null)
         {
             context.ReportDiagnostic(Diagnostic.Create(s_MissingSyntaxXml, location: null));
+            inputPath = null;
             inputText = null;
             return false;
         }
 
         inputText = input.GetText();
-        if (inputText == null)
+        if (inputText is null)
         {
             context.ReportDiagnostic(Diagnostic.Create(s_UnableToReadSyntaxXml, location: null));
+            inputPath = null;
             return false;
         }
 
+        inputPath = input.Path;
         return true;
     }
 
     protected override bool TryGenerateSources(
-        AdditionalText input,
+        string? inputPath,
         SourceText inputText,
         out ImmutableArray<(string hintName, SourceText sourceText)> sources,
         out ImmutableArray<Diagnostic> diagnostics,
@@ -74,10 +78,8 @@ public sealed class SourceGenerator : CachingSourceGenerator
             var serializer = new XmlSerializer(typeof(Tree));
             tree = (Tree)serializer.Deserialize(reader);
         }
-        catch (InvalidOperationException ex) when (ex.InnerException is XmlException)
+        catch (InvalidOperationException ex) when (ex.InnerException is XmlException xmlException)
         {
-            var xmlException = (XmlException)ex.InnerException;
-
             var line = inputText.Lines[xmlException.LineNumber - 1]; // LineNumber is one-based.
             int offset = xmlException.LinePosition - 1; // LinePosition is one-based
             var position = line.Start + offset;
@@ -88,7 +90,7 @@ public sealed class SourceGenerator : CachingSourceGenerator
             diagnostics = ImmutableArray.Create(
                 Diagnostic.Create(
                     s_SyntaxXmlError,
-                    location: Location.Create(input.Path, span, lineSpan),
+                    location: Location.Create(inputPath, span, lineSpan),
                     xmlException.Message));
 
             return false;
@@ -107,97 +109,16 @@ public sealed class SourceGenerator : CachingSourceGenerator
 
         void addResult(Action<TextWriter> writeFunction, string hintName)
         {
-            // Write out the contents to a StringBuilder to avoid creating a single large string
-            // in memory
+            // 将内容写入一个StringBuilder以避免在内存中创建一个庞大字符串。
             var stringBuilder = new StringBuilder();
             using (var textWriter = new StringWriter(stringBuilder))
             {
                 writeFunction(textWriter);
             }
 
-            // And create a SourceText from the StringBuilder, once again avoiding allocating a single massive string
+            // 从StringBuilder创建一个SourceText，再次避免申请一个庞大字符串的空间。
             var sourceText = SourceText.From(new StringBuilderReader(stringBuilder), stringBuilder.Length, encoding: Encoding.UTF8);
             sourcesBuilder.Add((hintName, sourceText));
-        }
-    }
-
-    private sealed class SourceTextReader : TextReader
-    {
-        private readonly SourceText _sourceText;
-        private int _position;
-
-        public SourceTextReader(SourceText sourceText)
-        {
-            _sourceText = sourceText;
-            _position = 0;
-        }
-
-        public override int Peek()
-        {
-            if (_position == _sourceText.Length)
-            {
-                return -1;
-            }
-
-            return _sourceText[_position];
-        }
-
-        public override int Read()
-        {
-            if (_position == _sourceText.Length)
-            {
-                return -1;
-            }
-
-            return _sourceText[_position++];
-        }
-
-        public override int Read(char[] buffer, int index, int count)
-        {
-            var charsToCopy = Math.Min(count, _sourceText.Length - _position);
-            _sourceText.CopyTo(_position, buffer, index, charsToCopy);
-            _position += charsToCopy;
-            return charsToCopy;
-        }
-    }
-
-    private sealed class StringBuilderReader : TextReader
-    {
-        private readonly StringBuilder _stringBuilder;
-        private int _position;
-
-        public StringBuilderReader(StringBuilder stringBuilder)
-        {
-            _stringBuilder = stringBuilder;
-            _position = 0;
-        }
-
-        public override int Peek()
-        {
-            if (_position == _stringBuilder.Length)
-            {
-                return -1;
-            }
-
-            return _stringBuilder[_position];
-        }
-
-        public override int Read()
-        {
-            if (_position == _stringBuilder.Length)
-            {
-                return -1;
-            }
-
-            return _stringBuilder[_position++];
-        }
-
-        public override int Read(char[] buffer, int index, int count)
-        {
-            var charsToCopy = Math.Min(count, _stringBuilder.Length - _position);
-            _stringBuilder.CopyTo(_position, buffer, index, charsToCopy);
-            _position += charsToCopy;
-            return charsToCopy;
         }
     }
 }

@@ -27,9 +27,6 @@ namespace SamLu.CodeAnalysis.Lua
         /// <summary>Called when the visitor visits a ParenthesizedExpressionSyntax node.</summary>
         public virtual TResult? VisitParenthesizedExpression(ParenthesizedExpressionSyntax node) => this.DefaultVisit(node);
 
-        /// <summary>Called when the visitor visits a ExpressionListSyntax node.</summary>
-        public virtual TResult? VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
-
         /// <summary>Called when the visitor visits a FunctionDefinitionExpressionSyntax node.</summary>
         public virtual TResult? VisitFunctionDefinitionExpression(FunctionDefinitionExpressionSyntax node) => this.DefaultVisit(node);
 
@@ -99,6 +96,9 @@ namespace SamLu.CodeAnalysis.Lua
         /// <summary>Called when the visitor visits a SkippedTokensTriviaSyntax node.</summary>
         public virtual TResult? VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node) => this.DefaultVisit(node);
 
+        /// <summary>Called when the visitor visits a ExpressionListSyntax node.</summary>
+        public virtual TResult? VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
+
         /// <summary>Called when the visitor visits a BracketedExpressionSyntax node.</summary>
         public virtual TResult? VisitBracketedExpression(BracketedExpressionSyntax node) => this.DefaultVisit(node);
 
@@ -134,9 +134,6 @@ namespace SamLu.CodeAnalysis.Lua
 
         /// <summary>Called when the visitor visits a ParenthesizedExpressionSyntax node.</summary>
         public virtual void VisitParenthesizedExpression(ParenthesizedExpressionSyntax node) => this.DefaultVisit(node);
-
-        /// <summary>Called when the visitor visits a ExpressionListSyntax node.</summary>
-        public virtual void VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
 
         /// <summary>Called when the visitor visits a FunctionDefinitionExpressionSyntax node.</summary>
         public virtual void VisitFunctionDefinitionExpression(FunctionDefinitionExpressionSyntax node) => this.DefaultVisit(node);
@@ -207,6 +204,9 @@ namespace SamLu.CodeAnalysis.Lua
         /// <summary>Called when the visitor visits a SkippedTokensTriviaSyntax node.</summary>
         public virtual void VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node) => this.DefaultVisit(node);
 
+        /// <summary>Called when the visitor visits a ExpressionListSyntax node.</summary>
+        public virtual void VisitExpressionList(ExpressionListSyntax node) => this.DefaultVisit(node);
+
         /// <summary>Called when the visitor visits a BracketedExpressionSyntax node.</summary>
         public virtual void VisitBracketedExpression(BracketedExpressionSyntax node) => this.DefaultVisit(node);
 
@@ -242,9 +242,6 @@ namespace SamLu.CodeAnalysis.Lua
 
         public override LuaSyntaxNode? VisitParenthesizedExpression(ParenthesizedExpressionSyntax node)
             => node.Update(VisitToken(node.OpenParenToken), (ExpressionSyntax?)Visit(node.Expression) ?? throw new ArgumentNullException("expression"), VisitToken(node.CloseParenToken));
-
-        public override LuaSyntaxNode? VisitExpressionList(ExpressionListSyntax node)
-            => node.Update(VisitList(node.Expressions));
 
         public override LuaSyntaxNode? VisitFunctionDefinitionExpression(FunctionDefinitionExpressionSyntax node)
             => node.Update(VisitToken(node.FunctionKeyword), (ParameterListSyntax?)Visit(node.Parameters) ?? throw new ArgumentNullException("parameters"), (BlockSyntax?)Visit(node.Body) ?? throw new ArgumentNullException("body"), VisitToken(node.EndKeyword));
@@ -314,6 +311,9 @@ namespace SamLu.CodeAnalysis.Lua
 
         public override LuaSyntaxNode? VisitSkippedTokensTrivia(SkippedTokensTriviaSyntax node)
             => node.Update(VisitList(node.Tokens));
+
+        public override LuaSyntaxNode? VisitExpressionList(ExpressionListSyntax node)
+            => node.Update(VisitList(node.Expressions));
 
         public override LuaSyntaxNode? VisitBracketedExpression(BracketedExpressionSyntax node)
             => node.Update(VisitToken(node.OpenParenToken), (ExpressionSyntax?)Visit(node.Expression) ?? throw new ArgumentNullException("expression"), VisitToken(node.CloseParenToken));
@@ -395,16 +395,6 @@ namespace SamLu.CodeAnalysis.Lua
         /// <summary>Creates a new ParenthesizedExpressionSyntax instance.</summary>
         public static ParenthesizedExpressionSyntax ParenthesizedExpression(ExpressionSyntax expression)
             => SyntaxFactory.ParenthesizedExpression(SyntaxFactory.Token(SyntaxKind.OpenParenToken), expression, SyntaxFactory.Token(SyntaxKind.CloseParenToken));
-
-        /// <summary>Creates a new ExpressionListSyntax instance.</summary>
-        public static ExpressionListSyntax ExpressionList(SeparatedSyntaxList<ExpressionSyntax> expressions)
-        {
-            return (ExpressionListSyntax)Syntax.InternalSyntax.SyntaxFactory.ExpressionList(expressions.Node.ToGreenSeparatedList<Syntax.InternalSyntax.ExpressionSyntax>()).CreateRed();
-        }
-
-        /// <summary>Creates a new ExpressionListSyntax instance.</summary>
-        public static ExpressionListSyntax ExpressionList()
-            => SyntaxFactory.ExpressionList(default);
 
         /// <summary>Creates a new FunctionDefinitionExpressionSyntax instance.</summary>
         public static FunctionDefinitionExpressionSyntax FunctionDefinitionExpression(SyntaxToken functionKeyword, ParameterListSyntax parameters, BlockSyntax body, SyntaxToken endKeyword)
@@ -856,6 +846,16 @@ namespace SamLu.CodeAnalysis.Lua
         /// <summary>Creates a new SkippedTokensTriviaSyntax instance.</summary>
         public static SkippedTokensTriviaSyntax SkippedTokensTrivia()
             => SyntaxFactory.SkippedTokensTrivia(default(SyntaxTokenList));
+
+        /// <summary>Creates a new ExpressionListSyntax instance.</summary>
+        public static ExpressionListSyntax ExpressionList(SeparatedSyntaxList<ExpressionSyntax> expressions)
+        {
+            return (ExpressionListSyntax)Syntax.InternalSyntax.SyntaxFactory.ExpressionList(expressions.Node.ToGreenSeparatedList<Syntax.InternalSyntax.ExpressionSyntax>()).CreateRed();
+        }
+
+        /// <summary>Creates a new ExpressionListSyntax instance.</summary>
+        public static ExpressionListSyntax ExpressionList()
+            => SyntaxFactory.ExpressionList(default);
 
         /// <summary>Creates a new BracketedExpressionSyntax instance.</summary>
         public static BracketedExpressionSyntax BracketedExpression(SyntaxToken openParenToken, ExpressionSyntax expression, SyntaxToken closeParenToken)

@@ -24,15 +24,171 @@
       <summary>提供表示简单名称语法节点继承用的父类，此类必须被继承。</summary>
     </TypeComment>
   </AbstractNode>
+  <Node Name="IdentifierNameSyntax" Base="SimpleNameSyntax">
+    <Kind Name="IdentifierName"/>
+    <Field Name="Identifier" Type="SyntaxToken" Override="true">
+      <Kind Name="IdentifierToken"/>
+      <Kind Name="GlobalEnvironmentKeyword"/>
+      <Kind Name="EnvironmentKeyword"/>
+      <PropertyComment>
+        <summary>SyntaxToken representing the keyword for the kind of the identifier name.</summary>
+      </PropertyComment>
+    </Field>
+    <TypeComment>
+      <summary>Class which represents the syntax node for identifier name.</summary>
+    </TypeComment>
+    <FactoryComment>
+      <summary>Creates an IdentifierNameSyntax node.</summary>
+    </FactoryComment>
+  </Node>
 
 
 
-  <!-- 语句 -->
+  <!-- 表达式 -->
   <AbstractNode Name="ExpressionSyntax" Base="MoonScriptSyntaxNode">
     <TypeComment>
       <summary>Provides the base class from which the classes that represent expression syntax nodes are derived. This is an abstract class.</summary>
     </TypeComment>
   </AbstractNode>
+  <Node Name="LiteralExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="NilLiteralExpression"/>
+    <Kind Name="FalseLiteralExpression"/>
+    <Kind Name="TrueLiteralExpression"/>
+    <Kind Name="NumericLiteralExpression"/>
+    <Kind Name="StringLiteralExpression"/>
+    <Kind Name="VariousArgumentsExpression"/>
+    <Field Name="Token" Type="SyntaxToken">
+      <Kind Name="NilKeyword"/>
+      <Kind Name="FalseKeyword"/>
+      <Kind Name="TrueKeyword"/>
+      <Kind Name="NumericLiteralToken"/>
+      <Kind Name="StringLiteralToken"/>
+      <Kind Name="MultiLineRawStringLiteralToken"/>
+      <Kind Name="DotDotDotToken"/>
+      <PropertyComment>
+        <summary>SyntaxToken representing the keyword corresponding to the kind of the literal expression.</summary>
+      </PropertyComment>
+    </Field>
+    <TypeComment>
+      <summary>Class which represents the syntax node for a literal expression.</summary>
+    </TypeComment>
+    <FactoryComment>
+      <summary>Creates a LiteralExpressionSyntax node.</summary>
+    </FactoryComment>
+  </Node>
+  <AbstractNode Name="BaseInstanceExpressionSyntax" Base="ExpressionSyntax">
+    <Field Name="Token" Type="SyntaxToken"/>
+  </AbstractNode>
+  <Node Name="SelfExpressionSyntax" Base="BaseInstanceExpressionSyntax">
+    <Kind Name="SelfExpression"/>
+    <Field Name="Token" Type="SyntaxToken" Override="true">
+      <Kind Name="CommercialAtToken"/>
+    </Field>
+  </Node>
+  <Node Name="SuperExpressionSyntax" Base="BaseInstanceExpressionSyntax">
+    <Kind Name="SuperExpression"/>
+    <Field Name="Token" Type="SyntaxToken" Override="true">
+      <Kind Name="SuperKeyword"/>
+    </Field>
+  </Node>
+  <Node Name="TypeExpressionSyntax" Base="BaseInstanceExpressionSyntax">
+    <Kind Name="TypeExpression"/>
+    <Field Name="Token" Type="SyntaxToken" Override="true">
+      <Kind Name="CommercialAtCommercialAtToken"/>
+    </Field>
+  </Node>
+  <Node Name="ParenthesizedExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="ParenthesizedExpression"/>
+    <Field Name="OpenParenToken" Type="SyntaxToken">
+      <Kind Name="OpenParenToken"/>
+      <PropertyComment>
+        <summary>SyntaxToken representing the open parenthesis.</summary>
+      </PropertyComment>
+    </Field>
+    <Field Name="Expression" Type="ExpressionSyntax">
+      <PropertyComment>
+        <summary>ExpressionSyntax node representing the expression enclosed within the parenthesis.</summary>
+      </PropertyComment>
+    </Field>
+    <Field Name="CloseParenToken" Type="SyntaxToken">
+      <Kind Name="CloseParenToken"/>
+      <PropertyComment>
+        <summary>SyntaxToken representing the close parenthesis.</summary>
+      </PropertyComment>
+    </Field>
+    <TypeComment>
+      <summary>Class which represents the syntax node for parenthesized expression.</summary>
+    </TypeComment>
+    <FactoryComment>
+      <summary>Creates a ParenthesizedExpressionSyntax node.</summary>
+    </FactoryComment>
+  </Node>
+  <Node Name="ClassExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="ClassExpression"/>
+    <Field Name="ClassKeyword" Type="SyntaxToken">
+      <Kind Name="ClassKeyword"/>
+    </Field>
+    <Field Name="Name" Type="IdentifierNameSyntax"/>
+    <Sequence Optional="true">
+      <Field Name="ExtendsKeyword" Type="SyntaxToken">
+        <Kind Name="ExtendsKeyword"/>
+      </Field>
+      <Field Name="BaseName" Type="IdentifierNameSyntax"/>
+    </Sequence>
+  </Node>
+  <Node Name="AnomymousClassExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="AnomymousClassExpression"/>
+    <Field Name="ClassKeyword" Type="SyntaxToken">
+      <Kind Name="ClassKeyword"/>
+    </Field>
+    <Sequence Optional="true">
+      <Field Name="ExtendsKeyword" Type="SyntaxToken">
+        <Kind Name="ExtendsKeyword"/>
+      </Field>
+      <Field Name="BaseName" Type="IdentifierNameSyntax"/>
+    </Sequence>
+  </Node>
+  <Node Name="DoExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="DoExpression"/>
+    <Field Name="DoKeyword" Type="SyntaxToken">
+      <Kind Name="DoKeyword"/>
+    </Field>
+    <Field Name="Block" Type="BlockSyntax"/>
+  </Node>
+  <Node Name="ForExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="ForExpression"/>
+    <Field Name="ForKeyword" Type="SyntaxToken">
+      <Kind Name="ForKeyword"/>
+    </Field>
+    <Field Name="Name" Type="IdentifierNameSyntax"/>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
+    </Field>
+    <Field Name="Initial" Type="ExpressionSyntax"/>
+    <Field Name="FirstCommaToken" Type="SyntaxToken">
+      <Kind Name="CommaToken"/>
+    </Field>
+    <Field Name="Limit" Type="ExpressionSyntax"/>
+    <Sequence Optional="true">
+      <Field Name="SecondCommaToken" Type="SyntaxToken">
+        <Kind Name="CommaToken"/>
+      </Field>
+      <Field Name="Step" Type="ExpressionSyntax"/>
+    </Sequence>
+    <Field Name="Block" Type="BlockSyntax"/>
+  </Node>
+  <Node Name="ForInExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="ForInExpression"/>
+    <Field Name="ForKeyword" Type="SyntaxToken">
+      <Kind Name="ForKeyword"/>
+    </Field>
+    <Field Name="Names" Type="SeparatedSyntaxList&lt;ParameterSyntax&gt;" MinCount="1"/>
+    <Field Name="InKeyword" Type="SyntaxToken">
+      <Kind Name="InKeyword"/>
+    </Field>
+    <Field Name="Iteration" Type="ExpressionSyntax"/>
+    <Field Name="Block" Type="BlockSyntax"/>
+  </Node>
 
 
 
@@ -60,6 +216,33 @@
   <Node Name="SkippedTokensTriviaSyntax" Base="StructuredTriviaSyntax">
     <Kind Name="SkippedTokensTrivia"/>
     <Field Name="Tokens" Type="SyntaxList&lt;SyntaxToken&gt;"/>
+  </Node>
+  <Node Name="ExpressionListSyntax" Base="MoonScriptSyntaxNode">
+    <Kind Name="ExpressionList"/>
+    <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;">
+      <PropertyComment>
+        <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of expressions.</summary>
+      </PropertyComment>
+    </Field>
+    <TypeComment>
+      <summary>Class which represents the syntax node for the list of expressions.</summary>
+    </TypeComment>
+    <FactoryComment>
+      <summary>Creates an ExpressionListSyntax node.</summary>
+    </FactoryComment>
+  </Node>
+  <Node Name="ParameterSyntax" Base="MoonScriptSyntaxNode">
+    <TypeComment>
+      <summary>Parameter syntax.</summary>
+    </TypeComment>
+    <Kind Name="Parameter"/>
+    <Field Name="Identifier" Type="SyntaxToken">
+      <PropertyComment>
+        <summary>Gets the identifier.</summary>
+      </PropertyComment>
+      <Kind Name="IdentifierToken"/>
+      <Kind Name="DotDotDotToken"/>
+    </Field>
   </Node>
   
 </Tree>

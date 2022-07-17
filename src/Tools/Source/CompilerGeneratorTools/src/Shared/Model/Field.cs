@@ -4,6 +4,10 @@ namespace Luna.Compilers.Generators.Model;
 
 public class TreeTypeChild
 {
+
+    [XmlAttribute]
+    public string Optional;
+    public bool IsOptional => string.Equals(Optional, "true", StringComparison.InvariantCultureIgnoreCase);
 }
 
 public class Choice : TreeTypeChild
@@ -13,9 +17,6 @@ public class Choice : TreeTypeChild
     [XmlElement(ElementName = "Field", Type = typeof(Field))]
     [XmlElement(ElementName = "Sequence", Type = typeof(Sequence))]
     public List<TreeTypeChild> Children;
-
-    [XmlAttribute]
-    public bool Optional;
 }
 
 public class Sequence : TreeTypeChild
@@ -36,9 +37,6 @@ public class Field : TreeTypeChild
     public string Type;
 
     [XmlAttribute]
-    public string Optional;
-
-    [XmlAttribute]
     public string Override;
 
     [XmlAttribute]
@@ -51,11 +49,10 @@ public class Field : TreeTypeChild
     public bool AllowTrailingSeparator;
 
     [XmlElement(ElementName = "Kind", Type = typeof(Kind))]
-    public List<Kind> Kinds = new List<Kind>();
+    public List<Kind> Kinds = new();
 
     [XmlElement]
     public Comment PropertyComment;
 
     public bool IsToken => Type == "SyntaxToken";
-    public bool IsOptional => Optional == "true";
 }

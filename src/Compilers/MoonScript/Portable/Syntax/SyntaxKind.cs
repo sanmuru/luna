@@ -357,10 +357,6 @@ public enum SyntaxKind : ushort
     SlicingExpression,
     /// <summary>表示调用表达式。</summary>
     InvocationExpression,
-    /// <summary>表示方法的参数列表。</summary>
-    ArgumentList,
-    /// <summary>表示方法的参数。</summary>
-    Argument,
     /// <summary>表示带默认值的方法的参数表达式。</summary>
     ArgumentDefaultValueExpression,
     /// <summary>表示不带括号的Lambda表达式。</summary>
@@ -518,5 +514,19 @@ public enum SyntaxKind : ushort
     Block,
     /// <summary>表示类声明。</summary>
     ClassDeclaration,
+    /// <summary>表示表达式列表。</summary>
+    ExpressionList,
+    /// <summary>表示表字段列表。</summary>
+    FieldList,
+    /// <summary>表示表字段。</summary>
+    Field,
+    /// <summary>表示函数参数列表。</summary>
+    ParameterList,
+    /// <summary>表示函数参数。</summary>
+    Parameter,
+    /// <summary>表示调用参数列表。</summary>
+    ArgumentList,
+    /// <summary>表示调用参数。</summary>
+    Argument,
     #endregion
 }
