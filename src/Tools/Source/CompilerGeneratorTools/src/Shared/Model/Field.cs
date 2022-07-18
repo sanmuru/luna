@@ -7,7 +7,7 @@ public class TreeTypeChild
 
     [XmlAttribute]
     public string Optional;
-    public bool IsOptional => string.Equals(Optional, "true", StringComparison.InvariantCultureIgnoreCase);
+    public bool IsOptional => string.Compare(Optional, "true", true) == 0;
 }
 
 public class Choice : TreeTypeChild
