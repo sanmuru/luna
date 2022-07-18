@@ -217,29 +217,47 @@ internal class SourceWriter : AbstractFileWriter
             // property accessors
             foreach (var field in nodeFields)
             {
+                var directlyOverride = string.Compare(field.Override, "true", true) == 0;
+                var overriddenName = IsOverride(field)
+                    ? directlyOverride ? field.Name : field.Override
+                    : field.Name;
                 WriteComment(field.PropertyComment, "");
                 if (IsNodeList(field.Type))
                 {
-                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type}(this.{CamelCase(field.Name)});");
+                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {overriddenName} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type}(this.{CamelCase(field.Name)});");
+                    if (IsOverride(field) && !directlyOverride)
+                        WriteLine($"public Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type}(this.{CamelCase(field.Name)});");
                 }
                 else if (IsSeparatedNodeList(field.Type))
                 {
-                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type}(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{LanguageNames.This}SyntaxNode>(this.{CamelCase(field.Name)}));");
+                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {overriddenName} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type}(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{LanguageNames.This}SyntaxNode>(this.{CamelCase(field.Name)}));");
+                    if (IsOverride(field) && !directlyOverride)
+                        WriteLine($"public Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type}(new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{LanguageNames.This}SyntaxNode>(this.{CamelCase(field.Name)}));");
                 }
                 else if (field.Type == "SyntaxNodeOrTokenList")
                 {
-                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{LanguageNames.This}SyntaxNode> {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{LanguageNames.This}SyntaxNode>(this.{CamelCase(field.Name)});");
+                    WriteLine($"public {OverrideOrNewModifier(field)}Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{LanguageNames.This}SyntaxNode> {overriddenName} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{LanguageNames.This}SyntaxNode>(this.{CamelCase(field.Name)});");
+                    if (IsOverride(field) && !directlyOverride)
+                        WriteLine($"public Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{LanguageNames.This}SyntaxNode> {field.Name} => new Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<{LanguageNames.This}SyntaxNode>(this.{CamelCase(field.Name)});");
                 }
                 else
                 {
-                    WriteLine($"public {OverrideOrNewModifier(field)}{(GetFieldType(field, green: true))} {field.Name} => this.{CamelCase(field.Name)};");
+                    WriteLine($"public {OverrideOrNewModifier(field)}{(GetFieldType(field, green: true))} {overriddenName} => this.{CamelCase(field.Name)};");
+                    if (IsOverride(field) && !directlyOverride)
+                        WriteLine($"public {(GetFieldType(field, green: true))} {field.Name} => this.{CamelCase(field.Name)};");
                 }
             }
 
             foreach (var field in valueFields)
             {
+                bool directlyOverride = string.Compare(field.Override, "true", true) == 0;
+                var overriddenName = IsOverride(field)
+                    ? directlyOverride ? field.Name : field.Override
+                    : field.Name;
                 WriteComment(field.PropertyComment, "");
-                WriteLine($"public {OverrideOrNewModifier(field)}{field.Type} {field.Name} => this.{CamelCase(field.Name)};");
+                WriteLine($"public {OverrideOrNewModifier(field)}{field.Type} {overriddenName} => this.{CamelCase(field.Name)};");
+                if (IsOverride(field) && !directlyOverride)
+                    WriteLine($"public {field.Type} {field.Name} => this.{CamelCase(field.Name)};");
             }
 
             // GetSlot
@@ -956,10 +974,20 @@ internal class SourceWriter : AbstractFileWriter
             for (int i = 0, n = nodeFields.Count; i < n; i++)
             {
                 var field = nodeFields[i];
+                var directlyOverride = string.Compare(field.Override, "true", true) == 0;
+                var overriddenName = IsOverride(field)
+                    ? directlyOverride ? field.Name : field.Override
+                    : field.Name;
                 if (field.Type == "SyntaxToken")
                 {
                     WriteComment(field.PropertyComment, "");
-                    Write($"public {OverrideOrNewModifier(field)}{GetRedPropertyType(field)} {field.Name}");
+                    if (IsOverride(field) && !directlyOverride)
+                    {
+                        WriteLine($"public override {GetRedPropertyType(field)} {overriddenName} => this.{field.Name};");
+                        Write($"public {GetRedPropertyType(field)} {field.Name}");
+                    }
+                    else
+                        Write($"public {OverrideOrNewModifier(field)}{GetRedPropertyType(field)} {field.Name}");
                     if (IsOptional(field))
                     {
                         WriteLine();
@@ -979,7 +1007,13 @@ internal class SourceWriter : AbstractFileWriter
                 else if (field.Type == "SyntaxList<SyntaxToken>")
                 {
                     WriteComment(field.PropertyComment, "");
-                    WriteLine($"public {OverrideOrNewModifier(field)}SyntaxTokenList {field.Name}");
+                    if (IsOverride(field) && !directlyOverride)
+                    {
+                        WriteLine($"public override SyntaxTokenList {overriddenName} => this.{field.Name};");
+                        Write($"public SyntaxTokenList {field.Name}");
+                    }
+                    else
+                        WriteLine($"public {OverrideOrNewModifier(field)}SyntaxTokenList {field.Name}");
                     OpenBlock();
                     WriteLine("get");
                     OpenBlock();
@@ -991,7 +1025,13 @@ internal class SourceWriter : AbstractFileWriter
                 else
                 {
                     WriteComment(field.PropertyComment, "");
-                    Write($"public {OverrideOrNewModifier(field)}{GetRedPropertyType(field)} {field.Name}");
+                    if (IsOverride(field) && !directlyOverride)
+                    {
+                        WriteLine($"public override {GetRedPropertyType(field)} {overriddenName} => this.{field.Name};");
+                        Write($"public {GetRedPropertyType(field)} {field.Name}");
+                    }
+                    else
+                        Write($"public {OverrideOrNewModifier(field)}{GetRedPropertyType(field)} {field.Name}");
 
                     if (IsNodeList(field.Type))
                     {
@@ -1031,8 +1071,20 @@ internal class SourceWriter : AbstractFileWriter
 
             foreach (var field in valueFields)
             {
+                var directlyOverride = string.Compare(field.Override, "true", true) == 0;
+                var overriddenName = IsOverride(field)
+                    ? directlyOverride ? field.Name : field.Override
+                    : field.Name;
                 WriteComment(field.PropertyComment, "");
-                WriteLine($"{"public"} {OverrideOrNewModifier(field)}{field.Type} {field.Name} => ((Syntax.InternalSyntax.{node.Name})this.Green).{field.Name};");
+                if (IsOverride(field) && !directlyOverride)
+                {
+                    WriteLine($"public override {field.Type} {overriddenName} => this.{field.Name};");
+                    WriteLine($"public {field.Type} {field.Name} => ((Syntax.InternalSyntax.{node.Name})this.Green).{field.Name};");
+                }
+                else
+                    WriteLine($"public {OverrideOrNewModifier(field)}{field.Type} {field.Name} => ((Syntax.InternalSyntax.{node.Name})this.Green).{field.Name};");
+                if (IsOverride(field) && !directlyOverride)
+                    WriteLine($"public {field.Type} {field.Name} => ((Syntax.InternalSyntax.{node.Name})this.Green).{field.Name};");
                 WriteLine();
             }
 
@@ -1232,13 +1284,15 @@ internal class SourceWriter : AbstractFileWriter
             var isNew = false;
             if (IsOverride(field))
             {
-                var (baseType, baseField) = GetHighestBaseTypeWithField(node, field.Name);
+                var name = field.Name;
+                var overriddenName = (string.Compare(field.Override, "true", true) == 0) ? name : field.Override;
+                var (baseType, baseField) = GetHighestBaseTypeWithField(node, overriddenName);
                 if (baseType != null)
                 {
-                    Write($"internal override {baseType.Name} With{field.Name}Core({GetRedPropertyType(baseField)} {CamelCase(field.Name)}) => With{field.Name}({CamelCase(field.Name)}");
+                    Write($"internal override {baseType.Name} With{overriddenName}Core({GetRedPropertyType(baseField)} {CamelCase(overriddenName)}) => With{name}({CamelCase(overriddenName)}");
                     if (baseField.Type != "SyntaxToken" && IsOptional(baseField) && !IsOptional(field))
                     {
-                        Write($" ?? throw new ArgumentNullException(nameof({CamelCase(field.Name)}))");
+                        Write($" ?? throw new ArgumentNullException(nameof({CamelCase(name)}))");
                     }
                     WriteLine(");");
 
@@ -1338,11 +1392,13 @@ internal class SourceWriter : AbstractFileWriter
         var isNew = false;
         if (IsOverride(field))
         {
-            var (baseType, baseField) = GetHighestBaseTypeWithField(node, field.Name);
+            var name = field.Name;
+            var overriddenName = (string.Compare(field.Override, "true", true) == 0) ? name : field.Override;
+            var (baseType, baseField) = GetHighestBaseTypeWithField(node, overriddenName);
             if (baseType != null)
             {
                 var baseArgType = GetElementType(baseField.Type);
-                WriteLine($"internal override {baseType.Name} Add{field.Name}Core(params {baseArgType}[] items) => Add{field.Name}(items);");
+                WriteLine($"internal override {baseType.Name} Add{overriddenName}Core(params {baseArgType}[] items) => Add{name}(items);");
                 isNew = true;
             }
         }
@@ -1357,10 +1413,12 @@ internal class SourceWriter : AbstractFileWriter
         var isNew = false;
         if (IsOverride(field))
         {
-            var (baseType, _) = GetHighestBaseTypeWithField(node, field.Name);
+            var name = field.Name;
+            var overriddenName = (string.Compare(field.Override, "true", true) == 0) ? name : field.Override;
+            var (baseType, _) = GetHighestBaseTypeWithField(node, overriddenName);
             if (baseType != null)
             {
-                WriteLine($"internal override {baseType.Name} Add{StripPost(field.Name, "Opt")}{referencedNodeField.Name}Core(params {argType}[] items) => Add{StripPost(field.Name, "Opt")}{referencedNodeField.Name}(items);");
+                WriteLine($"internal override {baseType.Name} Add{StripPost(overriddenName, "Opt")}{referencedNodeField.Name}Core(params {argType}[] items) => Add{StripPost(name, "Opt")}{referencedNodeField.Name}(items);");
                 isNew = true;
             }
         }
