@@ -399,6 +399,15 @@
       <summary>Creates an InvocationExpressionSyntax node.</summary>
     </FactoryComment>
   </Node>
+  <Node Name="LambdaExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="LambdaExpression"/>
+    <Field Name="Parameters" Type="ParameterListSyntax" Optional="true"/>
+    <Field Name="Arrow" Type="SyntaxToken">
+      <Kind Name="MinusGreaterThanToken"/>
+      <Kind Name="EqualsGreaterThanToken"/>
+    </Field>
+    <Field Name="Block" Type="BlockSyntax"/>
+  </Node>
   <Node Name="BinaryExpressionSyntax" Base="ExpressionSyntax">
     <Kind Name="AdditionExpression"/>
     <Kind Name="SubtractionExpression"/>
@@ -786,7 +795,13 @@
   </Node>
   <Node Name="DestructuringTableSyntax" Base="DestructuringUnitSyntax">
     <Kind Name="DestructuringList"/>
+    <Field Name="OpenBraceToken" Type="SyntaxToken" Optional="true">
+      <Kind Name="OpenBraceToken"/>
+    </Field>
     <Field Name="Fields" Type="SyntaxList&lt;DestructuringFieldSyntax&gt;"/>
+    <Field Name="CloseBraceToken" Type="SyntaxToken" Optional="true">
+      <Kind Name="CloseBraceToken"/>
+    </Field>
   </Node>
 
 
