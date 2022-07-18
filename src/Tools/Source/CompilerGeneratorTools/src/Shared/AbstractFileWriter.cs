@@ -246,7 +246,7 @@ internal abstract class AbstractFileWriter
         => IsTrue(f.Optional);
 
     protected static bool IsOverride(Field f)
-        => IsTrue(f.Override);
+        => f.Override is not null;
 
     protected static bool IsNew(Field f)
         => IsTrue(f.New);
