@@ -33,7 +33,6 @@ public static partial class SyntaxFacts
             SyntaxKind.OpenBracketToken => "[",
             SyntaxKind.CloseBracketToken => "]",
             SyntaxKind.ColonToken => ":",
-            SyntaxKind.SemicolonToken => ";",
             SyntaxKind.CommaToken => ",",
             SyntaxKind.DotToken => ".",
             SyntaxKind.CommercialAtToken => "@",
@@ -77,6 +76,7 @@ public static partial class SyntaxFacts
             SyntaxKind.ExtendsKeyword => "extend",
             SyntaxKind.FalseKeyword => "false",
             SyntaxKind.ForKeyword => "for",
+            SyntaxKind.FromKeyword => "from",
             SyntaxKind.IfKeyword => "if",
             SyntaxKind.ImportKeyword => "import",
             SyntaxKind.InKeyword => "in",
@@ -97,6 +97,7 @@ public static partial class SyntaxFacts
             SyntaxKind.EnvironmentKeyword => "_ENV",
             SyntaxKind.SelfKeyword => "self",
             SyntaxKind.SuperKeyword => "super",
+            SyntaxKind.NewKeyword => "new",
             SyntaxKind.MetatableMetafield => "__metatable",
             SyntaxKind.ClassMetafield => "__class",
             SyntaxKind.NameMetafield => "__name",
@@ -187,6 +188,7 @@ public static partial class SyntaxFacts
             "extends" => SyntaxKind.ExtendsKeyword,
             "false" => SyntaxKind.FalseKeyword,
             "for" => SyntaxKind.ForKeyword,
+            "from" => SyntaxKind.FromKeyword,
             "if" => SyntaxKind.IfKeyword,
             "import" => SyntaxKind.ImportKeyword,
             "in" => SyntaxKind.InKeyword,
@@ -260,6 +262,7 @@ public static partial class SyntaxFacts
             // 上下文关键字
             "_G" => SyntaxKind.GlobalEnvironmentKeyword,
             "_ENV" => SyntaxKind.EnvironmentKeyword,
+            "new" => SyntaxKind.NewKeyword,
             "self" => SyntaxKind.SelfKeyword,
             "super" => SyntaxKind.SuperKeyword,
 
@@ -358,14 +361,6 @@ public static partial class SyntaxFacts
             _ => false
         };
 
-    public static bool IsClassDeclaration(SyntaxKind kind) =>
-        kind switch
-        {
-            SyntaxKind.ClassDeclaration => true,
-
-            _ => false
-        };
-
     public static bool IsUnaryExpression(SyntaxKind token) =>
         SyntaxFacts.GetUnaryExpression(token) != SyntaxKind.None;
 
@@ -378,7 +373,6 @@ public static partial class SyntaxFacts
             SyntaxKind.NotKeyword => SyntaxKind.LogicalNotExpression,
             SyntaxKind.HashToken => SyntaxKind.LengthExpression,
             SyntaxKind.TildeToken => SyntaxKind.BitwiseNotExpression,
-            SyntaxKind.AsteriskToken => SyntaxKind.NumericallyIterateExpression,
 
             _ => SyntaxKind.None
         };
