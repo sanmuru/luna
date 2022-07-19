@@ -722,7 +722,7 @@
       <Field Name="Expression" Type="ExpressionSyntax"/>
       <Sequence>
         <Choice>
-          <Field Name="Name" Type="IdentifierNameSyntax">
+          <Field Name="FieldName" Type="IdentifierNameSyntax">
             <Kind Name="IdentifierName"/>
             <PropertyComment>
               <summary>IdentifierNameSyntax representing the field name.</summary>
