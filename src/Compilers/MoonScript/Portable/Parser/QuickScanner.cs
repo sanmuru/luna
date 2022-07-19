@@ -27,7 +27,7 @@ partial class Lexer
         Bad = Done + 1
     }
 
-    private enum CharFlags : byte
+    private enum CharFlag : byte
     {
         /// <summary>空白字符（空格符或制表符）。</summary>
         White,
@@ -196,161 +196,161 @@ partial class Lexer
     private static ReadOnlySpan<byte> CharProperties => new[]
     {
         // 0 .. 31
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex,
-        (byte)CharFlags.White,   // TAB
-        (byte)CharFlags.LF,      // LF
-        (byte)CharFlags.White,   // VT
-        (byte)CharFlags.White,   // FF
-        (byte)CharFlags.CR,      // CR
-        (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex,
+        (byte)CharFlag.White,   // TAB
+        (byte)CharFlag.LF,      // LF
+        (byte)CharFlag.White,   // VT
+        (byte)CharFlag.White,   // FF
+        (byte)CharFlag.CR,      // CR
+        (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
 
         // 32 .. 63
-        (byte)CharFlags.White,    // SPC
-        (byte)CharFlags.CompoundPunctStart,    // !
-        (byte)CharFlags.Complex,  // "
-        (byte)CharFlags.Punct,  // #
-        (byte)CharFlags.Complex,  // $
-        (byte)CharFlags.CompoundPunctStart, // %
-        (byte)CharFlags.CompoundPunctStart, // &
-        (byte)CharFlags.Complex,  // '
-        (byte)CharFlags.Punct,    // (
-        (byte)CharFlags.Punct,    // )
-        (byte)CharFlags.CompoundPunctStart, // *
-        (byte)CharFlags.CompoundPunctStart, // +
-        (byte)CharFlags.Punct,    // ,
-        (byte)CharFlags.CompoundPunctStart, // -
-        (byte)CharFlags.Dot,      // .
-        (byte)CharFlags.Slash,    // /
-        (byte)CharFlags.Digit,    // 0
-        (byte)CharFlags.Digit,    // 1
-        (byte)CharFlags.Digit,    // 2
-        (byte)CharFlags.Digit,    // 3
-        (byte)CharFlags.Digit,    // 4
-        (byte)CharFlags.Digit,    // 5
-        (byte)CharFlags.Digit,    // 6
-        (byte)CharFlags.Digit,    // 7
-        (byte)CharFlags.Digit,    // 8
-        (byte)CharFlags.Digit,    // 9
-        (byte)CharFlags.CompoundPunctStart,  // :
-        (byte)CharFlags.Punct,    // ;
-        (byte)CharFlags.CompoundPunctStart,  // <
-        (byte)CharFlags.CompoundPunctStart,  // =
-        (byte)CharFlags.CompoundPunctStart,  // >
-        (byte)CharFlags.CompoundPunctStart,  // ?
+        (byte)CharFlag.White,    // SPC
+        (byte)CharFlag.CompoundPunctStart,    // !
+        (byte)CharFlag.Complex,  // "
+        (byte)CharFlag.Punct,  // #
+        (byte)CharFlag.Complex,  // $
+        (byte)CharFlag.CompoundPunctStart, // %
+        (byte)CharFlag.CompoundPunctStart, // &
+        (byte)CharFlag.Complex,  // '
+        (byte)CharFlag.Punct,    // (
+        (byte)CharFlag.Punct,    // )
+        (byte)CharFlag.CompoundPunctStart, // *
+        (byte)CharFlag.CompoundPunctStart, // +
+        (byte)CharFlag.Punct,    // ,
+        (byte)CharFlag.CompoundPunctStart, // -
+        (byte)CharFlag.Dot,      // .
+        (byte)CharFlag.Slash,    // /
+        (byte)CharFlag.Digit,    // 0
+        (byte)CharFlag.Digit,    // 1
+        (byte)CharFlag.Digit,    // 2
+        (byte)CharFlag.Digit,    // 3
+        (byte)CharFlag.Digit,    // 4
+        (byte)CharFlag.Digit,    // 5
+        (byte)CharFlag.Digit,    // 6
+        (byte)CharFlag.Digit,    // 7
+        (byte)CharFlag.Digit,    // 8
+        (byte)CharFlag.Digit,    // 9
+        (byte)CharFlag.CompoundPunctStart,  // :
+        (byte)CharFlag.Punct,    // ;
+        (byte)CharFlag.CompoundPunctStart,  // <
+        (byte)CharFlag.CompoundPunctStart,  // =
+        (byte)CharFlag.CompoundPunctStart,  // >
+        (byte)CharFlag.CompoundPunctStart,  // ?
 
         // 64 .. 95
-        (byte)CharFlags.Complex,  // @
-        (byte)CharFlags.Letter,   // A
-        (byte)CharFlags.Letter,   // B
-        (byte)CharFlags.Letter,   // C
-        (byte)CharFlags.Letter,   // D
-        (byte)CharFlags.Letter,   // E
-        (byte)CharFlags.Letter,   // F
-        (byte)CharFlags.Letter,   // G
-        (byte)CharFlags.Letter,   // H
-        (byte)CharFlags.Letter,   // I
-        (byte)CharFlags.Letter,   // J
-        (byte)CharFlags.Letter,   // K
-        (byte)CharFlags.Letter,   // L
-        (byte)CharFlags.Letter,   // M
-        (byte)CharFlags.Letter,   // N
-        (byte)CharFlags.Letter,   // O
-        (byte)CharFlags.Letter,   // P
-        (byte)CharFlags.Letter,   // Q
-        (byte)CharFlags.Letter,   // R
-        (byte)CharFlags.Letter,   // S
-        (byte)CharFlags.Letter,   // T
-        (byte)CharFlags.Letter,   // U
-        (byte)CharFlags.Letter,   // V
-        (byte)CharFlags.Letter,   // W
-        (byte)CharFlags.Letter,   // X
-        (byte)CharFlags.Letter,   // Y
-        (byte)CharFlags.Letter,   // Z
-        (byte)CharFlags.Punct,    // [
-        (byte)CharFlags.Complex,  // \
-        (byte)CharFlags.Punct,    // ]
-        (byte)CharFlags.CompoundPunctStart,    // ^
-        (byte)CharFlags.Letter,   // _
+        (byte)CharFlag.Complex,  // @
+        (byte)CharFlag.Letter,   // A
+        (byte)CharFlag.Letter,   // B
+        (byte)CharFlag.Letter,   // C
+        (byte)CharFlag.Letter,   // D
+        (byte)CharFlag.Letter,   // E
+        (byte)CharFlag.Letter,   // F
+        (byte)CharFlag.Letter,   // G
+        (byte)CharFlag.Letter,   // H
+        (byte)CharFlag.Letter,   // I
+        (byte)CharFlag.Letter,   // J
+        (byte)CharFlag.Letter,   // K
+        (byte)CharFlag.Letter,   // L
+        (byte)CharFlag.Letter,   // M
+        (byte)CharFlag.Letter,   // N
+        (byte)CharFlag.Letter,   // O
+        (byte)CharFlag.Letter,   // P
+        (byte)CharFlag.Letter,   // Q
+        (byte)CharFlag.Letter,   // R
+        (byte)CharFlag.Letter,   // S
+        (byte)CharFlag.Letter,   // T
+        (byte)CharFlag.Letter,   // U
+        (byte)CharFlag.Letter,   // V
+        (byte)CharFlag.Letter,   // W
+        (byte)CharFlag.Letter,   // X
+        (byte)CharFlag.Letter,   // Y
+        (byte)CharFlag.Letter,   // Z
+        (byte)CharFlag.Punct,    // [
+        (byte)CharFlag.Complex,  // \
+        (byte)CharFlag.Punct,    // ]
+        (byte)CharFlag.CompoundPunctStart,    // ^
+        (byte)CharFlag.Letter,   // _
 
         // 96 .. 127
-        (byte)CharFlags.Complex,  // `
-        (byte)CharFlags.Letter,   // a
-        (byte)CharFlags.Letter,   // b
-        (byte)CharFlags.Letter,   // c
-        (byte)CharFlags.Letter,   // d
-        (byte)CharFlags.Letter,   // e
-        (byte)CharFlags.Letter,   // f
-        (byte)CharFlags.Letter,   // g
-        (byte)CharFlags.Letter,   // h
-        (byte)CharFlags.Letter,   // i
-        (byte)CharFlags.Letter,   // j
-        (byte)CharFlags.Letter,   // k
-        (byte)CharFlags.Letter,   // l
-        (byte)CharFlags.Letter,   // m
-        (byte)CharFlags.Letter,   // n
-        (byte)CharFlags.Letter,   // o
-        (byte)CharFlags.Letter,   // p
-        (byte)CharFlags.Letter,   // q
-        (byte)CharFlags.Letter,   // r
-        (byte)CharFlags.Letter,   // s
-        (byte)CharFlags.Letter,   // t
-        (byte)CharFlags.Letter,   // u
-        (byte)CharFlags.Letter,   // v
-        (byte)CharFlags.Letter,   // w
-        (byte)CharFlags.Letter,   // x
-        (byte)CharFlags.Letter,   // y
-        (byte)CharFlags.Letter,   // z
-        (byte)CharFlags.Punct,    // {
-        (byte)CharFlags.CompoundPunctStart,  // |
-        (byte)CharFlags.Punct,    // }
-        (byte)CharFlags.CompoundPunctStart,    // ~
-        (byte)CharFlags.Complex,
+        (byte)CharFlag.Complex,  // `
+        (byte)CharFlag.Letter,   // a
+        (byte)CharFlag.Letter,   // b
+        (byte)CharFlag.Letter,   // c
+        (byte)CharFlag.Letter,   // d
+        (byte)CharFlag.Letter,   // e
+        (byte)CharFlag.Letter,   // f
+        (byte)CharFlag.Letter,   // g
+        (byte)CharFlag.Letter,   // h
+        (byte)CharFlag.Letter,   // i
+        (byte)CharFlag.Letter,   // j
+        (byte)CharFlag.Letter,   // k
+        (byte)CharFlag.Letter,   // l
+        (byte)CharFlag.Letter,   // m
+        (byte)CharFlag.Letter,   // n
+        (byte)CharFlag.Letter,   // o
+        (byte)CharFlag.Letter,   // p
+        (byte)CharFlag.Letter,   // q
+        (byte)CharFlag.Letter,   // r
+        (byte)CharFlag.Letter,   // s
+        (byte)CharFlag.Letter,   // t
+        (byte)CharFlag.Letter,   // u
+        (byte)CharFlag.Letter,   // v
+        (byte)CharFlag.Letter,   // w
+        (byte)CharFlag.Letter,   // x
+        (byte)CharFlag.Letter,   // y
+        (byte)CharFlag.Letter,   // z
+        (byte)CharFlag.Punct,    // {
+        (byte)CharFlag.CompoundPunctStart,  // |
+        (byte)CharFlag.Punct,    // }
+        (byte)CharFlag.CompoundPunctStart,    // ~
+        (byte)CharFlag.Complex,
 
         // 128 .. 159
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
 
         // 160 .. 191
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Letter, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Letter, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
-        (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Letter, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex, (byte)CharFlags.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Letter, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Letter, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
+        (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Letter, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,
 
         // 192 .. 
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Complex,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Complex,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
 
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Complex,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Complex,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
 
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
 
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
 
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
 
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter,
-        (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter, (byte)CharFlags.Letter
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter,
+        (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter, (byte)CharFlag.Letter
     };
 }

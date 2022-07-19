@@ -10,10 +10,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DefineConstants>UNITTEST;$(DefineConstants)TRACE</DefineConstants>
-  </PropertyGroup>
-  
   <ItemGroup>
     <Compile Include="..\..\Portable\Parser\QuickScanner.cs" Link="Source\QuickScanner.cs" />
   </ItemGroup>

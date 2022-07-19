@@ -30,9 +30,9 @@ partial class Lexer
             int uc = charWindow[i];
 
             // 获取当前字符的属性，超出0x180范围的字符属性默认为Complex。
-            var flags = uc < charPropLength ? (CharFlags)CharProperties[uc] : CharFlags.Complex;
+            var flag = uc < charPropLength ? (CharFlag)CharProperties[uc] : CharFlag.Complex;
 
-            state = (QuickScanState)s_stateTransitions[(int)state, (int)flags];
+            state = (QuickScanState)s_stateTransitions[(int)state, (int)flag];
             // 所有不小于Done的状态（包括Bad）都将导致扫描过程终止。
             if (state >= QuickScanState.Done)
                 goto exitWhile;
