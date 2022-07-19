@@ -49,8 +49,7 @@
     <Compile Include="..\..\Lua\Portable\Parser\Lexer.EndOfLine.cs" Link="Parser\Lexer.EndOfLine.cs" />
     <Compile Include="..\..\Lua\Portable\Parser\Lexer.Identifier.cs" Link="Parser\Lexer.Identifier.cs" />
     <Compile Include="..\..\Lua\Portable\Parser\Lexer.NumericLiteral.cs" Link="Parser\Lexer.NumericLiteral.cs" />
-    <Compile Include="..\..\Lua\Portable\Parser\Lexer.StringLiteral.EscapeSequence.cs" Link="Parser\Lexer.StringLiteral.EscapeSequence.cs" />
-    <Compile Include="..\..\Lua\Portable\Parser\Lexer.TokenInfo.cs" Link="Parser\Lexer.TokenInfo.cs" />
+    <Compile Include="..\..\Lua\Portable\Parser\Lexer.TokenInfo.cs" Link="Parser\Lexer.TokenInfo.Basic.cs" />
     <Compile Include="..\..\Lua\Portable\Parser\Lexer.WhiteSpace.cs" Link="Parser\Lexer.WhiteSpace.cs" />
     <Compile Include="..\..\Lua\Portable\SymbolDisplay\ObjectDisplay.cs" Link="SymbolDisplay\ObjectDisplay.cs" />
     <Compile Include="..\..\Lua\Portable\SymbolDisplay\SymbolDisplay.cs" Link="SymbolDisplay\SymbolDisplay.cs" />

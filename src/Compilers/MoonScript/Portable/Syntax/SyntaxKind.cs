@@ -471,6 +471,13 @@ public enum SyntaxKind : ushort
     SelfMemberAccessExpression, // 带有“@”前缀
     /// <summary>表示类型成员操作表达式。</summary>
     TypeMemberAccessExpression, // 带有“@@”前缀
+
+    // 插值表达式
+    /// <summary>表示插值表达式。</summary>
+    Interpolation,
+    InterpolatedStringText,
+    /// <summary>表示差值字符串表达式。</summary>
+    InterpolatedStringExpression,
     #endregion
 
     #region 语句

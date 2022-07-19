@@ -5,6 +5,8 @@ namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
 internal static partial class SyntaxFactory
 {
+    internal static SyntaxToken InterpolatedString(GreenNode? leading, string text, SyntaxKind kind, SyntaxTokenList value, GreenNode? trailing) => SyntaxToken.WithValue(kind, leading, text, value, trailing);
+
     private static partial void ValidateTokenKind(SyntaxKind kind)
     {
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));

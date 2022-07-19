@@ -11,8 +11,15 @@ internal enum MessageID
     IDS_FeatureHexadecimalFloatConstant,
     IDS_FeatureBinaryExponent,
 
+    // 预览功能
     IDS_FeatureMultiLineRawStringLiteral,
     IDS_FeatureMultiLineComment,
+    IDS_FeatureFloorDivisionAssignmentOperator,
+    IDS_FeatureBitwiseAndAssignmentOperator,
+    IDS_FeatureBitwiseOrAssignmentOperator,
+    IDS_FeatureExponentiationAssignmentOperator,
+    IDS_FeatureBitwiseLeftShiftAssignmentOperator,
+    IDS_FeatureBitwiseRightShiftAssignmentOperator,
 }
 
 internal static partial class MessageIDExtensions

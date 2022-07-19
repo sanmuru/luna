@@ -129,6 +129,11 @@ internal partial class Lexer
                     info.Kind = SyntaxKind.SlashToken;
                 break;
 
+            case '^':
+                this.TextWindow.AdvanceChar();
+                info.Kind = SyntaxKind.CaretToken;
+                break;
+
             case '%':
                 this.TextWindow.AdvanceChar();
                 info.Kind = SyntaxKind.PersentToken;
@@ -188,7 +193,7 @@ internal partial class Lexer
                         this.TextWindow.AdvanceChar();
                         info.Kind = SyntaxKind.GreaterThanEqualsToken;
                         break;
-                    case '<':
+                    case '>':
                         this.TextWindow.AdvanceChar();
                         info.Kind = SyntaxKind.GreaterThanGreaterThanToken;
                         break;
