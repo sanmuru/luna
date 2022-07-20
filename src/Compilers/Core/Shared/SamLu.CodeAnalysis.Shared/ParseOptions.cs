@@ -86,11 +86,11 @@ public sealed partial class
 
     private
 #if LANG_LUA
-        LuaParseOptions(LuaParseOptions
+        LuaParseOptions
 #elif LANG_MOONSCRIPT
-        MoonScriptParseOptions(MoonScriptParseOptions
+        MoonScriptParseOptions
 #endif
-        other) :
+        (ThisParseOptions other) :
         this(
         languageVersion: other.SpecifiedLanguageVersion,
         documentationMode: other.DocumentationMode,

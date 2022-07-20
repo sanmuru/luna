@@ -9,6 +9,8 @@ namespace SamLu.CodeAnalysis.MoonScript;
 public enum LanguageVersion
 {
     /* 由于MoonScript尚未有正式发行版本，因此没有版本号。 */
+    [Obsolete("未正式发行版本")]
+    MoonScript0_5 = 1,
 
     /// <summary>
     /// 支持的最新的主要版本。
@@ -33,6 +35,7 @@ internal static partial class LanguageVersionExtensionsInternal
     internal static partial ErrorCode GetErrorCode(this LanguageVersion version) =>
         version switch
         {
+            LanguageVersion.MoonScript0_5 => ErrorCode.ERR_FeatureNotAvailableInVersion0_5,
             _ => throw ExceptionUtilities.UnexpectedValue(version)
         };
 }
@@ -47,6 +50,7 @@ public static partial class LanguageVersionFacts
     public static partial string ToDisplayString(this LanguageVersion version) =>
         version switch
         {
+            LanguageVersion.MoonScript0_5 => "0.5",
             LanguageVersion.Default => "default",
             LanguageVersion.Latest => "latest",
             LanguageVersion.LatestMajor => "latestmajor",
@@ -77,6 +81,10 @@ public static partial class LanguageVersionFacts
                 result = LanguageVersion.Preview;
                 return true;
 
+            case "0.5":
+                result = LanguageVersion.MoonScript0_5;
+                return true;
+
             default:
                 result = LanguageVersion.Default;
                 return false;
@@ -87,7 +95,7 @@ public static partial class LanguageVersionFacts
         version switch
         {
             LanguageVersion.Latest or
-            LanguageVersion.Default or
+            LanguageVersion.Default => LanguageVersion.MoonScript0_5,
             LanguageVersion.LatestMajor => LanguageVersion.Preview,
             _ => version
         };
@@ -95,5 +103,5 @@ public static partial class LanguageVersionFacts
     /// <summary>
     /// 获取MoonScript语言的当前版本。
     /// </summary>
-    internal static LanguageVersion CurrentVersion => LanguageVersion.Preview;
+    internal static LanguageVersion CurrentVersion => LanguageVersion.MoonScript0_5;
 }

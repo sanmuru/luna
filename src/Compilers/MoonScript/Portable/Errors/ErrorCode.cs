@@ -29,9 +29,14 @@ namespace SamLu.CodeAnalysis.MoonScript
         ERR_IllegalEscape,
         WRN_ErrorOverride,
 
+        #region MoonScript 0.5的消息
+        [Obsolete("未正式发行版本")]
+        ERR_FeatureNotAvailableInVersion0_5,
+        #endregion
+
         #region Lua实验性版本的消息
         ERR_FeatureIsExperimental = 8501,
-        ERR_FeatureInPreview
+        ERR_FeatureInPreview,
         #endregion
 
         // 更新编译器的警告后应手动运行（eng\generate-compiler-code.cmd）。

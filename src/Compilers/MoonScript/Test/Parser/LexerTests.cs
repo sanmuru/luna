@@ -1,40 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
+namespace SamLu.CodeAnalysis.MoonScript.Parser.UnitTests;
 
 using Utilities;
-using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+using SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
 [TestClass]
 public partial class LexerTests
 {
-    internal static readonly LuaParseOptions DefaultParseOptions = LuaParseOptions.Default;
-
-    [TestMethod]
-    public void SimpleLexTest()
-    {
-        string source = @"local i = 1";
-        Lexer lexer = LexerTests.CreateLexer(source);
-
-        SyntaxToken token;
-        LexerMode mode = LexerMode.Syntax;
-
-        token = lexer.Lex(mode);
-        Assert.That.IsKeyword(token, "local");
-
-        token = lexer.Lex(mode);
-        Assert.That.IsIdentifier(token, "i");
-
-        token = lexer.Lex(mode);
-        Assert.That.IsPunctuation(token, "=");
-
-        token = lexer.Lex(mode);
-        Assert.That.IsLiteral(token);
-        Assert.AreEqual(token.GetValue(), 1L);
-
-        token = lexer.Lex(mode);
-        Assert.That.IsEndOfFile(token);
-    }
+    internal static readonly MoonScriptParseOptions DefaultParseOptions = new(languageVersion: LanguageVersion.Preview);
 
     #region 正向测试
     [TestMethod]
@@ -66,15 +40,15 @@ public partial class LexerTests
         LiteralLexTest("""   'as",\',\"df'   """, "as\",',\"df"); // 单引号内包含的双引号可以不转义，但单引号必须转义。
 
         LiteralLexTest("""
-            'first line\
-            \
+            'first line
+            
             third line'
-            """, "first line\n\nthird line"); // 转义字面换行。
+            """, "first line\n\nthird line"); // 字面换行。
         LiteralLexTest("""
-            'abso\z
-                 lutely fun\z  ny!\z
-            '
-            """, "absolutely funny!"); // 跳过空白字符和新行字符。
+            'first line
+               second line
+             third line'
+            """, "first line\n  second line\nthird line"); // 换行字面量的缩进值以最后一行为准。
         LiteralLexTest("""
             '\97o\10\049t23+\23383456'
             """, "ao\n1t23+字456"); // 转义十进制Unicode字符。
@@ -90,10 +64,16 @@ public partial class LexerTests
             """, "a,[b],[[c]],[=[d]=],[==[e]==],[====[f]====],g"); // 多行原始字符串。
         LiteralLexTest("""
             [===[
-            first line
-            second line
-            ]===]
-            """, "first line\nsecond line\n"); // 字面多行，如果第一行没有字符则忽略这行。
+                 first line
+                 second line
+                 ]===]
+            """, "first line\nsecond line\n"); // 字面多行，如果第一行没有字符则忽略这行，缩进值以最后一行为准。
+    }
+
+    [TestMethod]
+    public void InterpolatedStringTests()
+    {
+
     }
 
     [TestMethod]

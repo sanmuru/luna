@@ -73,4 +73,8 @@
 
   <Import Project="..\..\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems" Label="Shared" />
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SamLu.CodeAnalysis.MoonScript.Parser.UnitTests" />
+  </ItemGroup>
+
 </Project>

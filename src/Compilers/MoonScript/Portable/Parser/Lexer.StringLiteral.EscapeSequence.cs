@@ -86,30 +86,6 @@ partial class Lexer
                 this.AddError(error);
                 break;
 
-            // 后方紧跟的连续的字面量的空白字符和换行字符。
-            case 'z':
-                c = this.TextWindow.PeekChar();
-                while (SyntaxFacts.IsWhiteSpace(c) || SyntaxFacts.IsNewLine(c))
-                {
-                    this.TextWindow.AdvanceChar();
-
-                    // 跳过这些字符。
-
-                    c = this.TextWindow.PeekChar();
-                }
-                break;
-
-            // 插入换行字符序列本身。
-            // Windows系统的换行字符序列为“\r\n”；
-            // Unix系统的换行字符序列为“\n”；
-            // Mac系统的换行字符序列为“\r”。
-            case '\r':
-            case '\n':
-                this._builder.Append('\n');
-                if (c == '\r' && this.TextWindow.PeekChar() == '\n')
-                    this.TextWindow.AdvanceChar(); // 跳过这个字符。
-                break;
-
             default:
                 this.AddError(
                     start,

@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using Microsoft.CodeAnalysis;
 
 #if LANG_LUA
@@ -253,8 +254,10 @@ partial class MessageProvider : CommonMessageProvider
         throw new NotImplementedException();
     }
 
+#if DEBUG
     internal override bool ShouldAssertExpectedMessageArgumentsLength(int errorCode)
     {
         throw new NotImplementedException();
     }
+#endif
 }

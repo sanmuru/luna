@@ -28,14 +28,15 @@ partial class Lexer
         int hashCode = Hash.FnvOffsetBias;
 
         var charWindow = this.TextWindow.CharacterWindow;
-        var charPropLength = CharProperties.Length;
+        var charProp = CharProperties;
+        var charPropLength = charProp.Length;
 
         for (; i < n; i++)
         {
             int uc = charWindow[i];
 
             // 获取当前字符的属性，超出0x180范围的字符属性默认为Complex。
-            var flag = uc < charPropLength ? (CharFlag)CharProperties[uc] : CharFlag.Complex;
+            var flag = uc < charPropLength ? (CharFlag)charProp[uc] : CharFlag.Complex;
 
             state = (QuickScanState)s_stateTransitions[(int)state, (int)flag];
             // 所有不小于Done的状态（包括Bad）都将导致扫描过程终止。

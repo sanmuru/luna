@@ -1,6 +1,12 @@
-﻿using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+﻿#if LANG_LUA
+using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests.Utilities;
+#elif LANG_MOONSCRIPT
+using SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
+
+namespace SamLu.CodeAnalysis.MoonScript.Parser.UnitTests.Utilities;
+#endif
 
 public static class LexerTestUtilities
 {

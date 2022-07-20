@@ -82,6 +82,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CodeAnalysisGenerator.Share
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoonScriptCodeAnalysisSourceGenerators", "src\Tools\Source\CompilerGeneratorTools\src\MoonScriptCodeAnalysisSourceGenerators\MoonScriptCodeAnalysisSourceGenerators.csproj", "{FB12F0DD-2810-4EEA-A59D-FB21CA43F60D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamLu.CodeAnalysis.MoonScript.Parser.UnitTests", "src\Compilers\MoonScript\Test\Parser\SamLu.CodeAnalysis.MoonScript.Parser.UnitTests.csproj", "{2FC502DF-E5D1-46E6-ACF1-6CB45782D150}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,8 +95,8 @@ Global
 		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Testing|Any CPU.Build.0 = Debug|Any CPU
+		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Testing|Any CPU.ActiveCfg = Testing|Any CPU
+		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Testing|Any CPU.Build.0 = Testing|Any CPU
 		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -199,6 +201,10 @@ Global
 		{FB12F0DD-2810-4EEA-A59D-FB21CA43F60D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FB12F0DD-2810-4EEA-A59D-FB21CA43F60D}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
 		{FB12F0DD-2810-4EEA-A59D-FB21CA43F60D}.Testing|Any CPU.Build.0 = Debug|Any CPU
+		{2FC502DF-E5D1-46E6-ACF1-6CB45782D150}.Debug|Any CPU.ActiveCfg = Testing|Any CPU
+		{2FC502DF-E5D1-46E6-ACF1-6CB45782D150}.Release|Any CPU.ActiveCfg = Testing|Any CPU
+		{2FC502DF-E5D1-46E6-ACF1-6CB45782D150}.Testing|Any CPU.ActiveCfg = Testing|Any CPU
+		{2FC502DF-E5D1-46E6-ACF1-6CB45782D150}.Testing|Any CPU.Build.0 = Testing|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -231,6 +237,7 @@ Global
 		{D929770B-C91D-4553-B301-11C02FAF73E1} = {FD0FAF5F-1DED-485C-99FA-84B97F3A8EEC}
 		{B2D21490-8284-48C7-8E96-85EBFB70C11F} = {FD0FAF5F-1DED-485C-99FA-84B97F3A8EEC}
 		{FB12F0DD-2810-4EEA-A59D-FB21CA43F60D} = {FD0FAF5F-1DED-485C-99FA-84B97F3A8EEC}
+		{2FC502DF-E5D1-46E6-ACF1-6CB45782D150} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F599E08-A9EA-4FAA-897F-5D824B0210E6}

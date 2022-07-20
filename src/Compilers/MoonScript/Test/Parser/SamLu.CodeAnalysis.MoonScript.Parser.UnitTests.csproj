@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <RootNamespace>SamLu.CodeAnalysis.Lua.Parser.UnitTests</RootNamespace>
+    <RootNamespace>SamLu.CodeAnalysis.MoonScript.Parser.UnitTests</RootNamespace>
     <Configurations>Testing</Configurations>
     <TargetFrameworks>net6.0;net472</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -12,13 +12,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>LANG_LUA;$(DefineConstants)TRACE</DefineConstants>
+    <DefineConstants>LANG_MOONSCRIPT;$(DefineConstants)TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Include="..\..\..\Test\Shared\Parser\Utilities\LexerTestUtilities.cs" Link="Utilities\LexerTestUtilities.cs" />
     <Compile Include="..\..\..\Test\Shared\Parser\LexerTests.cs" Link="LexerTests.Shared.cs" />
@@ -33,7 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\CodeAnalysisTest\SamLu.CodeAnalysis.UnitTests.csproj" />
-    <ProjectReference Include="..\..\Portable\SamLu.CodeAnalysis.Lua.csproj">
+    <ProjectReference Include="..\..\Portable\SamLu.CodeAnalysis.MoonScript.csproj">
       <SetConfiguration>Configuration=Testing</SetConfiguration>
     </ProjectReference>
   </ItemGroup>
