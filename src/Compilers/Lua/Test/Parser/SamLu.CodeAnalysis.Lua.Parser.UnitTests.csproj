@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <RootNamespace>SamLu.CodeAnalysis.Lua.Parser.UnitTests</RootNamespace>
+    <Configurations>Testing</Configurations>
     <TargetFrameworks>net6.0;net472</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
