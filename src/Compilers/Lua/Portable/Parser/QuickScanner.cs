@@ -1,17 +1,13 @@
-﻿#if UNITTEST
-namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
-#else
-namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
-#endif
+﻿namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
-partial class
-#if UNITTEST
-    QuickScannerTests
-#else
-    Lexer
-#endif
+partial class Lexer
 {
-    private enum QuickScanState : byte
+#if TESTING
+    internal
+#else
+    private
+#endif
+        enum QuickScanState : byte
     {
         /// <summary>初始状态。</summary>
         Initial,
@@ -41,7 +37,12 @@ partial class
         Bad = Done + 1
     }
 
-    private enum CharFlag : byte
+#if TESTING
+    internal
+#else
+    private
+#endif
+        enum CharFlag : byte
     {
         /// <summary>空白字符（空格符或制表符）。</summary>
         White,
@@ -66,7 +67,12 @@ partial class
         EndOfFile,
     }
 
-    private static readonly byte[,] s_stateTransitions = new byte[,]
+#if TESTING
+    internal
+#else
+    private
+#endif
+         static readonly byte[,] s_stateTransitions = new byte[,]
     {
         // Initial
         {
@@ -237,7 +243,12 @@ partial class
     /// <summary>
     /// 获取Unicode字符的前0x180个字符的属性。
     /// </summary>
-    private static ReadOnlySpan<byte> CharProperties => new[]
+#if TESTING
+    internal
+#else
+    private
+#endif
+         static ReadOnlySpan<byte> CharProperties => new[]
     {
         // 0 .. 31
         (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex, (byte)CharFlag.Complex,

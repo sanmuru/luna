@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>LANG_MOONSCRIPT;$(DefineConstants)TRACE</DefineConstants>
+    <DefineConstants>LANG_MOONSCRIPT;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -12,7 +12,12 @@ partial class Lexer
 {
     internal const int MaxCachedTokenSize = 42;
 
-    private SyntaxToken? QuickScanSyntaxToken()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        SyntaxToken? QuickScanSyntaxToken()
     {
         this.Start();
         var state = QuickScanState.Initial; // 初始状态。

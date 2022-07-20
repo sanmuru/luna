@@ -10,12 +10,9 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DefineConstants>UNITTEST;$(DefineConstants)TRACE</DefineConstants>
-  </PropertyGroup>
-  
   <ItemGroup>
-    <Compile Include="..\..\Portable\Parser\QuickScanner.cs" Link="Source\QuickScanner.cs" />
+    <Compile Remove="Source\**" />
+    <EmbeddedResource Remove="Source\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,7 +24,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\CodeAnalysisTest\SamLu.CodeAnalysis.UnitTests.csproj" />
-    <ProjectReference Include="..\..\Portable\SamLu.CodeAnalysis.Lua.csproj" />
+    <ProjectReference Include="..\..\Portable\SamLu.CodeAnalysis.Lua.csproj">
+      <SetConfiguration>Configuration=Testing</SetConfiguration>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -37,10 +36,6 @@
 
   <ItemGroup>
     <PackageReference Update="XunitXml.TestLogger" Version="3.0.62" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Source\" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.CodeAnalysis.Text;
 using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+using static SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.Lexer;
 
 namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
 
@@ -10,7 +11,7 @@ public partial class QuickScannerTests
 {
     private static IEnumerable<char> GetCharByFlag(CharFlag flag)
     {
-        var properties = QuickScannerTests.CharProperties.ToArray();
+        var properties = CharProperties.ToArray();
         for (int i = 0, n = properties.Length; i < n; i++)
         {
             var b = properties[i];
@@ -21,7 +22,7 @@ public partial class QuickScannerTests
             yield return (char)0x181;
     }
 
-    private static CharFlag GetFlag(char c) => c < 0x180 ? (CharFlag)QuickScannerTests.CharProperties[c] : CharFlag.Complex;
+    private static CharFlag GetFlag(char c) => c < 0x180 ? (CharFlag)CharProperties[c] : CharFlag.Complex;
 
     private static IEnumerable<string> Run()
     {
@@ -34,18 +35,24 @@ public partial class QuickScannerTests
                 var nextChar = (char)uc;
                 var nextFlag = QuickScannerTests.GetFlag(nextChar);
 
-                state = (QuickScanState)s_stateTransitions[(int)state, (int)nextFlag];
-                switch (state)
+                var newState = (QuickScanState)s_stateTransitions[(int)state, (int)nextFlag];
+                // 防止堆栈溢出。
+                if (newState == state)
+                    yield return buffer + nextChar;
+                else
                 {
-                    case QuickScanState.Done:
-                        yield return buffer;
-                        break;
-                    case QuickScanState.Bad:
-                        yield break;
-                    default:
-                        foreach (var s in RunInternal(state, buffer + nextChar))
-                            yield return s;
-                        break;
+                    switch (newState)
+                    {
+                        case QuickScanState.Done:
+                            yield return buffer;
+                            break;
+                        case QuickScanState.Bad:
+                            continue;
+                        default:
+                            foreach (var s in RunInternal(newState, buffer + nextChar))
+                                yield return s;
+                            break;
+                    }
                 }
             }
         }
@@ -67,6 +74,9 @@ public partial class QuickScannerTests
     [TestMethod]
     public void StateTest()
     {
+        var lexer = LexerTests.CreateLexer("A");
+        var token = lexer.Lex(LexerMode.Syntax);
+
         Assert.IsTrue(
             QuickScannerTests.Run()
                 .All(QuickScannerTests.Check)

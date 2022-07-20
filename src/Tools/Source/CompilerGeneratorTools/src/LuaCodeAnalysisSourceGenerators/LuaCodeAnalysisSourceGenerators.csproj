@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>LANG_LUA;$(DefineConstants)TRACE</DefineConstants>
+    <DefineConstants>LANG_LUA;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
