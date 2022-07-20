@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis.Text;
 using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -9,7 +10,15 @@ namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
 [TestClass]
 public partial class QuickScannerTests
 {
-    private static IEnumerable<char> GetCharByFlag(CharFlag flag)
+    protected internal static TestContext Context;
+
+    [ClassInitialize]
+    public static void SetupTests(TestContext testContext)
+    {
+        QuickScannerTests.Context = testContext;
+    }
+
+    internal static IEnumerable<char> GetCharByFlag(CharFlag flag)
     {
         var properties = CharProperties.ToArray();
         for (int i = 0, n = properties.Length; i < n; i++)
@@ -22,9 +31,14 @@ public partial class QuickScannerTests
             yield return (char)0x181;
     }
 
-    private static CharFlag GetFlag(char c) => c < 0x180 ? (CharFlag)CharProperties[c] : CharFlag.Complex;
+    internal static CharFlag GetFlag(char c) => c < 0x180 ? (CharFlag)CharProperties[c] : CharFlag.Complex;
 
-    private static IEnumerable<string> Run()
+    /// <summary>
+    /// 从Unicode字符集第1到第0x181（共385个字符）范围中枚举字符组成序列，作为状态机的输入，检测状态机的每个状态是否正常对应。
+    /// 逐渐增长字符序列，直到状态机达到终止状态，返回接收的字符串。
+    /// </summary>
+    /// <returns>状态机接收的所有字符串。</returns>
+    internal static IEnumerable<string> Run()
     {
         return RunInternal(QuickScanState.Initial, string.Empty);
 
@@ -58,15 +72,22 @@ public partial class QuickScannerTests
         }
     }
 
-    public static bool Check(string? result)
+    /// <summary>
+    /// 将状态机接收的字符串与广范围词法分析逻辑产生的语法标志交叉检查是否对应。
+    /// </summary>
+    /// <param name="result">状态机接收的字符串。</param>
+    /// <returns>若状态机逻辑是广范围词法分析逻辑的子集，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
+    public static bool Check(string result)
     {
-        if (result is null) return true;
+        var lexer = LexerTests.CreateLexer(result);
+        lexer._mode = LexerMode.Syntax;
 
-        var lexer = new Lexer(SourceText.From(result), LuaParseOptions.Default);
-        var token = lexer.Lex(LexerMode.Syntax);
+        var token = lexer.LexSyntaxToken();
 
-        if (token.Kind == SyntaxKind.BadToken) return false;
-        if (token.FullWidth != result.Length) return false;
+        if (token.Kind == SyntaxKind.BadToken)
+            return false;
+        if (token.FullWidth != result.Length)
+            return false;
 
         return true;
     }
@@ -74,12 +95,16 @@ public partial class QuickScannerTests
     [TestMethod]
     public void StateTest()
     {
-        var lexer = LexerTests.CreateLexer("A");
-        var token = lexer.Lex(LexerMode.Syntax);
-
+        long count = 0;
         Assert.IsTrue(
             QuickScannerTests.Run()
+                .Select(r =>
+                {
+                    count++;
+                    return r;
+                })
                 .All(QuickScannerTests.Check)
         );
+        QuickScannerTests.Context.WriteLine($"共 {count} 种状态组合均通过测试。"); // 7位数数量级。
     }
 }

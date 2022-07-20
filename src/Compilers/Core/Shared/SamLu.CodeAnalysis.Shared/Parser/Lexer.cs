@@ -28,7 +28,12 @@ internal partial class Lexer : AbstractLexer
     private readonly ThisParseOptions _options;
 
     /// <summary>词法分析器的当前分析模式。</summary>
-    private LexerMode _mode;
+#if TESTING
+    internal
+#else
+    private
+#endif
+        LexerMode _mode;
     private readonly StringBuilder _builder;
     /// <summary>标识符缓冲数组。</summary>
     private char[] _identifierBuffer;
@@ -146,7 +151,12 @@ internal partial class Lexer : AbstractLexer
     /// 分析一个语法标志。
     /// </summary>
     /// <returns>分析得到的语法标志。</returns>
-    private SyntaxToken LexSyntaxToken()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        SyntaxToken LexSyntaxToken()
     {
         // 分析前方语法琐碎内容。
         this.LexSyntaxLeadingTriviaCore();

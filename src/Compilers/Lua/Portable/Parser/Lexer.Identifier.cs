@@ -65,9 +65,17 @@ partial class Lexer
 
         while (true)
         {
-            // 没有后续字符，立即返回扫描失败。
+            // 没有后续字符，立即返回结果。
             if (currentOffset == characterWindowCount)
-                return false;
+            {
+                var length = currentOffset - startOffset;
+                if (length == 0) return false;
+
+                this.TextWindow.AdvanceChar(length);
+                info.Text = this.TextWindow.Intern(characterWindow, startOffset, length);
+                info.StringValue = info.Text;
+                return true;
+            }
 
             var c = characterWindow[currentOffset++];
 
@@ -88,9 +96,28 @@ partial class Lexer
             // 下划线
             else if (c == '_')
                 continue;
-            // ASCII可显示字符范围外的可用的Unicode字符
+
+            // 处理终止字符。
+            else if (
+                SyntaxFacts.IsWhiteSpace(c) || // 属于空白字符
+                SyntaxFacts.IsNewLine(c) || // 属于换行符
+                (c >= 32 && c <= 126)) // 属于ASCII可显示字符范围
+            {
+                currentOffset--;
+                var length = currentOffset - startOffset;
+                this.TextWindow.AdvanceChar(length);
+                info.Text = this.TextWindow.Intern(characterWindow, startOffset, length);
+                info.StringValue = info.Text;
+                return true;
+            }
+
+            // 其余字符一律留给慢速扫描处理。
+            else if (isFastPath)
+                return false;
+
+            // 慢速扫描处理ASCII可显示字符范围外的可用的Unicode字符。
             // 因为SyntaxFacts.IsIdentifierStartCharacter和SyntaxFacts.IsIdentifierPartCharacter是高开销的方法，所以在快速扫描阶段不进行。
-            else if (!isFastPath)
+            else
             {
                 if (currentOffset == startOffset ?
                     SyntaxFacts.IsIdentifierStartCharacter(c) :
@@ -100,27 +127,6 @@ partial class Lexer
                 else
                     return false;
             }
-
-            // 处理终止字符。
-            if (
-                SyntaxFacts.IsWhiteSpace(c) || // 属于空白字符
-                SyntaxFacts.IsNewLine(c) || // 属于换行符
-                (c >= 32 || c <= 126)) // 属于ASCII可显示字符范围
-            {
-                currentOffset--;
-                var length = currentOffset - startOffset;
-                this.TextWindow.AdvanceChar(length);
-                info.Text = this.TextWindow.Intern(characterWindow, startOffset, length);
-                info.StringValue = info.Text;
-                return true;
-            }
-            // 其余字符一律留给慢速扫描处理。
-            else if (isFastPath)
-                return false;
-            // 慢速扫描处理
-            else
-                // 目前没有找到例外情况。
-                Debug.Fail($"扫描标识符时遇到意外的终止字符“{c}”。");
         }
     }
 }
