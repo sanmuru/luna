@@ -48,7 +48,7 @@ public partial class LexerTests
             'first line
                second line
              third line'
-            """, "first line\n  second line\nthird line"); // 换行字面量的缩进值以最后一行为准。
+            """, "first line\n  second line\nthird line"); // 换行字面量的缩进量以除第一行外缩进量最小的一行为准。
         LiteralLexTest("""
             '\97o\10\049t23+\23383456'
             """, "ao\n1t23+字456"); // 转义十进制Unicode字符。
@@ -64,10 +64,10 @@ public partial class LexerTests
             """, "a,[b],[[c]],[=[d]=],[==[e]==],[====[f]====],g"); // 多行原始字符串。
         LiteralLexTest("""
             [===[
-                 first line
-                 second line
-                 ]===]
-            """, "first line\nsecond line\n"); // 字面多行，如果第一行没有字符则忽略这行，缩进值以最后一行为准。
+             first line
+              second line
+               ]===]
+            """, " first line\n  second line\n   "); // 字面多行，如果第一行没有字符则忽略这行。
     }
 
     [TestMethod]

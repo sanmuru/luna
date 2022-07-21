@@ -2,7 +2,7 @@
 using System.Globalization;
 using Roslyn.Utilities;
 
-namespace SamLu.CodeAnalysis.Lua;
+namespace SamLu.CodeAnalysis.MoonScript;
 
 public static partial class SyntaxFacts
 {
@@ -20,4 +20,20 @@ public static partial class SyntaxFacts
 
     public static partial bool IsValidIdentifier(string? name) =>
         UnicodeCharacterUtilities.IsValidIdentifier(name);
+
+    public static int WhiteSpaceIndent(char c) =>
+        c switch
+        {
+            ' ' => 1,
+            '\t' => 4,
+            '\v' or
+            '\f' => 1,
+            '\u00A0' => 1,  // 无中断空格符（U+00A0）
+            '\uFEFF' or     // 零宽无中断空格符（U+FEFF）
+            '\u001A'        // 替换符（U+001A）
+                => 0,
+            > (char)255 =>
+                CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.SpaceSeparator ? 1 : 0,
+            _ => 0
+        };
 }

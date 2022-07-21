@@ -146,6 +146,10 @@ internal abstract partial class
 
     public override partial Microsoft.CodeAnalysis.SyntaxToken CreateSeparator<TNode>(SyntaxNode element);
 
+    public virtual bool IsTokenAtEndOfLine() =>
+        this is SyntaxToken token &&
+            token.TrailingTrivia.Last?.IsTriviaWithEndOfLine() == true;
+
     public override partial bool IsTriviaWithEndOfLine();
 
     /// <summary>
@@ -188,13 +192,15 @@ internal abstract partial class
     /// <summary>
     /// 使用指定语法琐碎内容创建新的<see cref="Lua.Syntax.StructuredTriviaSyntax"/>实例。
     /// </summary>
+    /// <param name="trivia">现有的语法琐碎内容。</param>
+    /// <returns>根据现有的语法琐碎内容创建的新的表示结构语法琐碎内容的语法节点。</returns>
 #elif LANG_MOONSCRIPT
     /// <summary>
     /// 使用指定语法琐碎内容创建新的<see cref="MoonScript.Syntax.StructuredTriviaSyntax"/>实例。
     /// </summary>
-#endif
     /// <param name="trivia">现有的语法琐碎内容。</param>
     /// <returns>根据现有的语法琐碎内容创建的新的表示结构语法琐碎内容的语法节点。</returns>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected virtual SyntaxNode GetNewStructure(Microsoft.CodeAnalysis.SyntaxTrivia trivia) =>
 #if LANG_LUA

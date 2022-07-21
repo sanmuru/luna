@@ -47,7 +47,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Lua\Portable\Parser\CharacterInfo.cs" Link="Parser\CharacterInfo.cs" />
     <Compile Include="..\..\Lua\Portable\Parser\Lexer.EndOfLine.cs" Link="Parser\Lexer.EndOfLine.cs" />
     <Compile Include="..\..\Lua\Portable\Parser\Lexer.Identifier.cs" Link="Parser\Lexer.Identifier.cs" />
     <Compile Include="..\..\Lua\Portable\Parser\Lexer.NumericLiteral.cs" Link="Parser\Lexer.NumericLiteral.cs" />

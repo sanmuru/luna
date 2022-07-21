@@ -34,12 +34,12 @@ internal static partial class SyntaxFactory
     internal static readonly SyntaxTrivia ElasticCarriageReturnLineFeed = SyntaxFactory.CarriageReturnLineFeed.AsElastic();
 
     /// <summary>表示垂直制表符的语法琐碎内容。</summary>
-    internal static readonly SyntaxTrivia VerticalTab = SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, "\v");
+    internal static readonly SyntaxTrivia VerticalTab = SyntaxTrivia.Create(SyntaxKind.WhiteSpaceTrivia, "\v");
     /// <summary>表示可变的垂直制表符的语法琐碎内容。</summary>
     internal static readonly SyntaxTrivia ElasticVerticalTab = SyntaxFactory.VerticalTab.AsElastic();
 
     /// <summary>表示换页符的语法琐碎内容。</summary>
-    internal static readonly SyntaxTrivia FormFeed = SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, "\f");
+    internal static readonly SyntaxTrivia FormFeed = SyntaxTrivia.Create(SyntaxKind.WhiteSpaceTrivia, "\f");
     /// <summary>表示可变的换页符的语法琐碎内容。</summary>
     internal static readonly SyntaxTrivia ElasticFormFeed = SyntaxFactory.FormFeed.AsElastic();
 
@@ -75,8 +75,6 @@ internal static partial class SyntaxFactory
             "\r" => elastic ? SyntaxFactory.ElasticCarriageReturn : SyntaxFactory.CarriageReturn,
             "\n" => elastic ? SyntaxFactory.ElasticLineFeed : SyntaxFactory.LineFeed,
             "\r\n" => elastic ? SyntaxFactory.ElasticCarriageReturnLineFeed : SyntaxFactory.CarriageReturnLineFeed,
-            "\v" => elastic ? SyntaxFactory.ElasticVerticalTab : SyntaxFactory.Tab,
-            "\f" => elastic ? SyntaxFactory.ElasticFormFeed : SyntaxFactory.FormFeed,
             _ => elastic switch
             {
                 false => SyntaxTrivia.Create(SyntaxKind.EndOfLineTrivia, text),
@@ -91,11 +89,13 @@ internal static partial class SyntaxFactory
     /// <param name="elastic">生成的语法琐碎内容是否为可变的。</param>
     /// <returns>表示空白内容的内部语法琐碎内容。</returns>
     internal static SyntaxTrivia WhiteSpace(string text, bool elastic = false) =>
-        (text, elastic) switch
+        text switch
         {
-            (" ", _) => elastic ? SyntaxFactory.ElasticSpace : SyntaxFactory.Space,
-            ("\t", _) => elastic ? SyntaxFactory.ElasticTab : SyntaxFactory.Tab,
-            ("", true) => SyntaxFactory.ElasticZeroSpace,
+            " " => elastic ? SyntaxFactory.ElasticSpace : SyntaxFactory.Space,
+            "\t" => elastic ? SyntaxFactory.ElasticTab : SyntaxFactory.Tab,
+            "\v" => elastic ? SyntaxFactory.ElasticVerticalTab : SyntaxFactory.Tab,
+            "\f" => elastic ? SyntaxFactory.ElasticFormFeed : SyntaxFactory.FormFeed,
+            "" => elastic ? SyntaxFactory.ElasticZeroSpace : SyntaxTrivia.Create(SyntaxKind.WhiteSpaceTrivia, text),
             _ => elastic switch
             {
                 false => SyntaxTrivia.Create(SyntaxKind.WhiteSpaceTrivia, text),

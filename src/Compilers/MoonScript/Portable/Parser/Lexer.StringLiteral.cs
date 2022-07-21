@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.PooledObjects;
 
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
@@ -25,16 +26,19 @@ partial class Lexer
         }
         else
         {
+            this.TextWindow.AdvanceChar();
+            var spansBuilder = ArrayBuilder<string?>.GetInstance();
             this._builder.Clear();
 
             while (true)
             {
                 char c = this.TextWindow.PeekChar();
-                if (c == '\\') // 转义字符前缀
-                    this.ScanEscapeSequence();
-                else if (c == quote) // 字符串结尾
+                if (c == quote) // 字符串结尾
                 {
                     this.TextWindow.AdvanceChar();
+
+                    if (this._builder.Length > 0)
+                        spansBuilder.Add(this._builder.ToString());
                     break;
                 }
                 // 字符串中可能包含非正规的Utf-16以外的字符，检查是否真正到达文本结尾来验证这些字符不是由用户代码引入的情况。
@@ -42,16 +46,110 @@ partial class Lexer
                 {
                     Debug.Assert(this.TextWindow.Width > 0);
                     this.AddError(ErrorCode.ERR_UnterminatedStringLiteral);
+
+                    if (this._builder.Length > 0)
+                        spansBuilder.Add(this._builder.ToString());
                     break;
                 }
-                else // 普通字符
+                else if (SyntaxFacts.IsWhiteSpace(c))
                 {
+                    // 扫描缩进或内容（第一行）状态。
                     this.TextWindow.AdvanceChar();
                     this._builder.Append(c);
                 }
+                else
+                {
+                    if (spansBuilder.Count % 2 == 1) // 处于扫描缩进状态。
+                    {
+                        if (this._builder.Length > 0)
+                        {
+                            spansBuilder.Add(this._builder.ToString());
+                            this._builder.Clear();
+                        }
+                        else
+                            spansBuilder.Add(null);
+                    }
+
+                    if (c == '\\') // 转义字符前缀
+                        this.ScanEscapeSequence();
+                    else if (SyntaxFacts.IsNewLine(c))
+                    {
+                        this.TextWindow.AdvanceChar();
+                        if (SyntaxFacts.IsNewLine(c, this.TextWindow.PeekChar()))
+                            this.TextWindow.AdvanceChar();
+                        this._builder.Append('\n');
+
+                        spansBuilder.Add(this._builder.ToString());
+                        this._builder.Clear();
+                    }
+                    else // 普通字符
+                    {
+                        // 扫描内容状态。
+                        this.TextWindow.AdvanceChar();
+                        this._builder.Append(c);
+                    }
+                }
             }
 
+            // 缩进量修剪。
+            if (spansBuilder.Count > 1)
+            {
+                // 找到最小缩进量。
+                int minIndent = int.MaxValue;
+                for (int i = 1; i < spansBuilder.Count; i += 2)
+                {
+                    string? span = spansBuilder[i];
+                    if (span is null) // 遇到无缩进量的行，快速退出。
+                    {
+                        minIndent = 0;
+                        break;
+                    }
+                    minIndent = Math.Min(minIndent, span.Sum(SyntaxFacts.WhiteSpaceIndent));
+                }
+
+                // 修剪缩进量。
+                for (int i = 1; i < spansBuilder.Count; i += 2)
+                {
+                    int indent = 0;
+                    int start = 0;
+                    string? span = spansBuilder[i];
+                    if (span is null) continue; // 遇到无缩进量的行，跳过。
+
+                    while (indent <= minIndent && start < span.Length)
+                    {
+                        int nextIndent = SyntaxFacts.WhiteSpaceIndent(span[start]);
+                        if (indent == minIndent && nextIndent != 0) break; // 缩进量正好相等。
+
+                        indent += nextIndent;
+                        start++;
+                    };
+                    if (indent > minIndent)
+                    {
+                        int indentLength = indent - minIndent;
+                        int spanLength = span.Length - start;
+                        char[] buffer = new char[spanLength + indentLength];
+                        for (int _i = 0; _i < indentLength; i++)
+                            buffer[_i] = ' '; // 前导空格符。
+                        if (start < span.Length)
+                        {
+                            span.CopyTo(start, buffer, indentLength, spanLength);
+                        }
+
+                        spansBuilder[i] = new string(buffer);
+                    }
+                    else
+                    {
+                        spansBuilder[i] = start == 0 ? span : span.Substring(start);
+                    }
+                }
+            }
+
+
             info.Text = this.TextWindow.GetText(intern: true);
+
+            this._builder.Clear();
+            foreach (var span in spansBuilder.ToImmutableOrEmptyAndFree())
+                this._builder.Append(span);
         }
 
         info.Kind = SyntaxKind.StringLiteralToken;
