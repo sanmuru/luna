@@ -2,10 +2,18 @@
 using System.Diagnostics;
 using System.Text;
 using Microsoft.CodeAnalysis.Text;
+
+#if LANG_LUA
 using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 using static SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.Lexer;
 
 namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
+#elif LANG_MOONSCRIPT
+using SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
+using static SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax.Lexer;
+
+namespace SamLu.CodeAnalysis.MoonScript.Parser.UnitTests;
+#endif
 
 [TestClass]
 public partial class QuickScannerTests

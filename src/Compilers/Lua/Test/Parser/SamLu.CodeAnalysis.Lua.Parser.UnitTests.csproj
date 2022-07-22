@@ -20,6 +20,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Compile Include="..\..\..\Test\Shared\Parser\QuickScannerTests.cs" Link="QuickScannerTests.cs" />
     <Compile Include="..\..\..\Test\Shared\Parser\Utilities\LexerTestUtilities.cs" Link="Utilities\LexerTestUtilities.cs" />
     <Compile Include="..\..\..\Test\Shared\Parser\LexerTests.cs" Link="LexerTests.Shared.cs" />
   </ItemGroup>

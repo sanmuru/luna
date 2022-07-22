@@ -26,6 +26,7 @@ public static partial class SyntaxFacts
             SyntaxKind.LessThanToken => "<",
             SyntaxKind.GreaterThanToken => ">",
             SyntaxKind.EqualsToken => "=",
+            SyntaxKind.ExclamationToken => "!",
             SyntaxKind.OpenParenToken => "(",
             SyntaxKind.CloseParenToken => ")",
             SyntaxKind.OpenBraceToken => "{",
