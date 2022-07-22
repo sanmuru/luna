@@ -1,29 +1,25 @@
-﻿using System.Globalization;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Roslyn.Utilities;
 
-#if LANG_LUA
-namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
-#elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
-#endif
 
 partial class SyntaxToken
 {
-    internal class SyntaxTokenWithValueAndTrivia<T> : SyntaxTokenWithValue<T>
+    internal class IndentedSyntaxTokenWithValueAndTrivia<T> : IndentedSyntaxTokenWithValue<T>
     {
-        static SyntaxTokenWithValueAndTrivia() => ObjectBinder.RegisterTypeReader(typeof(SyntaxTokenWithValueAndTrivia<T>), r => new SyntaxTokenWithValueAndTrivia<T>(r));
+        static IndentedSyntaxTokenWithValueAndTrivia() => ObjectBinder.RegisterTypeReader(typeof(IndentedSyntaxTokenWithValueAndTrivia<T>), r => new IndentedSyntaxTokenWithValueAndTrivia<T>(r));
 
         private readonly GreenNode? _leading;
         private readonly GreenNode? _trailing;
 
-        internal SyntaxTokenWithValueAndTrivia(
+        internal IndentedSyntaxTokenWithValueAndTrivia(
             SyntaxKind kind,
             string text,
             T? value,
+            int innerIndent,
             GreenNode? leading,
             GreenNode? trailing
-        ) : base(kind, text, value)
+        ) : base(kind, text, value, innerIndent)
         {
             if (leading is not null)
             {
@@ -37,15 +33,16 @@ partial class SyntaxToken
             }
         }
 
-        internal SyntaxTokenWithValueAndTrivia(
+        internal IndentedSyntaxTokenWithValueAndTrivia(
             SyntaxKind kind,
             string text,
             T? value,
+            int innerIndent,
             GreenNode? leading,
             GreenNode? trailing,
             DiagnosticInfo[]? diagnostics,
             SyntaxAnnotation[]? annotations
-        ) : base(kind, text, value, diagnostics, annotations)
+        ) : base(kind, text, value, innerIndent, diagnostics, annotations)
         {
             if (leading is not null)
             {
@@ -59,7 +56,7 @@ partial class SyntaxToken
             }
         }
 
-        internal SyntaxTokenWithValueAndTrivia(ObjectReader reader) : base(reader)
+        internal IndentedSyntaxTokenWithValueAndTrivia(ObjectReader reader) : base(reader)
         {
             var leading = (GreenNode?)reader.ReadValue();
             if (leading is not null)
@@ -87,15 +84,15 @@ partial class SyntaxToken
         public override GreenNode? GetTrailingTrivia() => this._trailing;
 
         public override SyntaxToken TokenWithLeadingTrivia(GreenNode? trivia) =>
-            new SyntaxTokenWithValueAndTrivia<T>(this.Kind, this._text, this._value, trivia, this.GetTrailingTrivia(), this.GetDiagnostics(), this.GetAnnotations());
+            new IndentedSyntaxTokenWithValueAndTrivia<T>(this.Kind, this._text, this._value, this._innerIndent, trivia, this.GetTrailingTrivia(), this.GetDiagnostics(), this.GetAnnotations());
 
         public override SyntaxToken TokenWithTrailingTrivia(GreenNode? trivia) =>
-            new SyntaxTokenWithValueAndTrivia<T>(this.Kind, this._text, this._value, this.GetLeadingTrivia(), trivia, this.GetDiagnostics(), this.GetAnnotations());
+            new IndentedSyntaxTokenWithValueAndTrivia<T>(this.Kind, this._text, this._value, this._innerIndent, this.GetLeadingTrivia(), trivia, this.GetDiagnostics(), this.GetAnnotations());
 
         internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics) =>
-            new SyntaxTokenWithValueAndTrivia<T>(this.Kind, this._text, this._value, this.GetLeadingTrivia(), this.GetTrailingTrivia(), diagnostics, this.GetAnnotations());
+            new IndentedSyntaxTokenWithValueAndTrivia<T>(this.Kind, this._text, this._value, this._innerIndent, this.GetLeadingTrivia(), this.GetTrailingTrivia(), diagnostics, this.GetAnnotations());
 
         internal override GreenNode SetAnnotations(SyntaxAnnotation[]? annotations) =>
-             new SyntaxTokenWithValueAndTrivia<T>(this.Kind, this._text, this._value, this.GetLeadingTrivia(), this.GetTrailingTrivia(), this.GetDiagnostics(), annotations);
+             new IndentedSyntaxTokenWithValueAndTrivia<T>(this.Kind, this._text, this._value, this._innerIndent, this.GetLeadingTrivia(), this.GetTrailingTrivia(), this.GetDiagnostics(), annotations);
     }
 }

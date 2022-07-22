@@ -1,11 +1,16 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
 internal static partial class SyntaxFactory
 {
-    internal static SyntaxToken InterpolatedString(GreenNode? leading, string text, SyntaxKind kind, SyntaxTokenList value, GreenNode? trailing) => SyntaxToken.WithValue(kind, leading, text, value, trailing);
+    internal static SyntaxToken Literal(GreenNode? leading, string text, string value, int innerIndent, GreenNode? trailing) => SyntaxToken.IndentedWithValue(SyntaxKind.StringLiteralToken, leading, text, value, innerIndent, trailing);
+
+    internal static SyntaxToken Literal(GreenNode? leading, string text, SyntaxKind kind, string value, int innerIndent, GreenNode? trailing) => SyntaxToken.IndentedWithValue(kind, leading, text, value, innerIndent, trailing);
+
+    internal static SyntaxToken Literal(GreenNode? leading, string text, ImmutableArray<SyntaxToken> value, int innerIndent, GreenNode? trailing) => SyntaxToken.IndentedWithValue(SyntaxKind.InterpolatedStringToken, leading, text, value, innerIndent, trailing);
 
     private static partial void ValidateTokenKind(SyntaxKind kind)
     {

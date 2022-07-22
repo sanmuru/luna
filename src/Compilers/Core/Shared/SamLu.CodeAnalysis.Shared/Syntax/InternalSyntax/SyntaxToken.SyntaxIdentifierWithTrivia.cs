@@ -7,7 +7,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
 
-internal partial class SyntaxToken
+partial class SyntaxToken
 {
     internal class SyntaxIdentifierWithTrivia : SyntaxIdentifier
     {

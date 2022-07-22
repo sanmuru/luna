@@ -70,12 +70,13 @@ partial class Lexer
                 },
 
             // 字符串字面量标志
-            SyntaxKind.StringLiteralToken or
+            SyntaxKind.StringLiteralToken => SyntaxFactory.Literal(leadingNode, info.Text!, info.Kind, info.StringValue!, info.InnerIndent, trailingNode),
+
             // 多行原始字符串字面量标志
             SyntaxKind.MultiLineRawStringLiteralToken => SyntaxFactory.Literal(leadingNode, info.Text!, info.Kind, info.StringValue!, trailingNode),
 
             // 插值字符串标志
-            SyntaxKind.InterpolatedStringToken => SyntaxFactory.InterpolatedString(leadingNode, info.Text!, info.Kind, info.SyntaxTokenListValue, trailingNode),
+            SyntaxKind.InterpolatedStringToken => SyntaxFactory.Literal(leadingNode, info.Text!, info.SyntaxTokenArrayValue, info.InnerIndent, trailingNode),
 
             // 文件结尾标志
             SyntaxKind.EndOfFileToken => SyntaxFactory.Token(leadingNode, SyntaxKind.EndOfFileToken, trailingNode),
@@ -114,7 +115,8 @@ partial class Lexer
                     this.TextWindow.AdvanceChar();
                     info.Kind = SyntaxKind.PlusEqualsToken;
                 }
-                info.Kind = SyntaxKind.PlusToken;
+                else
+                    info.Kind = SyntaxKind.PlusToken;
                 break;
 
             case '-':
@@ -143,7 +145,8 @@ partial class Lexer
                     this.TextWindow.AdvanceChar();
                     info.Kind = SyntaxKind.AsteriskEqualsToken;
                 }
-                info.Kind = SyntaxKind.AsteriskToken;
+                else
+                    info.Kind = SyntaxKind.AsteriskToken;
                 break;
 
             case '/':
@@ -185,7 +188,8 @@ partial class Lexer
                     this.CheckFeatureAvaliability(MessageID.IDS_FeatureExponentiationAssignmentOperator);
                     info.Kind = SyntaxKind.CaretEqualsToken;
                 }
-                info.Kind = SyntaxKind.CaretToken;
+                else
+                    info.Kind = SyntaxKind.CaretToken;
                 break;
 
             case '%':
@@ -195,7 +199,8 @@ partial class Lexer
                     this.TextWindow.AdvanceChar();
                     info.Kind = SyntaxKind.PersentEqualsToken;
                 }
-                info.Kind = SyntaxKind.PersentToken;
+                else
+                    info.Kind = SyntaxKind.PersentToken;
                 break;
 
             case '#':
@@ -211,7 +216,8 @@ partial class Lexer
                     info.Kind = SyntaxKind.AmpersandEqualsToken;
                     this.CheckFeatureAvaliability(MessageID.IDS_FeatureBitwiseAndAssignmentOperator);
                 }
-                info.Kind = SyntaxKind.AmpersandToken;
+                else
+                    info.Kind = SyntaxKind.AmpersandToken;
                 break;
 
             case '~':
@@ -233,7 +239,8 @@ partial class Lexer
                     info.Kind = SyntaxKind.BarEqualsToken;
                     this.CheckFeatureAvaliability(MessageID.IDS_FeatureBitwiseOrAssignmentOperator);
                 }
-                info.Kind = SyntaxKind.BarToken;
+                else
+                    info.Kind = SyntaxKind.BarToken;
                 break;
 
             case '<':

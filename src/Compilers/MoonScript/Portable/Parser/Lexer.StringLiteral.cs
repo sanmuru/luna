@@ -27,7 +27,7 @@ partial class Lexer
         else
         {
             this.TextWindow.AdvanceChar();
-            var spansBuilder = ArrayBuilder<string?>.GetInstance();
+            var spanBuilder = ArrayBuilder<string?>.GetInstance();
             this._builder.Clear();
 
             while (true)
@@ -38,7 +38,7 @@ partial class Lexer
                     this.TextWindow.AdvanceChar();
 
                     if (this._builder.Length > 0)
-                        spansBuilder.Add(this._builder.ToString());
+                        spanBuilder.Add(this._builder.ToString());
                     break;
                 }
                 // 字符串中可能包含非正规的Utf-16以外的字符，检查是否真正到达文本结尾来验证这些字符不是由用户代码引入的情况。
@@ -48,7 +48,7 @@ partial class Lexer
                     this.AddError(ErrorCode.ERR_UnterminatedStringLiteral);
 
                     if (this._builder.Length > 0)
-                        spansBuilder.Add(this._builder.ToString());
+                        spanBuilder.Add(this._builder.ToString());
                     break;
                 }
                 else if (SyntaxFacts.IsWhiteSpace(c))
@@ -59,15 +59,15 @@ partial class Lexer
                 }
                 else
                 {
-                    if (spansBuilder.Count % 2 == 1) // 处于扫描缩进状态。
+                    if (spanBuilder.Count % 2 == 1) // 处于扫描缩进状态。
                     {
                         if (this._builder.Length > 0)
                         {
-                            spansBuilder.Add(this._builder.ToString());
+                            spanBuilder.Add(this._builder.ToString());
                             this._builder.Clear();
                         }
                         else
-                            spansBuilder.Add(null);
+                            spanBuilder.Add(null);
                     }
 
                     if (c == '\\') // 转义字符前缀
@@ -79,7 +79,7 @@ partial class Lexer
                             this.TextWindow.AdvanceChar();
                         this._builder.Append('\n');
 
-                        spansBuilder.Add(this._builder.ToString());
+                        spanBuilder.Add(this._builder.ToString());
                         this._builder.Clear();
                     }
                     else // 普通字符
@@ -92,13 +92,13 @@ partial class Lexer
             }
 
             // 缩进量修剪。
-            if (spansBuilder.Count > 1)
+            if (spanBuilder.Count > 1)
             {
                 // 找到最小缩进量。
                 int minIndent = int.MaxValue;
-                for (int i = 1; i < spansBuilder.Count; i += 2)
+                for (int i = 1; i < spanBuilder.Count; i += 2)
                 {
-                    string? span = spansBuilder[i];
+                    string? span = spanBuilder[i];
                     if (span is null) // 遇到无缩进量的行，快速退出。
                     {
                         minIndent = 0;
@@ -107,49 +107,17 @@ partial class Lexer
                     minIndent = Math.Min(minIndent, span.Sum(SyntaxFacts.WhiteSpaceIndent));
                 }
 
-                // 修剪缩进量。
-                for (int i = 1; i < spansBuilder.Count; i += 2)
-                {
-                    int indent = 0;
-                    int start = 0;
-                    string? span = spansBuilder[i];
-                    if (span is null) continue; // 遇到无缩进量的行，跳过。
+                Lexer.TrimIndent(spanBuilder, minIndent);
 
-                    while (indent <= minIndent && start < span.Length)
-                    {
-                        int nextIndent = SyntaxFacts.WhiteSpaceIndent(span[start]);
-                        if (indent == minIndent && nextIndent != 0) break; // 缩进量正好相等。
-
-                        indent += nextIndent;
-                        start++;
-                    };
-                    if (indent > minIndent)
-                    {
-                        int indentLength = indent - minIndent;
-                        int spanLength = span.Length - start;
-                        char[] buffer = new char[spanLength + indentLength];
-                        for (int _i = 0; _i < indentLength; i++)
-                            buffer[_i] = ' '; // 前导空格符。
-                        if (start < span.Length)
-                        {
-                            span.CopyTo(start, buffer, indentLength, spanLength);
-                        }
-
-                        spansBuilder[i] = new string(buffer);
-                    }
-                    else
-                    {
-                        spansBuilder[i] = start == 0 ? span : span.Substring(start);
-                    }
-                }
+                info.InnerIndent = minIndent;
             }
-
+            else
+                info.InnerIndent = 0; // 单行字符串。
 
             info.Text = this.TextWindow.GetText(intern: true);
 
             this._builder.Clear();
-            foreach (var span in spansBuilder.ToImmutableOrEmptyAndFree())
-                this._builder.Append(span);
+            this._builder.Append(string.Concat(spanBuilder.ToImmutableAndFree()));
         }
 
         info.Kind = SyntaxKind.StringLiteralToken;
@@ -161,5 +129,44 @@ partial class Lexer
             info.StringValue = this.TextWindow.Intern(this._builder);
 
         return true;
+    }
+
+    private static void TrimIndent(ArrayBuilder<string?> spans, int innerIndent)
+    {
+        // 修剪缩进量。
+        for (int i = 1; i < spans.Count; i += 2)
+        {
+            int indent = 0;
+            int start = 0;
+            string? span = spans[i];
+            if (span is null) continue; // 遇到无缩进量的行，跳过。
+
+            while (indent <= innerIndent && start < span.Length)
+            {
+                int nextIndent = SyntaxFacts.WhiteSpaceIndent(span[start]);
+                if (indent == innerIndent && nextIndent != 0) break; // 缩进量正好相等。
+
+                indent += nextIndent;
+                start++;
+            };
+            if (indent > innerIndent)
+            {
+                int indentLength = indent - innerIndent;
+                int spanLength = span.Length - start;
+                char[] buffer = new char[spanLength + indentLength];
+                for (int _i = 0; _i < indentLength; i++)
+                    buffer[_i] = ' '; // 前导空格符。
+                if (start < span.Length)
+                {
+                    span.CopyTo(start, buffer, indentLength, spanLength);
+                }
+
+                spans[i] = new string(buffer);
+            }
+            else
+            {
+                spans[i] = start == 0 ? span : span.Substring(start);
+            }
+        }
     }
 }

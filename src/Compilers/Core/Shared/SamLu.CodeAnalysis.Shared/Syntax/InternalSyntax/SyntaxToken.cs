@@ -164,13 +164,9 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
             return new SyntaxIdentifierWithTrivia(contextualKind, text, valueText, leading, trailing);
     }
 
-    internal static SyntaxToken WithValue<T>(SyntaxKind kind, string text, T value) => new SyntaxTokenWithValue<T>(kind, text, value);
+    internal static SyntaxToken WithValue<T>(SyntaxKind kind, string text, T? value) => new SyntaxTokenWithValue<T>(kind, text, value);
 
     internal static SyntaxToken WithValue<T>(SyntaxKind kind, GreenNode? leading, string text, T? value, GreenNode? trailing) => new SyntaxTokenWithValueAndTrivia<T>(kind, text, value, leading, trailing);
-
-    internal static SyntaxToken StringLiteral(string text) => new SyntaxTokenWithValue<string>(SyntaxKind.StringLiteralToken, text, text);
-
-    internal static SyntaxToken StringLiteral(ThisInternalSyntaxNode leading, string text, ThisInternalSyntaxNode trailing) => new SyntaxTokenWithValueAndTrivia<string>(SyntaxKind.StringLiteralToken, text, text, leading, trailing);
 
     /// <summary>
     /// 表示语法标志在序列化过程中是否应被重用。
