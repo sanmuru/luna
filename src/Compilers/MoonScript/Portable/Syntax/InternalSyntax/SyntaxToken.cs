@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
@@ -50,10 +51,10 @@ internal partial class SyntaxToken
 
     internal static SyntaxToken StringLiteral(MoonScriptSyntaxNode leading, string text, int innerIndent, MoonScriptSyntaxNode trailing) => new IndentedSyntaxTokenWithValueAndTrivia<string>(SyntaxKind.StringLiteralToken, text, text, innerIndent, leading, trailing);
 
-    internal static SyntaxToken InterpolatedStringLiteral(string text, SyntaxTokenList tokens, int innerIndent) => new IndentedSyntaxTokenWithValue<SyntaxTokenList>(SyntaxKind.InterpolatedStringToken, text, tokens, innerIndent);
+    internal static SyntaxToken InterpolatedStringLiteral(string text, ImmutableArray<SyntaxToken> tokens, int innerIndent) => new IndentedSyntaxTokenWithValue<ImmutableArray<SyntaxToken>>(SyntaxKind.InterpolatedStringLiteralToken, text, tokens, innerIndent);
 
     internal static SyntaxToken InterpolatedStringLiteral
-        (MoonScriptSyntaxNode leading, string text, SyntaxTokenList tokens, int innerIndent, MoonScriptSyntaxNode trailing) => new IndentedSyntaxTokenWithValueAndTrivia<SyntaxTokenList>(SyntaxKind.InterpolatedStringToken, text, tokens, innerIndent, leading, trailing);
+        (MoonScriptSyntaxNode leading, string text, ImmutableArray<SyntaxToken> tokens, int innerIndent, MoonScriptSyntaxNode trailing) => new IndentedSyntaxTokenWithValueAndTrivia<ImmutableArray<SyntaxToken>>(SyntaxKind.InterpolatedStringLiteralToken, text, tokens, innerIndent, leading, trailing);
 
     internal const SyntaxKind FirstTokenWithWellKnownText = SyntaxKind.PlusToken;
     internal const SyntaxKind LastTokenWithWellKnownText = SyntaxKind.MultiLineCommentTrivia;

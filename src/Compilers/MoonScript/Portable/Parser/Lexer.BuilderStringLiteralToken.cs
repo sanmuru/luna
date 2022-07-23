@@ -9,7 +9,7 @@ namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
 partial class Lexer
 {
-    private sealed class BuilderStringLiteralToken : SyntaxToken.SyntaxTokenWithTrivia
+    private sealed class BuilderStringLiteralToken : SyntaxToken
     {
         static BuilderStringLiteralToken() => ObjectBinder.RegisterTypeReader(typeof(BuilderStringLiteralToken), r => new BuilderStringLiteralToken(r));
 
@@ -17,6 +17,9 @@ partial class Lexer
         private readonly ArrayBuilder<string?>? _builder;
         private string? _value;
         private int _innerIndent;
+
+        private readonly GreenNode? _leading;
+        private readonly GreenNode? _trailing;
 
         public override string Text => this._text;
 
@@ -43,11 +46,22 @@ partial class Lexer
             ArrayBuilder<string?> builder,
             int innerIndent,
             GreenNode? leading,
-            GreenNode? trailing) : base(kind, leading, trailing)
+            GreenNode? trailing) : base(kind, text.Length)
         {
             this._text = text;
             this._builder = builder;
             this._innerIndent = innerIndent;
+
+            if (leading is not null)
+            {
+                this.AdjustFlagsAndWidth(leading);
+                this._leading = leading;
+            }
+            if (trailing is not null)
+            {
+                this.AdjustFlagsAndWidth(trailing);
+                _trailing = trailing;
+            }
         }
 
         internal BuilderStringLiteralToken(
@@ -58,11 +72,22 @@ partial class Lexer
             GreenNode? leading,
             GreenNode? trailing,
             DiagnosticInfo[]? diagnostics,
-            SyntaxAnnotation[]? annotations) : base(kind, leading, trailing, diagnostics, annotations)
+            SyntaxAnnotation[]? annotations) : base(kind, text.Length, diagnostics, annotations)
         {
             this._text = text;
             this._builder = builder;
             this._innerIndent = innerIndent;
+
+            if (leading is not null)
+            {
+                this.AdjustFlagsAndWidth(leading);
+                this._leading = leading;
+            }
+            if (trailing is not null)
+            {
+                this.AdjustFlagsAndWidth(trailing);
+                _trailing = trailing;
+            }
         }
 
         internal BuilderStringLiteralToken(ObjectReader reader) : base(reader)
@@ -72,6 +97,19 @@ partial class Lexer
             this._builder = null;
             this._value = reader.ReadString();
             this._innerIndent = reader.ReadInt32();
+
+            var leading = (GreenNode?)reader.ReadValue();
+            if (leading is not null)
+            {
+                this.AdjustFlagsAndWidth(leading);
+                this._leading = leading;
+            }
+            var trailing = (GreenNode?)reader.ReadValue();
+            if (trailing is not null)
+            {
+                this.AdjustFlagsAndWidth(trailing);
+                this._trailing = trailing;
+            }
         }
 
         internal override void WriteTo(ObjectWriter writer)
@@ -80,7 +118,14 @@ partial class Lexer
             writer.WriteString(this._text);
             writer.WriteString(this._value);
             writer.WriteInt32(this._innerIndent);
+
+            writer.WriteValue(this._leading);
+            writer.WriteValue(this._trailing);
         }
+
+        public override GreenNode? GetLeadingTrivia() => this._leading;
+
+        public override GreenNode? GetTrailingTrivia() => this._trailing;
 
         public override bool TryGetInnerWhiteSpaceIndent(out int indent)
         {

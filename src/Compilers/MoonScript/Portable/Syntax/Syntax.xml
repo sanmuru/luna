@@ -561,6 +561,28 @@
       </Field>
       <Field Name="Right" Type="ExpressionListSyntax"/>
   </Node>
+  <Node Name="InterpolatedStringExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="InterpolatedStringExpression"/>
+    <Field Name="Contents" Type="SyntaxList&lt;InterpolatedStringContentSyntax&gt;"/>
+  </Node>
+  <AbstractNode Name="InterpolatedStringContentSyntax" Base="MoonScriptSyntaxNode"/>
+  <Node Name="InterpolatedStringTextSyntax" Base="InterpolatedStringContentSyntax">
+    <Kind Name="InterpolatedStringText"/>
+    <Field Name="TextToken" Type="SyntaxToken">
+      <Kind Name="InterpolatedStringTextToken"/>
+    </Field>
+  </Node>
+  <Node Name="InterpolationSyntax" Base="InterpolatedStringContentSyntax">
+    <Kind Name="Interpolation"/>
+    <Field Name="StartToken" Type="SyntaxToken">
+      <Kind Name="InterpolationStartToken"/>
+    </Field>
+    <Field Name="Expression" Type="ExpressionSyntax"/>
+    <Field Name="EndToken" Type="SyntaxToken">
+      <Kind Name="InterpolationEndToken"/>
+    </Field>
+  </Node>
+  
 
 
 

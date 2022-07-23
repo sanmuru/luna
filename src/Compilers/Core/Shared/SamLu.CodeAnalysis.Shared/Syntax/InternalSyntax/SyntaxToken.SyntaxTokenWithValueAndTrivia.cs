@@ -14,8 +14,8 @@ partial class SyntaxToken
     {
         static SyntaxTokenWithValueAndTrivia() => ObjectBinder.RegisterTypeReader(typeof(SyntaxTokenWithValueAndTrivia<T>), r => new SyntaxTokenWithValueAndTrivia<T>(r));
 
-        private readonly GreenNode? _leading;
-        private readonly GreenNode? _trailing;
+        protected readonly GreenNode? _leading;
+        protected readonly GreenNode? _trailing;
 
         internal SyntaxTokenWithValueAndTrivia(
             SyntaxKind kind,

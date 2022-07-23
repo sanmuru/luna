@@ -24,8 +24,11 @@ internal partial class LexerCache
             return kind;
         }
     );
+    /// <summary>琐碎内容映射表。</summary>
     private readonly TextKeyedCache<SyntaxTrivia> _triviaMap;
+    /// <summary>标志映射表。</summary>
     private readonly TextKeyedCache<SyntaxToken> _tokenMap;
+    /// <summary>关键词映射表。</summary>
     private readonly CachingIdentityFactory<string, SyntaxKind> _keywordKindMap;
     /// <summary>
     /// 关键词的最大字符长度。
@@ -46,6 +49,12 @@ internal partial class LexerCache
         this._tokenMap.Free();
     }
 
+    /// <summary>
+    /// 尝试获取缓存的关键词语法类型。
+    /// </summary>
+    /// <param name="key">关键词的文本表示</param>
+    /// <param name="kind">找到的关键词语法类型。</param>
+    /// <returns>若找到<paramref name="key"/>对应的关键词语法类型，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
     internal bool TryGetKeywordKind(string key, out SyntaxKind kind)
     {
         if (key.Length > MaxKeywordLength)
@@ -58,6 +67,15 @@ internal partial class LexerCache
         return kind != SyntaxKind.None;
     }
 
+    /// <summary>
+    /// 在缓存中查找语法琐碎内容。
+    /// </summary>
+    /// <param name="textBuffer">读取表示语法琐碎内容的字符缓存。</param>
+    /// <param name="keyStart">开始读取的字符位置</param>
+    /// <param name="keyLength">读取的字符数量。</param>
+    /// <param name="hashCode">指定的哈希码。</param>
+    /// <param name="createTriviaFunction">从新创建语法琐碎内容的函数。</param>
+    /// <returns>查找到的语法琐碎内容。</returns>
     internal SyntaxTrivia LookupTrivia(
         char[] textBuffer,
         int keyStart,
@@ -76,6 +94,15 @@ internal partial class LexerCache
         return value;
     }
 
+    /// <summary>
+    /// 在缓存中查找语法标志。
+    /// </summary>
+    /// <param name="textBuffer">读取表示语法标志的字符缓存。</param>
+    /// <param name="keyStart">开始读取的字符位置</param>
+    /// <param name="keyLength">读取的字符数量。</param>
+    /// <param name="hashCode">指定的哈希码。</param>
+    /// <param name="createTokenFunction">从新创建语法标志的函数。</param>
+    /// <returns>查找到的语法标志。</returns>
     internal SyntaxToken LookupToken(
         char[] textBuffer,
         int keyStart,

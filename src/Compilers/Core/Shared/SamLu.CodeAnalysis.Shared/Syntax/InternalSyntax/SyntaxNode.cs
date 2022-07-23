@@ -148,7 +148,8 @@ internal abstract partial class
 
     public virtual bool IsTokenAtEndOfLine() =>
         this is SyntaxToken token &&
-            token.TrailingTrivia.Last?.IsTriviaWithEndOfLine() == true;
+            token.TrailingTrivia.Count > 0 &&
+                token.TrailingTrivia.Last?.IsTriviaWithEndOfLine() == true;
 
     public override partial bool IsTriviaWithEndOfLine();
 

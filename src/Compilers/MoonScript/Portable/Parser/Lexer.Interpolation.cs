@@ -7,26 +7,48 @@ using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
+using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
+
 partial class Lexer
 {
     internal readonly struct Interpolation
     {
         /// <summary>
+        /// 插值语法的起始语法（“#{”）的语法标志。
+        /// </summary>
+        public readonly SyntaxToken StartToken;
+
+        /// <summary>
+        /// 插值语法的起始语法（“#{”）的内部的语法标志数组。
+        /// </summary>
+        public readonly ImmutableArray<SyntaxToken> InnerTokens;
+
+        /// <summary>
+        /// 插值语法的结尾语法（“}”）的语法标志。
+        /// </summary>
+        public readonly SyntaxToken EndToken;
+
+        /// <summary>
         /// 插值语法的起始语法（“#{”）的范围。
         /// </summary>
         public readonly Range StartRange;
-
-        public readonly ImmutableArray<SyntaxToken> InnerTokens;
 
         /// <summary>
         /// 插值语法的结尾语法（“}”）的范围。
         /// </summary>
         public readonly Range EndRange;
 
-        public Interpolation(Range startRange, ImmutableArray<SyntaxToken> innerTokens, Range endRange)
+        public Interpolation(
+            SyntaxToken startToken,
+            in ImmutableArray<SyntaxToken> innerTokens,
+            SyntaxToken endToken,
+            in Range startRange,
+            in Range endRange)
         {
-            this.StartRange = startRange;
+            this.StartToken = startToken;
             this.InnerTokens = innerTokens;
+            this.EndToken = endToken;
+            this.StartRange = startRange;
             this.EndRange = endRange;
         }
     }
@@ -71,14 +93,13 @@ partial class Lexer
             while (true)
             {
                 // 扫描一个字符串字面量。
-                if (this.ScanInterpolatedStringLiteralText(quote, ref hasInterpolation, out var spanBuilder, ref minIndent))
+                if (this.ScanInterpolatedStringLiteralText(quote, ref hasInterpolation, out var textRange, out var spanBuilder, ref minIndent))
                 {
-
                     // 扫描到符合字符串字面量格式的标志。
                     SyntaxDiagnosticInfo[]? errors = this.Error is null ? null : new[] { this.Error };
                     if (hasInterpolation) // 存在插值语法，则是插值字符串字面量文本标志。
                     {
-                        var builderToken = createBuilderToken(this._lexer, spanBuilder, errors);
+                        var builderToken = createBuilderToken(this._lexer, textRange, spanBuilder, errors);
                         buffer.Add(builderToken);
                         builder.Add(builderToken);
                         // 若上一个标志位于行尾，则表明需要检查扫描到的字符串字面量的缩进量。
@@ -88,14 +109,24 @@ partial class Lexer
                         }
                         isLastTokenAtEndOfLine = builderToken.IsTokenAtEndOfLine();
 
-                        // 添加插值内容的语法标志集。
-                        var contentTokens = this.ScanInterpolatedStringContent();
-                        foreach (var innerToken in contentTokens)
-                        {
-                            builder.Add(innerToken);
-                            isLastTokenAtEndOfLine = innerToken.IsTokenAtEndOfLine();
-                        }
-                        contentTokens.Free();
+
+                        // 添加插值内容的语法标志。
+                        var contents = this.ScanInterpolatedStringContent(
+                            out var startRange,
+                            out var endRange,
+                            out var startToken,
+                            out var endToken)
+                            .ToImmutableOrEmptyAndFree();
+                        var interpolation = new Interpolation(
+                            startToken,
+                            contents,
+                            endToken,
+                            startRange,
+                            endRange);
+                        var contentToken = createInterpolationToken(this._lexer, interpolation, errors);
+                        builder.Add(contentToken);
+                        isLastTokenAtEndOfLine = false; // 无论如何，默认插值结束是在同一行上的。
+
                     }
                     else // 不存在插值语法。
                     {
@@ -103,7 +134,7 @@ partial class Lexer
                             return false; // 此方法仅处理插值字符串字面量，因此返回失败。
 
                         // 最后一个也应为插值字符串字面量文本标志。
-                        var builderToken = createBuilderToken(this._lexer, spanBuilder, errors);
+                        var builderToken = createBuilderToken(this._lexer, textRange, spanBuilder, errors);
                         buffer.Add(builderToken);
                         builder.Add(builderToken);
                         // 若上一个标志位于行尾，则表明需要检查扫描到的字符串字面量的缩进量。
@@ -130,43 +161,47 @@ partial class Lexer
             this._lexer._trailingTriviaCache.Clear();
             this._lexer._trailingTriviaCache.AddRange(tokens[tokens.Length - 1].TrailingTrivia);
 
-            info.Kind = SyntaxKind.InterpolatedStringToken;
+            info.Kind = SyntaxKind.InterpolatedStringLiteralToken;
             info.Text = this._lexer.TextWindow.GetText(intern: true);
             info.SyntaxTokenArrayValue = tokens;
 
             return true;
 
             // 创建一个构建中的插值字符串字面量文本标志。
-            static BuilderStringLiteralToken createBuilderToken(Lexer lexer, ArrayBuilder<string?> spanBuilder, SyntaxDiagnosticInfo[]? errors) =>
+            static BuilderStringLiteralToken createBuilderToken(Lexer lexer, in Range textRange, ArrayBuilder<string?> spanBuilder, SyntaxDiagnosticInfo[]? errors) =>
                 new(
                     SyntaxKind.InterpolatedStringTextToken,
-                    lexer.TextWindow.GetText(intern: true),
+                    lexer.TextWindow.GetText(
+                        textRange.Start.Value,
+                        textRange.End.Value - textRange.Start.Value + 1,
+                        intern: true),
                     spanBuilder,
                     0, // 默认缩进量为0，将在之后更改。
                     lexer._leadingTriviaCache.ToListNode(),
                     lexer._trailingTriviaCache.ToListNode());
+
+            static InterpolationToken createInterpolationToken(Lexer lexer, in Interpolation interpolation, SyntaxDiagnosticInfo[]? errors) =>
+                new(
+                    lexer.TextWindow.GetText(
+                        interpolation.StartRange.Start.Value,
+                        interpolation.EndRange.End.Value - interpolation.StartRange.Start.Value + 1,
+                        intern: true),
+                    interpolation,
+                    lexer._leadingTriviaCache.ToListNode(),
+                    lexer._trailingTriviaCache.ToListNode());
         }
 
-        private bool ScanInterpolatedStringLiteralText(char quote, ref bool hasInterpolation, out ArrayBuilder<string?> spanBuilder, ref int minIndent)
+        private bool ScanInterpolatedStringLiteralText(
+            char quote,
+            ref bool hasInterpolation,
+            out Range textRange,
+            out ArrayBuilder<string?> spanBuilder,
+            ref int minIndent)
         {
-            // 仅当第一次进入此方法时hasInterpolation为false，此种情况下前方琐碎内容已分析完毕；
-            // 当之后再进入此方法时需要分析前方琐碎内容。
-            if (hasInterpolation)
-            {
-                this._lexer.LexSyntaxLeadingTriviaCore();
-            }
+            int textRangeStart = this._lexer.TextWindow.Position;
 
             spanBuilder = ArrayBuilder<string?>.GetInstance();
             this._lexer._builder.Clear();
-
-            if (this._lexer.TextWindow.PeekChar() == '}') // 上一个插值的结尾。
-            {
-                // 若已经扫描到插值，则字符串值中不添加右花括号。
-                if (hasInterpolation)
-                    this._lexer.TextWindow.AdvanceChar();
-                else
-                    this._lexer._builder.Append(this._lexer.TextWindow.NextChar());
-            }
 
             while (true)
             {
@@ -220,7 +255,6 @@ partial class Lexer
                             spanBuilder.Add(this._lexer._builder.ToString());
 
                         hasInterpolation = true;
-                        this._lexer.TextWindow.AdvanceChar(2);
                         break;
                     }
                     else if (SyntaxFacts.IsNewLine(c))
@@ -257,19 +291,27 @@ partial class Lexer
                 }
             }
 
+            int textRangeEnd = this._lexer.TextWindow.Position - 1;
+            textRange = textRangeStart..textRangeEnd;
             return true;
         }
 
-        private ArrayBuilder<SyntaxToken> ScanInterpolatedStringContent()
+        private ArrayBuilder<SyntaxToken> ScanInterpolatedStringContent(
+            out Range startRange,
+            out Range endRange,
+            out SyntaxToken startToken,
+            out SyntaxToken endToken)
         {
+            startToken = SyntaxFactory.Token(SyntaxKind.InterpolationStartToken);
+            startRange = this._lexer.TextWindow.Position..(this._lexer.TextWindow.Position + 1);
+            this._lexer.TextWindow.AdvanceChar(2);
+
             var tokens = ArrayBuilder<SyntaxToken>.GetInstance();
 
             int braceBalance = 0;
             var mode = LexerMode.Syntax;
             while (true)
             {
-                int position = this._lexer.TextWindow.Position;
-
                 var token = this._lexer.Lex(mode);
                 switch (token.Kind)
                 {
@@ -280,7 +322,11 @@ partial class Lexer
                         // 花括号已平衡，且下一个是右花括号标志，终止枚举。
                         if (braceBalance == 0)
                         {
-                            this._lexer.Reset(position); // 回到上一个位置。
+                            this._lexer.Reset(this._lexer.TextWindow.Position - token.GetTrailingTriviaWidth()); // 回退到右花括号的下一个字符位置。
+                            endToken = SyntaxFactory.Token(SyntaxKind.InterpolationEndToken);
+                            endRange = (this._lexer.TextWindow.Position - 1)..(this._lexer.TextWindow.Position - 1);
+
+                            appendTrailingTrivia(token);
                             return tokens;
                         }
 
@@ -289,11 +335,28 @@ partial class Lexer
 
                     // 直到文件结尾也未能平衡花括号或查看到右花括号，则产生错误。
                     case SyntaxKind.EndOfFileToken:
-                        this.Error = AbstractLexer.MakeError(ErrorCode.ERR_UnterminatedStringLiteral);
-                        return tokens;
+                        {
+                            this.Error = AbstractLexer.MakeError(ErrorCode.ERR_UnterminatedStringLiteral);
+
+                            endToken = SyntaxFactory.MissingToken(SyntaxKind.InterpolationEndToken);
+                            endRange = this._lexer.TextWindow.Position..(this._lexer.TextWindow.Position - 1);
+
+                            appendTrailingTrivia(token);
+                            return tokens;
+                        }
                 }
 
                 tokens.Add(token); // 枚举识别到的内部标志。
+            }
+
+            void appendTrailingTrivia(SyntaxToken token)
+            {
+                // 将这个右花括号标志的前方琐碎内容组合到上一个标志的后方琐碎内容中。
+                var lastToken = tokens[tokens.Count - 1];
+                SyntaxListBuilder triviaBuilder = new(lastToken.TrailingTrivia.Count + token.LeadingTrivia.Count);
+                triviaBuilder.AddRange(lastToken.TrailingTrivia);
+                triviaBuilder.AddRange(token.LeadingTrivia);
+                tokens[tokens.Count - 1] = lastToken.TokenWithTrailingTrivia(triviaBuilder.ToListNode());
             }
         }
     }

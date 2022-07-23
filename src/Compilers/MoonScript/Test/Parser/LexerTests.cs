@@ -1,5 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+
 namespace SamLu.CodeAnalysis.MoonScript.Parser.UnitTests;
 
 using Utilities;
@@ -70,10 +72,97 @@ public partial class LexerTests
             """, " first line\n  second line\n   "); // 字面多行，如果第一行没有字符则忽略这行。
     }
 
+    private void InterpolatedStringLiteralLexTest(string source, Range[] interpolationRanges, string[] texts, MoonScriptParseOptions? options = null)
+    {
+        var lexer = LexerTests.CreateLexer(source, options);
+
+        var token = lexer.Lex(LexerMode.Syntax);
+        Assert.IsTrue(token.Kind == SyntaxKind.InterpolatedStringLiteralToken, "不是差值字符串标志。");
+
+        Assert.IsNotNull(token.Value);
+        var innerTokens = (ImmutableArray<SyntaxToken>)token.Value;
+
+        for (int i = 0, n = innerTokens.Length; i < n; i++)
+        {
+            var innerToken = innerTokens[i];
+            if (i % 2 == 0)
+            {
+                Assert.AreEqual(SyntaxKind.InterpolatedStringTextToken, innerToken.Kind);
+                Assert.IsInstanceOfType(innerToken.Value, typeof(string));
+                int index = i / 2;
+                if (index < texts.Length) // 防止索引超出范围。
+                    Assert.AreEqual(texts[index], innerToken.Value);
+            }
+            else
+            {
+                Assert.AreEqual(SyntaxKind.InterpolationToken, innerToken.Kind);
+                Assert.IsNotNull(innerToken.Value);
+                Assert.IsInstanceOfType(innerToken.Value, typeof(Lexer.Interpolation));
+                var interpolation = (Lexer.Interpolation)innerToken.Value;
+                int index = (i - 1) / 2;
+                if (index < interpolationRanges.Length) // 防止索引超出范围。
+                    Assert.AreEqual(interpolationRanges[index], interpolation.StartRange.Start..interpolation.EndRange.End);
+            }
+        }
+    }
+
     [TestMethod]
     public void InterpolatedStringTests()
     {
+        // 普通插值。
+        InterpolatedStringLiteralLexTest("""
+            "This is #{"an"} apple and that is #{"a"} banana."
+            """,
+            new[] { 9..15, 35..40 },
+            new[]
+            {
+                "This is ",
+                " apple and that is ",
+                " banana."
+            });
 
+        // 嵌套插值。
+        InterpolatedStringLiteralLexTest("""
+            "Outer string #{   "w#{  'r' .. 'a'  }p"   }s the inner string."
+            """,
+            new[] { 14..43 },
+            new[]
+            {
+                "Outer string ",
+                "s the inner string."
+            });
+
+        // 多行插值。
+        InterpolatedStringLiteralLexTest("""
+            "first #{
+              if isline
+                "line"
+              else
+                "time"
+            } here!"
+            """,
+            new[] { 7..56 },
+            new[]
+            {
+                "first ",
+                " here!"
+            });
+
+        // 多行缩进插值。
+        // 插值结束符号（右花括号）的缩进量可以为任意，不影响内容；
+        // 其他内容除第一行外以缩进量最小值为准进行修剪。
+        InterpolatedStringLiteralLexTest("""
+            "first #{ "line"
+                          } here!
+                  second line here!
+                third line here!"
+            """,
+            new[] { 7..32 },
+            new[]
+            {
+                "first ",
+                " here!\n  second line here!\nthird line here!"
+            });
     }
 
     [TestMethod]

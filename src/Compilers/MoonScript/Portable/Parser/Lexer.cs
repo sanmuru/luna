@@ -76,7 +76,7 @@ partial class Lexer
             SyntaxKind.MultiLineRawStringLiteralToken => SyntaxFactory.Literal(leadingNode, info.Text!, info.Kind, info.StringValue!, trailingNode),
 
             // 插值字符串标志
-            SyntaxKind.InterpolatedStringToken => SyntaxFactory.Literal(leadingNode, info.Text!, info.SyntaxTokenArrayValue, info.InnerIndent, trailingNode),
+            SyntaxKind.InterpolatedStringLiteralToken => SyntaxFactory.Literal(leadingNode, info.Text!, info.SyntaxTokenArrayValue, info.InnerIndent, trailingNode),
 
             // 文件结尾标志
             SyntaxKind.EndOfFileToken => SyntaxFactory.Token(leadingNode, SyntaxKind.EndOfFileToken, trailingNode),

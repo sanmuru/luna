@@ -276,11 +276,17 @@ public enum SyntaxKind : ushort
     MultiLineRawStringLiteralToken,
 
     /// <summary>表示整个插值字符串字面量（" ... #{ 表达式 } ..."）标记。</summary>
-    /// <remarks>只应在解析过程中临时使用。</remarks>
-    InterpolatedStringToken,
+    InterpolatedStringLiteralToken,
     /// <summary>表示插值字符串字面量中普通文本的标记。</summary>
     /// <remarks>只应在解析过程中临时使用。</remarks>
     InterpolatedStringTextToken,
+    /// <summary>表示插值字符串字面量中表达式的标记。</summary>
+    /// <remarks>只应在解析过程中临时使用。</remarks>
+    InterpolationToken,
+    /// <summary>表示插值字符串字面量中表达式的起始标记（“#{”）。</summary>
+    InterpolationStartToken,
+    /// <summary>表示插值字符串字面量中表达式的起始标记（“}”）。</summary>
+    InterpolationEndToken,
     #endregion
 
     #region 琐碎内容
