@@ -222,9 +222,13 @@ public enum SyntaxKind : ushort
     // = 9345
     #endregion
 
-    #region 名称和类型名称
+    #region 名称和结构
     /// <summary>表示标识符名称。</summary>
     IdentifierName = 9473,
+    SimpleMemberAccess,
+    IndexMemberAccess,
+    IdentifierNameOrMemberAccess,
+    IdentifierNameOrExpressionAccess,
     #endregion
 
     #region 表达式
@@ -304,10 +308,6 @@ public enum SyntaxKind : ushort
     /// <summary>表示按位非表达式。</summary>
     BitwiseNotExpression,
 
-    // 赋值表达式
-    /// <summary>表示赋值表达式。</summary>
-    AssignmentExpression = 9697,
-
     // 成员操作表达式
     /// <summary>表示一般成员操作表达式。</summary>
     SimpleMemberAccessExpression = 9729, // 使用“.”操作
@@ -318,6 +318,8 @@ public enum SyntaxKind : ushort
     #region 语句
     /// <summary>表示仅有分隔符（<c>;</c>）的空语句。</summary>
     EmptyStatement = 9761,
+    /// <summary>表示赋值表达式。</summary>
+    AssignmentStatement,
     /// <summary>表示标签语句。</summary>
     LabeledStatement,
     /// <summary>表示中断流程（<see langword="break"/>）语句。</summary>

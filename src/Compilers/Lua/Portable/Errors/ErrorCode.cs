@@ -31,6 +31,15 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_IllegalEscape,
         WRN_ErrorOverride,
 
+        #region 语法错误
+        /// <summary>未于<see langword="if"/>语句后的<see langword="elseif"/>块。。</summary>
+        ERR_ElseIfCannotStartStatement,
+        /// <summary>增量<see langword="for"/>循环语句中定义了过多的标识符。</summary>
+        ERR_TooManyIdentifiers,
+        /// <summary>无效的表达式项。</summary>
+        ERR_InvalidExprTerm,
+        #endregion
+
         #region Lua 1.0的消息
         ERR_FeatureNotAvailableInVersion1 = 501,
         #endregion
@@ -97,7 +106,7 @@ namespace SamLu.CodeAnalysis.Lua
 
         #region Lua实验性版本的消息
         ERR_FeatureIsExperimental = 8501,
-        ERR_FeatureInPreview
+        ERR_FeatureInPreview,
         #endregion
 
         // 更新编译器的警告后应手动运行（eng\generate-compiler-code.cmd）。

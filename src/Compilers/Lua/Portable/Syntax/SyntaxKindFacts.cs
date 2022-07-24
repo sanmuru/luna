@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua;
 
@@ -321,22 +322,6 @@ public static partial class SyntaxFacts
             _ => false
         };
 
-    public static bool IsUnaryExpression(SyntaxKind token) =>
-        SyntaxFacts.GetUnaryExpression(token) != SyntaxKind.None;
-
-    public static bool IsUnaryExpressionOperatorToken(SyntaxKind token) => GetUnaryExpression(token) != SyntaxKind.None;
-
-    public static SyntaxKind GetUnaryExpression(SyntaxKind token) =>
-        token switch
-        {
-            SyntaxKind.MinusToken => SyntaxKind.UnaryMinusExpression,
-            SyntaxKind.NotKeyword => SyntaxKind.LogicalNotExpression,
-            SyntaxKind.HashToken => SyntaxKind.LengthExpression,
-            SyntaxKind.TildeToken => SyntaxKind.BitwiseNotExpression,
-
-            _ => SyntaxKind.None
-        };
-
     public static bool IsLiteralExpression(SyntaxKind token) =>
         SyntaxFacts.GetLiteralExpression(token) != SyntaxKind.None;
 
@@ -354,8 +339,37 @@ public static partial class SyntaxFacts
             _ => SyntaxKind.None
         };
 
-    public static bool IsBinaryExpression(SyntaxKind token) =>
-        SyntaxFacts.GetBinaryExpression(token) != SyntaxKind.None;
+    public static bool IsUnaryExpression(SyntaxKind expression) =>
+        SyntaxFacts.GetUnaryExpression(expression) != SyntaxKind.None;
+
+    public static bool IsUnaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.GetUnaryExpressionOperatorToken(token) != SyntaxKind.None;
+
+    public static SyntaxKind GetUnaryExpression(SyntaxKind token) =>
+        token switch
+        {
+            SyntaxKind.MinusToken => SyntaxKind.UnaryMinusExpression,
+            SyntaxKind.NotKeyword => SyntaxKind.LogicalNotExpression,
+            SyntaxKind.HashToken => SyntaxKind.LengthExpression,
+            SyntaxKind.TildeToken => SyntaxKind.BitwiseNotExpression,
+
+            _ => SyntaxKind.None
+        };
+
+    public static SyntaxKind GetUnaryExpressionOperatorToken(SyntaxKind expression) =>
+        expression switch
+        {
+            SyntaxKind.UnaryMinusExpression => SyntaxKind.MinusToken,
+            SyntaxKind.LogicalNotExpression => SyntaxKind.NotKeyword,
+            SyntaxKind.LengthExpression => SyntaxKind.HashToken,
+            SyntaxKind.BitwiseNotExpression => SyntaxKind.TildeToken,
+
+            _ => SyntaxKind.None
+        };
+
+    public static bool IsBinaryExpression(SyntaxKind expression) =>
+        SyntaxFacts.GetBinaryExpression(expression) != SyntaxKind.None;
+
+    public static bool IsBinaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.GetBinaryExpressionOperatorToken(token) != SyntaxKind.None;
 
     public static SyntaxKind GetBinaryExpression(SyntaxKind token) =>
         token switch
@@ -385,21 +399,73 @@ public static partial class SyntaxFacts
             _ => SyntaxKind.None
         };
 
-    public static bool IsAssignmentExpression(SyntaxKind kind) =>
-        kind switch
-        {
-            SyntaxKind.AssignmentExpression => true,
-
-            _ => false
-        };
-
-    public static bool IsAssignmentExpressionOperatorToken(SyntaxKind token) =>
-        SyntaxFacts.GetAssignmentExpression(token) != SyntaxKind.None;
-
-    public static SyntaxKind GetAssignmentExpression(SyntaxKind token) =>
+    public static int GetOperatorPrecedence(SyntaxKind token, bool isUnary) =>
         token switch
         {
-            SyntaxKind.EqualsToken => SyntaxKind.AssignmentExpression,
+            SyntaxKind.CaretToken => 1,
+
+            SyntaxKind.NotKeyword or
+            SyntaxKind.HashToken => 2,
+            SyntaxKind.MinusToken => isUnary ? 2 : 4,
+            SyntaxKind.TildeToken => isUnary ? 2 : 8,
+
+            SyntaxKind.AsteriskToken or
+            SyntaxKind.SlashToken or
+            SyntaxKind.SlashSlashToken or
+            SyntaxKind.PersentToken => 3,
+
+            SyntaxKind.PlusToken or
+            //SyntaxKind.MinusToken => 4,
+
+            SyntaxKind.DotDotToken => 5,
+
+            SyntaxKind.LessThanLessThanToken or
+            SyntaxKind.GreaterThanGreaterThanToken => 6,
+
+            SyntaxKind.AmpersandToken => 7,
+
+            //SyntaxKind.Tilde == 8,
+
+            SyntaxKind.BarToken => 9,
+
+            SyntaxKind.LessThanToken or
+            SyntaxKind.GreaterThanToken or
+            SyntaxKind.LessThanEqualsToken or
+            SyntaxKind.GreaterThanEqualsToken or
+            SyntaxKind.TildeEqualsToken or
+            SyntaxKind.EqualsEqualsToken => 10,
+
+            SyntaxKind.AndKeyword => 11,
+
+            SyntaxKind.OrKeyword => 12,
+
+            _ => int.MaxValue
+        };
+
+    public static SyntaxKind GetBinaryExpressionOperatorToken(SyntaxKind expression) =>
+        expression switch
+        {
+            SyntaxKind.AdditionExpression => SyntaxKind.PlusToken,
+            SyntaxKind.SubtractionExpression => SyntaxKind.MinusToken,
+            SyntaxKind.MultiplicationExpression => SyntaxKind.AsteriskToken,
+            SyntaxKind.DivisionExpression => SyntaxKind.SlashToken,
+            SyntaxKind.FloorDivisionExpression => SyntaxKind.SlashSlashToken,
+            SyntaxKind.ExponentiationExpression => SyntaxKind.CaretToken,
+            SyntaxKind.ModuloExpression => SyntaxKind.PersentToken,
+            SyntaxKind.BitwiseAndExpression => SyntaxKind.AmpersandToken,
+            SyntaxKind.BitwiseExclusiveOrExpression => SyntaxKind.TildeToken,
+            SyntaxKind.BitwiseOrExpression => SyntaxKind.BarToken,
+            SyntaxKind.BitwiseLeftShiftExpression => SyntaxKind.LessThanLessThanToken,
+            SyntaxKind.BitwiseRightShiftExpression => SyntaxKind.GreaterThanGreaterThanToken,
+            SyntaxKind.ConcatenationExpression => SyntaxKind.DotDotToken,
+            SyntaxKind.LessThanExpression => SyntaxKind.LessThanToken,
+            SyntaxKind.LessThanOrEqualExpression => SyntaxKind.LessThanEqualsToken,
+            SyntaxKind.GreaterThanExpression => SyntaxKind.GreaterThanToken,
+            SyntaxKind.GreaterThanOrEqualExpression => SyntaxKind.GreaterThanEqualsToken,
+            SyntaxKind.EqualExpression => SyntaxKind.EqualsEqualsToken,
+            SyntaxKind.NotEqualExpression => SyntaxKind.TildeEqualsToken,
+            SyntaxKind.AndExpression => SyntaxKind.AndKeyword,
+            SyntaxKind.OrExpression => SyntaxKind.OrKeyword,
 
             _ => SyntaxKind.None
         };

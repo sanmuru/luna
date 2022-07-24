@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 using Microsoft.CodeAnalysis.Text;
 
 #if LANG_LUA
@@ -13,13 +14,13 @@ using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
 
 internal partial class LanguageParser : SyntaxParser
 {
-    private readonly SyntaxListPool _pool = new();
+    protected readonly SyntaxListPool pool = new();
 
-    private readonly SyntaxFactoryContext _syntaxFactoryContext;
-    private readonly ContextAwareSyntax _syntaxFactory;
+    protected readonly SyntaxFactoryContext syntaxFactoryContext;
+    protected readonly ContextAwareSyntax syntaxFactory;
 
-    private int _recursionDepth; // 递归深度。
-    private TerminatorState _terminatorState;
+    protected int recursionDepth; // 递归深度。
+    protected TerminatorState terminatorState;
 
     internal LanguageParser(
         Lexer lexer,
@@ -37,7 +38,35 @@ internal partial class LanguageParser : SyntaxParser
         cancellationToken: cancellationToken
     )
     {
-        this._syntaxFactoryContext = new();
-        this._syntaxFactory = new(this._syntaxFactoryContext);
+        this.syntaxFactoryContext = new();
+        this.syntaxFactory = new(this.syntaxFactoryContext);
     }
+
+    private protected bool IsIncrementalAndFactoryContextMatches
+    {
+        get
+        {
+            if (!base.IsIncremental) return false;
+
+            var node = this.CurrentNode;
+            return node is not null && this.MatchFactoryContext(node.Green, this.syntaxFactoryContext);
+        }
+    }
+
+    private protected partial bool MatchFactoryContext(GreenNode green, SyntaxFactoryContext context);
+
+    private protected bool IsTerminal()
+    {
+        if (this.CurrentTokenKind == SyntaxKind.EndOfFileToken) return true;
+
+        for (int i = 1; i < LanguageParser.LastTerminatorState; i <<= 1)
+        {
+            var state = (TerminatorState)i;
+            if (IsTerminalCore(state)) return true;
+        }
+
+        return false;
+    }
+
+    private protected virtual partial bool IsTerminalCore(TerminatorState state);
 }

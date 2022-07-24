@@ -6,7 +6,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
 
-internal partial class SyntaxParser
+partial class SyntaxParser
 {
     protected struct ResetPoint
     {

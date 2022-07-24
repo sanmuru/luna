@@ -8,23 +8,7 @@
 
 
   <!-- 名称 -->
-  <AbstractNode Name="NameSyntax" Base="LuaSyntaxNode">
-    <TypeComment>
-      <summary>提供表示名称语法节点继承用的父类，此类必须被继承。</summary>
-    </TypeComment>
-  </AbstractNode>
-  <AbstractNode Name="SimpleNameSyntax" Base="NameSyntax">
-    <Field Name="Identifier" Type="SyntaxToken">
-      <PropertyComment>
-        <summary>表示简单名称的语法标志。</summary>
-      </PropertyComment>
-      <Kind Name="IdentifierToken" />
-    </Field>
-    <TypeComment>
-      <summary>提供表示简单名称语法节点继承用的父类，此类必须被继承。</summary>
-    </TypeComment>
-  </AbstractNode>
-  <Node Name="IdentifierNameSyntax" Base="SimpleNameSyntax">
+  <Node Name="IdentifierNameSyntax" Base="LuaSyntaxNode">
     <Kind Name="IdentifierName"/>
     <Field Name="Identifier" Type="SyntaxToken" Override="true">
       <Kind Name="IdentifierToken"/>
@@ -41,10 +25,47 @@
       <summary>Creates an IdentifierNameSyntax node.</summary>
     </FactoryComment>
   </Node>
+  <AbstractNode Name="MemberAccessSyntax" Base="LuaSyntaxNode">
+    <Field Name="Self" Type="IdentifierNameOrExpressionSyntax"/>
+    <Field Name="Member" Type="IdentifierNameOrExpressionSyntax"/>
+  </AbstractNode>
+  <Node Name="SimpleMemberAccessSyntax" Base="MemberAccessSyntax">
+    <Kind Name="SimpleMemberAccess"/>
+    <Field Name="Self" Type="IdentifierNameOrExpressionSyntax" Override="true"/>
+    <Field Name="OperatorToken" Type="SyntaxToken">
+      <Kind Name="DotToken"/>
+    </Field>
+    <Field Name="Member" Type="IdentifierNameSyntax"/>
+  </Node>
+  <Node Name="IndexMemberAccessSyntax" Base="MemberAccessSyntax">
+    <Kind Name="IndexMemberAccess"/>
+    <Field Name="Self" Type="IdentifierNameOrExpressionSyntax" Override="true"/>
+    <Field Name="OpenBracketToken" Type="SyntaxToken">
+      <Kind Name="OpenBracketToken"/>
+    </Field>
+    <Field Name="Member" Type="IdentifierNameOrExpressionSyntax" Override="true"/>
+    <Field Name="CloseBracketToken" Type="SyntaxToken">
+      <Kind Name="CloseBracketToken"/>
+    </Field>
+  </Node>
+  <Node Name="IdentifierNameOrMemberAccessSyntax" Base="LuaSyntaxNode">
+    <Kind Name="IdentifierNameOrMemberAccess"/>
+    <Choice>
+      <Field Name="IdentifierName" Type="IdentifierNameSyntax"/>
+      <Field Name="MemberAccess" Type="MemberAccessSyntax"/>
+    </Choice>
+  </Node>
+  <Node Name="IdentifierNameOrExpressionSyntax" Base="LuaSyntaxNode">
+    <Kind Name="IdentifierNameOrExpressionAccess"/>
+    <Choice>
+      <Field Name="IdentifierName" Type="IdentifierNameSyntax"/>
+      <Field Name="Expression" Type="ExpressionSyntax"/>
+    </Choice>
+  </Node>
 
 
 
-  <!-- 语句 -->
+  <!-- 表达式 -->
   <AbstractNode Name="ExpressionSyntax" Base="LuaSyntaxNode">
     <TypeComment>
       <summary>Provides the base class from which the classes that represent expression syntax nodes are derived. This is an abstract class.</summary>
@@ -230,82 +251,28 @@
       <summary>Creates a UnaryExpressionSyntax node.</summary>
     </FactoryComment>
   </Node>
-  <Node Name="AssignmentExpressionSyntax" Base="ExpressionSyntax">
-      <Kind Name="AssignmentExpression"/>
-      <Field Name="Left" Type="ExpressionSyntax">athere
-        <PropertyComment>
-          <summary>ExpressionSyntax node representing the expression on the left of the assignment operator.</summary>
-        </PropertyComment>
-      </Field>
-      <Field Name="EqualsToken" Type="SyntaxToken">
-        <Kind Name="EqualsToken"/>
-        <PropertyComment>
-          <summary>SyntaxToken representing the operator of the assignment expression.</summary>
-        </PropertyComment>
-      </Field>
-      <Field Name="Right" Type="ExpressionSyntax">
-        <PropertyComment>
-          <summary>ExpressionSyntax node representing the expression on the right of the assignment operator.</summary>
-        </PropertyComment>
-      </Field>
-      <TypeComment>
-        <summary>Class which represents an expression that has an assignment operator.</summary>
-      </TypeComment>
-      <FactoryComment>
-        <summary>Creates an AssignmentExpressionSyntax node.</summary>
-      </FactoryComment>
-  </Node>
   <AbstractNode Name="MemberAccessExpressionSyntax" Base="ExpressionSyntax">
-    <Field Name="Expression" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
-      </PropertyComment>
-    </Field>
-    <Field Name="MemberExpression" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>SimpleNameSyntax node representing the member being accessed.</summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Self" Type="IdentifierNameOrExpressionSyntax"/>
+    <Field Name="Member" Type="IdentifierNameOrExpressionSyntax"/>
   </AbstractNode>
-  <Node Name="SimpleMemberAccessExpression" Base="MemberAccessExpressionSyntax">
+  <Node Name="SimpleMemberAccessExpressionSyntax" Base="MemberAccessExpressionSyntax">
     <Kind Name="SimpleMemberAccessExpression"/>
-    <Field Name="Expression" Type="ExpressionSyntax" Override="true">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Self" Type="IdentifierNameOrExpressionSyntax" Override="true"/>
     <Field Name="OperatorToken" Type="SyntaxToken">
       <Kind Name="DotToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the kind of the operator in the member access expression.</summary>
-      </PropertyComment>
     </Field>
-    <Field Name="MemberExpression" Type="ExpressionSyntax" Override="true">
-      <PropertyComment>
-        <summary>SimpleNameSyntax node representing the member being accessed.</summary>
-      </PropertyComment>
-    </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for member access expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a MemberAccessExpressionSyntax node.</summary>
-    </FactoryComment>
+    <Field Name="Member" Type="IdentifierNameSyntax"/>
   </Node>
   <Node Name="IndexMemberAccessExpressionSyntax" Base="MemberAccessExpressionSyntax">
-    <Kind Name="IndexMemberAccessExpression"/>
-    <Field Name="Expression" Type="ExpressionSyntax" Override="true">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
-      </PropertyComment>
+    <Kind Name="IndexMemberAccess"/>
+    <Field Name="Self" Type="IdentifierNameOrExpressionSyntax" Override="true"/>
+    <Field Name="OpenBracketToken" Type="SyntaxToken">
+      <Kind Name="OpenBracketToken"/>
     </Field>
-    <Field Name="Key" Type="BracketedExpressionSyntax"/>
-    <TypeComment>
-      <summary>Class which represents the syntax node for member access expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a MemberAccessExpressionSyntax node.</summary>
-    </FactoryComment>
+    <Field Name="Member" Type="IdentifierNameOrExpressionSyntax" Override="true"/>
+    <Field Name="CloseBracketToken" Type="SyntaxToken">
+      <Kind Name="CloseBracketToken"/>
+    </Field>
   </Node>
   <Node Name="InvocationExpressionSyntax" Base="ExpressionSyntax">
     <Kind Name="InvocationExpression"/>
@@ -344,6 +311,34 @@
       <Kind Name="SemicolonToken"/>
     </Field>
   </Node>
+  <Node Name="AssignmentStatementSyntax" Base="StatementSyntax">
+    <Kind Name="AssignmentStatement"/>
+    <Field Name="Left" Type="ExpressionListSyntax">
+      <PropertyComment>
+        <summary>ExpressionSyntax node representing the expression on the left of the assignment operator.</summary>
+      </PropertyComment>
+    </Field>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
+      <PropertyComment>
+        <summary>SyntaxToken representing the operator of the assignment expression.</summary>
+      </PropertyComment>
+    </Field>
+    <Field Name="Right" Type="ExpressionListSyntax">
+      <PropertyComment>
+        <summary>ExpressionSyntax node representing the expression on the right of the assignment operator.</summary>
+      </PropertyComment>
+    </Field>
+    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
+      <Kind Name="SemicolonToken"/>
+    </Field>
+    <TypeComment>
+      <summary>Class which represents an statement that has an assignment operator.</summary>
+    </TypeComment>
+    <FactoryComment>
+      <summary>Creates an AssignmentStatementSyntax node.</summary>
+    </FactoryComment>
+  </Node>
   <Node Name="LabeledStatementSyntax" Base="StatementSyntax">
     <Kind Name="LabeledStatement"/>
     <Field Name="LeftColonColonToken" Type="SyntaxToken">
@@ -352,19 +347,13 @@
         <summary>Gets a SyntaxToken that represents the double colons leading the statement's label.</summary>
       </PropertyComment>
     </Field>
-    <Field Name="Identifier" Type="SyntaxToken">
-      <PropertyComment>
-        <summary>Gets the identifier.</summary>
-      </PropertyComment>
-      <Kind Name="IdentifierToken"/>
-    </Field>
+    <Field Name="Identifier" Type="IdentifierNameSyntax"/>
     <Field Name="RightColonColonToken" Type="SyntaxToken">
       <Kind Name="ColonColonToken"/>
       <PropertyComment>
         <summary>Gets a SyntaxToken that represents the double colons trailing the statement's label.</summary>
       </PropertyComment>
     </Field>
-    <Field Name="Statement" Type="StatementSyntax"/>
     <TypeComment>
       <summary>Represents a labeled statement syntax.</summary>
     </TypeComment>
@@ -575,7 +564,7 @@
         </summary>
       </PropertyComment>
     </Field>
-    <Field Name="Statement" Type="StatementSyntax"/>
+    <Field Name="Block" Type="BlockSyntax"/>
     <TypeComment>
       <summary>Represents an else statement syntax.</summary>
     </TypeComment>
@@ -603,6 +592,24 @@
       </Field>
       <Field Name="Step" Type="ExpressionSyntax"/>
     </Sequence>
+    <Field Name="DoKeyword" Type="SyntaxToken">
+      <Kind Name="DoKeyword"/>
+    </Field>
+    <Field Name="Block" Type="BlockSyntax"/>
+    <Field Name="EndKeyword" Type="SyntaxToken">
+      <Kind Name="EndKeyword"/>
+    </Field>
+  </Node>
+  <Node Name="ForInStatementSyntax" Base="StatementSyntax">
+    <Kind Name="ForInStatement"/>
+    <Field Name="ForKeyword" Type="SyntaxToken">
+      <Kind Name="ForKeyword"/>
+    </Field>
+    <Field Name="Names" Type="SeparatedSyntaxList&lt;IdentifierNameSyntax&gt;"/>
+    <Field Name="InKeyword" Type="SyntaxToken">
+      <Kind Name="InKeyword"/>
+    </Field>
+    <Field Name="Iteration" Type="ExpressionSyntax"/>
     <Field Name="DoKeyword" Type="SyntaxToken">
       <Kind Name="DoKeyword"/>
     </Field>
