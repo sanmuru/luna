@@ -353,10 +353,10 @@ partial class Lexer
             {
                 // 将这个右花括号标志的前方琐碎内容组合到上一个标志的后方琐碎内容中。
                 var lastToken = tokens[tokens.Count - 1];
-                SyntaxListBuilder triviaBuilder = new(lastToken.TrailingTrivia.Count + token.LeadingTrivia.Count);
-                triviaBuilder.AddRange(lastToken.TrailingTrivia);
-                triviaBuilder.AddRange(token.LeadingTrivia);
-                tokens[tokens.Count - 1] = lastToken.TokenWithTrailingTrivia(triviaBuilder.ToListNode());
+                tokens[tokens.Count - 1] = lastToken.TokenWithTrailingTrivia(SyntaxList.Concat(
+                    lastToken.GetTrailingTrivia(),
+                    token.GetLeadingTrivia()
+                ));
             }
         }
     }
