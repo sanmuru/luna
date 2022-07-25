@@ -114,7 +114,7 @@ partial class LanguageParser
         var leftColonColon = this.EatToken(SyntaxKind.ColonColonToken);
         var labelName = this.ParseIdentifierName();
         var rightColonColon = this.EatToken(SyntaxKind.ColonColonToken);
-        return this.syntaxFactory.LabeledStatement(leftColonColon, labelName, rightColonColon);
+        return this.syntaxFactory.LabelStatement(leftColonColon, labelName, rightColonColon);
     }
 
     private protected StatementSyntax ParseBreakStatement()

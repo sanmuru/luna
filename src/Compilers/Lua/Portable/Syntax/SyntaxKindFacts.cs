@@ -371,6 +371,21 @@ public static partial class SyntaxFacts
 
     public static bool IsBinaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.GetBinaryExpressionOperatorToken(token) != SyntaxKind.None;
 
+    public static bool IsLeftAssociativeBinaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.IsBinaryExpressionOperatorToken(token) && !SyntaxFacts.IsRightAssociativeBinaryExpressionOperatorToken(token);
+
+    private static bool IsRightAssociativeBinaryExpressionOperatorToken(SyntaxKind token)
+    {
+        Debug.Assert(SyntaxFacts.IsBinaryExpressionOperatorToken(token));
+
+        return token switch
+        {
+            SyntaxKind.CaretToken or
+            SyntaxKind.DotDotToken => true,
+
+            _ => false
+        };
+    }
+
     public static SyntaxKind GetBinaryExpression(SyntaxKind token) =>
         token switch
         {
@@ -402,44 +417,44 @@ public static partial class SyntaxFacts
     public static int GetOperatorPrecedence(SyntaxKind token, bool isUnary) =>
         token switch
         {
-            SyntaxKind.CaretToken => 1,
+            SyntaxKind.CaretToken => 12,
 
             SyntaxKind.NotKeyword or
-            SyntaxKind.HashToken => 2,
-            SyntaxKind.MinusToken => isUnary ? 2 : 4,
-            SyntaxKind.TildeToken => isUnary ? 2 : 8,
+            SyntaxKind.HashToken => 11,
+            SyntaxKind.MinusToken => isUnary ? 11 : 9,
+            SyntaxKind.TildeToken => isUnary ? 11 : 5,
 
             SyntaxKind.AsteriskToken or
             SyntaxKind.SlashToken or
             SyntaxKind.SlashSlashToken or
-            SyntaxKind.PersentToken => 3,
+            SyntaxKind.PersentToken => 10,
 
             SyntaxKind.PlusToken or
-            //SyntaxKind.MinusToken => 4,
+            //SyntaxKind.MinusToken => 9,
 
-            SyntaxKind.DotDotToken => 5,
+            SyntaxKind.DotDotToken => 8,
 
             SyntaxKind.LessThanLessThanToken or
-            SyntaxKind.GreaterThanGreaterThanToken => 6,
+            SyntaxKind.GreaterThanGreaterThanToken => 7,
 
-            SyntaxKind.AmpersandToken => 7,
+            SyntaxKind.AmpersandToken => 6,
 
-            //SyntaxKind.Tilde == 8,
+            //SyntaxKind.Tilde == 5,
 
-            SyntaxKind.BarToken => 9,
+            SyntaxKind.BarToken => 4,
 
             SyntaxKind.LessThanToken or
             SyntaxKind.GreaterThanToken or
             SyntaxKind.LessThanEqualsToken or
             SyntaxKind.GreaterThanEqualsToken or
             SyntaxKind.TildeEqualsToken or
-            SyntaxKind.EqualsEqualsToken => 10,
+            SyntaxKind.EqualsEqualsToken => 3,
 
-            SyntaxKind.AndKeyword => 11,
+            SyntaxKind.AndKeyword => 2,
 
-            SyntaxKind.OrKeyword => 12,
+            SyntaxKind.OrKeyword => 1,
 
-            _ => int.MaxValue
+            _ => 0
         };
 
     public static SyntaxKind GetBinaryExpressionOperatorToken(SyntaxKind expression) =>

@@ -222,13 +222,13 @@ public enum SyntaxKind : ushort
     // = 9345
     #endregion
 
-    #region 名称和结构
+    #region 名称
     /// <summary>表示标识符名称。</summary>
     IdentifierName = 9473,
-    SimpleMemberAccess,
-    IndexMemberAccess,
-    IdentifierNameOrMemberAccess,
-    IdentifierNameOrExpressionAccess,
+    /// <summary>表示限定的名称。</summary>
+    QualifiedName,
+    /// <summary>表示传入隐式self参数的名称。</summary>
+    ImplicitSelfParameterName,
     #endregion
 
     #region 表达式
@@ -253,6 +253,8 @@ public enum SyntaxKind : ushort
     TableConstructorExpression,
     /// <summary>表示调用表达式。</summary>
     InvocationExpression,
+    /// <summary>表示传入隐式self参数的调用表达式。</summary>
+    ImplicitSelfParameterInvocationExpression,
 
     // 二元运算符表达式
     /// <summary>表示加法表达式。</summary>
@@ -321,7 +323,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示赋值表达式。</summary>
     AssignmentStatement,
     /// <summary>表示标签语句。</summary>
-    LabeledStatement,
+    LabelStatement,
     /// <summary>表示中断流程（<see langword="break"/>）语句。</summary>
     BreakStatement,
     /// <summary>表示跳转标签（<see langword="goto"/>）语句。</summary>
@@ -345,9 +347,9 @@ public enum SyntaxKind : ushort
     /// <summary>表示迭代<see langword="for"/>循环语句。</summary>
     ForInStatement,
     /// <summary>表示函数定义语句。</summary>
-    FunctionStatement,
+    FunctionDefinitionStatement,
     /// <summary>表示本地函数定义语句。</summary>
-    LocalFunctionStatement,
+    LocalFunctionDefinitionStatement,
     /// <summary>表示本地变量定义语句。</summary>
     LocalDeclarationStatement,
     #endregion
@@ -361,21 +363,25 @@ public enum SyntaxKind : ushort
     BracketedExpression,
     /// <summary>表示表达式列表。</summary>
     ExpressionList,
-    /// <summary>表示带花括号的表达式列表。</summary>
-    BracedExpressionList,
     /// <summary>表示表字段列表。</summary>
     FieldList,
     /// <summary>表示表字段。</summary>
     Field,
+    /// <summary>表示列表项表字段。</summary>
+    ItemField,
+    /// <summary>表示名键对表字段。</summary>
+    NameValueField,
+    /// <summary>表示值键对表字段。</summary>
+    KeyValueField,
     /// <summary>表示函数参数列表。</summary>
     ParameterList,
     /// <summary>表示函数参数。</summary>
     Parameter,
     /// <summary>表示调用参数列表。</summary>
     ArgumentList,
+    /// <summary>表示调用参数表。</summary>
+    ArgumentTable,
     /// <summary>表示调用参数。</summary>
     Argument,
-    /// <summary>表示传入隐式self参数的调用头。</summary>
-    ImplicitSelfCall,
     #endregion
 }
