@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 using Roslyn.Utilities;
 
@@ -131,11 +132,21 @@ partial class LanguageParser
             this._exprStack.Push(expr);
         }
 
-        private LuaSyntaxNode? TryEatTokenOrExpression()
+        internal void Reset()
         {
-            LuaSyntaxNode? result = null;
+            this._state = ParseState.Initial;
+            this._exprStack.Clear();
+            this._optStack.Clear();
+        }
 
-            var skippedTokenListBuilder = SyntaxListBuilder<SyntaxToken>.Create();
+        private bool TryEatTokenOrExpression(
+            [NotNullWhen(true)] out LuaSyntaxNode? result,
+            out SkippedTokensTriviaSyntax? skippedTokensTrivia)
+        {
+            result = null;
+            skippedTokensTrivia = null;
+
+            var skippedTokenListBuilder = this._parser.pool.Allocate<SyntaxToken>();
             while (this._state != ParseState.Bad && result is null)
             {
                 var state = Transit(this._state, this._parser.CurrentTokenKind, this._parser);
@@ -166,8 +177,20 @@ partial class LanguageParser
                 }
             }
 
-            this.AppendSkippedTokensTrivia(skippedTokenListBuilder, ErrorCode.ERR_InvalidExprTerm);
-            return result;
+            skippedTokensTrivia = this.CreateSkippedTokensTrivia(skippedTokenListBuilder, ErrorCode.ERR_InvalidExprTerm);
+
+            // 若遇到Bad情况直接退出，表示没有下一个可接受的标志或表达式语法，则将skippedTokensTrivia传出，交给调用方法处理；
+            if (result is null) return false;
+            // 若能找到下一个可接受的标志或表达式语法，则将skippedTokensTrivia添加到这个语法节点的前方语法琐碎内容中，不传出此方法。
+            else
+            {
+                if (skippedTokensTrivia is not null)
+                {
+                    result = this._parser.AddLeadingSkippedSyntax(result, skippedTokensTrivia);
+                    skippedTokensTrivia = null;
+                }
+                return true;
+            }
         }
 
         private readonly Stack<ExpressionSyntax> _exprStack = new(10);
@@ -177,12 +200,12 @@ partial class LanguageParser
         {
             get
             {
-                Debug.Assert(this._state is ParseState.UnaryStart or ParseState.BinaryStart);
+                Debug.Assert(this._state is ParseState.UnaryStart or ParseState.BinaryStart, "只能在UnaryStart或BinaryStart状态下调用此属性。");
                 return this._state == ParseState.UnaryStart;
             }
         }
 
-        private bool IsAssociative(SyntaxToken nextOpt)
+        private bool CanAssociate(SyntaxToken nextOpt)
         {
             bool nextIsUnary = this.CurrentTokenIsUnary;
             (var opt, var isUnary) = this._optStack.Peek();
@@ -202,14 +225,12 @@ partial class LanguageParser
 
         internal ExpressionSyntax ParseExpressionWithOperator()
         {
-            LuaSyntaxNode? tokenOrExpression = null;
 Next:
-            tokenOrExpression = this.TryEatTokenOrExpression();
-            if (tokenOrExpression is null) goto Final;
+            if (!this.TryEatTokenOrExpression(out var tokenOrExpression, out var skippedTokensTrivia)) goto Final;
             else if (tokenOrExpression is SyntaxToken nextOpt)
             {
-                // 前方有多个可组合的二元运算符，全部组合。
-                while (this._optStack.Count > 0 && this.IsAssociative(nextOpt))
+                // 前方有多个可结合的二元运算符，全部结合。
+                while (this._optStack.Count > 0 && this.CanAssociate(nextOpt))
                 {
                     // 此时上一个运算符不应该是一元运算符。
                     Debug.Assert(this._optStack.Peek().isUnary == false);
@@ -228,7 +249,7 @@ Next:
             }
             else if (tokenOrExpression is ExpressionSyntax expr)
             {
-                // 前方有多个一元运算符，全部组合。
+                // 前方有多个一元运算符，全部结合。
                 while (this._optStack.Count > 0 && this._optStack.Peek().isUnary)
                 {
                     var opt = this._optStack.Pop().opt;
@@ -240,38 +261,72 @@ Next:
                 }
                 this._exprStack.Push(expr);
             }
+            goto Next;
 
 Final:
 /* 有两种情况到达这里：
  * 1. 表达式语法正确，结构没有缺失。
  * 2. 发生错误，无法继续。
  */
-            if (this._exprStack.Count == 1 && this._optStack.Count == 0) // 最理想的成功情况。
-                return this._exprStack.Pop();
+            {
+                ExpressionSyntax expr;
 
-            // 错误情况1：
+                // 成功情况：表达式的数量比二元运算符的数量多一个。
+                if (this._exprStack.Count == 1 + this._optStack.Count(tuple => tuple.isUnary == false))
+                {
+                    expr = this._exprStack.Pop();
+                    if (skippedTokensTrivia is not null)
+                        expr = this._parser.AddTrailingSkippedSyntax(expr, skippedTokensTrivia);
+                }
+                // 错误情况1：前方什么也没有。
+                // 错误情况2：前方有多个一元运算符。
+                // 错误情况3：前方有一个多余的二元运算符。
+                // 处理方法：补充一个缺失的标识符名称语法（表达式），即可开始结合。
+                else
+                {
+                    expr = this._parser.CreateMissingIdentifierName();
+                    if (skippedTokensTrivia is not null)
+                        expr = this._parser.AddLeadingSkippedSyntax(expr, skippedTokensTrivia);
+                }
+
+                // 开始结合。
+                while (this._optStack.Count > 0)
+                {
+                    (var opt, var isUnary) = this._optStack.Pop();
+                    if (isUnary)
+                    {
+                        Debug.Assert(this._exprStack.Count > 0);
+                        expr = this._parser.syntaxFactory.UnaryExpression(
+                            SyntaxFacts.GetUnaryExpressionOperatorToken(opt.Kind),
+                            opt,
+                            expr);
+                    }
+                    else
+                    {
+                        Debug.Assert(this._exprStack.Count >= 2);
+                        expr = this._parser.syntaxFactory.BinaryExpression(
+                            SyntaxFacts.GetBinaryExpression(opt.Kind),
+                            this._exprStack.Pop(),
+                            opt,
+                            expr
+                        );
+                    }
+                }
+
+                Debug.Assert(this._exprStack.Count == 0 && this._optStack.Count == 0); // 如果触发断言，则表明我们遇到了麻烦。
+
+                return expr;
+            }
         }
 
-        private void AppendSkippedTokensTrivia(in SyntaxListBuilder skippedTokenBuilder, in ErrorCode errorCode)
+        private SkippedTokensTriviaSyntax? CreateSkippedTokensTrivia(in SyntaxListBuilder<SyntaxToken> skippedTokenBuilder, in ErrorCode errorCode)
         {
             // 快速跳过没有错误的情况。
-            if (skippedTokenBuilder.Count == 0) return;
+            if (skippedTokenBuilder.Count == 0) return null;
 
-            var trivia = this._parser.syntaxFactory.SkippedTokensTrivia(skippedTokenBuilder.ToList());
+            var trivia = this._parser.syntaxFactory.SkippedTokensTrivia(this._parser.pool.ToListAndFree(skippedTokenBuilder));
             trivia = this._parser.AddError(trivia, errorCode); // 报告诊断错误。
-            if (previewStateIsExpr)
-            {
-                exprStack.Push(this.AddTrailingSkippedSyntax(exprStack.Pop(), trivia));
-            }
-            else
-            {
-                optStack.Push(this.AddTrailingSkippedSyntax(optStack.Pop(), trivia));
-            }
-        }
-
-        private void collectErrorAndSkip()
-        {
-            skippedTokenBuilder.Add(this.EatToken());
+            return trivia;
         }
     }
 }

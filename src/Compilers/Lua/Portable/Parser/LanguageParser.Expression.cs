@@ -7,9 +7,41 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 partial class LanguageParser
 {
+    private ExpressionListSyntax ParseExpressionList() =>
+        this.ParseExpressionListOpt() ??
+            // 创建一个缺失的标识符名称语法来组成表达式列表，并报告错误信息。
+            this.CreateMissingExpressionList();
+
     private ExpressionListSyntax? ParseExpressionListOpt()
     {
-        throw new NotImplementedException();
+        if (this.CurrentTokenKind != SyntaxKind.CommaToken && !this.IsPossibleExpression()) return null;
+
+        return this.ParseSeparatedSyntaxList(
+            index =>
+            {
+                if (this.IsPossibleExpression())
+                    return this.ParseExpression();
+                else
+                {
+                    // 第一项缺失的情况：
+                    if (index == 0)
+                        Debug.Assert(this.CurrentTokenKind == SyntaxKind.CommaToken);
+                    return this.CreateMissingIdentifierName();
+                }
+            },
+            _ => true,
+            list => list.Count == 0 ? null :
+                this.syntaxFactory.ExpressionList(list));
+    }
+
+    private ExpressionListSyntax CreateMissingExpressionList()
+    {
+        var missing = this.syntaxFactory.ExpressionList(
+            new(SyntaxList.List(
+                this.CreateMissingIdentifierName()
+            ))
+        );
+        return this.AddError(missing, ErrorCode.ERR_InvalidExprTerm);
     }
 
 #if TESTING
@@ -148,6 +180,17 @@ partial class LanguageParser
         throw ExceptionUtilities.Unreachable;
     }
 
+    private ExpressionSyntax ParseExpressionWithOperator(ExpressionSyntax? first = null)
+    {
+        ExpressionWithOperatorParser innerParser;
+        if (first is null)
+            innerParser = new(this);
+        else
+            innerParser = new(this, first);
+
+        return innerParser.ParseExpressionWithOperator();
+    }
+
     private protected LiteralExpressionSyntax ParseLiteralExpression(SyntaxKind kind
 #if DEBUG
         , SyntaxKind currentTokenKind
@@ -171,29 +214,41 @@ partial class LanguageParser
 
     private FunctionDefinitionExpressionSyntax ParseFunctionDefinitionExpression()
     {
-        throw new NotImplementedException();
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.FunctionKeyword);
+
+        var function = this.EatToken(SyntaxKind.FunctionKeyword);
+        this.ParseFunctionBody(out var parameters, out var block, out var end);
+        return this.syntaxFactory.FunctionDefinitionExpression(function, parameters, block, end);
     }
 
     private TableConstructorExpressionSyntax ParseTableConstructorExpression()
     {
-        throw new NotImplementedException();
+        var openBrace = this.EatToken(SyntaxKind.OpenBraceToken);
+        var field = this.ParseFieldList();
+        var closeBrace = this.EatToken(SyntaxKind.CloseBraceToken);
+        return this.syntaxFactory.TableConstructorExpression(openBrace, field, closeBrace);
     }
 
     private ExpressionSyntax ParseIdentifierStartedExpression()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.IdentifierToken);
 
-        throw new NotImplementedException();
+        return this.ParseIdentifierName();
     }
 
-    private ExpressionSyntax ParseSimpleMemberAccessExpressionSyntax(ExpressionSyntax expr)
+    private ExpressionSyntax ParseSimpleMemberAccessExpressionSyntax(ExpressionSyntax self)
     {
-        throw new NotImplementedException();
+        var dot = this.EatToken(SyntaxKind.DotToken);
+        var member = this.ParseIdentifierName();
+        return this.syntaxFactory.SimpleMemberAccessExpression(self, dot, member);
     }
 
-    private ExpressionSyntax ParseIndexMemberAccessExpressionSyntax(ExpressionSyntax expr)
+    private ExpressionSyntax ParseIndexMemberAccessExpressionSyntax(ExpressionSyntax self)
     {
-        throw new NotImplementedException();
+        var openBracket = this.EatToken(SyntaxKind.OpenBracketToken);
+        var member = this.ParseExpression();
+        var closeBracket = this.EatToken(SyntaxKind.CloseBracketToken);
+        return this.syntaxFactory.IndexMemberAccessExpression(self, openBracket, member, closeBracket);
     }
 
 }

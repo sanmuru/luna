@@ -460,6 +460,7 @@ internal abstract partial class SyntaxParser : IDisposable
     protected SyntaxToken PeekToken(int n = 0)
     {
         Debug.Assert(n >= 0);
+        if (n == 0) return this.CurrentToken;
 
         // 补充不足的标志。
         while (this._tokenOffset + n >= this._tokenCount)

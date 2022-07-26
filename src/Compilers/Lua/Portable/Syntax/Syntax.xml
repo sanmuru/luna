@@ -11,7 +11,7 @@
   <AbstractNode Name="NameSyntax" Base="ExpressionSyntax"/>
   <Node Name="IdentifierNameSyntax" Base="NameSyntax">
     <Kind Name="IdentifierName"/>
-    <Field Name="Identifier" Type="SyntaxToken" Override="true">
+    <Field Name="Identifier" Type="SyntaxToken">
       <Kind Name="IdentifierToken"/>
       <Kind Name="GlobalEnvironmentKeyword"/>
       <Kind Name="EnvironmentKeyword"/>
@@ -71,7 +71,7 @@
       <Kind Name="FunctionKeyword"/>
     </Field>
     <Field Name="Parameters" Type="ParameterListSyntax"/>
-    <Field Name="Body" Type="BlockSyntax"/>
+    <Field Name="Block" Type="BlockSyntax"/>
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
     </Field>
@@ -157,10 +157,10 @@
     <Field Name="OperatorToken" Type="SyntaxToken">
       <Kind Name="DotToken"/>
     </Field>
-    <Field Name="Member" Type="IdentifierNameSyntax" Override="true"/>
+    <Field Name="Member" Type="ExpressionSyntax" Override="true"/>
   </Node>
   <Node Name="IndexMemberAccessExpressionSyntax" Base="MemberAccessExpressionSyntax">
-    <Kind Name="IndexMemberAccess"/>
+    <Kind Name="IndexMemberAccessExpression"/>
     <Field Name="Self" Type="ExpressionSyntax" Override="true"/>
     <Field Name="OpenBracketToken" Type="SyntaxToken">
       <Kind Name="OpenBracketToken"/>
@@ -361,19 +361,19 @@
     </Field>
   </Node>
   <Node Name="FunctionDefinitionStatementSyntax" Base="StatementSyntax">
-    <Kind Name="FunctionDefinitionStatementSyntax"/>
+    <Kind Name="FunctionDefinitionStatement"/>
     <Field Name="FunctionKeyword" Type="SyntaxToken">
       <Kind Name="FunctionKeyword"/>
     </Field>
     <Field Name="Name" Type="NameSyntax"/>
     <Field Name="Parameters" Type="ParameterListSyntax"/>
-    <Field Name="Block" Type="Block"/>
+    <Field Name="Block" Type="BlockSyntax"/>
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
     </Field>
   </Node>
   <Node Name="LocalFunctionDefinitionStatementSyntax" Base="StatementSyntax">
-    <Kind Name="LocalFunctionDefinitionStatementSyntax"/>
+    <Kind Name="LocalFunctionDefinitionStatement"/>
     <Field Name="LocalKeyword" Type="SyntaxToken">
       <Kind Name="LocalKeyword"/>
     </Field>
@@ -382,22 +382,22 @@
     </Field>
     <Field Name="Name" Type="IdentifierNameSyntax"/>
     <Field Name="Parameters" Type="ParameterListSyntax"/>
-    <Field Name="Block" Type="Block"/>
+    <Field Name="Block" Type="BlockSyntax"/>
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
     </Field>
   </Node>
-  <Node Name="LocalDeclarationStatementSyntax" Type="StatementSyntax">
-    <Kind Name="LocalDeclarationStatementSyntax"/>
+  <Node Name="LocalDeclarationStatementSyntax" Base="StatementSyntax">
+    <Kind Name="LocalDeclarationStatement"/>
     <Field Name="LocalKeyword" Type="SyntaxToken">
       <Kind Name="LocalKeyword"/>
     </Field>
-    <Field Name="Identifiers" Type="SeparatedList&lt;IdentifierNameSyntax&gt;"/>
+    <Field Name="Identifiers" Type="SeparatedSyntaxList&lt;IdentifierNameSyntax&gt;"/>
     <Sequence Optional="true">
       <Field Name="EqualsToken" Type="SyntaxToken">
         <Kind Name="EqualsToken"/>
       </Field>
-      <Field Name="Values" Type="ExpressionList"/>
+      <Field Name="Values" Type="ExpressionListSyntax"/>
     </Sequence>
     <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
       <Kind Name="SemicolonToken"/>
@@ -464,16 +464,28 @@
   </Node>
   <AbstractNode Name="MemberFieldSyntax" Base="FieldSyntax">
     <Field Name="Member" Type="ExpressionSyntax"/>
-    <Field Name="Expression" Type="ExpressoinSyntax"/>
+    <Field Name="Expression" Type="ExpressionSyntax"/>
   </AbstractNode>
-  <Node Name="NameValueFieldSyntax" Base="LuaSyntaxNode">
+  <Node Name="NameValueFieldSyntax" Base="FieldSyntax">
     <Kind Name="NameValueField"/>
     <Field Name="FieldName" Type="IdentifierNameSyntax"/>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
+    </Field>
     <Field Name="FieldValue" Type="ExpressionSyntax"/>
   </Node>
-  <Node Name="KeyValueFieldSyntax" Base="LuaSyntaxNode">
+  <Node Name="KeyValueFieldSyntax" Base="FieldSyntax">
     <Kind Name="KeyValueField"/>
+    <Field Name="OpenBracketToken" Type="SyntaxToken">
+      <Kind Name="OpenBracketToken"/>
+    </Field>
     <Field Name="FieldKey" Type="ExpressionSyntax"/>
+    <Field Name="CloseBracketToken" Type="SyntaxToken">
+      <Kind Name="CloseBracketToken"/>
+    </Field>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
+    </Field>
     <Field Name="FieldValue" Type="ExpressionSyntax"/>
   </Node>
   <AbstractNode Name="InvocationArgumentsSyntax" Base="LuaSyntaxNode"/>

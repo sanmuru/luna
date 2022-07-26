@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
+﻿using System;
+using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
@@ -15,20 +16,83 @@ partial class LanguageParser
         return this.syntaxFactory.IdentifierName(identifier);
     }
 
-    private protected void ParseSeparatedIdentifierNames(in SeparatedSyntaxListBuilder<IdentifierNameSyntax> namesBuilder, SyntaxKind separatorKind = SyntaxKind.CommaToken)
+    private protected SeparatedSyntaxList<IdentifierNameSyntax> ParseSeparatedIdentifierNames() =>
+        this.ParseSeparatedSyntaxList(
+            parseNodeFunc: _ => this.ParseIdentifierName(),
+            predicate: _ => true);
+
+    private protected void ParseSeparatedIdentifierNames(in SeparatedSyntaxListBuilder<IdentifierNameSyntax> namesBuilder) =>
+        this.ParseSeparatedSyntaxList(
+            namesBuilder,
+            parseNodeFunc: _ => this.ParseIdentifierName(),
+            predicate: _ => true);
+
+#if TESTING
+    protected internal
+#else
+    private protected
+#endif
+        NameSyntax ParseName()
     {
-        var name = this.ParseIdentifierName();
-        namesBuilder.Add(name);
-
-        int lastTokenPosition = -1;
-        while (this.CurrentToken.Kind == separatorKind
-            && IsMakingProgress(ref lastTokenPosition))
+        NameSyntax left = this.ParseIdentifierName();
+        // QualifiedName
+        while (this.CurrentTokenKind == SyntaxKind.DotToken)
         {
-            var comma = this.EatToken(SyntaxKind.CommaToken);
-            namesBuilder.AddSeparator(comma);
-
-            name = this.ParseIdentifierName();
-            namesBuilder.Add(name);
+            var dot = this.EatToken(SyntaxKind.DotToken);
+            IdentifierNameSyntax right;
+            if (this.CurrentTokenKind != SyntaxKind.IdentifierToken)
+            {
+                dot = this.AddError(dot, ErrorCode.ERR_IdentifierExpected);
+                right = this.CreateMissingIdentifierName();
+                left = this.syntaxFactory.QualifiedName(left, dot, right);
+            }
+            else
+            {
+                right = this.ParseIdentifierName();
+                left = this.syntaxFactory.QualifiedName(left, dot, right);
+            }
         }
+
+        // ImplicitSelfParameterName
+        if (this.CurrentTokenKind == SyntaxKind.ColonToken)
+        {
+            var colon = this.EatToken(SyntaxKind.ColonToken);
+            IdentifierNameSyntax right;
+            if (this.CurrentTokenKind != SyntaxKind.IdentifierToken)
+            {
+                colon = this.AddError(colon, ErrorCode.ERR_IdentifierExpected);
+                right = this.CreateMissingIdentifierName();
+                left = this.syntaxFactory.ImplicitSelfParameterName(left, colon, right);
+            }
+            else
+            {
+                right = this.ParseIdentifierName();
+                left = this.syntaxFactory.ImplicitSelfParameterName(left, colon, right);
+            }
+
+            // 将后续可能的QualifiedName及ImplicitSelfParameterName结构视为错误。
+            if (this.CurrentTokenKind is SyntaxKind.DotToken or SyntaxKind.ColonToken)
+            {
+                var unexpectedChar = SyntaxFacts.GetText(this.CurrentTokenKind);
+                var builder = this.pool.Allocate<SyntaxToken>();
+                do
+                {
+                    builder.Add(this.EatToken());
+                    if (this.CurrentTokenKind == SyntaxKind.IdentifierToken)
+                        builder.Add(this.EatToken());
+                }
+                while (this.CurrentTokenKind is SyntaxKind.DotToken or SyntaxKind.ColonToken);
+                var skippedTokensTrivia = this.syntaxFactory.SkippedTokensTrivia(this.pool.ToListAndFree(builder));
+                skippedTokensTrivia = this.AddError(skippedTokensTrivia, ErrorCode.ERR_UnexpectedCharacter, unexpectedChar);
+
+                left = this.AddTrailingSkippedSyntax(left, skippedTokensTrivia);
+            }
+        }
+
+        return left;
     }
+
+    private protected IdentifierNameSyntax CreateMissingIdentifierName() => this.syntaxFactory.IdentifierName(LanguageParser.CreateMissingIdentifierToken());
+
+    private protected static SyntaxToken CreateMissingIdentifierToken() => SyntaxFactory.MissingToken(SyntaxKind.IdentifierToken);
 }

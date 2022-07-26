@@ -38,6 +38,8 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_TooManyIdentifiers,
         /// <summary>无效的表达式项。</summary>
         ERR_InvalidExprTerm,
+        /// <summary>应输入标识符。</summary>
+        ERR_IdentifierExpected,
         #endregion
 
         #region Lua 1.0的消息
