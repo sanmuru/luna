@@ -36,6 +36,26 @@ public partial class LexerTests
         Assert.That.IsEndOfFile(token);
     }
 
+    [TestMethod]
+    public void TestFilesLexTests()
+    {
+        foreach (var path in Directory.GetFiles("tests"))
+        {
+            using var stream = File.OpenRead(path);
+            var lexer = new Lexer(SourceText.From(stream), LuaParseOptions.Default);
+            var mode = LexerMode.Syntax;
+
+            SyntaxToken token;
+            Stack<SyntaxToken> stack = new();
+            do
+            {
+                token = lexer.Lex(mode);
+                stack.Push(token);
+            }
+            while (token.Kind != SyntaxKind.EndOfFileToken);
+        }
+    }
+
     #region 正向测试
     [TestMethod]
     public void NumericLiteralLexTests()
@@ -76,7 +96,7 @@ public partial class LexerTests
             '
             """, "absolutely funny!"); // 跳过空白字符和新行字符。
         LiteralLexTest("""
-            '\97o\10\049t23+\23383456'
+            '\97o\10\049t23+\0023383456'
             """, "ao\n1t23+字456"); // 转义十进制Unicode字符。
         LiteralLexTest("""
             '\x61\x6F\n\x3123'
@@ -85,6 +105,10 @@ public partial class LexerTests
             '\u{61}o\u{A}\u{0031}t23+\u{00000000000000000000000000005B57}456'
             """, "ao\n1t23+字456"); // 转义十进制Unicode字符。
 
+        LiteralLexTest("""
+            [[first line
+            second line]]
+            """, "first line\nsecond line"); // 多行原始字符串。
         LiteralLexTest("""
             [===[a,[b],[[c]],[=[d]=],[==[e]==],[====[f]====],g]===]
             """, "a,[b],[[c]],[=[d]=],[==[e]==],[====[f]====],g"); // 多行原始字符串。

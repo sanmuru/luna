@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Text;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
 
 #if LANG_LUA
@@ -65,7 +67,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         else return new string(this._characterWindow, offset, length);
     }
 
-    public char NextUnicodeDecEscape(out SyntaxDiagnosticInfo? info)
+    public char NextUnicodeDecEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
     {
         info = null;
 
@@ -77,61 +79,134 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         c = this.NextChar();
         Debug.Assert(SyntaxFacts.IsDecDigit(c));
 
-        // 最多识别5位十进制数字（Unicode字符有65535个），提前遇到非十进制数字字符时中断。
-        int intChar = 0;
-        for (int i = 1; ; i++)
+        // 最多识别7位十进制数字（支持Utf-8字符共1114111个），提前遇到非十进制数字字符时中断。
+        uint codepoint = 0;
+        for (int i = 1; i <= 7; i++)
         {
-            intChar = intChar * 10 + SyntaxFacts.DecValue(c);
-            if (i == 5) break;
+            if (codepoint <= 0x10FFFF)
+                codepoint = codepoint * 10 + (uint)SyntaxFacts.DecValue(c);
+            else if (codepoint != uint.MaxValue)
+                codepoint = uint.MaxValue;
+
+            if (i == 7) break;
             else if (SyntaxFacts.IsDecDigit(this.PeekChar()))
                 c = this.NextChar();
             else
                 break;
         }
-        if (intChar > ushort.MaxValue) // 超出Unicode字符范围。
-            info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
 
-        return (char)intChar;
+        if (codepoint == uint.MaxValue)
+        {
+            info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
+            surrogate = SlidingTextWindow.InvalidCharacter;
+            return SlidingTextWindow.InvalidCharacter;
+        }
+
+        return SlidingTextWindow.GetCharsFromUtf32(codepoint, out surrogate);
     }
 
-    public char NextAsciiHexEscape(out SyntaxDiagnosticInfo? info)
+    public char NextHexEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
     {
+        Debug.Assert(this.PeekChar(0) == '\\' || this.PeekChar(1) == 'x');
+
         info = null;
-
         int start = this.Position;
+        var hasError = false;
+        var builder = ArrayBuilder<byte>.GetInstance();
 
-        char c = this.NextChar();
-        Debug.Assert(c == '\\');
+        // 第一个byte必定能获取到。
+        Debug.Assert(this.NextHexEscapeCore(0, out var firstByte, ref hasError));
+        if (!hasError)
+        {
+            int count = firstByte switch
+            {
+                <= 0b01111111 => 1,
+                >= 0b11000000 and <= 0b11011111 => 2,
+                >= 0b11100000 and <= 0b11101111 => 3,
+                >= 0b11110000 and <= 0b11110111 => 4,
+                _ => 0
+            };
+            builder.Add(firstByte);
 
-        c = this.NextChar();
-        Debug.Assert(c == 'x');
+            for (int index = 1; index < count; index++)
+            {
+                if (!this.NextHexEscapeCore(index, out var restByte, ref hasError))
+                {
+                    hasError = true;
+                    break;
+                }
+                else if (!hasError)
+                    builder.Add(restByte);
+            }
+        }
 
-        // 识别2位十六进制数字（Ascii字符有256个）。
-        int intChar = 0;
+        if (hasError)
+        {
+            info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
+            surrogate = SlidingTextWindow.InvalidCharacter;
+            return SlidingTextWindow.InvalidCharacter;
+        }
+
+        var utf8Bytes = builder.ToArrayAndFree();
+        var utf16Bytes = Encoding.Convert(Encoding.UTF8, Encoding.Unicode, utf8Bytes);
+        Debug.Assert(utf16Bytes.Length is 2 or 4);
+        surrogate = utf16Bytes.Length switch
+        {
+            2 => InvalidCharacter,
+            4 => BitConverter.ToChar(utf16Bytes, 2),
+            _ => throw Roslyn.Utilities.ExceptionUtilities.Unreachable
+        };
+        return BitConverter.ToChar(utf16Bytes, 0);
+    }
+
+    private bool NextHexEscapeCore(int index, out byte byteValue, ref bool hasError)
+    {
+        byteValue = 0;
+
+        if (this.PeekChar(0) != '\\' || this.PeekChar(1) != 'x')
+            return false;
+
+        this.AdvanceChar(2);
+
+        char c;
+        // 识别2位十六进制数字。
         if (SyntaxFacts.IsHexDigit(this.PeekChar()))
         {
             c = this.NextChar();
-            intChar = SyntaxFacts.HexValue(c);
+            byteValue = (byte)SyntaxFacts.HexValue(c);
 
             if (SyntaxFacts.IsHexDigit(this.PeekChar()))
             {
                 c = this.NextChar();
-                intChar = (intChar << 4) + SyntaxFacts.HexValue(c);
-                return (char)intChar;
-            }
-        }
+                byteValue = (byte)((byteValue << 4) + SyntaxFacts.HexValue(c));
 
-        info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
-        return SlidingTextWindow.InvalidCharacter;
+                if (index == 0)
+                    hasError = byteValue switch
+                    {
+                        <= 0b01111111 => false,
+                        >= 0b11000000 and <= 0b11011111 => false,
+                        >= 0b11100000 and <= 0b11101111 => false,
+                        >= 0b11110000 and <= 0b11110111 => false,
+                        _ => true
+                    };
+                else
+                    hasError = byteValue is not >= 0b10000000 and <= 0b10111111;
+            }
+            else hasError |= true;
+        }
+        else hasError |= true;
+
+        return true;
     }
 
-    public char NextUnicodeHexEscape(out SyntaxDiagnosticInfo? info)
+    public char NextUnicodeHexEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
     {
         info = null;
 
         int start = this.Position;
 
         char c = this.NextChar();
+        surrogate = SlidingTextWindow.InvalidCharacter;
         Debug.Assert(c == '\\');
 
         c = this.NextChar();
@@ -154,12 +229,13 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
             c = this.NextChar();
 
         // 最少识别1位十六进制数字，提前遇到非十六进制数字字符时中断。
-        int intChar = 0;
+        uint codepoint = 0;
         for (int i = 1; ; i++)
         {
-            intChar = (intChar << 4) + SyntaxFacts.HexValue(c);
-            if (intChar > ushort.MaxValue) // 超出Unicode字符范围。
-                info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
+            if (codepoint <= 0x10FFFF)
+                codepoint = (codepoint << 4) + (uint)SyntaxFacts.HexValue(c);
+            else if (codepoint != uint.MaxValue)
+                codepoint = uint.MaxValue;
 
             if (SyntaxFacts.IsHexDigit(this.PeekChar()))
                 c = this.NextChar();
@@ -168,14 +244,35 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         }
 
         if (this.PeekChar() != '}') // 强制要求的右花括号。
+        {
             info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
+            return SlidingTextWindow.InvalidCharacter;
+        }
         else
             this.AdvanceChar();
 
-        if (info is not null)
+        if (codepoint == uint.MaxValue)
+        {
+            info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
             return SlidingTextWindow.InvalidCharacter;
+        }
 
-        return (char)intChar;
+        return SlidingTextWindow.GetCharsFromUtf32(codepoint, out surrogate);
+    }
+
+    internal static char GetCharsFromUtf32(uint codepoint, out char lowSurrogate)
+    {
+        if (codepoint < 0x00010000)
+        {
+            lowSurrogate = InvalidCharacter;
+            return (char)codepoint;
+        }
+        else
+        {
+            Debug.Assert(codepoint > 0x0000FFFF && codepoint <= 0x0010FFFF);
+            lowSurrogate = (char)((codepoint - 0x00010000) % 0x0400 + 0xDC00);
+            return (char)((codepoint - 0x00010000) / 0x0400 + 0xD800);
+        }
     }
 
     private SyntaxDiagnosticInfo CreateIllegalEscapeDiagnostic(int start, ErrorCode code) =>

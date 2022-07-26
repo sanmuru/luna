@@ -14,9 +14,10 @@ partial class Lexer
     private void ScanEscapeSequence()
     {
         var start = this.TextWindow.Position;
-        SyntaxDiagnosticInfo? error;
 
         char c = this.TextWindow.NextChar();
+        SyntaxDiagnosticInfo? error;
+        char surrogate;
 
         Debug.Assert(c == '\\');
 
@@ -65,27 +66,33 @@ partial class Lexer
             case '8':
             case '9':
                 this.TextWindow.Reset(start);
-                c = this.TextWindow.NextUnicodeDecEscape(out error);
+                c = this.TextWindow.NextUnicodeDecEscape(out error, out surrogate);
                 if (c != SlidingTextWindow.InvalidCharacter)
                     this._builder.Append(c);
+                if (surrogate != SlidingTextWindow.InvalidCharacter)
+                    this._builder.Append(surrogate);
                 this.AddError(error);
                 break;
 
             // 十六进制数字表示的ASCII字符
             case 'x':
                 this.TextWindow.Reset(start);
-                c = this.TextWindow.NextAsciiHexEscape(out error);
+                c = this.TextWindow.NextHexEscape(out error, out surrogate);
                 if (c != SlidingTextWindow.InvalidCharacter)
                     this._builder.Append(c);
+                if (surrogate != SlidingTextWindow.InvalidCharacter)
+                    this._builder.Append(surrogate);
                 this.AddError(error);
                 break;
 
             // 十六进制数字表示的Unicode字符
             case 'u':
                 this.TextWindow.Reset(start);
-                c = this.TextWindow.NextUnicodeHexEscape(out error);
+                c = this.TextWindow.NextUnicodeHexEscape(out error, out surrogate);
                 if (c != SlidingTextWindow.InvalidCharacter)
                     this._builder.Append(c);
+                if (surrogate != SlidingTextWindow.InvalidCharacter)
+                    this._builder.Append(surrogate);
                 this.AddError(error);
                 break;
 

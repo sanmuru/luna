@@ -20,6 +20,6 @@ partial class Lexer
             return true;
         }
 
-        return false;
+        return true;
     }
 }

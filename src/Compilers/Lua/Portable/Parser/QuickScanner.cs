@@ -187,7 +187,7 @@ partial class Lexer
             (byte)QuickScanState.Done,                      // Letter
             (byte)QuickScanState.Done,                      // Digit
             (byte)QuickScanState.Done,                      // Punctuation
-            (byte)QuickScanState.DoneAfterNext,             // Dot
+            (byte)QuickScanState.Punctuation,               // Dot
             (byte)QuickScanState.Done,                      // Equals
             (byte)QuickScanState.Done,                      // CompoundPunctuationStart
             (byte)QuickScanState.Bad,                       // Complex
@@ -203,7 +203,7 @@ partial class Lexer
             (byte)QuickScanState.Done,                      // Digit
             (byte)QuickScanState.Done,                      // Punctuation
             (byte)QuickScanState.Done,                      // Dot
-            (byte)QuickScanState.DoneAfterNext,             // Equals
+            (byte)QuickScanState.Punctuation,             // Equals
             (byte)QuickScanState.Done,                      // CompoundPunctuationStart
             (byte)QuickScanState.Bad,                       // Complex
             (byte)QuickScanState.Done,                      // EndOfFile
@@ -218,7 +218,7 @@ partial class Lexer
             (byte)QuickScanState.Done,                      // Digit
             (byte)QuickScanState.Done,                      // Punctuation
             (byte)QuickScanState.Done,                      // Dot
-            (byte)QuickScanState.DoneAfterNext,             // Equals
+            (byte)QuickScanState.Punctuation,             // Equals
             (byte)QuickScanState.Bad,                       // CompoundPunctuationStart（按位左移和按位右移太复杂）
             (byte)QuickScanState.Bad,                       // Complex
             (byte)QuickScanState.Done,                      // EndOfFile
@@ -325,7 +325,7 @@ partial class Lexer
         (byte)CharFlag.Letter,                     // X
         (byte)CharFlag.Letter,                     // Y
         (byte)CharFlag.Letter,                     // Z
-        (byte)CharFlag.Punctuation,                // [
+        (byte)CharFlag.Complex,                    // [
         (byte)CharFlag.Complex,                    // \
         (byte)CharFlag.Punctuation,                // ]
         (byte)CharFlag.Punctuation,                // ^
