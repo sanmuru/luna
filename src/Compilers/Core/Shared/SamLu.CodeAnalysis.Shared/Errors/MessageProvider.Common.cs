@@ -255,9 +255,14 @@ partial class MessageProvider : CommonMessageProvider
     }
 
 #if DEBUG
-    internal override bool ShouldAssertExpectedMessageArgumentsLength(int errorCode)
+    internal override bool ShouldAssertExpectedMessageArgumentsLength(int errorCode) =>
+        (ErrorCode)errorCode switch
     {
-        throw new NotImplementedException();
-    }
+        0 => false,
+        ErrorCode.Unknown => false,
+        ErrorCode.Void => false,
+        ErrorCode.ERR_IdentifierExpectedKW => false, // 格式化时使用 {1} 而非 {0} 。
+        _ => true
+    };
 #endif
 }

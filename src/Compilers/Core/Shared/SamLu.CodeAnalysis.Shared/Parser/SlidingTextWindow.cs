@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Text;
+using Roslyn.Utilities;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -67,136 +68,177 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         else return new string(this._characterWindow, offset, length);
     }
 
-    public char NextAsciiDecEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
+    public char NextByteEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
     {
-        info = null;
+        Debug.Assert(this.PeekChar(0) == '\\' || this.PeekChar(1) == 'x' || SyntaxFacts.IsDecDigit(this.PeekChar(1)));
 
         int start = this.Position;
 
-        char c = this.NextChar();
-        Debug.Assert(c == '\\');
+        /* 对于每个字节，都先检查NextByteEscapeCore的传出参数byteError，看是否在处理转义期间就产生了错误。
+         * 若转义期间产生了错误，就直接终止后续扫描。
+         * 再检查字节是否在指定位置应有的范围内，若不在则错误的范围应划定到此字节转义的前方（除了第一个字节）。
+         * 第一个字节就不在范围内，则错误的范围应划定到此字节转义的后方（至少要吃掉一个字节转义）。
+         */
 
-        c = this.NextChar();
-        Debug.Assert(SyntaxFacts.IsDecDigit(c));
+        bool success = this.NextByteEscapeCore(out var firstByte, out var firstByteError);
+        Debug.Assert(success); // 第一个byte必定能获取到。
 
-        // 最多识别3位十进制数字（支持Ascii编码共256个字符），提前遇到非十进制数字字符时中断。
-        uint codepoint = 0;
-        for (int i = 1; ; i++)
+        if (firstByteError is not null) // 此字节转义产生错误，立即中断后续扫描并返回。
         {
-            if (codepoint <= byte.MaxValue)
-                codepoint = codepoint * 10 + (uint)SyntaxFacts.DecValue(c);
-            if (codepoint > byte.MaxValue)
-                codepoint = uint.MaxValue;
-
-            if (i == 3) break;
-            else if (SyntaxFacts.IsDecDigit(this.PeekChar()))
-                c = this.NextChar();
-            else
-                break;
+            info = firstByteError;
+            surrogate = SlidingTextWindow.InvalidCharacter;
+            return SlidingTextWindow.InvalidCharacter;
         }
-
-        if (codepoint == uint.MaxValue)
+        else if (!IsUtf8ByteSequenceValidAt(0, firstByte)) // 此字节不在指定位置应有的范围内，立即中断后续扫描并返回。
         {
-            info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
+            info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalUtf8ByteSequence);
             surrogate = SlidingTextWindow.InvalidCharacter;
             return SlidingTextWindow.InvalidCharacter;
         }
 
+        // 获取第一个转义后字节指示的UTF-8字节序列总长度。
+        int count = firstByte switch
+        {
+            <= 0b01111111 => 1,
+            >= 0b11000000 and <= 0b11011111 => 2,
+            >= 0b11100000 and <= 0b11101111 => 3,
+            >= 0b11110000 and <= 0b11110111 => 4,
+            _ => throw ExceptionUtilities.Unreachable // 前面已经检查过了。
+        };
+        var utf8Bytes = new byte[count];
+        utf8Bytes[0] = firstByte;
+
+        bool recovering = false; // 是否处于错误恢复状态（查找下一个起始字节）。
+        for (int index = 1; index < count;)
+        {
+            int byteStart = this.Position;
+
+            success = this.NextByteEscapeCore(out var byteValue, out var byteError);
+            if (!success) // 后方不是字节转义，UTF-8字节序列未完成。
+            {
+                info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalUtf8ByteSequence);
+                surrogate = SlidingTextWindow.InvalidCharacter;
+                return SlidingTextWindow.InvalidCharacter;
+            }
+            else if (byteError is not null) // 此字节转义产生错误，立即中断后续扫描并返回。
+            {
+                info = byteError;
+                surrogate = SlidingTextWindow.InvalidCharacter;
+                return SlidingTextWindow.InvalidCharacter;
+            }
+            else if (IsUtf8ByteSequenceValidAt(0, byteValue)) // 此字节是下一个起始字节，则将前方的序列都划入错误范围，立即中断后续扫描并返回。
+            {
+                this.Reset(byteStart);
+
+                info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalUtf8ByteSequence);
+                surrogate = SlidingTextWindow.InvalidCharacter;
+                return SlidingTextWindow.InvalidCharacter;
+            }
+            else if (recovering || !IsUtf8ByteSequenceValidAt(index, byteValue)) // 此字节不在指定位置应有的范围内。
+            {
+                // UTF-8字节序列出现错误字节，需要向后查找，直到找到另一个起始字节或到达结尾。
+                // 由于我们限制了index的变化，因此循环将一直持续下去，必然会符合上方的某项失败条件。
+                recovering = true; // 进入错误恢复状态。
+                continue;
+            }
+            else // 终于找到正确的字节。
+            {
+                utf8Bytes[index] = byteValue;
+                index++; // 处理下一个字节转义。
+            }
+        }
+
+        // 不再会有错误了。
+        info = null;
+        uint codepoint = firstByte switch
+        {
+            <= 0b01111111 => firstByte,
+            >= 0b11000000 and <= 0b11011111 => firstByte & (uint)0b11111,
+            >= 0b11100000 and <= 0b11101111 => firstByte & (uint)0b1111,
+            >= 0b11110000 and <= 0b11110111 => firstByte & (uint)0b111,
+            _ => throw ExceptionUtilities.Unreachable // 前面已经检查过了。
+        };
+        for (int index = 1; index < utf8Bytes.Length; index++)
+            codepoint = (codepoint << 6) + (uint)0b111111;
         return SlidingTextWindow.GetCharsFromUtf32(codepoint, out surrogate);
     }
 
-    public char NextHexEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
-    {
-        Debug.Assert(this.PeekChar(0) == '\\' || this.PeekChar(1) == 'x');
-
-        info = null;
-        int start = this.Position;
-        var hasError = false;
-        var builder = ArrayBuilder<byte>.GetInstance();
-
-        bool success = this.NextHexSequenceEscapeCore(0, out var firstByte, ref hasError);
-        Debug.Assert(success); // 第一个byte必定能获取到。
-        if (!hasError)
-        {
-            int count = firstByte switch
-            {
-                <= 0b01111111 => 1,
-                >= 0b11000000 and <= 0b11011111 => 2,
-                >= 0b11100000 and <= 0b11101111 => 3,
-                >= 0b11110000 and <= 0b11110111 => 4,
-                _ => 0
-            };
-            builder.Add(firstByte);
-
-            for (int index = 1; index < count; index++)
-            {
-                if (!this.NextHexSequenceEscapeCore(index, out var restByte, ref hasError))
-                {
-                    hasError = true;
-                    break;
-                }
-                else if (!hasError)
-                    builder.Add(restByte);
-            }
-        }
-
-        if (hasError)
-        {
-            info = this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
-            surrogate = SlidingTextWindow.InvalidCharacter;
-            return SlidingTextWindow.InvalidCharacter;
-        }
-
-        var utf8Bytes = builder.ToArrayAndFree();
-        var utf16Bytes = Encoding.Convert(Encoding.UTF8, Encoding.Unicode, utf8Bytes);
-        Debug.Assert(utf16Bytes.Length is 2 or 4);
-        surrogate = utf16Bytes.Length switch
-        {
-            2 => InvalidCharacter,
-            4 => BitConverter.ToChar(utf16Bytes, 2),
-            _ => throw Roslyn.Utilities.ExceptionUtilities.Unreachable
-        };
-        return BitConverter.ToChar(utf16Bytes, 0);
-    }
-
-    private bool NextHexSequenceEscapeCore(int index, out byte byteValue, ref bool hasError)
+    private bool NextByteEscapeCore(out byte byteValue, out SyntaxDiagnosticInfo? info)
     {
         byteValue = 0;
-
-        if (this.PeekChar(0) != '\\' || this.PeekChar(1) != 'x')
-            return false;
-
-        this.AdvanceChar(2);
+        info = null;
 
         char c;
-        // 识别2位十六进制数字。
-        if (SyntaxFacts.IsHexDigit(this.PeekChar()))
-        {
-            c = this.NextChar();
-            byteValue = (byte)SyntaxFacts.HexValue(c);
+        int start = this.Position;
 
+        if (this.PeekChar(0) != '\\')
+            return false;
+        else if (this.PeekChar(1) == 'x')
+        {
+            this.AdvanceChar(2);
+
+            // 识别2位十六进制数字。
             if (SyntaxFacts.IsHexDigit(this.PeekChar()))
             {
                 c = this.NextChar();
-                byteValue = (byte)((byteValue << 4) + SyntaxFacts.HexValue(c));
+                byteValue = (byte)SyntaxFacts.HexValue(c);
 
-                if (index == 0)
-                    hasError = byteValue switch
-                    {
-                        <= 0b01111111 => false,
-                        >= 0b11000000 and <= 0b11011111 => false,
-                        >= 0b11100000 and <= 0b11101111 => false,
-                        >= 0b11110000 and <= 0b11110111 => false,
-                        _ => true
-                    };
-                else
-                    hasError = byteValue is not >= 0b10000000 and <= 0b10111111;
+                if (SyntaxFacts.IsHexDigit(this.PeekChar()))
+                {
+                    c = this.NextChar();
+                    byteValue = (byte)((byteValue << 4) + SyntaxFacts.HexValue(c));
+                }
+                else info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
             }
-            else hasError |= true;
-        }
-        else hasError |= true;
+            else info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
 
-        return true;
+            return true;
+        }
+        // 识别3位十进制数字。
+        else if (SyntaxFacts.IsDecDigit(this.PeekChar(1)))
+        {
+            this.AdvanceChar(1);
+
+            uint uintValue = 0;
+            c = this.NextChar();
+            uintValue = (uint)SyntaxFacts.HexValue(c);
+
+            if (SyntaxFacts.IsDecDigit(this.PeekChar()))
+            {
+                c = this.NextChar();
+                uintValue = (byte)(uintValue * 10 + SyntaxFacts.HexValue(c));
+
+                if (SyntaxFacts.IsDecDigit(this.PeekChar()))
+                {
+                    c = this.NextChar();
+                    uintValue = (byte)(uintValue * 10 + SyntaxFacts.HexValue(c));
+                }
+            }
+
+            if (uintValue > byte.MaxValue)
+                info ??= this.CreateIllegalEscapeDiagnostic(start, ErrorCode.ERR_IllegalEscape);
+            else
+                byteValue = (byte)uintValue;
+
+            return true;
+        }
+        else
+            return false;
+    }
+
+    private static bool IsUtf8ByteSequenceValidAt(int index, byte byteValue)
+    {
+        if (index == 0)
+            return byteValue switch
+            {
+                <= 0b01111111 => true,
+                >= 0b11000000 and <= 0b11011111 => true,
+                >= 0b11100000 and <= 0b11101111 => true,
+                >= 0b11110000 and <= 0b11110111 => true,
+                _ => false
+            };
+        else
+            return byteValue is >= 0b10000000 and <= 0b10111111;
     }
 
     public char NextUnicodeEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
@@ -264,12 +306,16 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
     {
         if (codepoint < 0x00010000)
         {
-            lowSurrogate = InvalidCharacter;
+            lowSurrogate = SlidingTextWindow.InvalidCharacter;
             return (char)codepoint;
+        }
+        else if (codepoint > 0x0010FFFF)
+        {
+            lowSurrogate = SlidingTextWindow.InvalidCharacter;
+            return SlidingTextWindow.InvalidCharacter;
         }
         else
         {
-            Debug.Assert(codepoint > 0x0000FFFF && codepoint <= 0x0010FFFF);
             lowSurrogate = (char)((codepoint - 0x00010000) % 0x0400 + 0xDC00);
             return (char)((codepoint - 0x00010000) / 0x0400 + 0xD800);
         }

@@ -27,7 +27,14 @@ namespace SamLu.CodeAnalysis.MoonScript
         ERR_UnterminatedStringLiteral,
         /// <summary>不合法的转义序列。</summary>
         ERR_IllegalEscape,
+        /// <summary>不合法的UTF-8字节序列。</summary>
+        ERR_IllegalUtf8ByteSequence,
         WRN_ErrorOverride,
+
+        #region 语法错误
+        /// <summary>应输入关键字。</summary>
+        ERR_IdentifierExpectedKW,
+        #endregion
 
         #region MoonScript 0.5的消息
         [Obsolete("未正式发行版本")]

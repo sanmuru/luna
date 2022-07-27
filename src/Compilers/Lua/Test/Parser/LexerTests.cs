@@ -42,7 +42,12 @@ public partial class LexerTests
         foreach (var path in Directory.GetFiles("tests"))
         {
             using var stream = File.OpenRead(path);
-            var lexer = new Lexer(SourceText.From(stream), LuaParseOptions.Default);
+            using var reader = new StreamReader(stream);
+            // 忽略以“#”开头的第一行。
+            if (reader.Peek() == '#') reader.ReadLine();
+            string text = reader.ReadToEnd();
+
+            var lexer = new Lexer(SourceText.From(text), LuaParseOptions.Default);
             var mode = LexerMode.Syntax;
 
             SyntaxToken token;

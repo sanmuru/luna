@@ -2,6 +2,76 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LuaResources.resx">
     <body>
+      <trans-unit id="ERR_BadDocumentationMode">
+        <source>Provided documentation mode is unsupported or invalid: '{0}'.</source>
+        <target state="new">Provided documentation mode is unsupported or invalid: '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_BadLanguageVersion">
+        <source>Provided language version is unsupported or invalid: '{0}'.</source>
+        <target state="new">Provided language version is unsupported or invalid: '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_BadSourceCodeKind">
+        <source>Provided source code kind is unsupported or invalid: '{0}'.</source>
+        <target state="new">Provided source code kind is unsupported or invalid: '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_IllegalEscape">
+        <source>Unrecognized escape sequence.</source>
+        <target state="new">Unrecognized escape sequence.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_IllegalUtf8ByteSequence">
+        <source>Illegal UTF-8 byte escape sequence.</source>
+        <target state="new">Illegal UTF-8 byte escape sequence.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InternalError">
+        <source>Internal error in the Lua compiler.</source>
+        <target state="new">Internal error in the Lua compiler.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InvalidInstrumentationKind">
+        <source>Invalid instrumentation kind: {0}.</source>
+        <target state="new">Invalid instrumentation kind: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InvalidNumber">
+        <source>Invalid number.</source>
+        <target state="new">Invalid number.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_NewlineInConst">
+        <source>Newline in string literal constant.</source>
+        <target state="new">Newline in string literal constant.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_NumberOverflow">
+        <source>Number constant is too large.</source>
+        <target state="new">Number constant is too large.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_OpenEndedComment">
+        <source>End-of-file found, close long brackect expected.</source>
+        <target state="new">End-of-file found, close long brackect expected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_SyntaxError">
+        <source>Syntax error, '{0}' expected.</source>
+        <target state="new">Syntax error, '{0}' expected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_UnexpectedCharacter">
+        <source>Unexpected character '{0}'.</source>
+        <target state="new">Unexpected character '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_UnterminatedStringLiteral">
+        <source>Unterminated string literal.</source>
+        <target state="new">Unterminated string literal.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ThisMethodCanOnlyBeUsedToCreateTokens">
         <source>This method can only be used to create tokens - {0} is not a token kind.</source>
         <target state="new">This method can only be used to create tokens - {0} is not a token kind.</target>
@@ -16,6 +86,11 @@
         <source>Use SamLu.CodeAnalysis.Lua.SyntaxFactory.Literal to create numeric literal tokens.</source>
         <target state="new">Use SamLu.CodeAnalysis.Lua.SyntaxFactory.Literal to create numeric literal tokens.</target>
         <note>应使用SamLu.CodeAnalysis.Lua.SyntaxFactory.Literal创建数字字面量标志。</note>
+      </trans-unit>
+      <trans-unit id="WRN_ErrorOverride">
+        <source>{0}. See also error LUA{1}.</source>
+        <target state="new">{0}. See also error LUA{1}.</target>
+        <note />
       </trans-unit>
     </body>
   </file>

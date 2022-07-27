@@ -65,19 +65,11 @@ partial class Lexer
             case '7':
             case '8':
             case '9':
-                this.TextWindow.Reset(start);
-                c = this.TextWindow.NextAsciiDecEscape(out error, out surrogate);
-                if (c != SlidingTextWindow.InvalidCharacter)
-                    this._builder.Append(c);
-                if (surrogate != SlidingTextWindow.InvalidCharacter)
-                    this._builder.Append(surrogate);
-                this.AddError(error);
-                break;
 
             // 十六进制数字表示的ASCII字符
             case 'x':
                 this.TextWindow.Reset(start);
-                c = this.TextWindow.NextHexEscape(out error, out surrogate);
+                c = this.TextWindow.NextByteEscape(out error, out surrogate);
                 if (c != SlidingTextWindow.InvalidCharacter)
                     this._builder.Append(c);
                 if (surrogate != SlidingTextWindow.InvalidCharacter)

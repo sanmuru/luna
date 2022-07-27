@@ -29,6 +29,8 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_NewlineInConst,
         /// <summary>不合法的转义序列。</summary>
         ERR_IllegalEscape,
+        /// <summary>不合法的UTF-8字节序列。</summary>
+        ERR_IllegalUtf8ByteSequence,
         WRN_ErrorOverride,
 
         #region 语法错误
@@ -40,6 +42,8 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_InvalidExprTerm,
         /// <summary>应输入标识符。</summary>
         ERR_IdentifierExpected,
+        /// <summary>应输入关键字。</summary>
+        ERR_IdentifierExpectedKW,
         #endregion
 
         #region Lua 1.0的消息
