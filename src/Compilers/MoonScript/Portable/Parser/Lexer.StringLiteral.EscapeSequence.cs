@@ -63,7 +63,7 @@ partial class Lexer
             case '8':
             case '9':
                 this.TextWindow.Reset(start);
-                c = this.TextWindow.NextUnicodeDecEscape(out error, out surrogate);
+                c = this.TextWindow.NextAsciiDecEscape(out error, out surrogate);
                 if (c != SlidingTextWindow.InvalidCharacter)
                     this._builder.Append(c);
                 if (surrogate != SlidingTextWindow.InvalidCharacter)
@@ -85,7 +85,7 @@ partial class Lexer
             // 十六进制数字表示的Unicode字符
             case 'u':
                 this.TextWindow.Reset(start);
-                c = this.TextWindow.NextUnicodeHexEscape(out error, out surrogate);
+                c = this.TextWindow.NextUnicodeEscape(out error, out surrogate);
                 if (c != SlidingTextWindow.InvalidCharacter)
                     this._builder.Append(c);
                 if (surrogate != SlidingTextWindow.InvalidCharacter)

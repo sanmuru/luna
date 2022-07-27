@@ -67,7 +67,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         else return new string(this._characterWindow, offset, length);
     }
 
-    public char NextUnicodeDecEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
+    public char NextAsciiDecEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
     {
         info = null;
 
@@ -79,16 +79,16 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         c = this.NextChar();
         Debug.Assert(SyntaxFacts.IsDecDigit(c));
 
-        // 最多识别7位十进制数字（支持Utf-8字符共1114111个），提前遇到非十进制数字字符时中断。
+        // 最多识别3位十进制数字（支持Ascii编码共256个字符），提前遇到非十进制数字字符时中断。
         uint codepoint = 0;
-        for (int i = 1; i <= 7; i++)
+        for (int i = 1; ; i++)
         {
-            if (codepoint <= 0x10FFFF)
+            if (codepoint <= byte.MaxValue)
                 codepoint = codepoint * 10 + (uint)SyntaxFacts.DecValue(c);
-            else if (codepoint != uint.MaxValue)
+            if (codepoint > byte.MaxValue)
                 codepoint = uint.MaxValue;
 
-            if (i == 7) break;
+            if (i == 3) break;
             else if (SyntaxFacts.IsDecDigit(this.PeekChar()))
                 c = this.NextChar();
             else
@@ -114,8 +114,8 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         var hasError = false;
         var builder = ArrayBuilder<byte>.GetInstance();
 
-        // 第一个byte必定能获取到。
-        Debug.Assert(this.NextHexEscapeCore(0, out var firstByte, ref hasError));
+        bool success = this.NextHexSequenceEscapeCore(0, out var firstByte, ref hasError);
+        Debug.Assert(success); // 第一个byte必定能获取到。
         if (!hasError)
         {
             int count = firstByte switch
@@ -130,7 +130,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
 
             for (int index = 1; index < count; index++)
             {
-                if (!this.NextHexEscapeCore(index, out var restByte, ref hasError))
+                if (!this.NextHexSequenceEscapeCore(index, out var restByte, ref hasError))
                 {
                     hasError = true;
                     break;
@@ -159,7 +159,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         return BitConverter.ToChar(utf16Bytes, 0);
     }
 
-    private bool NextHexEscapeCore(int index, out byte byteValue, ref bool hasError)
+    private bool NextHexSequenceEscapeCore(int index, out byte byteValue, ref bool hasError)
     {
         byteValue = 0;
 
@@ -199,7 +199,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         return true;
     }
 
-    public char NextUnicodeHexEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
+    public char NextUnicodeEscape(out SyntaxDiagnosticInfo? info, out char surrogate)
     {
         info = null;
 
@@ -232,9 +232,9 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
         uint codepoint = 0;
         for (int i = 1; ; i++)
         {
-            if (codepoint <= 0x10FFFF)
+            if (codepoint <= 0x7FFFFFFF)
                 codepoint = (codepoint << 4) + (uint)SyntaxFacts.HexValue(c);
-            else if (codepoint != uint.MaxValue)
+            if (codepoint > 0x7FFFFFFF)
                 codepoint = uint.MaxValue;
 
             if (SyntaxFacts.IsHexDigit(this.PeekChar()))
