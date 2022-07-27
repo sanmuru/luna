@@ -62,17 +62,19 @@
     <None Update="..\..\..\Test\tests\attrib.lua" Link="tests\attrib.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\big.lua" Link="tests\big.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\bitwise.lua" Link="tests\bitwise.lua" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="..\..\..\Test\tests\bwcoercion.lua" Link="tests\bwcoercion.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\calls.lua" Link="tests\calls.lua" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="..\..\..\Test\tests\checktable.lua" Link="tests\checktable.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\closure.lua" Link="tests\closure.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\code.lua" Link="tests\code.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\constructs.lua" Link="tests\constructs.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\coroutine.lua" Link="tests\coroutine.lua" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="..\..\..\Test\tests\cstack.lua" Link="tests\cstack.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\db.lua" Link="tests\db.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\errors.lua" Link="tests\errors.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\events.lua" Link="tests\events.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\files.lua" Link="tests\files.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\gc.lua" Link="tests\gc.lua" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="..\..\..\Test\tests\gengc.lua" Link="tests\gengc.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\goto.lua" Link="tests\goto.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\heavy.lua" Link="tests\heavy.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\literals.lua" Link="tests\literals.lua" CopyToOutputDirectory="PreserveNewest" />
@@ -84,6 +86,7 @@
     <None Update="..\..\..\Test\tests\sort.lua" Link="tests\sort.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\strings.lua" Link="tests\strings.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\tpack.lua" Link="tests\tpack.lua" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="..\..\..\Test\tests\tracegc.lua" Link="tests\tracegc.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\utf8.lua" Link="tests\utf8.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\vararg.lua" Link="tests\vararg.lua" CopyToOutputDirectory="PreserveNewest" />
     <None Update="..\..\..\Test\tests\verybig.lua" Link="tests\verybig.lua" CopyToOutputDirectory="PreserveNewest" />

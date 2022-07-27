@@ -1,4 +1,4 @@
--- $Id: verybig.lua,v 1.24 2014/12/26 17:20:53 roberto Exp roberto $
+-- $Id: testes/verybig.lua $
 -- See Copyright Notice in file all.lua
 
 print "testing RK"
@@ -83,7 +83,7 @@ assert(b["b"..30024] == -0xffffff)
 
 function b:xxx (a,b) return a+b end
 assert(b:xxx(10, 12) == 22)   -- pushself with non-constant index
-b.xxx = nil
+b["xxx"] = undef
 
 s = 0; n=0
 for a,b in pairs(b) do s=s+b; n=n+1 end
