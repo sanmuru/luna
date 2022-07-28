@@ -88,6 +88,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SourceGenerators", "SourceG
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Simulators", "Simulators", "{F1FEDF8F-5D73-413B-AD59-DE53E2271106}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LexerSimulator", "src\Tools\Simulators\src\LexerSimulator\LexerSimulator.csproj", "{957329C8-2068-4E6B-AB54-8BE4D455EE1A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luna.Compilers.Simulators", "src\Tools\Simulators\src\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj", "{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -209,6 +213,18 @@ Global
 		{2FC502DF-E5D1-46E6-ACF1-6CB45782D150}.Release|Any CPU.ActiveCfg = Testing|Any CPU
 		{2FC502DF-E5D1-46E6-ACF1-6CB45782D150}.Testing|Any CPU.ActiveCfg = Testing|Any CPU
 		{2FC502DF-E5D1-46E6-ACF1-6CB45782D150}.Testing|Any CPU.Build.0 = Testing|Any CPU
+		{957329C8-2068-4E6B-AB54-8BE4D455EE1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{957329C8-2068-4E6B-AB54-8BE4D455EE1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{957329C8-2068-4E6B-AB54-8BE4D455EE1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{957329C8-2068-4E6B-AB54-8BE4D455EE1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{957329C8-2068-4E6B-AB54-8BE4D455EE1A}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
+		{957329C8-2068-4E6B-AB54-8BE4D455EE1A}.Testing|Any CPU.Build.0 = Debug|Any CPU
+		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
+		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}.Testing|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -244,6 +260,8 @@ Global
 		{2FC502DF-E5D1-46E6-ACF1-6CB45782D150} = {3DEF28A6-121F-4F81-9A17-8AD2282C39EA}
 		{878A85F9-29C3-4BF8-AC32-8F45C7503343} = {FD0FAF5F-1DED-485C-99FA-84B97F3A8EEC}
 		{F1FEDF8F-5D73-413B-AD59-DE53E2271106} = {FD0FAF5F-1DED-485C-99FA-84B97F3A8EEC}
+		{957329C8-2068-4E6B-AB54-8BE4D455EE1A} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
+		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F599E08-A9EA-4FAA-897F-5D824B0210E6}
