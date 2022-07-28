@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32721.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LexerSimulator", "src\LexerSimulator\LexerSimulator.csproj", "{018A4A33-ED62-4F0B-951C-68A84188D067}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luna.Compilers.Simulators", "src\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj", "{410635C7-7EDE-4B7C-91D4-936BD88B80C7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{9650D8E7-E0AE-4E93-9CBE-72F1109E1B31}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis", "..\..\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj", "{4D61BC1C-7F68-4039-BE51-020BC34C5413}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Testing|Any CPU = Testing|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{018A4A33-ED62-4F0B-951C-68A84188D067}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{018A4A33-ED62-4F0B-951C-68A84188D067}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{018A4A33-ED62-4F0B-951C-68A84188D067}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{018A4A33-ED62-4F0B-951C-68A84188D067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{018A4A33-ED62-4F0B-951C-68A84188D067}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
+		{018A4A33-ED62-4F0B-951C-68A84188D067}.Testing|Any CPU.Build.0 = Debug|Any CPU
+		{410635C7-7EDE-4B7C-91D4-936BD88B80C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{410635C7-7EDE-4B7C-91D4-936BD88B80C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{410635C7-7EDE-4B7C-91D4-936BD88B80C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{410635C7-7EDE-4B7C-91D4-936BD88B80C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{410635C7-7EDE-4B7C-91D4-936BD88B80C7}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
+		{410635C7-7EDE-4B7C-91D4-936BD88B80C7}.Testing|Any CPU.Build.0 = Debug|Any CPU
+		{4D61BC1C-7F68-4039-BE51-020BC34C5413}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D61BC1C-7F68-4039-BE51-020BC34C5413}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D61BC1C-7F68-4039-BE51-020BC34C5413}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D61BC1C-7F68-4039-BE51-020BC34C5413}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D61BC1C-7F68-4039-BE51-020BC34C5413}.Testing|Any CPU.ActiveCfg = Testing|Any CPU
+		{4D61BC1C-7F68-4039-BE51-020BC34C5413}.Testing|Any CPU.Build.0 = Testing|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4D61BC1C-7F68-4039-BE51-020BC34C5413} = {9650D8E7-E0AE-4E93-9CBE-72F1109E1B31}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6EA3F796-1490-4996-95C2-7CDACAD47F44}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\..\Compilers\Core\AnalyzerDriver\AnalyzerDriver.projitems*{4d61bc1c-7f68-4039-be51-020bc34c5413}*SharedItemsImports = 5
+		..\..\Dependencies\CodeAnalysis.Debugging\Microsoft.CodeAnalysis.Debugging.projitems*{4d61bc1c-7f68-4039-be51-020bc34c5413}*SharedItemsImports = 5
+		..\..\Dependencies\Collections\Microsoft.CodeAnalysis.Collections.projitems*{4d61bc1c-7f68-4039-be51-020bc34c5413}*SharedItemsImports = 5
+		..\..\Dependencies\PooledObjects\Microsoft.CodeAnalysis.PooledObjects.projitems*{4d61bc1c-7f68-4039-be51-020bc34c5413}*SharedItemsImports = 5
+	EndGlobalSection
+EndGlobal
