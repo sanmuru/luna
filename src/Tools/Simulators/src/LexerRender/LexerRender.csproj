@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net6.0;net472</TargetFrameworks>
+    <RootNamespace>Luna.Compilers.Tools</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.43" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,4 @@
+﻿Luna.Compilers.Generators.LexerSimulatorGenerator
+Luna.Compilers.Generators.LexerSimulatorGenerator.Execute(Microsoft.CodeAnalysis.GeneratorExecutionContext context) -> void
+Luna.Compilers.Generators.LexerSimulatorGenerator.Initialize(Microsoft.CodeAnalysis.GeneratorInitializationContext context) -> void
+Luna.Compilers.Generators.LexerSimulatorGenerator.LexerSimulatorGenerator() -> void

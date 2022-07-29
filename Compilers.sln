@@ -78,7 +78,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SamLu.CodeAnalysis.Lua.Pars
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LuaCodeAnalysisSourceGenerators", "src\Tools\Source\CompilerGeneratorTools\src\LuaCodeAnalysisSourceGenerators\LuaCodeAnalysisSourceGenerators.csproj", "{D929770B-C91D-4553-B301-11C02FAF73E1}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CodeAnalysisGenerator.Shared", "src\Tools\Source\CompilerGeneratorTools\src\Shared\CodeAnalysisGenerator.Shared.shproj", "{B2D21490-8284-48C7-8E96-85EBFB70C11F}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CodeAnalysisGenerators.Shared", "src\Tools\Source\CompilerGeneratorTools\src\Shared\CodeAnalysisGenerators.Shared.shproj", "{B2D21490-8284-48C7-8E96-85EBFB70C11F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoonScriptCodeAnalysisSourceGenerators", "src\Tools\Source\CompilerGeneratorTools\src\MoonScriptCodeAnalysisSourceGenerators\MoonScriptCodeAnalysisSourceGenerators.csproj", "{FB12F0DD-2810-4EEA-A59D-FB21CA43F60D}"
 EndProject
@@ -91,6 +91,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LexerSimulator", "src\Tools\Simulators\src\LexerSimulator\LexerSimulator.csproj", "{957329C8-2068-4E6B-AB54-8BE4D455EE1A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luna.Compilers.Simulators", "src\Tools\Simulators\src\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj", "{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LexerRender", "src\Tools\Simulators\src\LexerRender\LexerRender.csproj", "{787D9B1B-2040-4354-9728-16877254B417}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LuaSimulators", "src\Tools\Simulators\src\LuaSimulators\LuaSimulators.csproj", "{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SimulatorGenerators", "src\Tools\Simulators\src\SimulatorGenerators\SimulatorGenerators.shproj", "{0ED4AC4E-423F-42DA-897E-6FBECB440CFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -225,6 +231,18 @@ Global
 		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
 		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D}.Testing|Any CPU.Build.0 = Debug|Any CPU
+		{787D9B1B-2040-4354-9728-16877254B417}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{787D9B1B-2040-4354-9728-16877254B417}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{787D9B1B-2040-4354-9728-16877254B417}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{787D9B1B-2040-4354-9728-16877254B417}.Release|Any CPU.Build.0 = Release|Any CPU
+		{787D9B1B-2040-4354-9728-16877254B417}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
+		{787D9B1B-2040-4354-9728-16877254B417}.Testing|Any CPU.Build.0 = Debug|Any CPU
+		{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
+		{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965}.Testing|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -262,12 +280,16 @@ Global
 		{F1FEDF8F-5D73-413B-AD59-DE53E2271106} = {FD0FAF5F-1DED-485C-99FA-84B97F3A8EEC}
 		{957329C8-2068-4E6B-AB54-8BE4D455EE1A} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
 		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
+		{787D9B1B-2040-4354-9728-16877254B417} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
+		{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
+		{0ED4AC4E-423F-42DA-897E-6FBECB440CFF} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F599E08-A9EA-4FAA-897F-5D824B0210E6}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compilers\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems*{08179868-a6a3-4c87-a29f-276864c37186}*SharedItemsImports = 5
+		src\Tools\Simulators\src\SimulatorGenerators\SimulatorGenerators.projitems*{0ed4ac4e-423f-42da-897e-6fbecb440cff}*SharedItemsImports = 13
 		src\Compilers\Core\AnalyzerDriver\AnalyzerDriver.projitems*{1ee8cad3-55f9-4d91-96b2-084641da9a6c}*SharedItemsImports = 5
 		src\Dependencies\CodeAnalysis.Debugging\Microsoft.CodeAnalysis.Debugging.projitems*{1ee8cad3-55f9-4d91-96b2-084641da9a6c}*SharedItemsImports = 5
 		src\Dependencies\Collections\Microsoft.CodeAnalysis.Collections.projitems*{1ee8cad3-55f9-4d91-96b2-084641da9a6c}*SharedItemsImports = 5
@@ -282,14 +304,14 @@ Global
 		src\Workspaces\SharedUtilitiesAndExtensions\Workspace\Core\WorkspaceExtensions.projitems*{5f8d2414-064a-4b3a-9b42-8e2a04246be5}*SharedItemsImports = 5
 		src\Compilers\Lua\luac\LuacCommandLine.projitems*{7c0d6228-4c05-4734-bc49-6bffaa5c8f3a}*SharedItemsImports = 5
 		src\Compilers\Lua\luac\LuacCommandLine.projitems*{ae16b937-88b4-406c-beb3-d22de9e6c887}*SharedItemsImports = 13
-		src\Tools\Source\CompilerGeneratorTools\src\Shared\CodeAnalysisGenerator.Shared.projitems*{b2d21490-8284-48c7-8e96-85ebfb70c11f}*SharedItemsImports = 13
+		src\Tools\Source\CompilerGeneratorTools\src\Shared\CodeAnalysisGenerators.Shared.projitems*{b2d21490-8284-48c7-8e96-85ebfb70c11f}*SharedItemsImports = 13
 		src\Dependencies\PooledObjects\Microsoft.CodeAnalysis.PooledObjects.projitems*{c1930979-c824-496b-a630-70f5369a636f}*SharedItemsImports = 13
 		src\Compilers\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems*{ce8ff80c-c11b-46de-9bbf-93db2c18c958}*SharedItemsImports = 5
 		src\Compilers\Core\AnalyzerDriver\AnalyzerDriver.projitems*{d0bc9be7-24f6-40ca-8dc6-fcb93bd44b34}*SharedItemsImports = 13
 		src\Dependencies\CodeAnalysis.Debugging\Microsoft.CodeAnalysis.Debugging.projitems*{d73adf7d-2c1c-42ae-b2ab-edc9497e4b71}*SharedItemsImports = 13
-		src\Tools\Source\CompilerGeneratorTools\src\Shared\CodeAnalysisGenerator.Shared.projitems*{d929770b-c91d-4553-b301-11c02faf73e1}*SharedItemsImports = 5
+		src\Tools\Source\CompilerGeneratorTools\src\Shared\CodeAnalysisGenerators.Shared.projitems*{d929770b-c91d-4553-b301-11c02faf73e1}*SharedItemsImports = 5
 		src\Dependencies\Collections\Microsoft.CodeAnalysis.Collections.projitems*{e919dd77-34f8-4f57-8058-4d3ff4c2b241}*SharedItemsImports = 13
 		src\Compilers\Lua\luac\LuacCommandLine.projitems*{ead4decd-839b-44a7-ae84-a864bf35969c}*SharedItemsImports = 5
-		src\Tools\Source\CompilerGeneratorTools\src\Shared\CodeAnalysisGenerator.Shared.projitems*{fb12f0dd-2810-4eea-a59d-fb21ca43f60d}*SharedItemsImports = 5
+		src\Tools\Source\CompilerGeneratorTools\src\Shared\CodeAnalysisGenerators.Shared.projitems*{fb12f0dd-2810-4eea-a59d-fb21ca43f60d}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

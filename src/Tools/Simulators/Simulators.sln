@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{9650D8E7-E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis", "..\..\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj", "{4D61BC1C-7F68-4039-BE51-020BC34C5413}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexerRender", "src\LexerRender\LexerRender.csproj", "{88B6F4AB-2595-4EE3-8A7B-88CCD8EFFA41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,12 @@ Global
 		{4D61BC1C-7F68-4039-BE51-020BC34C5413}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4D61BC1C-7F68-4039-BE51-020BC34C5413}.Testing|Any CPU.ActiveCfg = Testing|Any CPU
 		{4D61BC1C-7F68-4039-BE51-020BC34C5413}.Testing|Any CPU.Build.0 = Testing|Any CPU
+		{88B6F4AB-2595-4EE3-8A7B-88CCD8EFFA41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88B6F4AB-2595-4EE3-8A7B-88CCD8EFFA41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88B6F4AB-2595-4EE3-8A7B-88CCD8EFFA41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88B6F4AB-2595-4EE3-8A7B-88CCD8EFFA41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88B6F4AB-2595-4EE3-8A7B-88CCD8EFFA41}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
+		{88B6F4AB-2595-4EE3-8A7B-88CCD8EFFA41}.Testing|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

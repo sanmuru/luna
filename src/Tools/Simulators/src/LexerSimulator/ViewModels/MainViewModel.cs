@@ -13,7 +13,7 @@ namespace Luna.Compilers.Tools.ViewModels;
 [ObservableObject]
 internal partial class MainViewModel
 {
-    public ILexerSimulator? LexerSimulator { get; set; } = null;
+    public ILexerSimulator? Simulator { get; set; } = null;
 
     [ObservableProperty]
     private SourceText? sourceText = null;
@@ -34,8 +34,8 @@ internal partial class MainViewModel
         };
         if (dialog.ShowDialog() == true)
         {
-            if (App.TryGetLexerSimulator(Path.GetExtension(dialog.FileName), out var lexerSimulators))
-                this.LexerSimulator = lexerSimulators[0];
+            if (LexerSimulator.TryGetLexerSimulator(Path.GetExtension(dialog.FileName), out var lexerSimulators))
+                this.Simulator = lexerSimulators[0];
             this.SourceText = SourceText.From(dialog.OpenFile());
         }
     }

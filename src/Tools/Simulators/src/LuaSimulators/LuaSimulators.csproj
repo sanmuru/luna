@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <AssemblyName>Luna.Compilers.Simulators.Lua</AssemblyName>
     <TargetFrameworks>netcoreapp3.1;netstandard2.0</TargetFrameworks>
     <Nullable>enable</Nullable>
+    <RootNamespace>Luna.Compilers.Simulators</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,23 +16,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="LexerSimulator" />
-    <InternalsVisibleTo Include="LexerRender" />
+    <ProjectReference Include="..\..\..\..\Compilers\Lua\Portable\SamLu.CodeAnalysis.Lua.csproj" />
+    <ProjectReference Include="..\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj">
+      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
+      <OutputItemType>Analyzer</OutputItemType>
+    </ProjectReference>
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
     <PackageReference Include="Nullable" Version="1.3.1" Condition="'$(TargetFramework)' == 'netstandard2.0'">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="6.0.5" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj" />
-  </ItemGroup>
-
-  <Import Project="..\SimulatorGenerators\SimulatorGenerators.projitems" Label="Shared" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
 
 </Project>
