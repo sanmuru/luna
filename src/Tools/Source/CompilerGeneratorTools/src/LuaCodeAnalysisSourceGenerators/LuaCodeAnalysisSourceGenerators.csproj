@@ -24,16 +24,6 @@
     <Compile Include="..\..\..\..\..\Compilers\Lua\Portable\Syntax\SyntaxKindFacts.cs" Link="SyntaxKindFacts.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Make sure to reference the same version of Microsoft.CodeAnalysis.Analyzers as the rest of the build -->
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(SourceGeneratorMicrosoftCodeAnalysisVersion)" PrivateAssets="all" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-    <PackageReference Include="Nullable" Version="1.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-  
   <Import Project="..\Shared\CodeAnalysisGenerators.Shared.projitems" Label="Shared" />
 
   <ItemGroup>

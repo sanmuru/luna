@@ -13,7 +13,7 @@
     <VersionPostfix Condition="'$(PreReleaseVersionLabel)' != ''">-$(PreReleaseVersionLabel)$(BuildVersionLabel)</VersionPostfix>
     <!--
       默认情况下正式生成的程序集版本为“$(MajorVersion).$(MinorVersion).0.0”。
-      因此设置是否正式生成的条件，当条件不符时工具集将会设置程序集版本为“43.43.43.43”（其中“43”是$(MicrosoftNetCompilersToolsetVersion)的主版本号和次版本号连接后的字符串）。
+      因此设置是否正式生成的条件，当条件不符时工具集将会设置程序集版本为“42.42.42.42”。
     -->
     <AssemblyVersion Condition="'$(OfficialBuild)' == 'true' or '$(DotNetUseShippingVersions)' == 'true'">$(MajorVersion).$(MinorVersion).0.0</AssemblyVersion>
     <MicrosoftNetCompilersToolsetVersion>4.3.0-3.final</MicrosoftNetCompilersToolsetVersion>

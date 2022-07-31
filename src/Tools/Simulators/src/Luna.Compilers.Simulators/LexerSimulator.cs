@@ -26,7 +26,7 @@ internal static class LexerSimulator
                 {
                     lexerSimulator = Activator.CreateInstance(type) as ILexerSimulator;
                     Debug.Assert(lexerSimulator is not null);
-                    s_lexerSimulators.Add(type, lexerSimulator);
+                    s_lexerSimulators.Add(type, lexerSimulator!);
                 }
                 catch
                 {
@@ -61,7 +61,7 @@ internal static class LexerSimulator
         languageNameToFileExtensionsProvider = LexerSimulator.GetFileExtensionsFromLanguageName;
 
         var interfaceType = typeof(ILexerSimulator);
-        foreach (var type in assembly.ExportedTypes)
+        foreach (var type in assembly.DefinedTypes)
         {
             if (type.IsAbstract || type.IsInterface || type.IsEnum) continue;
             if (!interfaceType.IsAssignableFrom(type)) continue;

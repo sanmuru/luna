@@ -18,7 +18,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Compilers\Lua\Portable\SamLu.CodeAnalysis.Lua.csproj" />
     <ProjectReference Include="..\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj">
-      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
       <OutputItemType>Analyzer</OutputItemType>
     </ProjectReference>
   </ItemGroup>

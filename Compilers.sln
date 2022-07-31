@@ -96,8 +96,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LexerRender", "src\Tools\Si
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LuaSimulators", "src\Tools\Simulators\src\LuaSimulators\LuaSimulators.csproj", "{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SimulatorGenerators", "src\Tools\Simulators\src\SimulatorGenerators\SimulatorGenerators.shproj", "{0ED4AC4E-423F-42DA-897E-6FBECB440CFF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -282,14 +280,12 @@ Global
 		{60D06FC4-4C55-4426-ADDF-2E493CEC2B1D} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
 		{787D9B1B-2040-4354-9728-16877254B417} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
 		{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
-		{0ED4AC4E-423F-42DA-897E-6FBECB440CFF} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F599E08-A9EA-4FAA-897F-5D824B0210E6}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compilers\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems*{08179868-a6a3-4c87-a29f-276864c37186}*SharedItemsImports = 5
-		src\Tools\Simulators\src\SimulatorGenerators\SimulatorGenerators.projitems*{0ed4ac4e-423f-42da-897e-6fbecb440cff}*SharedItemsImports = 13
 		src\Compilers\Core\AnalyzerDriver\AnalyzerDriver.projitems*{1ee8cad3-55f9-4d91-96b2-084641da9a6c}*SharedItemsImports = 5
 		src\Dependencies\CodeAnalysis.Debugging\Microsoft.CodeAnalysis.Debugging.projitems*{1ee8cad3-55f9-4d91-96b2-084641da9a6c}*SharedItemsImports = 5
 		src\Dependencies\Collections\Microsoft.CodeAnalysis.Collections.projitems*{1ee8cad3-55f9-4d91-96b2-084641da9a6c}*SharedItemsImports = 5

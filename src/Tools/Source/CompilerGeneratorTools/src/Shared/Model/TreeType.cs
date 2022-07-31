@@ -8,16 +8,16 @@ public class TreeType
     public string Name;
 
     [XmlAttribute]
-    public string Base;
+    public string? Base;
 
     [XmlAttribute]
     public string SkipConvenienceFactories;
 
     [XmlElement]
-    public Comment TypeComment;
+    public Comment? TypeComment;
 
     [XmlElement]
-    public Comment FactoryComment;
+    public Comment? FactoryComment;
 
     [XmlElement(ElementName = "Field", Type = typeof(Field))]
     [XmlElement(ElementName = "Choice", Type = typeof(Choice))]

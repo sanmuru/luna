@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj" />
     <ProjectReference Include="..\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj" />
   </ItemGroup>
 

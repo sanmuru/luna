@@ -1,0 +1,13 @@
+﻿Luna.Compilers.Simulators.ILexerSimulator
+Luna.Compilers.Simulators.ILexerSimulator.GetTokenKind(int rawKind) -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.ILexerSimulator.LexToEnd(Microsoft.CodeAnalysis.Text.SourceText text) -> System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.SyntaxToken>
+Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.None = 0 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Keyword = 1 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Operator = 2 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Punctuation = 3 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.NumericLiteral = 4 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.StringLiteral = 5 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.WhiteSpace = 6 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Comment = 7 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Documentation = 8 -> Luna.Compilers.Simulators.TokenKind
