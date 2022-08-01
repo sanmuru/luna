@@ -1,5 +1,8 @@
 <Project>
 
+  <UsingTask TaskName="Luna.Compilers.Simulators.Tasks.ResolveSimulatorsOutputPath" AssemblyFile="$(OutputPath)Luna.Compilers.Simulators.Tasks.dll" />
+  <UsingTask TaskName="Luna.Compilers.Simulators.Tasks.CopySimulatorsProjectsOutput" AssemblyFile="$(OutputPath)Luna.Compilers.Simulators.Tasks.dll" />
+
   <Target Name="InstallSimulators" AfterTargets="PostBuildEvent">
     <PropertyGroup>
       <!-- 默认的配置文件名称为“config.json” -->
@@ -15,7 +18,10 @@
     </PropertyGroup>
     <RemoveDir Directories="$(SimulatorsOutputPath)" Condition="Exists('$(SimulatorsOutputPath)')" ContinueOnError="true" />
     <MakeDir Directories="$(SimulatorsOutputPath)" Condition="!Exists('$(SimulatorsOutputPath)')" ContinueOnError="true" />
-    
+    <CopySimulatorsProjectsOutput Configuration="$(Configuration)" TargetFramework="netstandard2.0" DestinationDir="$(SimulatorsOutputPath)" Projects="@(ProjectReference)">
+      <Output TaskParameter="ProjectOutputPaths" ItemName="ProjectOutputPaths" />
+    </CopySimulatorsProjectsOutput>
+    <Message Importance="High" Text="成功将“@(ProjectOutputPaths)”中的文件复制到“$(SimulatorsOutputPath)”。" />
   </Target>
 
 </Project>
