@@ -37,7 +37,7 @@ internal class Program
                 outputFile = args[1];
             }
         }
-        else
+        else if (args.Length == 3)
         {
             outputFile = args[1];
             cssPath = args[2].Substring(5);
@@ -76,20 +76,26 @@ internal class Program
                     var meta = doc.CreateElement("meta");
                     meta.SetAttributeValue("charset", "utf-8");
                     head.AppendChild(meta);
-                    foreach (var cssFile in cssFiles)
+                    if (cssFiles is not null)
                     {
-                        var link = doc.CreateElement("link");
-                        link.SetAttributeValue("rel", "stylesheet");
-                        link.SetAttributeValue("type", "text/css");
-                        link.SetAttributeValue("href", cssFile);
+                        foreach (var cssFile in cssFiles)
+                        {
+                            var link = doc.CreateElement("link");
+                            link.SetAttributeValue("rel", "stylesheet");
+                            link.SetAttributeValue("type", "text/css");
+                            link.SetAttributeValue("href", cssFile);
+                        }
                     }
                     var title = doc.CreateElement("title");
                     title.AppendChild(doc.CreateTextNode($"{Path.GetFileName(inputFile)} - {simulator.GetType().FullName}"));
+                    head.AppendChild(title);
                 }
+                doc.DocumentNode.AppendChild(head);
 
                 var body = doc.CreateElement("body");
                 {
                     var div = doc.CreateElement("div");
+                    div.AddClass("code-box");
                     body.AppendChild(div);
 
                     using var fs = File.OpenRead(inputFile);
@@ -129,6 +135,7 @@ internal class Program
                         span.AppendChild(doc.CreateTextNode(text));
                     };
                 }
+                doc.DocumentNode.AppendChild(body);
 
                 doc.Save(
                     simulators.Length == 1 ? outputFile :
