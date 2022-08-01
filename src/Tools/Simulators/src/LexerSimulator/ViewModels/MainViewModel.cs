@@ -34,7 +34,7 @@ internal partial class MainViewModel
         };
         if (dialog.ShowDialog() == true)
         {
-            if (LexerSimulator.TryGetLexerSimulator(Path.GetExtension(dialog.FileName), out var lexerSimulators))
+            if (LexerSimulator.TryGetLexerSimulatorByFileExtension(Path.GetExtension(dialog.FileName), out var lexerSimulators))
                 this.Simulator = lexerSimulators[0];
             this.SourceText = SourceText.From(dialog.OpenFile());
         }

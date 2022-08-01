@@ -1,9 +1,7 @@
 {
   "$schema": "config-schema.json",
 
-  "paths": [
-    "Simulators/"
-  ],
+  "paths": "Simulators/",
 
   "extensions": {
     ".lua": "Lua",

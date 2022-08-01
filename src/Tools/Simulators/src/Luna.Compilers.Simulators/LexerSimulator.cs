@@ -9,42 +9,68 @@ namespace Luna.Compilers.Simulators;
 
 internal static class LexerSimulator
 {
-    private static readonly Dictionary<Type, ILexerSimulator> s_lexerSimulators = new();
-    private static readonly Dictionary<string, HashSet<Type>> s_fileExtensionMap = new();
+    private static readonly Dictionary<(Type type, string languageName), ILexerSimulator> s_lexerSimulators = new();
+    private static readonly Dictionary<string, HashSet<Type>> s_languageNameMap = new();
+    private static readonly Dictionary<string, HashSet<string>> s_fileExtensionMap = new();
 
-    public static bool TryGetLexerSimulator(string fileExtension, [NotNullWhen(true)] out ILexerSimulator[]? lexerSimulators)
+    public static bool TryGetLexerSimulatorByLanguageName(string languageName, [NotNullWhen(true)] out ILexerSimulator[]? lexerSimulators)
     {
         lexerSimulators = null;
 
-        if (!s_fileExtensionMap.TryGetValue(fileExtension, out var types)) return false;
+        if (!s_languageNameMap.TryGetValue(languageName, out var types) || types.Count == 0) return false;
 
         lexerSimulators = types.Select(type =>
         {
-            if (!s_lexerSimulators.TryGetValue(type, out var lexerSimulator))
+            if (!s_lexerSimulators.TryGetValue((type, languageName), out var lexerSimulator))
             {
                 try
                 {
                     lexerSimulator = Activator.CreateInstance(type) as ILexerSimulator;
                     Debug.Assert(lexerSimulator is not null);
-                    s_lexerSimulators.Add(type, lexerSimulator!);
+                    lexerSimulator!.Initialize(new(languageName));
+                    s_lexerSimulators.Add((type, languageName), lexerSimulator);
                 }
                 catch
                 {
-                    // 移除实例化失败的类型。
-                    foreach (var pair in s_fileExtensionMap)
-                        pair.Value.Remove(type);
                     return null;
                 }
             }
             return lexerSimulator;
         })
-            .Where(instance => instance is not null)
             .OfType<ILexerSimulator>()
             .ToArray();
-        return lexerSimulators.Length != 0;
+
+        if (lexerSimulators.Length == 0)
+        {
+            lexerSimulators = null;
+            return false;
+        }
+        else return true;
     }
 
-    public static void RegisterSimulator(string fileExtension, Type lexerSimulatorType)
+    public static bool TryGetLexerSimulatorByFileExtension(string fileExtension, [NotNullWhen(true)] out ILexerSimulator[]? lexerSimulators)
+    {
+        lexerSimulators = null;
+
+        if (!s_fileExtensionMap.TryGetValue(fileExtension, out var languageNames) || languageNames.Count == 0) return false;
+
+        lexerSimulators = languageNames.SelectMany(languageName =>
+        {
+            if (LexerSimulator.TryGetLexerSimulatorByLanguageName(languageName, out var result))
+                return result;
+            else return Enumerable.Empty<ILexerSimulator>();
+        })
+            .ToArray();
+
+        if (lexerSimulators.Length == 0)
+        {
+            lexerSimulators = null;
+            return false;
+        }
+        else return true;
+    }
+
+    public static void RegisterSimulator(string fileExtension, string languageName, Type lexerSimulatorType)
     {
         var interfaceType = typeof(ILexerSimulator);
         if (!interfaceType.IsAssignableFrom(lexerSimulatorType)) throw new ArgumentException($"“{nameof(lexerSimulatorType)}” 必须是从 “{lexerSimulatorType.FullName}” 派生的类型。", nameof(lexerSimulatorType));
@@ -52,7 +78,8 @@ internal static class LexerSimulator
         var attributes = lexerSimulatorType.GetCustomAttributes<LexerSimulatorAttribute>();
         if (!attributes.Any()) return; // 未包含指定的特性，不注册。
 
-        LexerSimulator.AddMapItem(s_fileExtensionMap, fileExtension, lexerSimulatorType);
+        LexerSimulator.AddMapItem(s_fileExtensionMap, fileExtension, languageName);
+        LexerSimulator.AddMapItem(s_languageNameMap, languageName, lexerSimulatorType);
     }
 
     public static void RegisterSimulatorFrom(Assembly assembly, Func<string, IEnumerable<string>?>? languageNameToFileExtensionsProvider = null)
@@ -77,7 +104,7 @@ internal static class LexerSimulator
                     if (extensions is null) continue;
 
                     foreach (var extension in extensions)
-                        LexerSimulator.RegisterSimulator(extension, type);
+                        LexerSimulator.RegisterSimulator(extension, languageName, type);
                 }
             }
         }

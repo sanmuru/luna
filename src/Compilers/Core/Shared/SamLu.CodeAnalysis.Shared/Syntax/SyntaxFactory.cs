@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Text;
+﻿using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -182,6 +181,10 @@ public static partial class SyntaxFactory
             valueText,
             trailing.Node));
     }
+
+#if DEBUG
+    internal static SyntaxToken Token(Syntax.InternalSyntax.SyntaxToken token) => new(token);
+#endif
 
     private static partial void ValidateTokenKind(SyntaxKind kind);
 

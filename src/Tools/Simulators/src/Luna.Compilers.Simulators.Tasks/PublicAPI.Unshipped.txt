@@ -1,0 +1,7 @@
+﻿Luna.Compilers.Simulators.Tasks.ResolveSimulatorsOutputPath
+Luna.Compilers.Simulators.Tasks.ResolveSimulatorsOutputPath.ConfigFile.get -> string
+Luna.Compilers.Simulators.Tasks.ResolveSimulatorsOutputPath.ConfigFile.set -> void
+Luna.Compilers.Simulators.Tasks.ResolveSimulatorsOutputPath.OutputPath.get -> string
+Luna.Compilers.Simulators.Tasks.ResolveSimulatorsOutputPath.OutputPath.set -> void
+Luna.Compilers.Simulators.Tasks.ResolveSimulatorsOutputPath.ResolveSimulatorsOutputPath() -> void
+override Luna.Compilers.Simulators.Tasks.ResolveSimulatorsOutputPath.Execute() -> bool

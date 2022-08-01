@@ -5,7 +5,9 @@ namespace Luna.Compilers.Simulators;
 
 public interface ILexerSimulator
 {
-    IEnumerable<SyntaxToken> LexToEnd(SourceText text);
+    void Initialize(LexerSimulatorContext context);
+
+    IEnumerable<SyntaxToken> LexToEnd(SourceText sourceText);
 
     TokenKind GetTokenKind(int rawKind);
 }

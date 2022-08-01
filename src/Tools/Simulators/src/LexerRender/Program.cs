@@ -63,7 +63,7 @@ internal class Program
         string[]? cssFiles)
     {
         var extension = Path.GetExtension(inputFile);
-        if (LexerSimulator.TryGetLexerSimulator(extension, out var simulators))
+        if (LexerSimulator.TryGetLexerSimulatorByFileExtension(extension, out var simulators))
         {
             for (var i = 0; i < simulators.Length; i++)
             {

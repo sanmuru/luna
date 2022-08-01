@@ -16,5 +16,6 @@ public enum TokenKind
     StringLiteral,
     WhiteSpace,
     Comment,
-    Documentation
+    Documentation,
+    Skipped
 }

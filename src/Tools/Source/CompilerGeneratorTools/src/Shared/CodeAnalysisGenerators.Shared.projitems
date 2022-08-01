@@ -26,7 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\Tree.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\TreeType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SourceTextReader.cs" />
-    <Compile Include="..\Shared\SyntaxGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SyntaxGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SourceWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\TreeFlattening.cs" />
   </ItemGroup>

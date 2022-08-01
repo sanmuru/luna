@@ -6,14 +6,27 @@
     <RootNamespace>Luna.Compilers.Tools</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\config-schema.json" Link="config-schema.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\config.json" Link="config.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.43" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj" />
+    <ProjectReference Include="..\LuaSimulators\LuaSimulators.csproj" ReferenceOutputAssembly="false" ContainsSimulators="true" />
+    <ProjectReference Include="..\Luna.Compilers.Simulators.Tasks\Luna.Compilers.Simulators.Tasks.csproj" />
     <ProjectReference Include="..\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj" />
   </ItemGroup>
+
+  <UsingTask TaskName="Luna.Compilers.Simulators.Tasks.ResolveSimulatorsOutputPath" AssemblyFile="$(OutputPath)Luna.Compilers.Simulators.Tasks.dll" />
+
+  <Import Project="$(RepositoryEngineeringDir)targets\Simulators.targets" />
 
 </Project>

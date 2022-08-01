@@ -5,8 +5,8 @@
   "type": "object",
   "properties": {
     "paths": {
-      "type": "array",
-      "description": ""
+      "type": [ "string", "array" ],
+      "minItems": 1
     },
     "extensions": {
       "type": "object",

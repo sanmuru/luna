@@ -157,7 +157,7 @@
     <Field Name="OperatorToken" Type="SyntaxToken">
       <Kind Name="DotToken"/>
     </Field>
-    <Field Name="Member" Type="ExpressionSyntax" Override="true"/>
+    <Field Name="MemberName" Type="IdentifierNameSyntax"/>
   </Node>
   <Node Name="IndexMemberAccessExpressionSyntax" Base="MemberAccessExpressionSyntax">
     <Kind Name="IndexMemberAccessExpression"/>

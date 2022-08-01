@@ -1,0 +1,21 @@
+<Project>
+
+  <Target Name="InstallSimulators" AfterTargets="PostBuildEvent">
+    <PropertyGroup>
+      <!-- 默认的配置文件名称为“config.json” -->
+      <ConfigFile Condition="'$(ConfigFile)' == ''">config.json</ConfigFile>
+      <!-- 配置文件必须位于输出路径下 -->
+      <ConfigFile>$(OutputPath)$(ConfigFile)</ConfigFile>
+    </PropertyGroup>
+    <ResolveSimulatorsOutputPath ConfigFile="$(ConfigFile)">
+      <Output TaskParameter="OutputPath" PropertyName="SimulatorsOutputPath" />
+    </ResolveSimulatorsOutputPath>
+    <PropertyGroup>
+      <SimulatorsOutputPath>$(OutputPath)$(SimulatorsOutputPath)</SimulatorsOutputPath>
+    </PropertyGroup>
+    <RemoveDir Directories="$(SimulatorsOutputPath)" Condition="Exists('$(SimulatorsOutputPath)')" ContinueOnError="true" />
+    <MakeDir Directories="$(SimulatorsOutputPath)" Condition="!Exists('$(SimulatorsOutputPath)')" ContinueOnError="true" />
+    
+  </Target>
+
+</Project>
