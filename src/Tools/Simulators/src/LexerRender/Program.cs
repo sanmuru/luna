@@ -84,6 +84,7 @@ internal class Program
                             link.SetAttributeValue("rel", "stylesheet");
                             link.SetAttributeValue("type", "text/css");
                             link.SetAttributeValue("href", cssFile);
+                            head.AppendChild(link);
                         }
                     }
                     var title = doc.CreateElement("title");
@@ -99,8 +100,8 @@ internal class Program
                     body.AppendChild(div);
 
                     using var fs = File.OpenRead(inputFile);
-                    var text = SourceText.From(fs);
-                    foreach (var token in simulator.LexToEnd(text))
+                    var sourceText = SourceText.From(fs);
+                    foreach (var token in simulator.LexToEnd(sourceText))
                     {
                         if (token.HasLeadingTrivia) processTriviaList(token.LeadingTrivia);
                         processToken(simulator.GetTokenKind(token.RawKind), token.Text);
@@ -111,7 +112,7 @@ internal class Program
                     {
                         foreach (var trivia in triviaList)
                         {
-                            processToken(simulator.GetTokenKind(trivia.RawKind), text.GetSubText(trivia.Span).ToString());
+                            processToken(simulator.GetTokenKind(trivia.RawKind), sourceText.GetSubText(trivia.Span).ToString());
                         }
                     }
                     void processToken(TokenKind kind, string text)
@@ -130,17 +131,31 @@ internal class Program
                             TokenKind.WhiteSpace => "space",
                             TokenKind.Comment => "comment",
                             TokenKind.Documentation => "doc",
+                            TokenKind.Skipped => "skipped",
                             _ => throw new InvalidOperationException(),
                         });
-                        span.AppendChild(doc.CreateTextNode(text));
+                        var splited = text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                        for (int j = 0; j < splited.Length; j++)
+                        {
+                            if (j != 0) span.AppendChild(doc.CreateElement("br"));
+                            span.AppendChild(doc.CreateTextNode(text));
+                        }
                     };
                 }
                 doc.DocumentNode.AppendChild(body);
 
                 doc.Save(
                     simulators.Length == 1 ? outputFile :
-                        $"{Path.GetDirectoryName(outputFile)!}{Path.GetFileNameWithoutExtension(outputFile)}.{i}{Path.GetExtension(outputFile)}",
+                        Path.Combine(Path.GetDirectoryName(outputFile)!, $"{Path.GetFileNameWithoutExtension(outputFile)}.{i}{Path.GetExtension(outputFile)}"),
                     Encoding.UTF8);
+
+                if (cssFiles is not null)
+                {
+                    foreach (var cssFile in cssFiles)
+                    {
+                        File.Copy(cssFile, Path.Combine(Path.GetDirectoryName(outputFile)!, $"{Path.GetFileName(cssFile)}"), true);
+                    }
+                }
             }
 
             return 0;

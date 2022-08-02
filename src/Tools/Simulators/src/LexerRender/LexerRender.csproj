@@ -12,6 +12,7 @@
   <ItemGroup>
     <None Include="..\config-schema.json" Link="config-schema.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\config.json" Link="config.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="default.css" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +21,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj" />
-    <ProjectReference Include="..\LuaSimulators\LuaSimulators.csproj" ReferenceOutputAssembly="false" ContainsSimulators="true" />
+    <ProjectReference Include="..\LuaSimulators\LuaSimulators.csproj" ContainsSimulators="true">
+      <ReferenceOutputAssembly Condition="'$(Configuration)' != 'Debug'">false</ReferenceOutputAssembly>
+    </ProjectReference>
     <ProjectReference Include="..\Luna.Compilers.Simulators.Tasks\Luna.Compilers.Simulators.Tasks.csproj" />
     <ProjectReference Include="..\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj" />
   </ItemGroup>

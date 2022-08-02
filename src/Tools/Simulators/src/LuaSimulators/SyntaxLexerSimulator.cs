@@ -22,8 +22,6 @@ public sealed partial class SyntaxLexerSimulator : ILexerSimulator
 
     private TokenKind GetTokenKind(LuaSyntaxKind kind)
     {
-        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
-
         if (SyntaxFacts.IsKeywordKind(kind)) return TokenKind.Keyword;
         else if (SyntaxFacts.IsUnaryExpressionOperatorToken(kind) || SyntaxFacts.IsBinaryExpressionOperatorToken(kind)) return TokenKind.Operator;
         else if (SyntaxFacts.IsPunctuation(kind)) return TokenKind.Punctuation;
