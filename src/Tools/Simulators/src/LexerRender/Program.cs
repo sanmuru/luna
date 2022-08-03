@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Text;
 using HtmlAgilityPack;
 using Luna.Compilers.Simulators;
@@ -16,14 +17,23 @@ internal class Program
             return WriteUsage();
         }
 
-        string inputFile = args[0];
-        if (!File.Exists(inputFile))
+        string inputPath = args[0];
+        string[]? inputFiles = null;
+        if (Directory.Exists(inputPath))
+            inputFiles = Directory.GetFiles(inputPath);
+        else if (File.Exists(inputPath))
+            inputFiles = new[] { inputPath };
+        else
         {
-            Console.WriteLine($"未找到“{inputFile}”");
+            Console.WriteLine($"未找到“{inputPath}”");
             return 1;
         }
 
-        string? outputFile = null;
+        var length = inputFiles.Length;
+        if (length == 0) return 0;
+
+        string? outputPath = null;
+        string[] outputFiles;
         string? cssPath = null;
         string[]? cssFiles = null;
         if (args.Length == 2)
@@ -34,16 +44,48 @@ internal class Program
             }
             else
             {
-                outputFile = args[1];
+                outputPath = args[1];
             }
         }
         else if (args.Length == 3)
         {
-            outputFile = args[1];
+            outputPath = args[1];
             cssPath = args[2].Substring(5);
         }
 
-        outputFile = inputFile + ".html";
+ProcessOutputPath:
+        if (string.IsNullOrEmpty(outputPath))
+        {
+            outputFiles = new string[length];
+            for (var i = 0; i < length; i++)
+                outputFiles[i] = inputFiles[i] + ".html";
+        }
+        else
+        {
+            var extension = Path.GetExtension(outputPath);
+            if (Directory.Exists(outputPath) || string.IsNullOrEmpty(extension))
+            {
+                outputFiles = new string[length];
+                for (var i = 0; i < length; i++)
+                    outputFiles[i] = Path.Combine(outputPath, Path.GetFileName(inputFiles[i]) + ".html");
+            }
+            else if (extension != ".html")
+            {
+                outputPath = Path.GetDirectoryName(outputPath);
+                goto ProcessOutputPath;
+            }
+            else if (inputFiles.Length > 1)
+            {
+                outputFiles = new string[length];
+                for (var i = 0; i < length; i++)
+                    outputFiles[i] = Path.Combine(outputPath, Path.GetFileName(inputFiles[i]) + ".html");
+            }
+            else
+            {
+                outputFiles = new[] { outputPath };
+            }
+        }
+
         if (cssPath is not null)
         {
             if (Directory.Exists(cssPath))
@@ -54,7 +96,40 @@ internal class Program
 
         LexerSimulator.RegisterSimulatorFromConfiguration(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "config.json"));
 
-        return Program.WriteHtml(inputFile, outputFile, cssFiles);
+        var destinationDir = Path.GetDirectoryName(outputFiles[0])!;
+
+        int errorCode;
+        errorCode = Program.CreateDirectory(Path.GetFullPath(destinationDir));
+        if (errorCode != 0) return errorCode;
+
+        for (var i = 0; i < length; i++)
+        {
+            errorCode = Program.WriteHtml(inputFiles[i], outputFiles[i], cssFiles);
+            if (errorCode != 0) return errorCode;
+        }
+
+        errorCode = Program.CopyCss(destinationDir, cssFiles);
+        if (errorCode != 0) return errorCode;
+
+        return 0;
+    }
+
+    private static int CreateDirectory(string destinationDir)
+    {
+        try
+        {
+            Directory.CreateDirectory(destinationDir);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+#if DEBUG
+            throw;
+#else
+            return ex.HResult;
+#endif
+        }
+        return 0;
     }
 
     private static int WriteHtml(
@@ -69,92 +144,100 @@ internal class Program
             {
                 var simulator = simulators[i];
 
-                var doc = new HtmlDocument();
-
-                var head = doc.CreateElement("head");
+                try
                 {
-                    var meta = doc.CreateElement("meta");
-                    meta.SetAttributeValue("charset", "utf-8");
-                    head.AppendChild(meta);
-                    if (cssFiles is not null)
+                    var doc = new HtmlDocument();
+
+                    var head = doc.CreateElement("head");
                     {
-                        foreach (var cssFile in cssFiles)
+                        var meta = doc.CreateElement("meta");
+                        meta.SetAttributeValue("charset", "utf-8");
+                        head.AppendChild(meta);
+                        if (cssFiles is not null && cssFiles.Length > 0)
                         {
-                            var link = doc.CreateElement("link");
-                            link.SetAttributeValue("rel", "stylesheet");
-                            link.SetAttributeValue("type", "text/css");
-                            link.SetAttributeValue("href", cssFile);
-                            head.AppendChild(link);
+                            foreach (var cssFile in cssFiles)
+                            {
+                                var link = doc.CreateElement("link");
+                                link.SetAttributeValue("rel", "stylesheet");
+                                link.SetAttributeValue("type", "text/css");
+                                link.SetAttributeValue("href", cssFile);
+                                head.AppendChild(link);
+                            }
                         }
+                        var title = doc.CreateElement("title");
+                        title.AppendChild(doc.CreateTextNode($"{Path.GetFileName(inputFile)} - {simulator.GetType().FullName}"));
+                        head.AppendChild(title);
                     }
-                    var title = doc.CreateElement("title");
-                    title.AppendChild(doc.CreateTextNode($"{Path.GetFileName(inputFile)} - {simulator.GetType().FullName}"));
-                    head.AppendChild(title);
+                    doc.DocumentNode.AppendChild(head);
+
+                    var body = doc.CreateElement("body");
+                    {
+                        var div = doc.CreateElement("div");
+                        div.AddClass("code-box");
+                        body.AppendChild(div);
+
+                        using var fs = File.OpenRead(inputFile);
+                        var sourceText = SourceText.From(fs);
+                        foreach (var token in simulator.LexToEnd(sourceText))
+                        {
+                            if (token.HasLeadingTrivia) processTriviaList(token.LeadingTrivia);
+                            processToken(simulator.GetTokenKind(token.RawKind), token.Text);
+                            if (token.HasTrailingTrivia) processTriviaList(token.TrailingTrivia);
+                        }
+
+                        void processTriviaList(SyntaxTriviaList triviaList)
+                        {
+                            foreach (var trivia in triviaList)
+                            {
+                                processToken(simulator.GetTokenKind(trivia.RawKind), sourceText.GetSubText(trivia.Span).ToString());
+                            }
+                        }
+                        void processToken(TokenKind kind, string text)
+                        {
+                            if (kind == TokenKind.NewLine)
+                            {
+                                div.AppendChild(doc.CreateElement("br"));
+                            }
+                            else
+                            {
+                                var span = doc.CreateElement("span");
+                                div.AppendChild(span);
+
+                                span.AddClass(kind switch
+                                {
+                                    TokenKind.None => "none",
+                                    TokenKind.Keyword => "kwd",
+                                    TokenKind.Identifier => "ind",
+                                    TokenKind.Operator => "op",
+                                    TokenKind.Punctuation => "punct",
+                                    TokenKind.NumericLiteral => "num",
+                                    TokenKind.StringLiteral => "str",
+                                    TokenKind.WhiteSpace => "space",
+                                    TokenKind.Comment => "comment",
+                                    TokenKind.Documentation => "doc",
+                                    TokenKind.Skipped => "skipped",
+                                    _ => throw new InvalidOperationException(),
+                                });
+
+                                span.AppendChild(doc.CreateTextNode(text));
+                            }
+                        };
+                    }
+                    doc.DocumentNode.AppendChild(body);
+
+                    doc.Save(
+                        simulators.Length == 1 ? outputFile :
+                            Path.Combine(Path.GetDirectoryName(outputFile)!, $"{Path.GetFileNameWithoutExtension(outputFile)}.{i}{Path.GetExtension(outputFile)}"),
+                        Encoding.UTF8);
                 }
-                doc.DocumentNode.AppendChild(head);
-
-                var body = doc.CreateElement("body");
+                catch (Exception ex)
                 {
-                    var div = doc.CreateElement("div");
-                    div.AddClass("code-box");
-                    body.AppendChild(div);
-
-                    using var fs = File.OpenRead(inputFile);
-                    var sourceText = SourceText.From(fs);
-                    foreach (var token in simulator.LexToEnd(sourceText))
-                    {
-                        if (token.HasLeadingTrivia) processTriviaList(token.LeadingTrivia);
-                        processToken(simulator.GetTokenKind(token.RawKind), token.Text);
-                        if (token.HasTrailingTrivia) processTriviaList(token.TrailingTrivia);
-                    }
-
-                    void processTriviaList(SyntaxTriviaList triviaList)
-                    {
-                        foreach (var trivia in triviaList)
-                        {
-                            processToken(simulator.GetTokenKind(trivia.RawKind), sourceText.GetSubText(trivia.Span).ToString());
-                        }
-                    }
-                    void processToken(TokenKind kind, string text)
-                    {
-                        var span = doc.CreateElement("span");
-                        div.AppendChild(span);
-
-                        span.AddClass(kind switch
-                        {
-                            TokenKind.None => "none",
-                            TokenKind.Keyword => "kwd",
-                            TokenKind.Operator => "op",
-                            TokenKind.Punctuation => "punct",
-                            TokenKind.NumericLiteral => "num",
-                            TokenKind.StringLiteral => "str",
-                            TokenKind.WhiteSpace => "space",
-                            TokenKind.Comment => "comment",
-                            TokenKind.Documentation => "doc",
-                            TokenKind.Skipped => "skipped",
-                            _ => throw new InvalidOperationException(),
-                        });
-                        var splited = text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-                        for (int j = 0; j < splited.Length; j++)
-                        {
-                            if (j != 0) span.AppendChild(doc.CreateElement("br"));
-                            span.AppendChild(doc.CreateTextNode(text));
-                        }
-                    };
-                }
-                doc.DocumentNode.AppendChild(body);
-
-                doc.Save(
-                    simulators.Length == 1 ? outputFile :
-                        Path.Combine(Path.GetDirectoryName(outputFile)!, $"{Path.GetFileNameWithoutExtension(outputFile)}.{i}{Path.GetExtension(outputFile)}"),
-                    Encoding.UTF8);
-
-                if (cssFiles is not null)
-                {
-                    foreach (var cssFile in cssFiles)
-                    {
-                        File.Copy(cssFile, Path.Combine(Path.GetDirectoryName(outputFile)!, $"{Path.GetFileName(cssFile)}"), true);
-                    }
+                    Console.WriteLine(ex.Message);
+#if DEBUG
+                    throw;
+#else
+                    return ex.HResult;
+#endif
                 }
             }
 
@@ -167,12 +250,38 @@ internal class Program
         }
     }
 
+    private static int CopyCss(
+        string destinationDir,
+        string[]? cssFiles)
+    {
+        if (cssFiles is not null && cssFiles.Length > 0)
+        {
+            try
+            {
+                foreach (var cssFile in cssFiles)
+                {
+                    File.Copy(cssFile, Path.Combine(destinationDir, $"{Path.GetFileName(cssFile)}"), true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+#if DEBUG
+                throw;
+#else
+                return ex.HResult;
+#endif
+            }
+        }
+        return 0;
+    }
+
     private static int WriteUsage()
     {
         Console.WriteLine("Invalid usage:");
         var programName = "  " + typeof(Program).GetTypeInfo().Assembly.ManifestModule.Name;
-        Console.WriteLine(programName + " input output [/css:css-path]");
-        Console.WriteLine(programName + " input [/css:css-path]");
+        Console.WriteLine(programName + " inputPath outputPath [/css:css-path]");
+        Console.WriteLine(programName + " inputPath [/css:css-path]");
         return 1;
     }
 }

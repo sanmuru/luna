@@ -1,4 +1,3 @@
-#!../lua
 -- $Id: testes/all.lua $
 -- See Copyright Notice at the end of this file
 

@@ -27,10 +27,12 @@ public sealed partial class SyntaxLexerSimulator : ILexerSimulator
         else if (SyntaxFacts.IsPunctuation(kind)) return TokenKind.Punctuation;
         else return kind switch
         {
+            LuaSyntaxKind.IdentifierToken => TokenKind.Identifier,
             LuaSyntaxKind.NumericLiteralToken => TokenKind.NumericLiteral,
             LuaSyntaxKind.StringLiteralToken or
             LuaSyntaxKind.MultiLineRawStringLiteralToken => TokenKind.StringLiteral,
             LuaSyntaxKind.WhiteSpaceTrivia => TokenKind.WhiteSpace,
+            LuaSyntaxKind.EndOfLineTrivia => TokenKind.NewLine,
             LuaSyntaxKind.SingleLineCommentTrivia or
             LuaSyntaxKind.MultiLineCommentTrivia => TokenKind.Comment,
             LuaSyntaxKind.SkippedTokensTrivia => TokenKind.Skipped,

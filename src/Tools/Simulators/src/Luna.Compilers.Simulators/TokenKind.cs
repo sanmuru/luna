@@ -10,11 +10,13 @@ public enum TokenKind
 {
     None = 0,
     Keyword,
+    Identifier,
     Operator,
     Punctuation,
     NumericLiteral,
     StringLiteral,
     WhiteSpace,
+    NewLine,
     Comment,
     Documentation,
     Skipped

@@ -1,4 +1,3 @@
-# testing special comment on first line
 -- $Id: testes/main.lua $
 -- See Copyright Notice in file all.lua
 

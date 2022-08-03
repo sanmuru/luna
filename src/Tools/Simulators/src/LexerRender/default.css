@@ -9,6 +9,9 @@
 .kwd {
     color: blue;
 }
+.ind {
+    color: rgb(43, 145, 175)
+}
 .op {
     color: darkblue;
 }

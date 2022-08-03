@@ -8,10 +8,13 @@ Luna.Compilers.Simulators.LexerSimulatorContext.LexerSimulatorContext() -> void
 Luna.Compilers.Simulators.TokenKind
 Luna.Compilers.Simulators.TokenKind.None = 0 -> Luna.Compilers.Simulators.TokenKind
 Luna.Compilers.Simulators.TokenKind.Keyword = 1 -> Luna.Compilers.Simulators.TokenKind
-Luna.Compilers.Simulators.TokenKind.Operator = 2 -> Luna.Compilers.Simulators.TokenKind
-Luna.Compilers.Simulators.TokenKind.Punctuation = 3 -> Luna.Compilers.Simulators.TokenKind
-Luna.Compilers.Simulators.TokenKind.NumericLiteral = 4 -> Luna.Compilers.Simulators.TokenKind
-Luna.Compilers.Simulators.TokenKind.StringLiteral = 5 -> Luna.Compilers.Simulators.TokenKind
-Luna.Compilers.Simulators.TokenKind.WhiteSpace = 6 -> Luna.Compilers.Simulators.TokenKind
-Luna.Compilers.Simulators.TokenKind.Comment = 7 -> Luna.Compilers.Simulators.TokenKind
-Luna.Compilers.Simulators.TokenKind.Documentation = 8 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Identifier = 2 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Operator = 3 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Punctuation = 4 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.NumericLiteral = 5 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.StringLiteral = 6 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.WhiteSpace = 7 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.NewLine = 8 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Comment = 9 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Documentation = 10 -> Luna.Compilers.Simulators.TokenKind
+Luna.Compilers.Simulators.TokenKind.Skipped = 11 -> Luna.Compilers.Simulators.TokenKind
