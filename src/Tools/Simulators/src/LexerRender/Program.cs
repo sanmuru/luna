@@ -180,19 +180,19 @@ ProcessOutputPath:
                         var sourceText = SourceText.From(fs);
                         foreach (var token in simulator.LexToEnd(sourceText))
                         {
-                            if (token.HasLeadingTrivia) processTriviaList(token.LeadingTrivia);
-                            processToken(simulator.GetTokenKind(token.RawKind), token.Text);
-                            if (token.HasTrailingTrivia) processTriviaList(token.TrailingTrivia);
+                            if (token.HasLeadingTrivia) ProcessTriviaList(token.LeadingTrivia);
+                            ProcessToken(simulator.GetTokenKind(token.RawKind), token.Text);
+                            if (token.HasTrailingTrivia) ProcessTriviaList(token.TrailingTrivia);
                         }
 
-                        void processTriviaList(SyntaxTriviaList triviaList)
+                        void ProcessTriviaList(SyntaxTriviaList triviaList)
                         {
                             foreach (var trivia in triviaList)
                             {
-                                processToken(simulator.GetTokenKind(trivia.RawKind), sourceText.GetSubText(trivia.Span).ToString());
+                                ProcessToken(simulator.GetTokenKind(trivia.RawKind), sourceText.ToString(trivia.FullSpan));
                             }
                         }
-                        void processToken(TokenKind kind, string text)
+                        void ProcessToken(TokenKind kind, string text)
                         {
                             if (kind == TokenKind.NewLine)
                             {
