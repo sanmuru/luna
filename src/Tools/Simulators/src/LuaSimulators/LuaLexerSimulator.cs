@@ -12,7 +12,7 @@ using System.Diagnostics;
 namespace Luna.Compilers.Simulators;
 
 [LexerSimulator("Lua")]
-public sealed partial class SyntaxLexerSimulator : ILexerSimulator
+public sealed partial class LuaLexerSimulator : ILexerSimulator
 {
     private partial Lexer CreateLuaLexer(SourceText text) => new(text, LuaParseOptions.Default);
 

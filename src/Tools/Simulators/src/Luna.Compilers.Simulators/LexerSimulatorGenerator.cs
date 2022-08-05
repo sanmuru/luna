@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using Luna.Compilers.Simulators;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -51,12 +52,14 @@ internal sealed class LexerSimulatorGenerator : ISourceGenerator
                 .SelectMany(list => list.Attributes)
                 .Any())
             .GroupBy(classDeclaration => classDeclaration.SyntaxTree);
-        foreach (var classesInTree in classesWithAttribute)
-        {
-            var tree = classesInTree.Key;
-            var semanticModel = context.Compilation.GetSemanticModel(tree);
 
-            var declaredClasses = classesInTree
+        var declaredClasses = classesWithAttribute
+            .SelectMany(classesInTree =>
+            {
+                var tree = classesInTree.Key;
+                var semanticModel = context.Compilation.GetSemanticModel(tree);
+
+                return classesInTree
                 .Where(classDeclaration =>
                     classDeclaration.AttributeLists
                     .SelectMany(attributeList => attributeList.Attributes)
@@ -64,32 +67,42 @@ internal sealed class LexerSimulatorGenerator : ISourceGenerator
                         semanticModel.GetTypeInfo(attribute.Name).Type == attributeSymbol)
                     .Any()
                 )
-                .Select(classDeclaration => semanticModel.GetDeclaredSymbol(classDeclaration))
-                .OfType<INamedTypeSymbol>();
-            foreach (var declaredClass in declaredClasses)
+                .GroupBy(classDeclaration => semanticModel.GetDeclaredSymbol(classDeclaration)!);
+            })
+            .GroupBy(
+                group => group.Key,
+                group => group.AsEnumerable()
+            )
+            .Where(group => group.Key.Locations.Length > 1 ||
+                group.SelectMany(item => item)
+                .Any(classDeclaration =>
+                    classDeclaration.Modifiers
+                    .Any(modifier => modifier.IsKind(SyntaxKind.PartialKeyword)))) // 确定是分布的类定义。‘’
+            .Select(group => group.Key);
+
+        foreach (var declaredClass in declaredClasses)
+        {
+            // 跳过无法处理的类型。
+            if (declaredClass.IsAbstract || declaredClass.IsStatic ||
+                declaredClass.BaseType == context.Compilation.GetTypeByMetadataName(typeof(Enum).FullName))
             {
-                // 跳过无法处理的类型。
-                if (declaredClass.IsAbstract || declaredClass.IsStatic ||
-                    declaredClass.BaseType == context.Compilation.GetTypeByMetadataName(typeof(Enum).FullName))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(s_invalidTypeDeclaration, location: null, declaredClass.Name));
-                    continue;
-                }
-
-                var languageNames = declaredClass.GetAttributes()
-                    .Where(data => data.AttributeClass == attributeSymbol)
-                    .SelectMany(data => data.ConstructorArguments)
-                    .Where(arg => !arg.IsNull && arg.Kind is TypedConstantKind.Array or TypedConstantKind.Primitive)
-                    .SelectMany(arg => arg.Kind == TypedConstantKind.Array ? arg.Values : ImmutableArray.Create(arg))
-                    .Where(arg => !arg.IsNull && arg.Kind == TypedConstantKind.Primitive)
-                    .Where(arg => arg.Value is string languageName && !string.IsNullOrWhiteSpace(languageName))
-                    .Select(arg => (string)arg.Value!)
-                    .Distinct()
-                    .ToArray();
-                if (languageNames.Length == 0) continue;
-
-                this.GenerateSource(context, declaredClass, languageNames);
+                context.ReportDiagnostic(Diagnostic.Create(s_invalidTypeDeclaration, location: null, declaredClass.Name));
+                continue;
             }
+
+            var languageNames = declaredClass.GetAttributes()
+                .Where(data => data.AttributeClass == attributeSymbol)
+                .SelectMany(data => data.ConstructorArguments)
+                .Where(arg => !arg.IsNull && arg.Kind is TypedConstantKind.Array or TypedConstantKind.Primitive)
+                .SelectMany(arg => arg.Kind == TypedConstantKind.Array ? arg.Values : ImmutableArray.Create(arg))
+                .Where(arg => !arg.IsNull && arg.Kind == TypedConstantKind.Primitive)
+                .Where(arg => arg.Value is string languageName && !string.IsNullOrWhiteSpace(languageName))
+                .Select(arg => (string)arg.Value!)
+                .Distinct()
+                .ToArray();
+            if (languageNames.Length == 0) continue;
+
+            this.GenerateSource(context, declaredClass, languageNames);
         }
     }
 
