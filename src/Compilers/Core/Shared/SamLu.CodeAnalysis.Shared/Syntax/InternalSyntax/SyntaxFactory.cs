@@ -126,6 +126,10 @@ internal static partial class SyntaxFactory
         return SyntaxTrivia.Create(SyntaxKind.SingleLineCommentTrivia, text);
     }
 
+#if DEBUG
+    internal static ThisInternalSyntaxNode Mock() => new ThisInternalSyntaxNode.MockNode();
+#endif
+
     public static SyntaxToken Token(SyntaxKind kind) => SyntaxToken.Create(kind);
 
     internal static SyntaxToken Token(GreenNode? leading, SyntaxKind kind, GreenNode? trailing) => SyntaxToken.Create(kind, leading, trailing);

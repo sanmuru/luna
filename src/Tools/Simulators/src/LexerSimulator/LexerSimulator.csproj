@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj" />
-    <ProjectReference Include="..\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +26,10 @@
     <Folder Include="Models\" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties config_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+ <PropertyGroup>
+  <ReferenceSimulatorsProjects Condition="'$(Configuration)' == 'Debug'">true</ReferenceSimulatorsProjects>
+ </PropertyGroup>
+
+  <Import Project="$(RepositoryEngineeringDir)targets\Simulators.targets" />
 
 </Project>
