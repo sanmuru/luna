@@ -85,7 +85,7 @@ internal static class LexerSimulator
     public static void RegisterSimulatorFrom(Assembly assembly, Func<string, IEnumerable<string>?>? languageNameToFileExtensionsProvider = null)
     {
         if (assembly is null) throw new ArgumentNullException(nameof(assembly));
-        languageNameToFileExtensionsProvider = LexerSimulator.GetFileExtensionsFromLanguageName;
+        languageNameToFileExtensionsProvider ??= LexerSimulator.GetFileExtensionsFromLanguageName;
 
         var interfaceType = typeof(ILexerSimulator);
         foreach (var type in assembly.DefinedTypes)

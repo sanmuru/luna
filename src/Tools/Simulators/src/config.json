@@ -4,6 +4,8 @@
   "paths": "Simulators\\",
 
   "extensions": {
+    ".cs": "CSharp",
+    ".vb": "VisualBasic",
     ".lua": "Lua",
     ".moon": "MoonScript"
   }

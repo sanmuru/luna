@@ -45,39 +45,40 @@ internal sealed class LexerSimulatorGenerator : ISourceGenerator
             return;
         }
 
-        var classesWithAttribute = context.Compilation.SyntaxTrees
-            .SelectMany(tree => tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())
+        var classesWithAttribute = context.Compilation.SyntaxTrees                                      // 从所有语法树中，
+            .SelectMany(tree => tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>())      // 找到所有类定义语法，
             .Where(classDeclaration =>
                 classDeclaration.AttributeLists
                 .SelectMany(list => list.Attributes)
-                .Any())
-            .GroupBy(classDeclaration => classDeclaration.SyntaxTree);
+                .Any())                                                                                 // 筛选出其中附加了特性的，
+            .GroupBy(classDeclaration => classDeclaration.SyntaxTree);                                  // 以所在语法树为键分组。
 
-        var declaredClasses = classesWithAttribute
-            .SelectMany(classesInTree =>
+        var declaredClasses = classesWithAttribute                                                      // 从所有以语法树为键分组的附加了特性的类定义语法中，
+            .SelectMany(classesInTree =>                                                                // 选择所有
             {
+                // 获取语义模型。
                 var tree = classesInTree.Key;
                 var semanticModel = context.Compilation.GetSemanticModel(tree);
 
                 return classesInTree
-                .Where(classDeclaration =>
-                    classDeclaration.AttributeLists
-                    .SelectMany(attributeList => attributeList.Attributes)
-                    .Where(attribute =>
-                        semanticModel.GetTypeInfo(attribute.Name).Type == attributeSymbol)
-                    .Any()
-                )
-                .GroupBy(classDeclaration => semanticModel.GetDeclaredSymbol(classDeclaration)!);
+                    .Where(classDeclaration =>
+                        classDeclaration.AttributeLists
+                        .SelectMany(attributeList => attributeList.Attributes)
+                        .Where(attribute =>
+                            semanticModel.GetTypeInfo(attribute.Name).Type == attributeSymbol)
+                        .Any()
+                    )                                                                                   // 附加的特性列表中含有LexerSimulatorAttribute的类定义语法，
+                    .GroupBy(classDeclaration => semanticModel.GetDeclaredSymbol(classDeclaration)!);   // 并以这个类定义语法表示的名字符号为键分组的类定义语法。
             })
             .GroupBy(
                 group => group.Key,
                 group => group.AsEnumerable()
-            )
+            )                                                                                           // 整理类型。
             .Where(group => group.Key.Locations.Length > 1 ||
                 group.SelectMany(item => item)
                 .Any(classDeclaration =>
                     classDeclaration.Modifiers
-                    .Any(modifier => modifier.IsKind(SyntaxKind.PartialKeyword)))) // 确定是分布的类定义。‘’
+                    .Any(modifier => modifier.IsKind(SyntaxKind.PartialKeyword)))) // 确定是分布的类定义。
             .Select(group => group.Key);
 
         foreach (var declaredClass in declaredClasses)
