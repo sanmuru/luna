@@ -50,7 +50,6 @@ internal sealed class LexerSimulatorGenerator : ISourceGenerator
             .Where(classDeclaration =>
                 classDeclaration.AttributeLists
                 .SelectMany(list => list.Attributes)
-<<<<<<< HEAD
                 .Any())                                                                                 // 筛选出其中附加了特性的，
             .GroupBy(classDeclaration => classDeclaration.SyntaxTree);                                  // 以所在语法树为键分组。
 
@@ -88,44 +87,6 @@ internal sealed class LexerSimulatorGenerator : ISourceGenerator
             if (declaredClass.IsAbstract || declaredClass.IsStatic ||
                 declaredClass.BaseType == context.Compilation.GetTypeByMetadataName(typeof(Enum).FullName))
             {
-=======
-                .Any())
-            .GroupBy(classDeclaration => classDeclaration.SyntaxTree);
-
-        var declaredClasses = classesWithAttribute
-            .SelectMany(classesInTree =>
-            {
-                var tree = classesInTree.Key;
-                var semanticModel = context.Compilation.GetSemanticModel(tree);
-
-                return classesInTree
-                .Where(classDeclaration =>
-                    classDeclaration.AttributeLists
-                    .SelectMany(attributeList => attributeList.Attributes)
-                    .Where(attribute =>
-                        semanticModel.GetTypeInfo(attribute.Name).Type == attributeSymbol)
-                    .Any()
-                )
-                .GroupBy(classDeclaration => semanticModel.GetDeclaredSymbol(classDeclaration)!);
-            })
-            .GroupBy(
-                group => group.Key,
-                group => group.AsEnumerable()
-            )
-            .Where(group => group.Key.Locations.Length > 1 ||
-                group.SelectMany(item => item)
-                .Any(classDeclaration =>
-                    classDeclaration.Modifiers
-                    .Any(modifier => modifier.IsKind(SyntaxKind.PartialKeyword)))) // 确定是分布的类定义。‘’
-            .Select(group => group.Key);
-
-        foreach (var declaredClass in declaredClasses)
-        {
-            // 跳过无法处理的类型。
-            if (declaredClass.IsAbstract || declaredClass.IsStatic ||
-                declaredClass.BaseType == context.Compilation.GetTypeByMetadataName(typeof(Enum).FullName))
-            {
->>>>>>> 56e35f854ca680041ccc2b9744331b8a03c56780
                 context.ReportDiagnostic(Diagnostic.Create(s_invalidTypeDeclaration, location: null, declaredClass.Name));
                 continue;
             }

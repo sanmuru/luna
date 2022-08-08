@@ -183,7 +183,9 @@ public static partial class SyntaxFactory
     }
 
 #if DEBUG
-    internal static SyntaxToken Token(ThisSyntaxNode parent, Syntax.InternalSyntax.SyntaxToken token, int position, int index) => new(parent, token, position, index);
+    internal static SyntaxNode Mock() => new ThisSyntaxNode.MockNode(Syntax.InternalSyntax.SyntaxFactory.Mock());
+
+    internal static SyntaxToken Token(SyntaxNode parent, Syntax.InternalSyntax.SyntaxToken token, int position, int index) => new(parent, token, position, index);
 #endif
 
     private static partial void ValidateTokenKind(SyntaxKind kind);

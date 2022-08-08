@@ -93,9 +93,9 @@ public abstract partial class
 #elif LANG_MOONSCRIPT
         MoonScriptSyntaxNode
 #endif
-#pragma warning disable CS8604 // 引用类型参数可能为 null。
+#pragma warning disable CS8604
           (InternalSyntaxNode green, int position, SyntaxTree? syntaxTree) : base(green, position, syntaxTree) { }
-#pragma warning restore CS8604 // 引用类型参数可能为 null。
+#pragma warning restore CS8604
 
     /// <summary>
     /// 创建一个红树节点的副本，作为指定语法树的根节点使用。

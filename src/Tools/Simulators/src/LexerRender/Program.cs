@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Luna.Compilers.Simulators;
 using Microsoft.CodeAnalysis;
@@ -99,17 +100,21 @@ ProcessOutputPath:
         var destinationDir = Path.GetDirectoryName(outputFiles[0])!;
 
         int errorCode;
+
+        // 创建目标文件夹。
         errorCode = Program.CreateDirectory(Path.GetFullPath(destinationDir));
         if (errorCode != 0) return errorCode;
 
+        // 复制CSS样式表。
+        errorCode = Program.CopyCss(destinationDir, cssFiles);
+        if (errorCode != 0) return errorCode;
+
+        // 生成渲染后的网页。
         for (var i = 0; i < length; i++)
         {
             errorCode = Program.WriteHtml(inputFiles[i], outputFiles[i], cssFiles);
             if (errorCode != 0) return errorCode;
         }
-
-        errorCode = Program.CopyCss(destinationDir, cssFiles);
-        if (errorCode != 0) return errorCode;
 
         return 0;
     }
@@ -219,7 +224,11 @@ ProcessOutputPath:
                                     _ => throw new InvalidOperationException(),
                                 });
 
-                                span.AppendChild(doc.CreateTextNode(text));
+                                span.AppendChild(doc.CreateTextNode(Regex.Replace(text, @"\s", m => m.Value switch
+                                {
+                                    "\t" => "&ensp;&ensp;&ensp;&ensp;",
+                                    _ => "&ensp;"
+                                })));
                             }
                         };
                     }

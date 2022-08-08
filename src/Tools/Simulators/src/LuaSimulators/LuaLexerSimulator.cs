@@ -6,9 +6,10 @@ using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 using SyntaxToken = Microsoft.CodeAnalysis.SyntaxToken;
 using LuaInternalSyntaxNode = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.LuaSyntaxNode;
 using LuaInternalSyntaxToken = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.SyntaxToken;
-using LuaSyntaxKind = SamLu.CodeAnalysis.Lua.SyntaxKind;
-using LuaSyntaxFactory = SamLu.CodeAnalysis.Lua.SyntaxFactory;
 using LuaInternalSyntaxFactory = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.SyntaxFactory;
+using LuaSyntaxKind = SamLu.CodeAnalysis.Lua.SyntaxKind;
+using LuaSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
+using LuaSyntaxFactory = SamLu.CodeAnalysis.Lua.SyntaxFactory;
 using System.Diagnostics;
 
 namespace Luna.Compilers.Simulators;
@@ -20,10 +21,21 @@ public sealed partial class LuaLexerSimulator : ILexerSimulator
 
     private partial LuaInternalSyntaxToken LexNode(Lexer lexer) => lexer.Lex(LexerMode.Syntax);
 
-    private LuaInternalSyntaxNode root = LuaInternalSyntaxFactory.Mock();
+    private readonly SyntaxNode root = LuaSyntaxFactory.Mock();
     private int position = 0;
     private int index = 0;
-    private partial IEnumerable<SyntaxToken> DescendTokens(LuaInternalSyntaxToken node) => new[] { LuaSyntaxFactory.Token(this.root, node, 0, 0) };
+    private partial IEnumerable<SyntaxToken> DescendTokens(LuaInternalSyntaxToken node) => new[]
+    {
+        this.CreateToken(node)
+    };
+
+    private SyntaxToken CreateToken(LuaInternalSyntaxToken node)
+    {
+        var token = LuaSyntaxFactory.Token(parent: this.root, token: node, position: this.position, index: this.index);
+        this.position += node.Width + node.GetLeadingTriviaWidth() + node.GetTrailingTriviaWidth();
+        this.index++;
+        return token;
+    }
 
     private TokenKind GetTokenKind(LuaSyntaxKind kind)
     {
