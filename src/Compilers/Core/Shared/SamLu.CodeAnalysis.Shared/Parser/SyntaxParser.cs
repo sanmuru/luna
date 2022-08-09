@@ -41,7 +41,7 @@ internal abstract partial class SyntaxParser : IDisposable
     private BlendedNode[]? _blendedTokens;
     private SyntaxToken? _currentToken;
     private ArrayElement<SyntaxToken>[]? _lexedTokens;
-    private GreenNode? _prevTokenTrailingTrivia;
+    protected GreenNode? prevTokenTrailingTrivia;
     /// <summary>
     /// <see cref="_lexedTokens"/>或<see cref="_blendedTokens"/>的第一项的位置。
     /// </summary>
@@ -160,7 +160,7 @@ internal abstract partial class SyntaxParser : IDisposable
         this._resetCount = 0;
         this._resetStart = 0;
         this._currentToken = null;
-        this._prevTokenTrailingTrivia = null;
+        this.prevTokenTrailingTrivia = null;
         if (this.IsBlending())
             this._firstBlender = new(this.lexer, null, null);
     }
@@ -193,7 +193,7 @@ internal abstract partial class SyntaxParser : IDisposable
             this._resetCount = pos;
 
         this._resetCount++;
-        return new(this._resetCount, this._mode, pos, this._prevTokenTrailingTrivia);
+        return new(this._resetCount, this._mode, pos, this.prevTokenTrailingTrivia);
     }
 
 #warning Need code review.
@@ -214,7 +214,7 @@ internal abstract partial class SyntaxParser : IDisposable
         this._tokenOffset = offset;
         this._currentToken = null;
         this._currentNode = default;
-        this._prevTokenTrailingTrivia = point.PrevTokenTrailingTrivia;
+        this.prevTokenTrailingTrivia = point.PrevTokenTrailingTrivia;
         if (this.IsBlending())
         {
             for (int i = this._tokenOffset; i < this._tokenCount; i++)
@@ -307,9 +307,22 @@ internal abstract partial class SyntaxParser : IDisposable
     }
 
     /// <summary>
+    /// 语法解析器接受当前的语法节点，并返回其对应的指定类型的绿树节点。
+    /// </summary>
+    /// <typeparam name="T">要返回的绿树节点的类型。</typeparam>
+    /// <returns>接受的语法节点对应的绿树节点。</returns>
+    [MemberNotNull(nameof(SyntaxParser._blendedTokens))]
+    protected T? EatNode<T>() where T : ThisInternalSyntaxNode => this.EatNode() as T;
+
+    /// <summary>
     /// 获取当前的已词法分析的标志。
     /// </summary>
     protected SyntaxToken CurrentToken => this._currentToken ??= this.FetchCurrentToken();
+
+    /// <summary>
+    /// 获取当前的已词法分析的语法部分种类。
+    /// </summary>
+    protected SyntaxKind CurrentTokenKind => this.CurrentToken.Kind;
 
     /// <summary>
     /// 取得当前的已词法分析的标志。
@@ -444,9 +457,10 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <param name="n">表示要查看的语法节点在当前后方的位置。</param>
     /// <returns>当前后方第<paramref name="n"/>个位置的语法节点。</returns>
     /// <remarks>此操作不会改变此语法解析器的内容和状态。</remarks>
-    protected SyntaxToken PeekToken(int n)
+    protected SyntaxToken PeekToken(int n = 0)
     {
         Debug.Assert(n >= 0);
+        if (n == 0) return this.CurrentToken;
 
         // 补充不足的标志。
         while (this._tokenOffset + n >= this._tokenCount)
@@ -533,7 +547,7 @@ internal abstract partial class SyntaxParser : IDisposable
     private void MoveToNextToken()
     {
         // 设置上一个标志的后方琐碎内容。
-        this._prevTokenTrailingTrivia = this.CurrentToken.GetTrailingTrivia();
+        this.prevTokenTrailingTrivia = this.CurrentToken.GetTrailingTrivia();
 
         // 初始化部分变量。
         this._currentToken = null;
@@ -623,7 +637,7 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <param name="code">要报告的错误码。</param>
     /// <param name="args">诊断信息的参数。</param>
     /// <returns>返回当前的已词法分析的语法标志，并报告指定错误码和诊断消参数的错误。</returns>
-    protected SyntaxToken EatTokenWithPrejuice(ErrorCode code, params object[] args)
+    protected SyntaxToken EatTokenWithPrejudice(ErrorCode code, params object[] args)
     {
         var token = this.EatToken();
         token = this.WithAdditionalDiagnostics(token, SyntaxParser.MakeError(token.GetLeadingTriviaWidth(), token.Width, code, args));
@@ -691,7 +705,7 @@ internal abstract partial class SyntaxParser : IDisposable
     protected void GetDiagnosticSpanForMissingToken(out int offset, out int width)
     {
         // 若上一个标志后方跟着的琐碎内容中包含行尾琐碎内容，则缺失标志的诊断位置将置于包含上一个标志的行尾，并且宽度为零。
-        var trivia = this._prevTokenTrailingTrivia;
+        var trivia = this.prevTokenTrailingTrivia;
         if (trivia is not null)
         {
             var triviaList = new SyntaxList<ThisInternalSyntaxNode>(trivia);

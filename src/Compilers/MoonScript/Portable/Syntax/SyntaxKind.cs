@@ -582,7 +582,7 @@ public enum SyntaxKind : ushort
     BackSlashName,
     /// <summary>表示传入隐式self参数的调用头。</summary>
     ImplicitSelfCall,
-    /// <summary>表示<see langword="import">导入的名称。</summary>
+    /// <summary>表示<see langword="import"/>导入的名称。</summary>
     ImportName,
     DestructingHolder
     #endregion

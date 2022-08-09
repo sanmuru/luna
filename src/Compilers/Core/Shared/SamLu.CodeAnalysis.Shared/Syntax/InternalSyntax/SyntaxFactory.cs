@@ -111,7 +111,7 @@ internal static partial class SyntaxFactory
     internal static SyntaxTrivia Comment(string text)
     {
         // 检测text是否为多行注释的格式（“--[”与“[”之间间隔零个或复数个“=”）。
-        if (text[2] == '[')
+        if (text.Length > 2 && text[2] == '[')
         {
             for (int i = 3; i < text.Length; i++)
             {
@@ -125,6 +125,10 @@ internal static partial class SyntaxFactory
         // 否则text为单行注释。
         return SyntaxTrivia.Create(SyntaxKind.SingleLineCommentTrivia, text);
     }
+
+#if DEBUG
+    internal static ThisInternalSyntaxNode Mock() => new ThisInternalSyntaxNode.MockNode();
+#endif
 
     public static SyntaxToken Token(SyntaxKind kind) => SyntaxToken.Create(kind);
 

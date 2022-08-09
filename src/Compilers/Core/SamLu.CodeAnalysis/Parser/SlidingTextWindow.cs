@@ -283,12 +283,15 @@ internal abstract class SlidingTextWindow : IDisposable
         {
             int position = this._offset + i;
             if (position >= this._characterWindowCount && !this.MoreChars())
-                chars[i] = SlidingTextWindow.InvalidCharacter;
+            {
+                count = i;
+                break;
+            }
             else
                 chars[i] = this._characterWindow[position];
         }
 
-        return new(chars);
+        return new(chars, 0, count);
     }
 
     /// <summary>

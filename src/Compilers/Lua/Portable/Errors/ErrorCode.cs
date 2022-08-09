@@ -29,7 +29,22 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_NewlineInConst,
         /// <summary>不合法的转义序列。</summary>
         ERR_IllegalEscape,
+        /// <summary>不合法的UTF-8字节序列。</summary>
+        ERR_IllegalUtf8ByteSequence,
         WRN_ErrorOverride,
+
+        #region 语法错误
+        /// <summary>未于<see langword="if"/>语句后的<see langword="elseif"/>块。。</summary>
+        ERR_ElseIfCannotStartStatement,
+        /// <summary>增量<see langword="for"/>循环语句中定义了过多的标识符。</summary>
+        ERR_TooManyIdentifiers,
+        /// <summary>无效的表达式项。</summary>
+        ERR_InvalidExprTerm,
+        /// <summary>应输入标识符。</summary>
+        ERR_IdentifierExpected,
+        /// <summary>应输入关键字。</summary>
+        ERR_IdentifierExpectedKW,
+        #endregion
 
         #region Lua 1.0的消息
         ERR_FeatureNotAvailableInVersion1 = 501,
@@ -97,7 +112,7 @@ namespace SamLu.CodeAnalysis.Lua
 
         #region Lua实验性版本的消息
         ERR_FeatureIsExperimental = 8501,
-        ERR_FeatureInPreview
+        ERR_FeatureInPreview,
         #endregion
 
         // 更新编译器的警告后应手动运行（eng\generate-compiler-code.cmd）。

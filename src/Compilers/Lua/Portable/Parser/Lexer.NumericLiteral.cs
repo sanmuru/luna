@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Roslyn.Utilities;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -209,6 +210,12 @@ partial class Lexer
                 info.LongValue = result;
                 return;
             }
+            else if (RealParser.TryParseHexadecimalDouble(text, out double doubleValue))
+            {
+                info.ValueKind = SpecialType.System_Double;
+                info.DoubleValue = doubleValue;
+            }
+            else throw ExceptionUtilities.UnexpectedValue(text);
         }
         else
         {
@@ -226,6 +233,12 @@ partial class Lexer
                 }
                 return;
             }
+            else if (RealParser.TryParseDecimalDouble(text, out double doubleValue))
+            {
+                info.ValueKind = SpecialType.System_Double;
+                info.DoubleValue = doubleValue;
+            }
+            else throw ExceptionUtilities.UnexpectedValue(text);
         }
 
         this.AddError(Lexer.MakeError(ErrorCode.ERR_NumberOverflow));

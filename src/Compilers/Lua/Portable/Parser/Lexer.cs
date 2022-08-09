@@ -236,7 +236,7 @@ internal partial class Lexer
                 break;
 
             case '[':
-                switch (this.TextWindow.PeekChar(2))
+                switch (this.TextWindow.PeekChar(1))
                 {
                     case '[':
                         this.ScanMultiLineRawStringLiteral(ref info);
@@ -408,7 +408,7 @@ internal partial class Lexer
                 else
                     info.Text = this.TextWindow.GetText(intern: true);
 
-                this.AddError(ErrorCode.ERR_UnexpectedCharacter, info);
+                this.AddError(ErrorCode.ERR_UnexpectedCharacter, info.Text);
                 break;
         }
     }
