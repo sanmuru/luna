@@ -7,12 +7,22 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 partial class LanguageParser
 {
-    private ExpressionListSyntax ParseExpressionList() =>
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionListSyntax ParseExpressionList() =>
         this.ParseExpressionListOpt() ??
             // 创建一个缺失的标识符名称语法来组成表达式列表，并报告错误信息。
             this.CreateMissingExpressionList();
 
-    private ExpressionListSyntax? ParseExpressionListOpt()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionListSyntax? ParseExpressionListOpt()
     {
         if (this.CurrentTokenKind != SyntaxKind.CommaToken && !this.IsPossibleExpression()) return null;
 
@@ -31,12 +41,17 @@ partial class LanguageParser
             },
             _ => true,
             list => list.Count == 0 ? null :
-                this.syntaxFactory.ExpressionList(list));
+                this._syntaxFactory.ExpressionList(list));
     }
 
-    private ExpressionListSyntax CreateMissingExpressionList()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionListSyntax CreateMissingExpressionList()
     {
-        var missing = this.syntaxFactory.ExpressionList(
+        var missing = this._syntaxFactory.ExpressionList(
             new(SyntaxList.List(
                 this.CreateMissingIdentifierName()
             ))
@@ -45,9 +60,9 @@ partial class LanguageParser
     }
 
 #if TESTING
-    protected internal
+    internal
 #else
-    private protected
+    private
 #endif
         bool IsPossibleExpression() =>
         this.CurrentTokenKind switch
@@ -74,9 +89,9 @@ partial class LanguageParser
 
 
 #if TESTING
-    protected internal
+    internal
 #else
-    private protected
+    private
 #endif
         ExpressionSyntax ParseExpression()
     {
@@ -86,9 +101,9 @@ partial class LanguageParser
     }
 
 #if TESTING
-    protected internal
+    internal
 #else
-    private protected
+    private
 #endif
         ExpressionSyntax ParseExpressionWithoutOperator()
     {
@@ -189,7 +204,12 @@ partial class LanguageParser
         throw ExceptionUtilities.Unreachable;
     }
 
-    private ExpressionSyntax ParseExpressionWithOperator(ExpressionSyntax? first = null)
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionSyntax ParseExpressionWithOperator(ExpressionSyntax? first = null)
     {
         ExpressionWithOperatorParser innerParser;
         if (first is null)
@@ -200,7 +220,12 @@ partial class LanguageParser
         return innerParser.ParseExpressionWithOperator();
     }
 
-    private protected LiteralExpressionSyntax ParseLiteralExpression(SyntaxKind kind
+#if TESTING
+    internal
+#else
+    private
+#endif
+        LiteralExpressionSyntax ParseLiteralExpression(SyntaxKind kind
 #if DEBUG
         , SyntaxKind currentTokenKind
 #endif
@@ -210,72 +235,112 @@ partial class LanguageParser
         Debug.Assert(this.CurrentTokenKind == currentTokenKind);
 #endif
 
-        return this.syntaxFactory.LiteralExpression(kind, this.EatToken());
+        return this._syntaxFactory.LiteralExpression(kind, this.EatToken());
     }
 
-    private protected ParenthesizedExpressionSyntax ParseParenthesizedExpression()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ParenthesizedExpressionSyntax ParseParenthesizedExpression()
     {
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var expression = this.ParseExpression();
         var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
-        return this.syntaxFactory.ParenthesizedExpression(openParen, expression, closeParen);
+        return this._syntaxFactory.ParenthesizedExpression(openParen, expression, closeParen);
     }
 
-    private protected FunctionDefinitionExpressionSyntax ParseFunctionDefinitionExpression()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        FunctionDefinitionExpressionSyntax ParseFunctionDefinitionExpression()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.FunctionKeyword);
 
         var function = this.EatToken(SyntaxKind.FunctionKeyword);
         this.ParseFunctionBody(out var parameters, out var block, out var end);
-        return this.syntaxFactory.FunctionDefinitionExpression(function, parameters, block, end);
+        return this._syntaxFactory.FunctionDefinitionExpression(function, parameters, block, end);
     }
 
-    private protected TableConstructorExpressionSyntax ParseTableConstructorExpression()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        TableConstructorExpressionSyntax ParseTableConstructorExpression()
     {
         var openBrace = this.EatToken(SyntaxKind.OpenBraceToken);
         var field = this.ParseFieldList();
         var closeBrace = this.EatToken(SyntaxKind.CloseBraceToken);
-        return this.syntaxFactory.TableConstructorExpression(openBrace, field, closeBrace);
+        return this._syntaxFactory.TableConstructorExpression(openBrace, field, closeBrace);
     }
 
-    private protected ExpressionSyntax ParseIdentifierStartedExpression()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionSyntax ParseIdentifierStartedExpression()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.IdentifierToken);
 
         return this.ParseName();
     }
 
-    private protected SimpleMemberAccessExpressionSyntax ParseSimpleMemberAccessExpressionSyntax(ExpressionSyntax self)
+#if TESTING
+    internal
+#else
+    private
+#endif
+        SimpleMemberAccessExpressionSyntax ParseSimpleMemberAccessExpressionSyntax(ExpressionSyntax self)
     {
         var dot = this.EatToken(SyntaxKind.DotToken);
         var member = this.ParseIdentifierName();
-        return this.syntaxFactory.SimpleMemberAccessExpression(self, dot, member);
+        return this._syntaxFactory.SimpleMemberAccessExpression(self, dot, member);
     }
 
-    private protected IndexMemberAccessExpressionSyntax ParseIndexMemberAccessExpressionSyntax(ExpressionSyntax self)
+#if TESTING
+    internal
+#else
+    private
+#endif
+        IndexMemberAccessExpressionSyntax ParseIndexMemberAccessExpressionSyntax(ExpressionSyntax self)
     {
         var openBracket = this.EatToken(SyntaxKind.OpenBracketToken);
         var member = this.ParseExpression();
         var closeBracket = this.EatToken(SyntaxKind.CloseBracketToken);
-        return this.syntaxFactory.IndexMemberAccessExpression(self, openBracket, member, closeBracket);
+        return this._syntaxFactory.IndexMemberAccessExpression(self, openBracket, member, closeBracket);
     }
 
-    private protected ExpressionSyntax ParseInvocationExpressionSyntax(ExpressionSyntax expr)
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionSyntax ParseInvocationExpressionSyntax(ExpressionSyntax expr)
     {
         var arguments = this.ParseInvocationArguments();
 
         // 若调用表达式已经是
         if (expr is ImplicitSelfParameterNameSyntax implicitSelfParameterName)
-            return this.syntaxFactory.ImplicitSelfParameterInvocationExpression(implicitSelfParameterName.Left, implicitSelfParameterName.ColonToken, implicitSelfParameterName.Right, arguments);
+            return this._syntaxFactory.ImplicitSelfParameterInvocationExpression(implicitSelfParameterName.Left, implicitSelfParameterName.ColonToken, implicitSelfParameterName.Right, arguments);
         else
-            return this.syntaxFactory.InvocationExpression(expr, arguments);
+            return this._syntaxFactory.InvocationExpression(expr, arguments);
     }
 
-    private protected ImplicitSelfParameterInvocationExpressionSyntax ParseImplicitSelfParameterInvocationExpression(ExpressionSyntax expr)
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ImplicitSelfParameterInvocationExpressionSyntax ParseImplicitSelfParameterInvocationExpression(ExpressionSyntax expr)
     {
         var colon = this.EatToken(SyntaxKind.ColonToken);
         var name = this.ParseIdentifierName();
         var arguments = this.ParseInvocationArguments();
-        return this.syntaxFactory.ImplicitSelfParameterInvocationExpression(expr, colon, name, arguments);
+        return this._syntaxFactory.ImplicitSelfParameterInvocationExpression(expr, colon, name, arguments);
     }
 }

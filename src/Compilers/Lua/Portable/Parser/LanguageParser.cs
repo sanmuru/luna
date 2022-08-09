@@ -15,17 +15,17 @@ partial class LanguageParser
     {
         var block = this.ParseBlock();
         var endOfFile = this.EatToken(SyntaxKind.EndOfFileToken);
-        return this.syntaxFactory.Chunk(block, endOfFile);
+        return this._syntaxFactory.Chunk(block, endOfFile);
     }
 
 #if TESTING
-    protected internal
+    internal
 #else
-    private protected
+    private
 #endif
         BlockSyntax ParseBlock()
     {
-        var statementBuilder = this.pool.Allocate<StatementSyntax>();
+        var statementBuilder = this._pool.Allocate<StatementSyntax>();
         this.ParseStatements(statementBuilder);
 
         SyntaxList<StatementSyntax> statements;
@@ -34,28 +34,28 @@ partial class LanguageParser
         else
             statements = statementBuilder;
 
-        var block = this.syntaxFactory.Block(statements);
+        var block = this._syntaxFactory.Block(statements);
 
-        this.pool.Free(statementBuilder);
+        this._pool.Free(statementBuilder);
         return block;
     }
 
-    private protected SkippedTokensTriviaSyntax? SkipTokens(Func<SyntaxToken, bool> predicate)
+    private SkippedTokensTriviaSyntax? SkipTokens(Func<SyntaxToken, bool> predicate)
     {
         if (predicate(this.CurrentToken))
         {
-            var builder = this.pool.Allocate<SyntaxToken>();
+            var builder = this._pool.Allocate<SyntaxToken>();
             do
                 builder.Add(this.EatToken());
             while (predicate(this.CurrentToken));
-            return this.syntaxFactory.SkippedTokensTrivia(this.pool.ToListAndFree(builder));
+            return this._syntaxFactory.SkippedTokensTrivia(this._pool.ToListAndFree(builder));
         }
 
         return null;
     }
 
     #region ParseSyntaxList & ParseSeparatedSyntaxList
-    private protected void ParseSyntaxList<TNode>(
+    private void ParseSyntaxList<TNode>(
         in SyntaxListBuilder<TNode> builder,
         Func<int, TNode> parseNodeFunc,
         Func<int, bool> predicate)
@@ -76,18 +76,18 @@ partial class LanguageParser
         }
     }
 
-    private protected SyntaxList<TNode> ParseSyntaxList<TNode>(
+    private SyntaxList<TNode> ParseSyntaxList<TNode>(
         Func<int, TNode> parseNodeFunc,
         Func<int, bool> predicate)
         where TNode : LuaSyntaxNode
     {
-        var builder = this.pool.Allocate<TNode>();
+        var builder = this._pool.Allocate<TNode>();
         this.ParseSyntaxList(builder, parseNodeFunc, predicate);
-        var list = this.pool.ToListAndFree(builder);
+        var list = this._pool.ToListAndFree(builder);
         return list;
     }
 
-    private protected TList? ParseSyntaxList<TNode, TList>(
+    private TList? ParseSyntaxList<TNode, TList>(
         Func<int, TNode> parseNodeFunc,
         Func<int, bool> predicate,
         Func<SyntaxList<TNode>, TList?> createListFunc)
@@ -98,7 +98,7 @@ partial class LanguageParser
         return list;
     }
 
-    private protected void ParseSeparatedSyntaxList<TNode>(
+    private void ParseSeparatedSyntaxList<TNode>(
         in SeparatedSyntaxListBuilder<TNode> builder,
         Func<int, TNode> parseNodeFunc,
         Func<int, bool> predicate)
@@ -126,18 +126,18 @@ partial class LanguageParser
         }
     }
 
-    private protected SeparatedSyntaxList<TNode> ParseSeparatedSyntaxList<TNode>(
+    private SeparatedSyntaxList<TNode> ParseSeparatedSyntaxList<TNode>(
         Func<int, TNode> parseNodeFunc,
         Func<int, bool> predicate)
         where TNode : LuaSyntaxNode
     {
-        var builder = this.pool.AllocateSeparated<TNode>();
+        var builder = this._pool.AllocateSeparated<TNode>();
         this.ParseSeparatedSyntaxList(builder, parseNodeFunc, predicate);
-        var list = this.pool.ToListAndFree(builder);
+        var list = this._pool.ToListAndFree(builder);
         return list;
     }
 
-    private protected TList? ParseSeparatedSyntaxList<TNode, TList>(
+    private TList? ParseSeparatedSyntaxList<TNode, TList>(
         Func<int, TNode> parseNodeFunc,
         Func<int, bool> predicate,
         Func<SeparatedSyntaxList<TNode>, TList?> createListFunc)
@@ -149,7 +149,7 @@ partial class LanguageParser
     }
     #endregion
 
-    private protected partial bool MatchFactoryContext(GreenNode green, SyntaxFactoryContext context) =>
+    private partial bool MatchFactoryContext(GreenNode green, SyntaxFactoryContext context) =>
 #warning 未完成。
         true;
 }

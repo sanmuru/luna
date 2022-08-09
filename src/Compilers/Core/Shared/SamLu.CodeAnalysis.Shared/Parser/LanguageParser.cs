@@ -14,13 +14,13 @@ using ThisSyntaxNode = SamLu.CodeAnalysis.MoonScript.MoonScriptSyntaxNode;
 
 internal partial class LanguageParser : SyntaxParser
 {
-    protected readonly SyntaxListPool pool = new();
+    private readonly SyntaxListPool _pool = new();
 
-    protected readonly SyntaxFactoryContext syntaxFactoryContext;
-    protected readonly ContextAwareSyntax syntaxFactory;
+    private readonly SyntaxFactoryContext _syntaxFactoryContext;
+    private readonly ContextAwareSyntax _syntaxFactory;
 
-    protected int recursionDepth; // 递归深度。
-    protected TerminatorState terminatorState;
+    private int _recursionDepth; // 递归深度。
+    private TerminatorState _terminatorState;
 
     internal LanguageParser(
         Lexer lexer,
@@ -38,24 +38,29 @@ internal partial class LanguageParser : SyntaxParser
         cancellationToken: cancellationToken
     )
     {
-        this.syntaxFactoryContext = new();
-        this.syntaxFactory = new(this.syntaxFactoryContext);
+        this._syntaxFactoryContext = new();
+        this._syntaxFactory = new(this._syntaxFactoryContext);
     }
 
-    private protected bool IsIncrementalAndFactoryContextMatches
+    private bool IsIncrementalAndFactoryContextMatches
     {
         get
         {
             if (!base.IsIncremental) return false;
 
             var node = this.CurrentNode;
-            return node is not null && this.MatchFactoryContext(node.Green, this.syntaxFactoryContext);
+            return node is not null && this.MatchFactoryContext(node.Green, this._syntaxFactoryContext);
         }
     }
 
-    private protected partial bool MatchFactoryContext(GreenNode green, SyntaxFactoryContext context);
+    private partial bool MatchFactoryContext(GreenNode green, SyntaxFactoryContext context);
 
-    private protected bool IsTerminal()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        bool IsTerminal()
     {
         if (this.CurrentTokenKind == SyntaxKind.EndOfFileToken) return true;
 
@@ -68,5 +73,5 @@ internal partial class LanguageParser : SyntaxParser
         return false;
     }
 
-    private protected virtual partial bool IsTerminalCore(TerminatorState state);
+    private partial bool IsTerminalCore(TerminatorState state);
 }

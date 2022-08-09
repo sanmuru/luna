@@ -8,7 +8,12 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 partial class LanguageParser
 {
     [NonCopyable]
-    private ref partial struct ExpressionWithOperatorParser
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ref partial struct ExpressionWithOperatorParser
     {
         private readonly LanguageParser _parser;
         private ParseState _state;
@@ -146,7 +151,7 @@ partial class LanguageParser
             result = null;
             skippedTokensTrivia = null;
 
-            var skippedTokenListBuilder = this._parser.pool.Allocate<SyntaxToken>();
+            var skippedTokenListBuilder = this._parser._pool.Allocate<SyntaxToken>();
             while (this._state != ParseState.Bad && result is null)
             {
                 var state = Transit(this._state, this._parser.CurrentTokenKind, this._parser);
@@ -238,7 +243,7 @@ Next:
                     var opt = this._optStack.Pop().opt;
                     var right = this._exprStack.Pop();
                     var left = this._exprStack.Pop();
-                    this._exprStack.Push(this._parser.syntaxFactory.BinaryExpression(
+                    this._exprStack.Push(this._parser._syntaxFactory.BinaryExpression(
                         SyntaxFacts.GetBinaryExpression(opt.Kind),
                         left,
                         opt,
@@ -253,7 +258,7 @@ Next:
                 while (this._optStack.Count > 0 && this._optStack.Peek().isUnary)
                 {
                     var opt = this._optStack.Pop().opt;
-                    expr = this._parser.syntaxFactory.UnaryExpression(
+                    expr = this._parser._syntaxFactory.UnaryExpression(
                         SyntaxFacts.GetUnaryExpression(opt.Kind),
                         opt,
                         expr
@@ -296,7 +301,7 @@ Final:
                     if (isUnary)
                     {
                         Debug.Assert(this._exprStack.Count > 0);
-                        expr = this._parser.syntaxFactory.UnaryExpression(
+                        expr = this._parser._syntaxFactory.UnaryExpression(
                             SyntaxFacts.GetUnaryExpressionOperatorToken(opt.Kind),
                             opt,
                             expr);
@@ -304,7 +309,7 @@ Final:
                     else
                     {
                         Debug.Assert(this._exprStack.Count >= 2);
-                        expr = this._parser.syntaxFactory.BinaryExpression(
+                        expr = this._parser._syntaxFactory.BinaryExpression(
                             SyntaxFacts.GetBinaryExpression(opt.Kind),
                             this._exprStack.Pop(),
                             opt,
@@ -324,7 +329,7 @@ Final:
             // 快速跳过没有错误的情况。
             if (skippedTokenBuilder.Count == 0) return null;
 
-            var trivia = this._parser.syntaxFactory.SkippedTokensTrivia(this._parser.pool.ToListAndFree(skippedTokenBuilder));
+            var trivia = this._parser._syntaxFactory.SkippedTokensTrivia(this._parser._pool.ToListAndFree(skippedTokenBuilder));
             trivia = this._parser.AddError(trivia, errorCode); // 报告诊断错误。
             return trivia;
         }

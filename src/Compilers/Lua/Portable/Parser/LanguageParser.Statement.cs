@@ -23,9 +23,9 @@ partial class LanguageParser
     }
 
 #if TESTING
-    protected internal
+    internal
 #else
-    private protected
+    private
 #endif
         void ParseStatements(in SyntaxListBuilder<StatementSyntax> statementsBuilder) =>
         this.ParseSyntaxList(
@@ -34,9 +34,9 @@ partial class LanguageParser
             predicate: _ => this.IsPossibleStatement());
 
 #if TESTING
-    protected internal
+    internal
 #else
-    private protected
+    private
 #endif
         bool IsPossibleStatement() =>
         this.CurrentTokenKind switch
@@ -62,16 +62,16 @@ partial class LanguageParser
         };
 
 #if TESTING
-    protected internal
+    internal
 #else
-    private protected
+    private
 #endif
         StatementSyntax ParseStatement()
     {
         switch (this.CurrentTokenKind)
         {
             case SyntaxKind.SemicolonToken:
-                return this.syntaxFactory.EmptyStatement(this.EatToken());
+                return this._syntaxFactory.EmptyStatement(this.EatToken());
             case SyntaxKind.ColonColonToken:
                 return this.ParseLabelStatement();
             case SyntaxKind.BreakKeyword:
@@ -110,74 +110,119 @@ partial class LanguageParser
         throw ExceptionUtilities.Unreachable;
     }
 
-    private AssignmentStatementSyntax ParseAssignmentStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        AssignmentStatementSyntax ParseAssignmentStatement()
     {
         var left = this.ParseExpressionList();
         var equals = this.EatToken(SyntaxKind.EqualsToken);
         var right = this.ParseExpressionList();
         var semicolon = this.TryEatToken(SyntaxKind.SemicolonToken);
-        return this.syntaxFactory.AssignmentStatement(left, equals, right, semicolon);
+        return this._syntaxFactory.AssignmentStatement(left, equals, right, semicolon);
     }
 
-    private protected LabelStatementSyntax ParseLabelStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        LabelStatementSyntax ParseLabelStatement()
     {
         var leftColonColon = this.EatToken(SyntaxKind.ColonColonToken);
         var labelName = this.ParseIdentifierName();
         var rightColonColon = this.EatToken(SyntaxKind.ColonColonToken);
-        return this.syntaxFactory.LabelStatement(leftColonColon, labelName, rightColonColon);
+        return this._syntaxFactory.LabelStatement(leftColonColon, labelName, rightColonColon);
     }
 
-    private protected BreakStatementSyntax ParseBreakStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        BreakStatementSyntax ParseBreakStatement()
     {
         var breakKeyword = this.EatToken(SyntaxKind.BreakKeyword);
-        return this.syntaxFactory.BreakStatement(breakKeyword);
+        return this._syntaxFactory.BreakStatement(breakKeyword);
     }
 
-    private protected GotoStatementSyntax ParseGotoStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        GotoStatementSyntax ParseGotoStatement()
     {
         var gotoKeyword = this.EatToken(SyntaxKind.GotoKeyword);
         var labelName = this.ParseIdentifierName();
         var semicolon = this.TryEatToken(SyntaxKind.SemicolonToken);
-        return this.syntaxFactory.GotoStatement(gotoKeyword, labelName, semicolon);
+        return this._syntaxFactory.GotoStatement(gotoKeyword, labelName, semicolon);
     }
 
-    private protected ReturnStatementSyntax ParseReturnStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ReturnStatementSyntax ParseReturnStatement()
     {
         var returnKeyword = this.EatToken(SyntaxKind.ReturnKeyword);
         var expressions = this.ParseExpressionListOpt();
         var semicolon = this.TryEatToken(SyntaxKind.SemicolonToken);
-        return this.syntaxFactory.ReturnStatement(returnKeyword, expressions, semicolon);
+        return this._syntaxFactory.ReturnStatement(returnKeyword, expressions, semicolon);
     }
 
-    private protected DoStatementSyntax ParseDoStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        DoStatementSyntax ParseDoStatement()
     {
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
         var block = this.ParseBlock();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
-        return this.syntaxFactory.DoStatement(doKeyword, block, endKeyword);
+        return this._syntaxFactory.DoStatement(doKeyword, block, endKeyword);
     }
 
-    private protected WhileStatementSyntax ParseWhileStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        WhileStatementSyntax ParseWhileStatement()
     {
         var whileKeyword = this.EatToken(SyntaxKind.WhileKeyword);
         var condition = this.ParseExpression();
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
         var block = this.ParseBlock();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
-        return this.syntaxFactory.WhileStatement(whileKeyword, condition, doKeyword, block, endKeyword);
+        return this._syntaxFactory.WhileStatement(whileKeyword, condition, doKeyword, block, endKeyword);
     }
 
-    private protected RepeatStatementSyntax ParseRepeatStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        RepeatStatementSyntax ParseRepeatStatement()
     {
         var repeatKeyword = this.EatToken(SyntaxKind.RepeatKeyword);
         var block = this.ParseBlock();
         var untilKeyword = this.EatToken(SyntaxKind.UntilKeyword);
         var condition = this.ParseExpression();
         var semicolon = this.TryEatToken(SyntaxKind.SemicolonToken);
-        return this.syntaxFactory.RepeatStatement(repeatKeyword, block, untilKeyword, condition, semicolon);
+        return this._syntaxFactory.RepeatStatement(repeatKeyword, block, untilKeyword, condition, semicolon);
     }
 
-    private protected IfStatementSyntax ParseIfStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        IfStatementSyntax ParseIfStatement()
     {
         var ifKeyword = this.EatToken(SyntaxKind.IfKeyword);
         var condition = this.ParseExpression();
@@ -186,35 +231,60 @@ partial class LanguageParser
         var elseIfClauses = this.ParseElseIfClausesOpt();
         var elseClause = this.ParseElseClauseOpt();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
-        return this.syntaxFactory.IfStatement(ifKeyword, condition, thenKeyword, block, elseIfClauses, elseClause, endKeyword);
+        return this._syntaxFactory.IfStatement(ifKeyword, condition, thenKeyword, block, elseIfClauses, elseClause, endKeyword);
     }
 
-    private protected SyntaxList<ElseIfClauseSyntax> ParseElseIfClausesOpt() =>
+#if TESTING
+    internal
+#else
+    private
+#endif
+        SyntaxList<ElseIfClauseSyntax> ParseElseIfClausesOpt() =>
         this.ParseSyntaxList(
             parseNodeFunc: _ => this.ParseElseIfClause(),
             predicate: _ => this.CurrentTokenKind == SyntaxKind.ElseIfKeyword);
 
-    private protected ElseClauseSyntax? ParseElseClauseOpt() =>
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ElseClauseSyntax? ParseElseClauseOpt() =>
         this.PeekToken().Kind == SyntaxKind.ElseIfKeyword ?
             this.ParseElseClause() : null;
 
-    private protected ElseIfClauseSyntax ParseElseIfClause()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ElseIfClauseSyntax ParseElseIfClause()
     {
         var elseIfKeyword = this.EatToken(SyntaxKind.ElseIfKeyword);
         var condition = this.ParseExpression();
         var thenKeyword = this.EatToken(SyntaxKind.ThenKeyword);
         var block = this.ParseBlock();
-        return this.syntaxFactory.ElseIfClause(elseIfKeyword, condition, thenKeyword, block);
+        return this._syntaxFactory.ElseIfClause(elseIfKeyword, condition, thenKeyword, block);
     }
 
-    private protected ElseClauseSyntax ParseElseClause()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ElseClauseSyntax ParseElseClause()
     {
         var elseKeyword = this.EatToken(SyntaxKind.ElseKeyword);
         var block = this.ParseBlock();
-        return this.syntaxFactory.ElseClause(elseKeyword, block);
+        return this._syntaxFactory.ElseClause(elseKeyword, block);
     }
 
-    private protected IfStatementSyntax ParseMisplaceElseIf()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        IfStatementSyntax ParseMisplaceElseIf()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.ElseIfKeyword);
 
@@ -225,30 +295,35 @@ partial class LanguageParser
         var elseIfClauses = this.ParseElseIfClausesOpt();
         var elseClause = this.ParseElseClauseOpt();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
-        return this.syntaxFactory.IfStatement(ifKeyword, condition, thenKeyword, block, elseIfClauses, elseClause, endKeyword);
+        return this._syntaxFactory.IfStatement(ifKeyword, condition, thenKeyword, block, elseIfClauses, elseClause, endKeyword);
     }
 
-    private protected StatementSyntax ParseForStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        StatementSyntax ParseForStatement()
     {
         var forKeyword = this.EatToken(SyntaxKind.ForKeyword);
-        var namesBuilder = this.pool.AllocateSeparated<IdentifierNameSyntax>();
+        var namesBuilder = this._pool.AllocateSeparated<IdentifierNameSyntax>();
         this.ParseSeparatedIdentifierNames(namesBuilder);
         switch (this.CurrentTokenKind)
         {
             case SyntaxKind.InKeyword:// 是迭代for循环。
-                return this.ParseIterableForStatement(forKeyword, this.pool.ToListAndFree(namesBuilder));
+                return this.ParseIterableForStatement(forKeyword, this._pool.ToListAndFree(namesBuilder));
             case SyntaxKind.EqualsToken: // 是增量for循环。
                 if (namesBuilder.Count == 1)
                     return this.ParseIncrementalForStatement(forKeyword, (IdentifierNameSyntax)namesBuilder[0]!);
                 else // 定义了多个标识符。
                 {
                     // 只保留第一个标识符，将后续的标识符标志及分隔符标志均处理为被跳过的语法标志。
-                    var names = this.pool.ToListAndFree(namesBuilder);
+                    var names = this._pool.ToListAndFree(namesBuilder);
                     var name = names[0]!;
-                    var skippedTokens = this.pool.Allocate<SyntaxToken>();
+                    var skippedTokens = this._pool.Allocate<SyntaxToken>();
                     skippedTokens.AddRange(names.GetWithSeparators(), 1, namesBuilder.Count - 1);
                     // 将被跳过的语法标志添加到第一个标识符的尾部。
-                    name = this.AddTrailingSkippedSyntax(name, this.syntaxFactory.SkippedTokensTrivia(this.pool.ToListAndFree(skippedTokens)));
+                    name = this.AddTrailingSkippedSyntax(name, this._syntaxFactory.SkippedTokensTrivia(this._pool.ToListAndFree(skippedTokens)));
                     // 添加错误。
                     this.AddError(name, ErrorCode.ERR_TooManyIdentifiers);
 
@@ -258,11 +333,16 @@ partial class LanguageParser
                 if (namesBuilder.Count == 1) // 单个标识符，推断使用增量for循环。
                     return this.ParseIncrementalForStatement(forKeyword, (IdentifierNameSyntax)namesBuilder[0]!);
                 else // 多个标识符，推断使用迭代for循环。
-                    return this.ParseIterableForStatement(forKeyword, this.pool.ToListAndFree(namesBuilder));
+                    return this.ParseIterableForStatement(forKeyword, this._pool.ToListAndFree(namesBuilder));
         }
     }
 
-    private protected ForInStatementSyntax ParseIterableForStatement(SyntaxToken forKeyword, SeparatedSyntaxList<IdentifierNameSyntax> names)
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ForInStatementSyntax ParseIterableForStatement(SyntaxToken forKeyword, SeparatedSyntaxList<IdentifierNameSyntax> names)
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.InKeyword);
 
@@ -271,7 +351,7 @@ partial class LanguageParser
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
         var block = this.ParseBlock();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
-        return this.syntaxFactory.ForInStatement(
+        return this._syntaxFactory.ForInStatement(
             forKeyword,
             names,
             inKeyword,
@@ -281,7 +361,12 @@ partial class LanguageParser
             endKeyword);
     }
 
-    private protected ForStatementSyntax ParseIncrementalForStatement(SyntaxToken forKeyword, IdentifierNameSyntax name)
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ForStatementSyntax ParseIncrementalForStatement(SyntaxToken forKeyword, IdentifierNameSyntax name)
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.EqualsToken);
 
@@ -301,7 +386,7 @@ partial class LanguageParser
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
         var block = this.ParseBlock();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
-        return this.syntaxFactory.ForStatement(
+        return this._syntaxFactory.ForStatement(
             forKeyword,
             name,
             equals,
@@ -315,17 +400,27 @@ partial class LanguageParser
             endKeyword);
     }
 
-    private FunctionDefinitionStatementSyntax ParseFunctionDefinitionStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        FunctionDefinitionStatementSyntax ParseFunctionDefinitionStatement()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.FunctionKeyword);
 
         var function = this.EatToken(SyntaxKind.FunctionKeyword);
         var name = this.ParseName();
         this.ParseFunctionBody(out var parameters, out var block, out var end);
-        return this.syntaxFactory.FunctionDefinitionStatement(function, name, parameters, block, end);
+        return this._syntaxFactory.FunctionDefinitionStatement(function, name, parameters, block, end);
     }
 
-    private LocalFunctionDefinitionStatementSyntax ParseLocalFunctionDefinitionStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        LocalFunctionDefinitionStatementSyntax ParseLocalFunctionDefinitionStatement()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.LocalKeyword);
         Debug.Assert(this.PeekToken(1).Kind == SyntaxKind.FunctionKeyword);
@@ -334,10 +429,15 @@ partial class LanguageParser
         var function = this.EatToken(SyntaxKind.FunctionKeyword);
         var name = this.ParseIdentifierName();
         this.ParseFunctionBody(out var parameters, out var block, out var end);
-        return this.syntaxFactory.LocalFunctionDefinitionStatement(local, function, name, parameters, block, end);
+        return this._syntaxFactory.LocalFunctionDefinitionStatement(local, function, name, parameters, block, end);
     }
 
-    private LocalDeclarationStatementSyntax ParseLocalDeclarationStatement()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        LocalDeclarationStatementSyntax ParseLocalDeclarationStatement()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.LocalKeyword);
 
@@ -363,6 +463,6 @@ partial class LanguageParser
             values ??= this.CreateMissingExpressionList();
         }
 
-        return this.syntaxFactory.LocalDeclarationStatement(local, identifiers, equals, values, semicolon);
+        return this._syntaxFactory.LocalDeclarationStatement(local, identifiers, equals, values, semicolon);
     }
 }

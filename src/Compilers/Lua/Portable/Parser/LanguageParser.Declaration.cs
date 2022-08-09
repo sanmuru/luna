@@ -4,7 +4,12 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 partial class LanguageParser
 {
-    private protected void ParseFunctionBody(out ParameterListSyntax parameters, out BlockSyntax block, out SyntaxToken endKeyword)
+#if TESTING
+    internal
+#else
+    private
+#endif
+        void ParseFunctionBody(out ParameterListSyntax parameters, out BlockSyntax block, out SyntaxToken endKeyword)
     {
         parameters = this.ParseParameterList();
         block = this.ParseBlock();
@@ -12,17 +17,27 @@ partial class LanguageParser
     }
 
     #region 形参
-    private protected ParameterListSyntax ParseParameterList()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ParameterListSyntax ParseParameterList()
     {
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var parameters = this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseParameter(),
             predicate: _ => true);
         var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
-        return this.syntaxFactory.ParameterList(openParen, parameters, closeParen);
+        return this._syntaxFactory.ParameterList(openParen, parameters, closeParen);
     }
 
-    private protected ParameterSyntax ParseParameter()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ParameterSyntax ParseParameter()
     {
         var identifier = this.CurrentTokenKind switch
         {
@@ -33,18 +48,28 @@ partial class LanguageParser
         };
         if (identifier.IsMissing)
             identifier = this.AddError(identifier, ErrorCode.ERR_IdentifierExpected);
-        return this.syntaxFactory.Parameter(identifier);
+        return this._syntaxFactory.Parameter(identifier);
     }
     #endregion
 
     #region 字段
-    private protected FieldListSyntax ParseFieldList() =>
+#if TESTING
+    internal
+#else
+    private
+#endif
+        FieldListSyntax ParseFieldList() =>
         this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseField(),
             predicate: _ => true,
-            list => this.syntaxFactory.FieldList(list))!;
+            list => this._syntaxFactory.FieldList(list))!;
 
-    private protected FieldSyntax ParseField()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        FieldSyntax ParseField()
     {
         // 解析键值对表字段。
         if (this.CurrentTokenKind == SyntaxKind.OpenBracketToken)
@@ -54,28 +79,43 @@ partial class LanguageParser
             return this.ParseNameValueField();
         // 解析列表项表字段。
         else
-            return this.syntaxFactory.ItemField(this.ParseFieldValue());
+            return this._syntaxFactory.ItemField(this.ParseFieldValue());
     }
 
-    private NameValueFieldSyntax ParseNameValueField()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        NameValueFieldSyntax ParseNameValueField()
     {
         var name = this.ParseIdentifierName();
         var equals = this.EatToken(SyntaxKind.EqualsToken);
         var value = this.ParseFieldValue();
-        return this.syntaxFactory.NameValueField(name, equals, value);
+        return this._syntaxFactory.NameValueField(name, equals, value);
     }
 
-    private protected KeyValueFieldSyntax ParseKeyValueField()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        KeyValueFieldSyntax ParseKeyValueField()
     {
         var openBracket = this.EatToken(SyntaxKind.OpenBracketToken);
         var key = this.ParseFieldKey();
         var closeBracket = this.EatToken(SyntaxKind.CloseBracketToken);
         var equals = this.EatToken(SyntaxKind.EqualsToken);
         var value = this.ParseFieldValue();
-        return this.syntaxFactory.KeyValueField(openBracket, key, closeBracket, equals, value);
+        return this._syntaxFactory.KeyValueField(openBracket, key, closeBracket, equals, value);
     }
 
-    private protected ExpressionSyntax ParseFieldKey()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionSyntax ParseFieldKey()
     {
         var expr = this.ParseExpression();
 
@@ -90,7 +130,12 @@ partial class LanguageParser
         return expr;
     }
 
-    private protected ExpressionSyntax ParseFieldValue()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionSyntax ParseFieldValue()
     {
         ExpressionSyntax expr;
         if (this.IsPossibleExpression())
@@ -112,40 +157,66 @@ partial class LanguageParser
     #endregion
 
     #region 实参
-    private protected InvocationArgumentsSyntax ParseInvocationArguments() => this.CurrentTokenKind switch
-    {
-        SyntaxKind.OpenParenToken => this.ParseArgumentList(),
-        SyntaxKind.OpenBraceToken => this.ParseArgumentTable(),
-        SyntaxKind.StringLiteralToken => this.ParseArgumentString(),
-        _ => throw ExceptionUtilities.UnexpectedValue(this.CurrentTokenKind)
-    };
+#if TESTING
+    internal
+#else
+    private
+#endif
+        InvocationArgumentsSyntax ParseInvocationArguments() =>
+        this.CurrentTokenKind switch
+        {
+            SyntaxKind.OpenParenToken => this.ParseArgumentList(),
+            SyntaxKind.OpenBraceToken => this.ParseArgumentTable(),
+            SyntaxKind.StringLiteralToken => this.ParseArgumentString(),
+            _ => throw ExceptionUtilities.UnexpectedValue(this.CurrentTokenKind)
+        };
 
-    private protected ArgumentListSyntax ParseArgumentList()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ArgumentListSyntax ParseArgumentList()
     {
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var arguments = this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseArgument(),
             predicate: _ => true);
         var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
-        return this.syntaxFactory.ArgumentList(openParen, arguments, closeParen);
+        return this._syntaxFactory.ArgumentList(openParen, arguments, closeParen);
     }
 
-    private protected ArgumentTableSyntax ParseArgumentTable()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ArgumentTableSyntax ParseArgumentTable()
     {
         var table = this.ParseTableConstructorExpression();
-        return this.syntaxFactory.ArgumentTable(table);
+        return this._syntaxFactory.ArgumentTable(table);
     }
 
-    private protected ArgumentStringSyntax ParseArgumentString()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ArgumentStringSyntax ParseArgumentString()
     {
         var stringLiteral = this.EatToken(SyntaxKind.StringLiteralToken);
-        return this.syntaxFactory.ArgumentString(stringLiteral);
+        return this._syntaxFactory.ArgumentString(stringLiteral);
     }
 
-    private protected ArgumentSyntax ParseArgument()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ArgumentSyntax ParseArgument()
     {
         var expr = this.ParseExpression();
-        return this.syntaxFactory.Argument(expr);
+        return this._syntaxFactory.Argument(expr);
     }
     #endregion
 }

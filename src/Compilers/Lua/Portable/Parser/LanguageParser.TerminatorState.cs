@@ -11,7 +11,7 @@ internal partial class LanguageParser
 
     private const int LastTerminatorState = (int)TerminatorState.EndOfFile;
 
-    private protected virtual partial bool IsTerminalCore(TerminatorState state) => state switch
+    private partial bool IsTerminalCore(TerminatorState state) => state switch
     {
 #warning 未完成。
         _ => false
