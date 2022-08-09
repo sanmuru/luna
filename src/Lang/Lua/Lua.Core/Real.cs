@@ -43,8 +43,10 @@ internal sealed class Real : Number, IComparable<Real>, IComparable<double>, IEq
 
     /// <inheritdoc/>
     /// <exception cref="InvalidCastException"><paramref name="type"/> 不是能接受的转换目标类型。</exception>
-    public override object ChangeType(Type type!!)
+    public override object ChangeType(Type type)
     {
+        if (type is null) throw new ArgumentNullException(nameof(type));
+
         if (typeof(Object).IsAssignableFrom(type) && type.IsAssignableFrom(typeof(Function))) return this;
         else if (type == typeof(DecimalReal)) return (DecimalReal)(decimal)this._value;
         else if (type == typeof(Integer)) return (Integer)(long)this._value;

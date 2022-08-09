@@ -7,9 +7,9 @@ public sealed class Function : Object
 {
     private readonly Delegate _func;
 
-    public Function(Delegate func!!) => this._func = func;
+    public Function(Delegate func) => this._func = func ?? throw new ArgumentNullException(nameof(func));
 
-    public override MultiReturns Invoke(params Object?[] args!!)
+    public override MultiReturns Invoke(params Object?[] args)
     {
         var mi = this._func.Method;
         bool hasReturnValue = mi.ReturnType == typeof(void);
@@ -54,14 +54,16 @@ public sealed class Function : Object
 
     /// <inheritdoc/>
     /// <exception cref="InvalidCastException"><paramref name="type"/> 不是能接受的转换目标类型。</exception>
-    public override object ChangeType(Type type!!)
+    public override object ChangeType(Type type)
     {
+        if (type is null) throw new ArgumentNullException(nameof(type));
+
         if (typeof(Object).IsAssignableFrom(type) && type.IsAssignableFrom(typeof(Function))) return this;
         else if (type.IsAssignableFrom(this._func.GetType())) return this._func;
         else throw new InvalidCastException();
     }
     #endregion
 
-    public static implicit operator Function(Delegate func!!) => new(func);
-    public static explicit operator Delegate(Function func!!) => func._func;
+    public static implicit operator Function(Delegate func) => new(func ?? throw new ArgumentNullException(nameof(func)));
+    public static explicit operator Delegate(Function func) => (func ?? throw new ArgumentNullException(nameof(func)))._func;
 }

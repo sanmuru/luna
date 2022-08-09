@@ -24,7 +24,7 @@ public readonly struct MultiReturns : IReadOnlyList<Object?>, IDynamicMetaObject
 
     public int Count => this._values.Length;
 
-    public MultiReturns(params Object?[] values!!) => this._values = values;
+    public MultiReturns(params Object?[] values) => this._values = values;
 
     public IEnumerator<Object?> GetEnumerator() => this.GetEnumerator();
 

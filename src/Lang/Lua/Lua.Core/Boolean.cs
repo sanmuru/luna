@@ -70,8 +70,10 @@ public sealed class Boolean : Object, IComparable, IComparable<Boolean>, ICompar
 
     /// <inheritdoc/>
     /// <exception cref="InvalidCastException"><paramref name="type"/> 不是能接受的转换目标类型。</exception>
-    public override object ChangeType(Type type!!)
+    public override object ChangeType(Type type)
     {
+        if (type is null) throw new ArgumentNullException(nameof(type));
+
         if (typeof(Object).IsAssignableFrom(type) && type.IsAssignableFrom(typeof(Boolean))) return this;
         else if (type == typeof(bool)) return (bool)this;
         else throw new InvalidCastException();

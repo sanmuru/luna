@@ -8,11 +8,11 @@ public class InvalidInvocationException : LuaException
 
     public InvalidInvocationException(Object? value) : this("value", value) { }
 
-    public InvalidInvocationException(TypeInfo typeInfo!!) : this("value", typeInfo) { }
+    public InvalidInvocationException(TypeInfo typeInfo) : this("value", typeInfo ?? throw new ArgumentNullException(nameof(typeInfo))) { }
 
-    public InvalidInvocationException(string paramInfo!!, Object? value) : this(paramInfo, value is null ? TypeInfo.Nil : value.GetType()) { }
+    public InvalidInvocationException(string paramInfo, Object? value) : this(paramInfo, value is null ? TypeInfo.Nil : value.GetType()) { }
 
-    public InvalidInvocationException(string paramInfo!!, TypeInfo typeInfo!!) : this($"Attempt to call {paramInfo} (a {typeInfo} value)") { }
+    public InvalidInvocationException(string paramInfo, TypeInfo typeInfo) : this($"Attempt to call {paramInfo ?? throw new ArgumentNullException(nameof(paramInfo))} (a {typeInfo ?? throw new ArgumentNullException(nameof(typeInfo))} value)") { }
 
     public InvalidInvocationException(string? message) : base(message) { }
 

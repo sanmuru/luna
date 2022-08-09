@@ -145,6 +145,8 @@ partial class MessageProvider : CommonMessageProvider
 
     public override int ERR_BadAssemblyName => throw new NotImplementedException();
 
+    public override int WRN_AnalyzerReferencesNewerCompiler => throw new NotImplementedException();
+
     public override Diagnostic CreateDiagnostic(DiagnosticInfo info)
     {
         throw new NotImplementedException();

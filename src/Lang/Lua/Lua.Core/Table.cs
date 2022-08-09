@@ -67,8 +67,11 @@ public class Table : Object
     /// <param name="table">值所在的表。</param>
     /// <param name="index">要查询的键。</param>
     /// <returns></returns>
-    public static Object? RawGet(Table table!!, Object index!!)
+    public static Object? RawGet(Table table, Object index)
     {
+        if (table is null) throw new ArgumentNullException(nameof(table));
+        if (index is null) throw new ArgumentNullException(nameof(index));
+
         if (table.dictionary.TryGetValue(index, out var value))
             return value;
         else
@@ -82,8 +85,11 @@ public class Table : Object
     /// <param name="index"></param>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static Table RawSet(Table table!!, Object index!!, Object? value)
+    public static Table RawSet(Table table, Object index, Object? value)
     {
+        if (table is null) throw new ArgumentNullException(nameof(table));
+        if (index is null) throw new ArgumentNullException(nameof(index));
+
         if (table.dictionary.ContainsKey(index))
         {
             if (value is null)
@@ -109,8 +115,10 @@ public class Table : Object
         else throw new InvalidCastException();
     }
 
-    public static Object? Next(Table table!!, Object? index = null)
+    public static Object? Next(Table table, Object? index = null)
     {
+        if (table is null) throw new ArgumentNullException(nameof(table));
+
         var etor = table.dictionary.Keys.GetEnumerator();
         if (index is null)
         {
@@ -141,21 +149,29 @@ public class Table : Object
         TupleItemTypeSameAs(1, "t"),
         TupleItemType(2, typeof(long))
     ]
-    public static MultiReturns IndexedPair(Table t!!) =>
-        new(
+    public static MultiReturns IndexedPair(Table t)
+    {
+        if (t is null) throw new ArgumentNullException(nameof(t));
+
+        return new(
             (Function)new Func<Table, long, long>((_, i) => i++),
             t,
             (Number)0L
         );
+    }
 
     [return: Tuple(2)]
     [return:
         TupleItemType(0, typeof(Func<Table, Object?, Object?>)),
         TupleItemTypeSameAs(1, "t")
     ]
-    public static MultiReturns Pair(Table t!!) =>
-        new(
+    public static MultiReturns Pair(Table t)
+    {
+        if (t is null) throw new ArgumentNullException(nameof(t));
+
+        return new(
             (Function)new Func<Table, Object?, Object?>(Table.Next),
             t
         );
+    }
 }
