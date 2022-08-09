@@ -126,19 +126,60 @@ internal sealed class LexerSimulatorGenerator : ISourceGenerator
         indentWriter.WriteLine($"{(declaredClass.IsSealed ? "private" : "protected")} global::Luna.Compilers.Simulators.LexerSimulatorContext {(declaredClass.IsSealed ? "_context" : "context")};");
         indentWriter.WriteLine();
 
+        WriteGeneratedCodeMemberAttributes(isField: true);
+        indentWriter.WriteLine($"private global::Microsoft.CodeAnalysis.SyntaxNode? _root;");
+        WriteGeneratedCodeMemberAttributes(isField: true);
+        indentWriter.WriteLine($"private int _position;");
+        WriteGeneratedCodeMemberAttributes(isField: true);
+        indentWriter.WriteLine($"private int _index;");
+        indentWriter.WriteLine();
+
         foreach (var languageName in languageNames)
         {
             indentWriter.WriteLine($"#region {languageName}");
 
-            indentWriter.WriteLine($"private partial global::SamLu.CodeAnalysis.{languageName}.Syntax.InternalSyntax.Lexer Create{languageName}Lexer(global::Microsoft.CodeAnalysis.Text.SourceText text);");
-            indentWriter.WriteLine($"private partial global::SamLu.CodeAnalysis.{languageName}.Syntax.InternalSyntax.SyntaxToken LexNode(global::SamLu.CodeAnalysis.{languageName}.Syntax.InternalSyntax.Lexer lexer);");
-            indentWriter.WriteLine($"private partial global::System.Collections.Generic.IEnumerable<global::Microsoft.CodeAnalysis.SyntaxToken> DescendTokens(global::SamLu.CodeAnalysis.{languageName}.Syntax.InternalSyntax.SyntaxToken node);");
+            indentWriter.WriteLine($"{(declaredClass.IsSealed ? "private" : "protected virtual")} partial global::SamLu.CodeAnalysis.{languageName}.Syntax.InternalSyntax.Lexer Create{languageName}Lexer(global::Microsoft.CodeAnalysis.Text.SourceText text);");
+            indentWriter.WriteLine($"{(declaredClass.IsSealed ? "private" : "protected virtual")} partial global::SamLu.CodeAnalysis.{languageName}.Syntax.InternalSyntax.SyntaxToken LexNode(global::SamLu.CodeAnalysis.{languageName}.Syntax.InternalSyntax.Lexer lexer);");
+            indentWriter.WriteLine($"{(declaredClass.IsSealed ? "private" : "protected virtual")} partial global::System.Collections.Generic.IEnumerable<global::Microsoft.CodeAnalysis.SyntaxToken> DescendTokens(global::SamLu.CodeAnalysis.{languageName}.Syntax.InternalSyntax.SyntaxToken node);");
 
-            indentWriter.WriteLine();
+            WriteGeneratedCodeMemberAttributes();
+            indentWriter.WriteLine($"{(declaredClass.IsSealed ? "private" : "protected")} global::Microsoft.CodeAnalysis.SyntaxToken CreateToken(global::SamLu.CodeAnalysis.{languageName}.Syntax.InternalSyntax.SyntaxToken node) => this.EatToken(global::SamLu.CodeAnalysis.{languageName}.SyntaxFactory.Token(parent: this._root!, token: node, position: this._position, index: this._index));");
             indentWriter.WriteLine("#endregion");
-            indentWriter.WriteLine();
         }
+        indentWriter.WriteLine();
+        {
+            WriteGeneratedCodeMemberAttributes();
+            indentWriter.WriteLine($"{(declaredClass.IsSealed ? "private" : "protected")} global::Microsoft.CodeAnalysis.SyntaxToken EatToken(global::Microsoft.CodeAnalysis.SyntaxToken token)");
+            indentWriter.OpenBlock();
+            indentWriter.WriteLine("token = this.EatTokenCore(token);");
+            indentWriter.WriteLine("this._position += token.FullSpan.Length;");
+            indentWriter.WriteLine("this._index++;");
+            indentWriter.WriteLine("return token;");
+            indentWriter.CloseBlock();
 
+            indentWriter.WriteLine($"{(declaredClass.IsSealed ? "private" : "protected virtual")} partial global::Microsoft.CodeAnalysis.SyntaxToken EatTokenCore(global::Microsoft.CodeAnalysis.SyntaxToken token);");
+        }
+        {
+            WriteGeneratedCodeMemberAttributes();
+            indentWriter.WriteLine($"[global::System.Diagnostics.CodeAnalysis.MemberNotNull(nameof(_root))]");
+            indentWriter.WriteLine($"{(declaredClass.IsSealed ? "private" : "protected")} void Reset()");
+            indentWriter.OpenBlock();
+            indentWriter.WriteLine($"switch(this.{(declaredClass.IsSealed ? "_context" : "context")}.LanguageName)");
+            indentWriter.OpenBlock();
+            foreach (var languageName in languageNames)
+            {
+                indentWriter.WriteLine($"case \"{languageName}\": this._root = global::SamLu.CodeAnalysis.{languageName}.SyntaxFactory.Mock(); break;");
+            }
+            indentWriter.WriteLine($"default: throw new InvalidOperationException(\"意外的语言名称：\" + this.{(declaredClass.IsSealed ? "_context" : "context")}.LanguageName);");
+            indentWriter.CloseBlock();
+            indentWriter.WriteLine("this._position = 0;");
+            indentWriter.WriteLine("this._index = 0;");
+            indentWriter.WriteLine("this.ResetCore();");
+            indentWriter.CloseBlock();
+
+            indentWriter.WriteLine($"{(declaredClass.IsSealed ? "private" : "protected virtual")} partial void ResetCore();");
+        }
+        indentWriter.WriteLine();
         {
             indentWriter.WriteLine($"#region Luna.Compilers.Simulators.ILexerSimulator");
 
@@ -161,6 +202,7 @@ internal sealed class LexerSimulatorGenerator : ISourceGenerator
             WriteGeneratedCodeMemberAttributes();
             indentWriter.WriteLine($"global::System.Collections.Generic.IEnumerable<global::Microsoft.CodeAnalysis.SyntaxToken> global::Luna.Compilers.Simulators.ILexerSimulator.LexToEnd(global::Microsoft.CodeAnalysis.Text.SourceText text)");
             indentWriter.OpenBlock();
+            indentWriter.WriteLine("this.Reset();");
             indentWriter.WriteLine($"switch(this.{(declaredClass.IsSealed ? "_context" : "context")}.LanguageName)");
             indentWriter.OpenBlock();
             foreach (var languageName in languageNames)

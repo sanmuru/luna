@@ -224,11 +224,21 @@ ProcessOutputPath:
                                     _ => throw new InvalidOperationException(),
                                 });
 
-                                span.AppendChild(doc.CreateTextNode(Regex.Replace(text, @"\s", m => m.Value switch
+                                var ss = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
+                                for (int i = 0; i < ss.Length; i++)
                                 {
-                                    "\t" => "&ensp;&ensp;&ensp;&ensp;",
-                                    _ => "&ensp;"
-                                })));
+                                    if (i > 0) span.AppendChild(doc.CreateElement("br"));
+                                    span.AppendChild(doc.CreateTextNode(escapeText(ss[i])));
+                                }
+
+                                string escapeText(string text) => Regex.Replace(text, @"\s", m =>
+                                {
+                                    return m.Value switch
+                                    {
+                                        "\t" => "&nbsp;&nbsp;",
+                                        _ => "&nbsp;"
+                                    };
+                                });
                             }
                         };
                     }
