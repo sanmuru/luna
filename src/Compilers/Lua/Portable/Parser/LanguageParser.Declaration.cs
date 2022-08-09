@@ -1,4 +1,6 @@
-﻿namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+﻿using Roslyn.Utilities;
+
+namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 partial class LanguageParser
 {
@@ -106,6 +108,44 @@ partial class LanguageParser
         }
 
         return expr;
+    }
+    #endregion
+
+    #region 实参
+    private protected InvocationArgumentsSyntax ParseInvocationArguments() => this.CurrentTokenKind switch
+    {
+        SyntaxKind.OpenParenToken => this.ParseArgumentList(),
+        SyntaxKind.OpenBraceToken => this.ParseArgumentTable(),
+        SyntaxKind.StringLiteralToken => this.ParseArgumentString(),
+        _ => throw ExceptionUtilities.UnexpectedValue(this.CurrentTokenKind)
+    };
+
+    private protected ArgumentListSyntax ParseArgumentList()
+    {
+        var openParen = this.EatToken(SyntaxKind.OpenParenToken);
+        var arguments = this.ParseSeparatedSyntaxList(
+            parseNodeFunc: _ => this.ParseArgument(),
+            predicate: _ => true);
+        var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
+        return this.syntaxFactory.ArgumentList(openParen, arguments, closeParen);
+    }
+
+    private protected ArgumentTableSyntax ParseArgumentTable()
+    {
+        var table = this.ParseTableConstructorExpression();
+        return this.syntaxFactory.ArgumentTable(table);
+    }
+
+    private protected ArgumentStringSyntax ParseArgumentString()
+    {
+        var stringLiteral = this.EatToken(SyntaxKind.StringLiteralToken);
+        return this.syntaxFactory.ArgumentString(stringLiteral);
+    }
+
+    private protected ArgumentSyntax ParseArgument()
+    {
+        var expr = this.ParseExpression();
+        return this.syntaxFactory.Argument(expr);
     }
     #endregion
 }

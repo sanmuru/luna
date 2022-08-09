@@ -110,7 +110,7 @@ partial class LanguageParser
         throw ExceptionUtilities.Unreachable;
     }
 
-    private StatementSyntax ParseAssignmentStatement()
+    private AssignmentStatementSyntax ParseAssignmentStatement()
     {
         var left = this.ParseExpressionList();
         var equals = this.EatToken(SyntaxKind.EqualsToken);
@@ -119,7 +119,7 @@ partial class LanguageParser
         return this.syntaxFactory.AssignmentStatement(left, equals, right, semicolon);
     }
 
-    private protected StatementSyntax ParseLabelStatement()
+    private protected LabelStatementSyntax ParseLabelStatement()
     {
         var leftColonColon = this.EatToken(SyntaxKind.ColonColonToken);
         var labelName = this.ParseIdentifierName();
@@ -127,13 +127,13 @@ partial class LanguageParser
         return this.syntaxFactory.LabelStatement(leftColonColon, labelName, rightColonColon);
     }
 
-    private protected StatementSyntax ParseBreakStatement()
+    private protected BreakStatementSyntax ParseBreakStatement()
     {
         var breakKeyword = this.EatToken(SyntaxKind.BreakKeyword);
         return this.syntaxFactory.BreakStatement(breakKeyword);
     }
 
-    private protected StatementSyntax ParseGotoStatement()
+    private protected GotoStatementSyntax ParseGotoStatement()
     {
         var gotoKeyword = this.EatToken(SyntaxKind.GotoKeyword);
         var labelName = this.ParseIdentifierName();
@@ -141,7 +141,7 @@ partial class LanguageParser
         return this.syntaxFactory.GotoStatement(gotoKeyword, labelName, semicolon);
     }
 
-    private protected StatementSyntax ParseReturnStatement()
+    private protected ReturnStatementSyntax ParseReturnStatement()
     {
         var returnKeyword = this.EatToken(SyntaxKind.ReturnKeyword);
         var expressions = this.ParseExpressionListOpt();
@@ -149,7 +149,7 @@ partial class LanguageParser
         return this.syntaxFactory.ReturnStatement(returnKeyword, expressions, semicolon);
     }
 
-    private protected StatementSyntax ParseDoStatement()
+    private protected DoStatementSyntax ParseDoStatement()
     {
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
         var block = this.ParseBlock();
@@ -157,7 +157,7 @@ partial class LanguageParser
         return this.syntaxFactory.DoStatement(doKeyword, block, endKeyword);
     }
 
-    private protected StatementSyntax ParseWhileStatement()
+    private protected WhileStatementSyntax ParseWhileStatement()
     {
         var whileKeyword = this.EatToken(SyntaxKind.WhileKeyword);
         var condition = this.ParseExpression();
@@ -167,7 +167,7 @@ partial class LanguageParser
         return this.syntaxFactory.WhileStatement(whileKeyword, condition, doKeyword, block, endKeyword);
     }
 
-    private protected StatementSyntax ParseRepeatStatement()
+    private protected RepeatStatementSyntax ParseRepeatStatement()
     {
         var repeatKeyword = this.EatToken(SyntaxKind.RepeatKeyword);
         var block = this.ParseBlock();
@@ -177,7 +177,7 @@ partial class LanguageParser
         return this.syntaxFactory.RepeatStatement(repeatKeyword, block, untilKeyword, condition, semicolon);
     }
 
-    private protected StatementSyntax ParseIfStatement()
+    private protected IfStatementSyntax ParseIfStatement()
     {
         var ifKeyword = this.EatToken(SyntaxKind.IfKeyword);
         var condition = this.ParseExpression();
@@ -214,7 +214,7 @@ partial class LanguageParser
         return this.syntaxFactory.ElseClause(elseKeyword, block);
     }
 
-    private protected StatementSyntax ParseMisplaceElseIf()
+    private protected IfStatementSyntax ParseMisplaceElseIf()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.ElseIfKeyword);
 
@@ -262,7 +262,7 @@ partial class LanguageParser
         }
     }
 
-    private protected StatementSyntax ParseIterableForStatement(SyntaxToken forKeyword, SeparatedSyntaxList<IdentifierNameSyntax> names)
+    private protected ForInStatementSyntax ParseIterableForStatement(SyntaxToken forKeyword, SeparatedSyntaxList<IdentifierNameSyntax> names)
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.InKeyword);
 
@@ -281,7 +281,7 @@ partial class LanguageParser
             endKeyword);
     }
 
-    private protected StatementSyntax ParseIncrementalForStatement(SyntaxToken forKeyword, IdentifierNameSyntax name)
+    private protected ForStatementSyntax ParseIncrementalForStatement(SyntaxToken forKeyword, IdentifierNameSyntax name)
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.EqualsToken);
 
@@ -315,7 +315,7 @@ partial class LanguageParser
             endKeyword);
     }
 
-    private StatementSyntax ParseFunctionDefinitionStatement()
+    private FunctionDefinitionStatementSyntax ParseFunctionDefinitionStatement()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.FunctionKeyword);
 
@@ -325,7 +325,7 @@ partial class LanguageParser
         return this.syntaxFactory.FunctionDefinitionStatement(function, name, parameters, block, end);
     }
 
-    private StatementSyntax ParseLocalFunctionDefinitionStatement()
+    private LocalFunctionDefinitionStatementSyntax ParseLocalFunctionDefinitionStatement()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.LocalKeyword);
         Debug.Assert(this.PeekToken(1).Kind == SyntaxKind.FunctionKeyword);
@@ -337,7 +337,7 @@ partial class LanguageParser
         return this.syntaxFactory.LocalFunctionDefinitionStatement(local, function, name, parameters, block, end);
     }
 
-    private StatementSyntax ParseLocalDeclarationStatement()
+    private LocalDeclarationStatementSyntax ParseLocalDeclarationStatement()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.LocalKeyword);
 

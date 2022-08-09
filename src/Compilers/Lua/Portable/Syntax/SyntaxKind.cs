@@ -381,6 +381,8 @@ public enum SyntaxKind : ushort
     ArgumentList,
     /// <summary>表示调用参数表。</summary>
     ArgumentTable,
+    /// <summary>表示调用参数字符串常量。</summary>
+    ArgumentString,
     /// <summary>表示调用参数。</summary>
     Argument,
     #endregion

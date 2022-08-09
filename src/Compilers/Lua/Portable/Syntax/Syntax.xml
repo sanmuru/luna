@@ -503,6 +503,12 @@
       <Kind Name="CloseParenToken"/>
     </Field>
   </Node>
+  <Node Name="ArgumentStringSyntax" Base="InvocationArgumentsSyntax">
+    <Kind Name="ArgumentString"/>
+    <Field Name="StringLiteralToken" Type="SyntaxToken">
+      <Kind Name="StringLiteralToken"/>
+    </Field>
+  </Node>
   <Node Name="ArgumentSyntax" Base="LuaSyntaxNode">
     <Kind Name="Argument"/>
     <Field Name="Expression" Type="ExpressionSyntax"/>

@@ -172,6 +172,15 @@ partial class LanguageParser
                     expr = this.ParseIndexMemberAccessExpressionSyntax(expr);
                     break;
 
+                case SyntaxKind.OpenParenToken:
+                case SyntaxKind.OpenBraceToken:
+                case SyntaxKind.StringLiteralToken:
+                    expr = this.ParseInvocationExpressionSyntax(expr);
+                    break;
+                case SyntaxKind.ColonToken:
+                    expr = this.ParseImplicitSelfParameterInvocationExpression(expr);
+                    break;
+
                 default:
                     return expr;
             }
@@ -212,7 +221,7 @@ partial class LanguageParser
         return this.syntaxFactory.ParenthesizedExpression(openParen, expression, closeParen);
     }
 
-    private FunctionDefinitionExpressionSyntax ParseFunctionDefinitionExpression()
+    private protected FunctionDefinitionExpressionSyntax ParseFunctionDefinitionExpression()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.FunctionKeyword);
 
@@ -221,7 +230,7 @@ partial class LanguageParser
         return this.syntaxFactory.FunctionDefinitionExpression(function, parameters, block, end);
     }
 
-    private TableConstructorExpressionSyntax ParseTableConstructorExpression()
+    private protected TableConstructorExpressionSyntax ParseTableConstructorExpression()
     {
         var openBrace = this.EatToken(SyntaxKind.OpenBraceToken);
         var field = this.ParseFieldList();
@@ -229,21 +238,21 @@ partial class LanguageParser
         return this.syntaxFactory.TableConstructorExpression(openBrace, field, closeBrace);
     }
 
-    private ExpressionSyntax ParseIdentifierStartedExpression()
+    private protected ExpressionSyntax ParseIdentifierStartedExpression()
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.IdentifierToken);
 
-        return this.ParseIdentifierName();
+        return this.ParseName();
     }
 
-    private ExpressionSyntax ParseSimpleMemberAccessExpressionSyntax(ExpressionSyntax self)
+    private protected SimpleMemberAccessExpressionSyntax ParseSimpleMemberAccessExpressionSyntax(ExpressionSyntax self)
     {
         var dot = this.EatToken(SyntaxKind.DotToken);
         var member = this.ParseIdentifierName();
         return this.syntaxFactory.SimpleMemberAccessExpression(self, dot, member);
     }
 
-    private ExpressionSyntax ParseIndexMemberAccessExpressionSyntax(ExpressionSyntax self)
+    private protected IndexMemberAccessExpressionSyntax ParseIndexMemberAccessExpressionSyntax(ExpressionSyntax self)
     {
         var openBracket = this.EatToken(SyntaxKind.OpenBracketToken);
         var member = this.ParseExpression();
@@ -251,4 +260,22 @@ partial class LanguageParser
         return this.syntaxFactory.IndexMemberAccessExpression(self, openBracket, member, closeBracket);
     }
 
+    private protected ExpressionSyntax ParseInvocationExpressionSyntax(ExpressionSyntax expr)
+    {
+        var arguments = this.ParseInvocationArguments();
+
+        // 若调用表达式已经是
+        if (expr is ImplicitSelfParameterNameSyntax implicitSelfParameterName)
+            return this.syntaxFactory.ImplicitSelfParameterInvocationExpression(implicitSelfParameterName.Left, implicitSelfParameterName.ColonToken, implicitSelfParameterName.Right, arguments);
+        else
+            return this.syntaxFactory.InvocationExpression(expr, arguments);
+    }
+
+    private protected ImplicitSelfParameterInvocationExpressionSyntax ParseImplicitSelfParameterInvocationExpression(ExpressionSyntax expr)
+    {
+        var colon = this.EatToken(SyntaxKind.ColonToken);
+        var name = this.ParseIdentifierName();
+        var arguments = this.ParseInvocationArguments();
+        return this.syntaxFactory.ImplicitSelfParameterInvocationExpression(expr, colon, name, arguments);
+    }
 }
