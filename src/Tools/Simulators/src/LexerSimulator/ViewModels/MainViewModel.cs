@@ -18,7 +18,7 @@ internal partial class MainViewModel
     [ObservableProperty]
     private SourceText? sourceText = null;
 
-    [ICommand]
+    [RelayCommand]
     private void OpenSource()
     {
         var dialog = new OpenFileDialog()

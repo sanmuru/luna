@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -145,6 +146,7 @@ ProcessOutputPath:
         var extension = Path.GetExtension(inputFile);
         if (LexerSimulator.TryGetLexerSimulatorByFileExtension(extension, out var simulators))
         {
+            Debug.Assert(simulators is not null);
             for (var i = 0; i < simulators.Length; i++)
             {
                 var simulator = simulators[i];

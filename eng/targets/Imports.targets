@@ -359,6 +359,9 @@
            Condition="'@(ReferencesCopiedInThisBuild)' != ''"/>
   </Target>
   
+  <!-- Workaround for https://github.com/dotnet/wpf/issues/6792 -->
+  <Import Project="WpfRemoveDuplicateAnalyzers.targets" Condition="'$(UseWPF)' == 'true'" />
+
   <Import Project="DoNotDeployToSymStore_Workaround.targets" Condition="'$(UsingToolPdbConverter)' == 'false'" />
   <Import Project="DoNotGenerateSatelliteAssemblies_Workaround.targets" Condition="'$(GenerateSatelliteAssemblies)' == 'false'" />
 </Project>

@@ -7,7 +7,7 @@ using Luna.Compilers.Tools;
 
 namespace Luna.Compilers.Simulators;
 
-internal static class LexerSimulator
+public static class LexerSimulator
 {
     private static readonly Dictionary<(Type type, string languageName), ILexerSimulator> s_lexerSimulators = new();
     private static readonly Dictionary<string, HashSet<Type>> s_languageNameMap = new();
@@ -111,14 +111,14 @@ internal static class LexerSimulator
 
     }
 
-    internal static void RegisterSimulatorFromConfiguration(SimulatorConfiguration config)
+    public static void RegisterSimulatorFromConfiguration(SimulatorConfiguration config)
     {
         Debug.Assert(config is not null);
 
         LexerSimulator.RegisterSimulatorFromConfigurationCore(config);
     }
 
-    internal static void RegisterSimulatorFromConfiguration(string configFilePath)
+    public static void RegisterSimulatorFromConfiguration(string configFilePath)
     {
         Debug.Assert(configFilePath is not null);
 

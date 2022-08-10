@@ -5,11 +5,13 @@ using System.Text.Json.Serialization;
 namespace Luna.Compilers.Tools;
 
 #pragma warning disable CS0649
-internal partial class SimulatorConfiguration
+public partial class SimulatorConfiguration
 {
     private readonly config _config;
 
+#pragma warning disable CS8981
     private sealed class config
+#pragma warning restore CS8981
     {
         public object? paths;
         public IDictionary<string, object?>? extensions;
