@@ -174,4 +174,36 @@ public static class LanguageParserTestUtilities
     }
     #endregion
 
+    #region IsLiteralExpression
+    internal static void IsLiteralExpression(this Assert assert, LiteralExpressionSyntax literalExpression, SyntaxKind kind)
+    {
+        Assert.AreEqual(kind, literalExpression.Kind);
+        switch (kind)
+        {
+            case SyntaxKind.NilLiteralExpression:
+                Assert.IsNull(literalExpression.token.Value);
+                break;
+            case SyntaxKind.FalseLiteralExpression:
+                Assert.AreEqual(false, literalExpression.token.Value);
+                break;
+            case SyntaxKind.TrueLiteralExpression:
+                Assert.AreEqual(true, literalExpression.token.Value);
+                break;
+        }
+    }
+
+    internal static void IsLiteralExpression<T>(this Assert assert, LiteralExpressionSyntax literalExpression, SyntaxKind kind, T? value)
+    {
+        Assert.AreEqual(kind, literalExpression.Kind);
+        assert.IsLiteral(literalExpression.Token, value);
+        Assert.AreEqual(value, literalExpression.token.Value);
+    }
+    #endregion
+
+    internal static void IsBinaryExpression(this Assert assert, ExpressionSyntax expression, SyntaxKind kind)
+    {
+        Assert.IsInstanceOfType(expression, typeof(BinaryExpressionSyntax));
+        Assert.AreEqual(kind, expression.Kind);
+    }
+
 }

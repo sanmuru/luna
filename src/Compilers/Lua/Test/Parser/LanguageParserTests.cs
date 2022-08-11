@@ -9,6 +9,7 @@ public partial class LanguageParserTests
 {
     internal static LanguageParser CreateLanguageParser(string source, LuaParseOptions? options = null) => new(LexerTests.CreateLexer(source, options), null, null);
 
+    #region 名称
     [TestMethod]
     public void IdentifierNameParseTests()
     {
@@ -234,4 +235,73 @@ public partial class LanguageParserTests
             }
         }
     }
+    #endregion
+
+    #region 表达式
+    [TestMethod]
+    public void LiteralExpressionParseTests()
+    {
+        var parser = LanguageParserTests.CreateLanguageParser("""
+            nil
+            false
+            true
+            1
+            1.0
+            'string'
+            ""
+            """);
+        {
+            var literal = parser.ParseLiteralExpression(SyntaxKind.NilLiteralExpression, SyntaxKind.NilKeyword);
+            Assert.That.IsLiteralExpression(literal, SyntaxKind.NilLiteralExpression);
+            Assert.That.NotContainsDiagnostics(literal);
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        {
+            var literal = parser.ParseLiteralExpression(SyntaxKind.FalseLiteralExpression, SyntaxKind.FalseKeyword);
+            Assert.That.IsLiteralExpression(literal, SyntaxKind.FalseLiteralExpression);
+            Assert.That.NotContainsDiagnostics(literal);
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        {
+            var literal = parser.ParseLiteralExpression(SyntaxKind.TrueLiteralExpression, SyntaxKind.TrueKeyword);
+            Assert.That.IsLiteralExpression(literal, SyntaxKind.TrueLiteralExpression);
+            Assert.That.NotContainsDiagnostics(literal);
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        {
+            var literal = parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken);
+            Assert.That.IsLiteralExpression(literal, SyntaxKind.NumericLiteralExpression, 1L);
+            Assert.That.NotContainsDiagnostics(literal);
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        {
+            var literal = parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken);
+            Assert.That.IsLiteralExpression(literal, SyntaxKind.NumericLiteralExpression, 1D);
+            Assert.That.NotContainsDiagnostics(literal);
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        {
+            var literal = parser.ParseLiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxKind.StringLiteralToken);
+            Assert.That.IsLiteralExpression(literal, SyntaxKind.StringLiteralExpression, "string");
+            Assert.That.NotContainsDiagnostics(literal);
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        {
+            var literal = parser.ParseLiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxKind.StringLiteralToken);
+            Assert.That.IsLiteralExpression(literal, SyntaxKind.StringLiteralExpression, string.Empty);
+            Assert.That.NotContainsDiagnostics(literal);
+            Assert.That.AtEndOfFile(parser);
+        }
+    }
+
+    [TestMethod]
+    public void ExceptionWithOperatorParseTests()
+    {
+        {
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 + 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.AdditionExpression);
+        }
+    }
+    #endregion
 }

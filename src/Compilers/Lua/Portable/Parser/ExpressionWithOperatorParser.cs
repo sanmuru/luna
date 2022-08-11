@@ -300,7 +300,7 @@ Final:
                     (var opt, var isUnary) = this._optStack.Pop();
                     if (isUnary)
                     {
-                        Debug.Assert(this._exprStack.Count > 0);
+                        Debug.Assert(this._exprStack.Count >= 0);
                         expr = this._parser._syntaxFactory.UnaryExpression(
                             SyntaxFacts.GetUnaryExpressionOperatorToken(opt.Kind),
                             opt,
@@ -308,7 +308,7 @@ Final:
                     }
                     else
                     {
-                        Debug.Assert(this._exprStack.Count >= 2);
+                        Debug.Assert(this._exprStack.Count >= 1);
                         expr = this._parser._syntaxFactory.BinaryExpression(
                             SyntaxFacts.GetBinaryExpression(opt.Kind),
                             this._exprStack.Pop(),

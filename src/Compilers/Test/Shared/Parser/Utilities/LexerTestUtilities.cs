@@ -59,14 +59,37 @@ public static class LexerTestUtilities
     internal static void IsLiteral(this Assert assert, SyntaxToken token) =>
         Assert.IsTrue(LexerTestUtilities.IsLiteralCore(token));
 
+    internal static void IsLiteral<T>(this Assert assert, SyntaxToken token, T? value) =>
+        Assert.IsTrue(LexerTestUtilities.IsLiteralCore(token, value));
+
     internal static void IsLiteral(this Assert assert, SyntaxToken token, string message) =>
         Assert.IsTrue(LexerTestUtilities.IsLiteralCore(token), message);
+
+    internal static void IsLiteral<T>(this Assert assert, SyntaxToken token, T? value, string message) =>
+        Assert.IsTrue(LexerTestUtilities.IsLiteralCore(token, value), message);
 
     internal static void IsLiteral(this Assert assert, SyntaxToken token, string message, params object[] parameters) =>
         Assert.IsTrue(LexerTestUtilities.IsLiteralCore(token), message, parameters);
 
+    internal static void IsLiteral<T>(this Assert assert, SyntaxToken token, T? value, string message, params object[] parameters) =>
+        Assert.IsTrue(LexerTestUtilities.IsLiteralCore(token, value), message, parameters);
+
     internal static bool IsLiteralCore(SyntaxToken token) =>
         SyntaxFacts.IsLiteral(token.Kind);
+
+    internal static bool IsLiteralCore<T>(SyntaxToken token, T? value)
+    {
+        if (!LexerTestUtilities.IsLiteralCore(token)) return false;
+        try
+        {
+            Assert.AreEqual(value, token.Value);
+        }
+        catch (AssertFailedException)
+        {
+            return false;
+        }
+        return true;
+    }
     #endregion
 
     #region IsEndOfFile
