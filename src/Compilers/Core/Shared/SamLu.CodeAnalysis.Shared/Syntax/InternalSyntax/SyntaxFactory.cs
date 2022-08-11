@@ -169,12 +169,6 @@ internal static partial class SyntaxFactory
 
     internal static SyntaxToken Literal(GreenNode? leading, string text, SyntaxKind kind, string value, GreenNode? trailing) => SyntaxToken.WithValue(kind, leading, text, value, trailing);
 
-    internal static SyntaxTrivia SkippedTokensTrivia(SyntaxToken token)
-    {
-#warning 未实现。
-        throw new NotImplementedException();
-    }
-
     #region SyntaxKind到SyntaxToken的转换方法
     // 各种语法部分的转换方法在各语言的独立项目中定义
     #endregion

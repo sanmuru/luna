@@ -17,6 +17,11 @@
         <target state="new">Provided source code kind is unsupported or invalid: '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_IdentifierExpected">
+        <source>Identifier expected.</source>
+        <target state="new">Identifier expected.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_IllegalEscape">
         <source>Unrecognized escape sequence.</source>
         <target state="new">Unrecognized escape sequence.</target>

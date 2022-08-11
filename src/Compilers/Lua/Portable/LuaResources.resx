@@ -126,6 +126,9 @@
   <data name="ERR_BadSourceCodeKind" xml:space="preserve">
     <value>Provided source code kind is unsupported or invalid: '{0}'.</value>
   </data>
+  <data name="ERR_IdentifierExpected" xml:space="preserve">
+    <value>Identifier expected.</value>
+  </data>
   <data name="ERR_IllegalEscape" xml:space="preserve">
     <value>Unrecognized escape sequence.</value>
   </data>
