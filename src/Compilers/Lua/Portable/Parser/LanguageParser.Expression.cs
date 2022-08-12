@@ -181,7 +181,7 @@ partial class LanguageParser
                 this.ParseIdentifierName(),
 
             _ =>
-                throw ExceptionUtilities.Unreachable,
+                this.AddError(this.CreateMissingIdentifierName(), ErrorCode.ERR_InvalidExprTerm, SyntaxFacts.GetText(this.CurrentTokenKind))
         };
 
         int lastTokenPosition = -1;

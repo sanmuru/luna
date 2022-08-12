@@ -2,6 +2,7 @@
 
 namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
 
+using System.Diagnostics;
 using Utilities;
 
 [TestClass]
@@ -295,9 +296,31 @@ public partial class LanguageParserTests
     }
 
     [TestMethod]
-    public void ExceptionWithOperatorParseTests()
+    public void ParenthesizedExpressionParseTests()
     {
-        #region 基础操作符运算式
+        var tree = new Tree<SyntaxKind>();
+        { // 合法的括号
+            var parser = LanguageParserTests.CreateLanguageParser(" (a) ");
+            var expr = parser.ParseParenthesizedExpression();
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.ParenthesizedExpression) { SyntaxKind.IdentifierName };
+            Assert.That.IsExpression(expr, root);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 不合法的空的括号
+            var parser = LanguageParserTests.CreateLanguageParser(" () ");
+            var expr = parser.ParseParenthesizedExpression();
+            Assert.That.IsParenthesizedExpression(expr);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+            int i = 1 + % 2;
+        }
+    }
+
+    [TestMethod]
+    public void ExpressionWithOperatorParseTests()
+    {
+        #region 基础运算式
         #region 一元运算式
         { // 取负
             var parser = LanguageParserTests.CreateLanguageParser(" -1 ");
@@ -477,6 +500,223 @@ public partial class LanguageParserTests
             Assert.That.AtEndOfFile(parser);
         }
         #endregion
+        #endregion
+
+        #region 组合运算式
+        var unaryExpressionOperatorTokens = (from SyntaxKind kind in Enum.GetValues(typeof(SyntaxKind))
+                                             where SyntaxFacts.IsUnaryExpressionOperatorToken(kind)
+                                             select kind)
+                                             .ToArray();
+        var binaryExpressionOperatorTokens = (from SyntaxKind kind in Enum.GetValues(typeof(SyntaxKind))
+                                              where SyntaxFacts.IsBinaryExpressionOperatorToken(kind)
+                                              select kind)
+                                              .ToArray();
+        var leftAssociativeBinaryExpressionOperatorTokens = (from kind in binaryExpressionOperatorTokens
+                                                             where SyntaxFacts.IsLeftAssociativeBinaryExpressionOperatorToken(kind)
+                                                             select kind)
+                                                             .ToArray();
+        var rightAssociativeBinaryExpressionOperatorTokens = (from kind in binaryExpressionOperatorTokens
+                                                              where SyntaxFacts.IsRightAssociativeBinaryExpressionOperatorToken(kind)
+                                                              select kind)
+                                                              .ToArray();
+        { // 两个二元运算式
+            var tree = new Tree<SyntaxKind>();
+
+            static void FirstAssociativeBinaryExpressionParseTest(SyntaxKind first, SyntaxKind second, Tree<SyntaxKind> tree)
+            {
+                var parser = LanguageParserTests.CreateLanguageParser($" 1 {SyntaxFacts.GetText(first)} a {SyntaxFacts.GetText(second)} 'string' ");
+                var expr = parser.ParseExpressionWithOperator();
+                var root = new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(second))
+                {
+                    new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(first))
+                    {
+                        SyntaxKind.NumericLiteralExpression,
+                        SyntaxKind.IdentifierName
+                    },
+                    SyntaxKind.StringLiteralExpression
+                };
+                Assert.That.IsExpression(expr, root);
+                Assert.That.NotContainsDiagnostics(expr);
+                Assert.That.AtEndOfFile(parser);
+            }
+            static void SecondAssociativeBinaryExpressionParseTest(SyntaxKind first, SyntaxKind second, Tree<SyntaxKind> tree)
+            {
+                var parser = LanguageParserTests.CreateLanguageParser($" 1 {SyntaxFacts.GetText(first)} a {SyntaxFacts.GetText(second)} 'string' ");
+                var expr = parser.ParseExpressionWithOperator();
+                var root = new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(first))
+                {
+                    SyntaxKind.NumericLiteralExpression,
+                    new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(second))
+                    {
+                        SyntaxKind.IdentifierName,
+                        SyntaxKind.StringLiteralExpression
+                    }
+                };
+                Assert.That.IsExpression(expr, root);
+                Assert.That.NotContainsDiagnostics(expr);
+                Assert.That.AtEndOfFile(parser);
+            }
+
+            { // 左结合运算式，两个运算符相同
+                var tokens = leftAssociativeBinaryExpressionOperatorTokens;
+                foreach (var token in tokens)
+                    FirstAssociativeBinaryExpressionParseTest(token, token, tree);
+            }
+            { // 右结合运算式，两个运算符相同
+                var tokens = rightAssociativeBinaryExpressionOperatorTokens;
+                foreach (var token in tokens)
+                    SecondAssociativeBinaryExpressionParseTest(token, token, tree);
+            }
+            { // 左结合运算式，两个运算符优先级相同
+                foreach (var first in leftAssociativeBinaryExpressionOperatorTokens)
+                    foreach (var second in leftAssociativeBinaryExpressionOperatorTokens)
+                    {
+                        if (SyntaxFacts.GetOperatorPrecedence(first, false) != SyntaxFacts.GetOperatorPrecedence(second, false)) continue;
+                        FirstAssociativeBinaryExpressionParseTest(first, second, tree);
+                    }
+            }
+            { // 右结合运算式，两个运算符优先级相同
+                foreach (var first in rightAssociativeBinaryExpressionOperatorTokens)
+                    foreach (var second in rightAssociativeBinaryExpressionOperatorTokens)
+                    {
+                        if (SyntaxFacts.GetOperatorPrecedence(first, false) != SyntaxFacts.GetOperatorPrecedence(second, false)) continue;
+                        SecondAssociativeBinaryExpressionParseTest(first, second, tree);
+                    }
+            }
+            { // 两个运算符优先级不相同
+                foreach (var first in binaryExpressionOperatorTokens)
+                    foreach (var second in binaryExpressionOperatorTokens)
+                    {
+                        var firstPrecedence = SyntaxFacts.GetOperatorPrecedence(first, false);
+                        var secondPrecedence = SyntaxFacts.GetOperatorPrecedence(second, false);
+                        if (firstPrecedence < secondPrecedence)
+                            SecondAssociativeBinaryExpressionParseTest(first, second, tree);
+                        else if (firstPrecedence > secondPrecedence)
+                            FirstAssociativeBinaryExpressionParseTest(first, second, tree);
+                    }
+            }
+            { // 第一个为左结合运算符，第二个为右结合运算符，两个运算符优先级相同
+                foreach (var first in leftAssociativeBinaryExpressionOperatorTokens)
+                    foreach (var second in rightAssociativeBinaryExpressionOperatorTokens)
+                    {
+                        if (SyntaxFacts.GetOperatorPrecedence(first, false) != SyntaxFacts.GetOperatorPrecedence(second, false)) continue;
+                        SecondAssociativeBinaryExpressionParseTest(first, second, tree);
+                    }
+            }
+            { // 第一个为右结合运算符，第二个为左结合运算符，两个运算符优先级相同
+                foreach (var first in rightAssociativeBinaryExpressionOperatorTokens)
+                    foreach (var second in leftAssociativeBinaryExpressionOperatorTokens)
+                    {
+                        if (SyntaxFacts.GetOperatorPrecedence(first, false) != SyntaxFacts.GetOperatorPrecedence(second, false)) continue;
+                        FirstAssociativeBinaryExpressionParseTest(first, second, tree);
+                    }
+            }
+        }
+
+        { // 两个一元运算式
+            var tree = new Tree<SyntaxKind>();
+
+            static void UnaryExpressionParseTest(SyntaxKind first, SyntaxKind second, Tree<SyntaxKind> tree)
+            {
+                var parser = LanguageParserTests.CreateLanguageParser($" {SyntaxFacts.GetText(first)} {SyntaxFacts.GetText(second)} a ");
+                var expr = parser.ParseExpressionWithOperator();
+                var root = new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetUnaryExpression(first))
+                {
+                    new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetUnaryExpression(second))
+                    {
+                        SyntaxKind.IdentifierName
+                    }
+                };
+                Assert.That.IsExpression(expr, root);
+                Assert.That.NotContainsDiagnostics(expr);
+                Assert.That.AtEndOfFile(parser);
+            }
+
+            foreach (var first in unaryExpressionOperatorTokens)
+                foreach (var second in unaryExpressionOperatorTokens)
+                {
+                    UnaryExpressionParseTest(first, second, tree);
+                }
+        }
+
+        { // 第一个为二元运算符，第二个为一元运算符
+            var tree = new Tree<SyntaxKind>();
+
+            static void UnaryAssociativeExpressionParseTest(SyntaxKind first, SyntaxKind second, Tree<SyntaxKind> tree)
+            {
+                var parser = LanguageParserTests.CreateLanguageParser($" 1 {SyntaxFacts.GetText(first)} {SyntaxFacts.GetText(second)} a ");
+                var expr = parser.ParseExpressionWithOperator();
+                var root = new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(first))
+                {
+                    SyntaxKind.NumericLiteralExpression,
+                    new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetUnaryExpression(second))
+                    {
+                        SyntaxKind.IdentifierName
+                    }
+                };
+                Assert.That.IsExpression(expr, root);
+                Assert.That.NotContainsDiagnostics(expr);
+                Assert.That.AtEndOfFile(parser);
+            }
+
+            foreach (var first in binaryExpressionOperatorTokens)
+                foreach (var second in unaryExpressionOperatorTokens)
+                {
+                    UnaryAssociativeExpressionParseTest(first, second, tree);
+                }
+        }
+
+        { // 第一个为一元运算符，第二个为二元运算符
+            var tree = new Tree<SyntaxKind>();
+
+            static void UnaryAssociativeExpressionParseTest(SyntaxKind first, SyntaxKind second, Tree<SyntaxKind> tree)
+            {
+                var parser = LanguageParserTests.CreateLanguageParser($" {SyntaxFacts.GetText(first)} 1 {SyntaxFacts.GetText(second)} a ");
+                var expr = parser.ParseExpressionWithOperator();
+                var root = new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(second))
+                {
+                    new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetUnaryExpression(first))
+                    {
+                        SyntaxKind.NumericLiteralExpression
+                    },
+                    SyntaxKind.IdentifierName
+                };
+                Assert.That.IsExpression(expr, root);
+                Assert.That.NotContainsDiagnostics(expr);
+                Assert.That.AtEndOfFile(parser);
+            }
+            static void BinaryAssociativeExpressionParseTest(SyntaxKind first, SyntaxKind second, Tree<SyntaxKind> tree)
+            {
+                var parser = LanguageParserTests.CreateLanguageParser($" {SyntaxFacts.GetText(first)} 1 {SyntaxFacts.GetText(second)} a ");
+                var expr = parser.ParseExpressionWithOperator();
+                var root = new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetUnaryExpression(first))
+                {
+                    new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(second))
+                    {
+                        SyntaxKind.NumericLiteralExpression,
+                        SyntaxKind.IdentifierName
+                    }
+                };
+                Assert.That.IsExpression(expr, root);
+                Assert.That.NotContainsDiagnostics(expr);
+                Assert.That.AtEndOfFile(parser);
+            }
+
+            foreach (var first in unaryExpressionOperatorTokens)
+                foreach (var second in binaryExpressionOperatorTokens)
+                {
+                    var firstPrecedence = SyntaxFacts.GetOperatorPrecedence(first, true);
+                    var secondPrecedence = SyntaxFacts.GetOperatorPrecedence(second, false);
+                    if (firstPrecedence < secondPrecedence)
+                        BinaryAssociativeExpressionParseTest(first, second, tree);
+                    else if (firstPrecedence > secondPrecedence)
+                        UnaryAssociativeExpressionParseTest(first, second, tree);
+                }
+        }
+        #endregion
+
+        #region 括号表达式
+
         #endregion
     }
     #endregion

@@ -322,7 +322,20 @@ public static partial class SyntaxFacts
             _ => false
         };
 
-    public static bool IsLiteralExpression(SyntaxKind token) =>
+    public static bool IsLiteralExpression(SyntaxKind expression) =>
+        expression switch
+        {
+            SyntaxKind.NilLiteralExpression or
+            SyntaxKind.FalseLiteralExpression or
+            SyntaxKind.TrueLiteralExpression or
+            SyntaxKind.NumericLiteralExpression or
+            SyntaxKind.StringLiteralExpression or
+            SyntaxKind.VariousArgumentsExpression => true,
+
+            _ => false
+        };
+
+    public static bool IsLiteralToken(SyntaxKind token) =>
         SyntaxFacts.GetLiteralExpression(token) != SyntaxKind.None;
 
     public static SyntaxKind GetLiteralExpression(SyntaxKind token) =>
@@ -340,9 +353,9 @@ public static partial class SyntaxFacts
         };
 
     public static bool IsUnaryExpression(SyntaxKind expression) =>
-        SyntaxFacts.GetUnaryExpression(expression) != SyntaxKind.None;
+        SyntaxFacts.GetUnaryExpressionOperatorToken(expression) != SyntaxKind.None;
 
-    public static bool IsUnaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.GetUnaryExpressionOperatorToken(token) != SyntaxKind.None;
+    public static bool IsUnaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.GetUnaryExpression(token) != SyntaxKind.None;
 
     public static SyntaxKind GetUnaryExpression(SyntaxKind token) =>
         token switch
@@ -367,24 +380,20 @@ public static partial class SyntaxFacts
         };
 
     public static bool IsBinaryExpression(SyntaxKind expression) =>
-        SyntaxFacts.GetBinaryExpression(expression) != SyntaxKind.None;
+        SyntaxFacts.GetBinaryExpressionOperatorToken(expression) != SyntaxKind.None;
 
-    public static bool IsBinaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.GetBinaryExpressionOperatorToken(token) != SyntaxKind.None;
+    public static bool IsBinaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.GetBinaryExpression(token) != SyntaxKind.None;
 
-    public static bool IsLeftAssociativeBinaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.IsBinaryExpressionOperatorToken(token) && !SyntaxFacts.IsRightAssociativeBinaryExpressionOperatorToken(token);
+    internal static bool IsLeftAssociativeBinaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.IsBinaryExpressionOperatorToken(token) && !SyntaxFacts.IsRightAssociativeBinaryExpressionOperatorToken(token);
 
-    private static bool IsRightAssociativeBinaryExpressionOperatorToken(SyntaxKind token)
-    {
-        Debug.Assert(SyntaxFacts.IsBinaryExpressionOperatorToken(token));
-
-        return token switch
+    internal static bool IsRightAssociativeBinaryExpressionOperatorToken(SyntaxKind token) =>
+        token switch
         {
             SyntaxKind.CaretToken or
             SyntaxKind.DotDotToken => true,
 
             _ => false
         };
-    }
 
     public static SyntaxKind GetBinaryExpression(SyntaxKind token) =>
         token switch
@@ -414,7 +423,7 @@ public static partial class SyntaxFacts
             _ => SyntaxKind.None
         };
 
-    public static int GetOperatorPrecedence(SyntaxKind token, bool isUnary) =>
+    internal static int GetOperatorPrecedence(SyntaxKind token, bool isUnary) =>
         token switch
         {
             SyntaxKind.CaretToken => 12,
@@ -429,7 +438,7 @@ public static partial class SyntaxFacts
             SyntaxKind.SlashSlashToken or
             SyntaxKind.PersentToken => 10,
 
-            SyntaxKind.PlusToken or
+            SyntaxKind.PlusToken => 9,
             //SyntaxKind.MinusToken => 9,
 
             SyntaxKind.DotDotToken => 8,

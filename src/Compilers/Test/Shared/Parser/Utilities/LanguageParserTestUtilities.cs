@@ -1,4 +1,6 @@
-﻿#if LANG_LUA
+﻿using System.Diagnostics;
+
+#if LANG_LUA
 using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 using ThisInternalSyntaxNode = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.LuaSyntaxNode;
 
@@ -206,10 +208,80 @@ public static class LanguageParserTestUtilities
         Assert.AreEqual(kind, expression.Kind);
     }
 
+    internal static void IsUnaryExpression(this Assert assert, UnaryExpressionSyntax unaryExpression, TreeNode<SyntaxKind> kinds)
+    {
+        Debug.Assert(kinds.Count == 1);
+        Assert.AreEqual(kinds.Value, unaryExpression.Kind);
+
+        assert.IsExpression(unaryExpression.Operand, kinds.Children[0]);
+    }
+
     internal static void IsBinaryExpression(this Assert assert, ExpressionSyntax expression, SyntaxKind kind)
     {
         Assert.IsInstanceOfType(expression, typeof(BinaryExpressionSyntax));
         Assert.AreEqual(kind, expression.Kind);
     }
 
+    internal static void IsBinaryExpression(this Assert assert, BinaryExpressionSyntax binaryExpression, TreeNode<SyntaxKind> kinds)
+    {
+        Debug.Assert(kinds.Count == 2);
+        Assert.AreEqual(kinds.Value, binaryExpression.Kind);
+
+        assert.IsExpression(binaryExpression.Left, kinds.Children[0]);
+        assert.IsExpression(binaryExpression.Right, kinds.Children[1]);
+    }
+
+    internal static void IsParenthesizedExpression(this Assert assert, ExpressionSyntax expression)
+    {
+        Assert.IsInstanceOfType(expression, typeof(ParenthesizedExpressionSyntax));
+    }
+
+    internal static void IsParenthesizedExpression(this Assert assert, ParenthesizedExpressionSyntax parenthesizedExpression, TreeNode<SyntaxKind> kinds)
+    {
+        Debug.Assert(kinds.Count == 1);
+        Assert.AreEqual(kinds.Value, parenthesizedExpression.Kind);
+        assert.IsExpression(parenthesizedExpression.Expression, kinds.Children[0]);
+    }
+
+    internal static void IsExpression(this Assert assert, ExpressionSyntax expression, TreeNode<SyntaxKind> kinds)
+    {
+        if (kinds.Value == SyntaxKind.ParenthesizedExpression)
+        {
+            Assert.IsInstanceOfType(expression, typeof(ParenthesizedExpressionSyntax));
+            assert.IsParenthesizedExpression((ParenthesizedExpressionSyntax)expression, kinds);
+        }
+        else if (SyntaxFacts.IsUnaryExpression(kinds.value))
+        {
+            Assert.IsInstanceOfType(expression, typeof(UnaryExpressionSyntax));
+            assert.IsUnaryExpression((UnaryExpressionSyntax)expression, kinds);
+        }
+        else if (SyntaxFacts.IsBinaryExpression(kinds.value))
+        {
+            Assert.IsInstanceOfType(expression, typeof(BinaryExpressionSyntax));
+            assert.IsBinaryExpression((BinaryExpressionSyntax)expression, kinds);
+        }
+        else if (SyntaxFacts.IsLiteralExpression(kinds.value))
+        {
+            Debug.Assert(kinds.Count == 0);
+            Assert.IsInstanceOfType(expression, typeof(LiteralExpressionSyntax));
+            assert.IsLiteralExpression((LiteralExpressionSyntax)expression, kinds.value);
+        }
+        else if (kinds.Value == SyntaxKind.IdentifierName)
+        {
+            Debug.Assert(kinds.Count == 0);
+            Assert.IsInstanceOfType(expression, typeof(IdentifierNameSyntax));
+        }
+        else if (kinds.Value == SyntaxKind.QualifiedName)
+        {
+            Debug.Assert(kinds.Count == 0);
+            Assert.IsInstanceOfType(expression, typeof(QualifiedNameSyntax));
+        }
+        else if (kinds.Value == SyntaxKind.ImplicitSelfParameterName)
+        {
+            Debug.Assert(kinds.Count == 0);
+            Assert.IsInstanceOfType(expression, typeof(ImplicitSelfParameterNameSyntax));
+        }
+        else
+            Debug.Fail($"暂不支持测试的表达式语法节点种类：{kinds.value}");
+    }
 }
