@@ -278,20 +278,17 @@ internal abstract class SlidingTextWindow : IDisposable
         if (count is < 0) throw new ArgumentOutOfRangeException(nameof(count));
         else if (count is 0) return string.Empty;
 
-        char[] chars = new char[count];
         for (int i = 0; i < count; i++)
         {
             int position = this._offset + i;
             if (position >= this._characterWindowCount && !this.MoreChars())
             {
-                count = i;
+                count = i + 1;
                 break;
             }
-            else
-                chars[i] = this._characterWindow[position];
         }
 
-        return new(chars, 0, count);
+        return this.GetText(this._offset, count, intern: true);
     }
 
     /// <summary>

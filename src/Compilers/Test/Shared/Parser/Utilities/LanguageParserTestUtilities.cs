@@ -200,6 +200,12 @@ public static class LanguageParserTestUtilities
     }
     #endregion
 
+    internal static void IsUnaryExpression(this Assert assert, ExpressionSyntax expression, SyntaxKind kind)
+    {
+        Assert.IsInstanceOfType(expression, typeof(UnaryExpressionSyntax));
+        Assert.AreEqual(kind, expression.Kind);
+    }
+
     internal static void IsBinaryExpression(this Assert assert, ExpressionSyntax expression, SyntaxKind kind)
     {
         Assert.IsInstanceOfType(expression, typeof(BinaryExpressionSyntax));

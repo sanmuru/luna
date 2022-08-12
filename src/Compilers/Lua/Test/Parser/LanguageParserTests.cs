@@ -297,11 +297,187 @@ public partial class LanguageParserTests
     [TestMethod]
     public void ExceptionWithOperatorParseTests()
     {
-        {
+        #region 基础操作符运算式
+        #region 一元运算式
+        { // 取负
+            var parser = LanguageParserTests.CreateLanguageParser(" -1 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsUnaryExpression(expr, SyntaxKind.UnaryMinusExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 逻辑非
+            var parser = LanguageParserTests.CreateLanguageParser(" not true ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsUnaryExpression(expr, SyntaxKind.LogicalNotExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 取长度
+            var parser = LanguageParserTests.CreateLanguageParser(" #t ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsUnaryExpression(expr, SyntaxKind.LengthExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 按位非
+            var parser = LanguageParserTests.CreateLanguageParser(" ~1 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsUnaryExpression(expr, SyntaxKind.BitwiseNotExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        #endregion
+        #region 二元运算式
+        { // 加法
             var parser = LanguageParserTests.CreateLanguageParser(" 1 + 2 ");
             var expr = parser.ParseExpressionWithOperator();
             Assert.That.IsBinaryExpression(expr, SyntaxKind.AdditionExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
         }
+        { // 减法
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 - 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.SubtractionExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 乘法
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 * 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.MultiplicationExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 除法
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 / 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.DivisionExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 向下取整除法
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 // 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.FloorDivisionExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 取幂
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 ^ 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.ExponentiationExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 取模
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 % 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.ModuloExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 按位与
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 & 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.BitwiseAndExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 按位异或
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 ~ 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.BitwiseExclusiveOrExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 按位或
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 | 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.BitwiseOrExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 按位左移
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 << 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.BitwiseLeftShiftExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 按位右移
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 >> 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.BitwiseRightShiftExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 连接
+            var parser = LanguageParserTests.CreateLanguageParser(" '1' .. '2' ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.ConcatenationExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 小于
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 < 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.LessThanExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 小于等于
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 <= 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.LessThanOrEqualExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 大于
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 > 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.GreaterThanExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 大于等于
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 >= 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.GreaterThanOrEqualExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 相等
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 == 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.EqualExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 不等
+            var parser = LanguageParserTests.CreateLanguageParser(" 1 ~= 2 ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.NotEqualExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 逻辑与
+            var parser = LanguageParserTests.CreateLanguageParser(" true and false ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.AndExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 逻辑或
+            var parser = LanguageParserTests.CreateLanguageParser(" true or false ");
+            var expr = parser.ParseExpressionWithOperator();
+            Assert.That.IsBinaryExpression(expr, SyntaxKind.OrExpression);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        #endregion
+        #endregion
     }
     #endregion
 }

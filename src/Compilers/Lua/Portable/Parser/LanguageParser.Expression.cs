@@ -71,7 +71,7 @@ partial class LanguageParser
             SyntaxKind.FalseKeyword or
             SyntaxKind.TrueKeyword or
             SyntaxKind.NumericLiteralToken or
-            SyntaxKind.StringLiteralExpression or
+            SyntaxKind.StringLiteralToken or
             SyntaxKind.MultiLineRawStringLiteralToken or
             SyntaxKind.DotDotDotToken or
             SyntaxKind.OpenParenToken or
@@ -95,9 +95,18 @@ partial class LanguageParser
 #endif
         ExpressionSyntax ParseExpression()
     {
-        var expr = this.ParseExpressionWithoutOperator();
-        return SyntaxFacts.IsBinaryExpressionOperatorToken(this.CurrentTokenKind) ?
-            this.ParseExpressionWithOperator(expr) : expr;
+        ExpressionSyntax expr;
+
+        if (SyntaxFacts.IsUnaryExpressionOperatorToken(this.CurrentTokenKind))
+            expr = this.ParseExpressionWithOperator();
+        else
+        {
+            expr = this.ParseExpressionWithoutOperator();
+            if (SyntaxFacts.IsBinaryExpressionOperatorToken(this.CurrentTokenKind))
+                expr = this.ParseExpressionWithOperator(expr);
+        }
+
+        return expr;
     }
 
 #if TESTING
@@ -134,10 +143,10 @@ partial class LanguageParser
                     , SyntaxKind.NumericLiteralToken
 #endif
                     ),
-            SyntaxKind.StringLiteralExpression =>
+            SyntaxKind.StringLiteralToken =>
                 this.ParseLiteralExpression(SyntaxKind.StringLiteralExpression
 #if DEBUG
-                    , SyntaxKind.StringLiteralExpression
+                    , SyntaxKind.StringLiteralToken
 #endif
                     ),
             SyntaxKind.MultiLineRawStringLiteralToken =>
@@ -169,7 +178,7 @@ partial class LanguageParser
                 this.ParseTableConstructorExpression(),
 
             SyntaxKind.IdentifierToken =>
-                this.ParseIdentifierStartedExpression(),
+                this.ParseIdentifierName(),
 
             _ =>
                 throw ExceptionUtilities.Unreachable,
@@ -276,18 +285,6 @@ partial class LanguageParser
         var field = this.ParseFieldList();
         var closeBrace = this.EatToken(SyntaxKind.CloseBraceToken);
         return this._syntaxFactory.TableConstructorExpression(openBrace, field, closeBrace);
-    }
-
-#if TESTING
-    internal
-#else
-    private
-#endif
-        ExpressionSyntax ParseIdentifierStartedExpression()
-    {
-        Debug.Assert(this.CurrentTokenKind == SyntaxKind.IdentifierToken);
-
-        return this.ParseName();
     }
 
 #if TESTING
