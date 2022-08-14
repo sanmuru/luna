@@ -138,6 +138,9 @@
   <data name="ERR_InternalError" xml:space="preserve">
     <value>Internal error in the Lua compiler.</value>
   </data>
+  <data name="ERR_InvalidExprTerm" xml:space="preserve">
+    <value>Invalid expression term '{0}'.</value>
+  </data>
   <data name="ERR_InvalidInstrumentationKind" xml:space="preserve">
     <value>Invalid instrumentation kind: {0}.</value>
   </data>

@@ -87,16 +87,24 @@ partial class LanguageParser
             _ => false
         };
 
-
 #if TESTING
     internal
 #else
     private
 #endif
-        ExpressionSyntax ParseExpression()
-    {
-        ExpressionSyntax expr;
+        ExpressionSyntax ParseExpression() =>
+        this.IsPossibleExpression() ?
+            this.ParseExpressionCore() :
+            this.AddError(
+                this.CreateMissingIdentifierName(),
+                ErrorCode.ERR_InvalidExprTerm,
+                SyntaxFacts.GetText(this.CurrentTokenKind));
 
+    private ExpressionSyntax ParseExpressionCore()
+    {
+        Debug.Assert(this.IsPossibleExpression(), "必须先检查当前标志是否可能为表达式的开始，请使用ParseExpression。");
+
+        ExpressionSyntax expr;
         if (SyntaxFacts.IsUnaryExpressionOperatorToken(this.CurrentTokenKind))
             expr = this.ParseExpressionWithOperator();
         else
@@ -181,7 +189,7 @@ partial class LanguageParser
                 this.ParseIdentifierName(),
 
             _ =>
-                this.AddError(this.CreateMissingIdentifierName(), ErrorCode.ERR_InvalidExprTerm, SyntaxFacts.GetText(this.CurrentTokenKind))
+                throw ExceptionUtilities.Unreachable
         };
 
         int lastTokenPosition = -1;

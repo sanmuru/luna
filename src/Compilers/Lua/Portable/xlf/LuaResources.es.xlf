@@ -37,6 +37,11 @@
         <target state="new">Internal error in the Lua compiler.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_InvalidExprTerm">
+        <source>Invalid expression term '{0}'.</source>
+        <target state="new">Invalid expression term '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_InvalidInstrumentationKind">
         <source>Invalid instrumentation kind: {0}.</source>
         <target state="new">Invalid instrumentation kind: {0}.</target>

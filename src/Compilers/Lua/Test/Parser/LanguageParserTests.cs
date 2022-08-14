@@ -303,7 +303,7 @@ public partial class LanguageParserTests
             var parser = LanguageParserTests.CreateLanguageParser(" (a) ");
             var expr = parser.ParseParenthesizedExpression();
             var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.ParenthesizedExpression) { SyntaxKind.IdentifierName };
-            Assert.That.IsExpression(expr, root);
+            Assert.That.IsParenthesizedExpression(expr, root);
             Assert.That.NotContainsDiagnostics(expr);
             Assert.That.AtEndOfFile(parser);
         }
@@ -311,9 +311,24 @@ public partial class LanguageParserTests
             var parser = LanguageParserTests.CreateLanguageParser(" () ");
             var expr = parser.ParseParenthesizedExpression();
             Assert.That.IsParenthesizedExpression(expr);
-            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.ContainsDiagnostics(expr);
             Assert.That.AtEndOfFile(parser);
-            int i = 1 + % 2;
+        }
+        { // 不合法的非空的括号，右括号缺失
+            var parser = LanguageParserTests.CreateLanguageParser(" (a 1.0");
+            {
+                var expr = parser.ParseParenthesizedExpression();
+                var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.ParenthesizedExpression) { SyntaxKind.IdentifierName };
+                Assert.That.IsParenthesizedExpression(expr, root);
+                Assert.That.ContainsDiagnostics(expr);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            {
+                var expr = parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken);
+                Assert.That.IsLiteralExpression(expr, SyntaxKind.NumericLiteralExpression, 1D);
+                Assert.That.NotContainsDiagnostics(expr);
+                Assert.That.AtEndOfFile(parser);
+            }
         }
     }
 
@@ -716,7 +731,56 @@ public partial class LanguageParserTests
         #endregion
 
         #region 括号表达式
+        {
+            var tree = new Tree<SyntaxKind>();
 
+            static void ParenthesizedExpressionParseTest(
+                SyntaxKind first,
+                SyntaxKind second,
+                SyntaxKind third,
+                SyntaxKind forth,
+                Tree<SyntaxKind> tree)
+            {
+                var parser = LanguageParserTests.CreateLanguageParser($" {SyntaxFacts.GetText(first)}((1 {SyntaxFacts.GetText(second)} a){SyntaxFacts.GetText(third)}('string' {SyntaxFacts.GetText(forth)} false)) ");
+                var expr = parser.ParseExpressionWithOperator();
+                var root = new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetUnaryExpression(first))
+                {
+                    new TreeNode<SyntaxKind>(tree, SyntaxKind.ParenthesizedExpression)
+                    {
+                        new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(third))
+                        {
+                            new TreeNode<SyntaxKind>(tree, SyntaxKind.ParenthesizedExpression)
+                            {
+                                new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(second))
+                                {
+                                    SyntaxKind.NumericLiteralExpression,
+                                    SyntaxKind.IdentifierName
+                                }
+                            },
+                            new TreeNode<SyntaxKind>(tree, SyntaxKind.ParenthesizedExpression)
+                            {
+                                new TreeNode<SyntaxKind>(tree, SyntaxFacts.GetBinaryExpression(forth))
+                                {
+                                    SyntaxKind.StringLiteralExpression,
+                                    SyntaxKind.FalseLiteralExpression
+                                }
+                            }
+                        }
+                    }
+                };
+                Assert.That.IsExpression(expr, root);
+                Assert.That.NotContainsDiagnostics(expr);
+                Assert.That.AtEndOfFile(parser);
+            }
+
+            foreach (var first in unaryExpressionOperatorTokens)
+                foreach (var second in binaryExpressionOperatorTokens)
+                    foreach (var third in binaryExpressionOperatorTokens)
+                        foreach (var forth in binaryExpressionOperatorTokens)
+                        {
+                            ParenthesizedExpressionParseTest(first, second, third, forth, tree);
+                        }
+        }
         #endregion
     }
     #endregion

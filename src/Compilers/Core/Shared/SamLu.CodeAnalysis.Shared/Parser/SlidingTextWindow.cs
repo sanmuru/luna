@@ -159,7 +159,7 @@ internal sealed class SlidingTextWindow : SamLu.CodeAnalysis.Syntax.InternalSynt
             _ => throw ExceptionUtilities.Unreachable // 前面已经检查过了。
         };
         for (int index = 1; index < utf8Bytes.Length; index++)
-            codepoint = (codepoint << 6) + (uint)0b111111;
+            codepoint = (codepoint << 6) + (utf8Bytes[index] & (uint)0b111111);
         return SlidingTextWindow.GetCharsFromUtf32(codepoint, out surrogate);
     }
 
