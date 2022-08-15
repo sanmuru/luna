@@ -783,5 +783,78 @@ public partial class LanguageParserTests
         }
         #endregion
     }
+
+    [TestMethod]
+    public void MemberAccessExpressionParseTests()
+    {
+        var parser = LanguageParserTests.CreateLanguageParser("""
+            a.b
+            1.GetType
+            1.0.ToString
+            a.1
+            a.1.0
+            a.'string'
+            a[b]
+            a["b"]
+            1['ToString']
+            a[1]
+            a[1.0]
+            a['string']
+            a.[b]
+            a[1][0]
+            """);
+        var tree = new Tree<SyntaxKind>();
+        { // a.b
+            var expr = parser.ParseSimpleMemberAccessExpressionSyntax(parser.ParseIdentifierName());
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
+            {
+                SyntaxKind.IdentifierName,
+                SyntaxKind.IdentifierName
+            };
+            Assert.That.IsSimpleMemberAccessExpression(expr, root);
+            Assert.That.NotContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)expr.Self, "a");
+
+            Assert.That.IsIdentifierName(expr.MemberName, "b");
+
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        { // 1.ToString
+            var expr = parser.ParseSimpleMemberAccessExpressionSyntax(parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken));
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
+            {
+                SyntaxKind.NumericLiteralExpression,
+                SyntaxKind.IdentifierName
+            };
+            Assert.That.IsSimpleMemberAccessExpression(expr, root);
+            Assert.That.NotContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)expr.Self, SyntaxKind.NumericLiteralExpression, 1L);
+
+            Assert.That.IsIdentifierName(expr.MemberName, "GetType");
+
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        { // 1.0.ToString
+            var expr = parser.ParseSimpleMemberAccessExpressionSyntax(parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken));
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
+            {
+                SyntaxKind.NumericLiteralExpression,
+                SyntaxKind.IdentifierName
+            };
+            Assert.That.IsSimpleMemberAccessExpression(expr, root);
+            Assert.That.NotContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)expr.Self, SyntaxKind.NumericLiteralExpression, 1D);
+
+            Assert.That.IsIdentifierName(expr.MemberName, "ToString");
+
+            Assert.That.NotAtEndOfFile(parser);
+        }
+    }
     #endregion
 }

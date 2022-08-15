@@ -31,6 +31,6 @@ partial class LexerTests
 
         var tokenValue = token.GetValue();
         Assert.IsInstanceOfType(value, typeof(T));
-        Assert.AreEqual(value, (T?)tokenValue);
+        Assert.AreEqual(value, tokenValue);
     }
 }

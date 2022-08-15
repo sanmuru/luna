@@ -202,6 +202,7 @@ public static class LanguageParserTestUtilities
     }
     #endregion
 
+    #region IsUnaryExpression
     internal static void IsUnaryExpression(this Assert assert, ExpressionSyntax expression, SyntaxKind kind)
     {
         Assert.IsInstanceOfType(expression, typeof(UnaryExpressionSyntax));
@@ -215,7 +216,9 @@ public static class LanguageParserTestUtilities
 
         assert.IsExpression(unaryExpression.Operand, kinds.Children[0]);
     }
+    #endregion
 
+    #region IsBinaryExpression
     internal static void IsBinaryExpression(this Assert assert, ExpressionSyntax expression, SyntaxKind kind)
     {
         Assert.IsInstanceOfType(expression, typeof(BinaryExpressionSyntax));
@@ -230,7 +233,9 @@ public static class LanguageParserTestUtilities
         assert.IsExpression(binaryExpression.Left, kinds.Children[0]);
         assert.IsExpression(binaryExpression.Right, kinds.Children[1]);
     }
+    #endregion
 
+    #region IsParenthesizedExpression
     internal static void IsParenthesizedExpression(this Assert assert, ExpressionSyntax expression)
     {
         Assert.IsInstanceOfType(expression, typeof(ParenthesizedExpressionSyntax));
@@ -242,9 +247,50 @@ public static class LanguageParserTestUtilities
         Assert.AreEqual(kinds.Value, parenthesizedExpression.Kind);
         assert.IsExpression(parenthesizedExpression.Expression, kinds.Children[0]);
     }
+    #endregion
+
+    #region IsSimpleMemberAccessExpression
+    internal static void IsSimpleMemberAccessExpression(this Assert assert, ExpressionSyntax expression)
+    {
+        Assert.IsInstanceOfType(expression, typeof(SimpleMemberAccessExpressionSyntax));
+    }
+
+    internal static void IsSimpleMemberAccessExpression(this Assert assert, SimpleMemberAccessExpressionSyntax simpleMemberAccessExpression, TreeNode<SyntaxKind> kinds)
+    {
+        Debug.Assert(kinds.Count == 2);
+        Assert.AreEqual(kinds.value, simpleMemberAccessExpression.Kind);
+        assert.IsExpression(simpleMemberAccessExpression.Self, kinds.Children[0]);
+        assert.IsExpression(simpleMemberAccessExpression.MemberName, kinds.Children[1]);
+    }
+    #endregion
+
+    #region IsIndexMemberAccessExpression
+    internal static void IsIndexMemberAccessExpression(this Assert assert, ExpressionSyntax expression)
+    {
+        Assert.IsInstanceOfType(expression, typeof(IndexMemberAccessExpressionSyntax));
+    }
+
+    internal static void IsIndexMemberAccessExpression(this Assert assert, IndexMemberAccessExpressionSyntax indexMemberAccessExpression, TreeNode<SyntaxKind> kinds)
+    {
+        Debug.Assert(kinds.Count == 2);
+        Assert.AreEqual(kinds.value, indexMemberAccessExpression.Kind);
+        assert.IsExpression(indexMemberAccessExpression.Self, kinds.Children[0]);
+        assert.IsExpression(indexMemberAccessExpression.Member, kinds.Children[1]);
+    }
+    #endregion
 
     internal static void IsExpression(this Assert assert, ExpressionSyntax expression, TreeNode<SyntaxKind> kinds)
     {
+        if (kinds.Value == SyntaxKind.SimpleMemberAccessExpression)
+        {
+            Assert.IsInstanceOfType(expression, typeof(SimpleMemberAccessExpressionSyntax));
+            assert.IsSimpleMemberAccessExpression((SimpleMemberAccessExpressionSyntax)expression, kinds);
+        }
+        else if (kinds.Value == SyntaxKind.IndexMemberAccessExpression)
+        {
+            Assert.IsInstanceOfType(expression, typeof(IndexMemberAccessExpressionSyntax));
+            assert.IsIndexMemberAccessExpression((IndexMemberAccessExpressionSyntax)expression, kinds);
+        }
         if (kinds.Value == SyntaxKind.ParenthesizedExpression)
         {
             Assert.IsInstanceOfType(expression, typeof(ParenthesizedExpressionSyntax));
