@@ -21,8 +21,10 @@
   
   <ItemGroup>
     <Compile Include="..\..\..\Test\Shared\Parser\QuickScannerTests.cs" Link="QuickScannerTests.cs" />
+    <Compile Include="..\..\..\Test\Shared\Parser\Utilities\AssertExtensions.cs" Link="Utilities\AssertExtensions.cs" />
     <Compile Include="..\..\..\Test\Shared\Parser\Utilities\LanguageParserTestUtilities.cs" Link="Utilities\LanguageParserTestUtilities.cs" />
     <Compile Include="..\..\..\Test\Shared\Parser\Utilities\LexerTestUtilities.cs" Link="Utilities\LexerTestUtilities.cs" />
+    <Compile Include="..\..\..\Test\Shared\Parser\Utilities\UnexpectedSyntaxKindException.cs" Link="Utilities\UnexpectedSyntaxKindException.cs" />
     <Compile Include="..\..\..\Test\Shared\Parser\LexerTests.cs" Link="LexerTests.Shared.cs" />
     <Compile Include="..\..\..\Test\Shared\System.Collections.Generic\TreeNode`1.cs" Link="System.Collections.Generic\TreeNode`1.cs" />
     <Compile Include="..\..\..\Test\Shared\System.Collections.Generic\Tree`1.cs" Link="System.Collections.Generic\Tree`1.cs" />

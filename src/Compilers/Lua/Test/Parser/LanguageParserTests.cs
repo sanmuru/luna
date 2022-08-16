@@ -787,24 +787,25 @@ public partial class LanguageParserTests
     [TestMethod]
     public void MemberAccessExpressionParseTests()
     {
-        var parser = LanguageParserTests.CreateLanguageParser("""
-            a.b
-            1.GetType
-            1.0.ToString
-            a.1
-            a.1.0
-            a.'string'
-            a[b]
-            a["b"]
-            1['ToString']
-            a[1]
-            a[1.0]
-            a['string']
-            a.[b]
-            a[1][0]
-            """);
+        var str = """
+        a.b
+        1.GetType
+        1.0.ToString
+        a.1
+        a.1.0
+        a.'string'
+        a[b]
+        a["b"]
+        1['ToString']
+        a[1]
+        a[1.0]
+        a['string']
+        a.[b]
+        a[1][0]
+        """;
         var tree = new Tree<SyntaxKind>();
-        { // a.b
+        { // 通过普通成员操作语法获取标识符的成员
+            var parser = LanguageParserTests.CreateLanguageParser("a.b");
             var expr = parser.ParseSimpleMemberAccessExpressionSyntax(parser.ParseIdentifierName());
             var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
             {
@@ -819,9 +820,10 @@ public partial class LanguageParserTests
 
             Assert.That.IsIdentifierName(expr.MemberName, "b");
 
-            Assert.That.NotAtEndOfFile(parser);
+            Assert.That.AtEndOfFile(parser);
         }
-        { // 1.ToString
+        { // 通过普通成员操作语法获取整型数字常量的成员
+            var parser = LanguageParserTests.CreateLanguageParser("1.GetType");
             var expr = parser.ParseSimpleMemberAccessExpressionSyntax(parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken));
             var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
             {
@@ -836,9 +838,10 @@ public partial class LanguageParserTests
 
             Assert.That.IsIdentifierName(expr.MemberName, "GetType");
 
-            Assert.That.NotAtEndOfFile(parser);
+            Assert.That.AtEndOfFile(parser);
         }
-        { // 1.0.ToString
+        { // 通过普通成员操作语法获取浮点型数字常量的成员
+            var parser = LanguageParserTests.CreateLanguageParser("1.0.ToString");
             var expr = parser.ParseSimpleMemberAccessExpressionSyntax(parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken));
             var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
             {
@@ -853,7 +856,101 @@ public partial class LanguageParserTests
 
             Assert.That.IsIdentifierName(expr.MemberName, "ToString");
 
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 通过普通成员操作语法获取标识符的成员，但成员错误使用了整型数字常量
+            // 解析器会将其解析成一个实际为“a”的部分缺失的普通成员操作表达式，和一个实际为“.1”的浮点型数字常量表达式。
+            var parser = LanguageParserTests.CreateLanguageParser("a.1");
+            var expr = parser.ParseSimpleMemberAccessExpressionSyntax(parser.ParseIdentifierName());
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
+            {
+                SyntaxKind.IdentifierName,
+                SyntaxKind.IdentifierName
+            };
+            Assert.That.IsSimpleMemberAccessExpression(expr, root);
+            Assert.That.ContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)expr.Self, "a");
+            Assert.That.NotContainsDiagnostics(expr.Self);
+
+            Assert.That.IsMissing(expr.OperatorToken);
+
+            Assert.That.IsMissingIdentifierName(expr.MemberName);
+            Assert.That.ContainsDiagnostics(expr.MemberName);
+
             Assert.That.NotAtEndOfFile(parser);
+
+            var literal = parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken);
+            Assert.That.IsLiteralExpression(literal, SyntaxKind.NumericLiteralExpression, 0.1D);
+            Assert.That.NotContainsDiagnostics(expr.Self);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 通过普通成员操作语法获取标识符的成员，但成员错误使用了浮点型数字常量
+            // 解析器会将其解析成一个实际为“a”的部分缺失的普通成员操作表达式，后为一个实际为“.1”的浮点型数字常量表达式，最后为一个实际为“.0”的浮点型数字常量表达式。
+            var parser = LanguageParserTests.CreateLanguageParser("a.1.0");
+            var expr = parser.ParseSimpleMemberAccessExpressionSyntax(parser.ParseIdentifierName());
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
+            {
+                SyntaxKind.IdentifierName,
+                SyntaxKind.IdentifierName
+            };
+            Assert.That.IsSimpleMemberAccessExpression(expr, root);
+            Assert.That.ContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)expr.Self, "a");
+            Assert.That.ContainsDiagnostics(expr);
+
+            Assert.That.IsMissing(expr.OperatorToken);
+
+            Assert.That.IsMissingIdentifierName(expr.MemberName);
+            Assert.That.ContainsDiagnostics(expr);
+
+            Assert.That.NotAtEndOfFile(parser);
+
+            {
+                var literal = parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken);
+                Assert.That.IsLiteralExpression(literal, SyntaxKind.NumericLiteralExpression, 0.1D);
+                Assert.That.NotContainsDiagnostics(expr.Self);
+            }
+            {
+                var literal = parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken);
+                Assert.That.IsLiteralExpression(literal, SyntaxKind.NumericLiteralExpression, 0D);
+                Assert.That.NotContainsDiagnostics(expr.Self);
+            }
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 通过普通成员操作语法获取标识符的成员，但成员错误使用了字符串常量
+            // 解析器会将其解析成一个实际为“a.”部分缺失的普通成员操作表达式，后为一个字符串常量表达式。
+            var parser = LanguageParserTests.CreateLanguageParser("a.'string'");
+            var expr = parser.ParseSimpleMemberAccessExpressionSyntax(parser.ParseIdentifierName());
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
+            {
+                SyntaxKind.IdentifierName,
+                SyntaxKind.IdentifierName
+            };
+            Assert.That.IsSimpleMemberAccessExpression(expr, root);
+            Assert.That.ContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)expr.Self, "a");
+            Assert.That.ContainsDiagnostics(expr);
+
+            Assert.That.IsNotMissing(expr.OperatorToken);
+
+            Assert.That.IsMissingIdentifierName(expr.MemberName);
+            Assert.That.ContainsDiagnostics(expr);
+
+            Assert.That.NotAtEndOfFile(parser);
+
+            var literal = parser.ParseLiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxKind.StringLiteralToken);
+            Assert.That.IsLiteralExpression(literal, SyntaxKind.StringLiteralExpression, "string");
+            Assert.That.NotContainsDiagnostics(expr.Self);
+
+            Assert.That.AtEndOfFile(parser);
         }
     }
     #endregion
