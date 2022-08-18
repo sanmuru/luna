@@ -44,6 +44,8 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_IdentifierExpected,
         /// <summary>应输入关键字。</summary>
         ERR_IdentifierExpectedKW,
+        /// <summary>无效的字段值项。</summary>
+        ERR_InvalidFieldValueTerm,
         #endregion
 
         #region Lua 1.0的消息

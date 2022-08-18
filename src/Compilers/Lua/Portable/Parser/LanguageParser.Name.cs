@@ -16,12 +16,18 @@ partial class LanguageParser
         return this._syntaxFactory.IdentifierName(identifier);
     }
 
-    private protected SeparatedSyntaxList<IdentifierNameSyntax> ParseSeparatedIdentifierNames() =>
+    private IdentifierNameSyntax ParseAsIdentifierName()
+    {
+        var identifier = this.EatTokenAsKind(SyntaxKind.IdentifierToken);
+        return this._syntaxFactory.IdentifierName(identifier);
+    }
+
+    private SeparatedSyntaxList<IdentifierNameSyntax> ParseSeparatedIdentifierNames() =>
         this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseIdentifierName(),
             predicate: _ => true);
 
-    private protected void ParseSeparatedIdentifierNames(in SeparatedSyntaxListBuilder<IdentifierNameSyntax> namesBuilder) =>
+    private void ParseSeparatedIdentifierNames(in SeparatedSyntaxListBuilder<IdentifierNameSyntax> namesBuilder) =>
         this.ParseSeparatedSyntaxList(
             namesBuilder,
             parseNodeFunc: _ => this.ParseIdentifierName(),

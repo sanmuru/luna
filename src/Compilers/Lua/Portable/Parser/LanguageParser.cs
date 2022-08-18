@@ -54,6 +54,39 @@ partial class LanguageParser
         return null;
     }
 
+    private SkippedTokensTriviaSyntax? SkipTokensAndExpressions(Func<SyntaxToken, bool> predicate)
+    {
+        var builder = this._pool.Allocate<SyntaxToken>();
+        while (true)
+        {
+            if (this.IsPossibleExpression())
+                this.SkipNode(ref builder, this.ParseExpressionCore());
+            else if (predicate(this.CurrentToken))
+                builder.Add(this.EatToken());
+            else break;
+        }
+
+        if (builder.Count == 0)
+        {
+            this._pool.Free(builder);
+            return null;
+        }
+        else
+            return this._syntaxFactory.SkippedTokensTrivia(this._pool.ToListAndFree(builder));
+    }
+
+    private void SkipNode(ref SyntaxListBuilder<SyntaxToken> builder, LuaSyntaxNode node)
+    {
+        for (int i = 0; i < node.SlotCount; i++)
+        {
+            var nodeInSlot = (LuaSyntaxNode)node.GetSlot(i);
+            if (nodeInSlot is SyntaxToken token)
+                builder.Add(token);
+            else
+                this.SkipNode(ref builder, nodeInSlot);
+        }
+    }
+
     #region ParseSyntaxList & ParseSeparatedSyntaxList
     private void ParseSyntaxList<TNode>(
         in SyntaxListBuilder<TNode> builder,

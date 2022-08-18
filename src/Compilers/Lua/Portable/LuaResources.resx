@@ -141,6 +141,9 @@
   <data name="ERR_InvalidExprTerm" xml:space="preserve">
     <value>Invalid expression term '{0}'.</value>
   </data>
+  <data name="ERR_InvalidFieldValueTerm" xml:space="preserve">
+    <value>Invalid filed value expression term '{0}'.</value>
+  </data>
   <data name="ERR_InvalidInstrumentationKind" xml:space="preserve">
     <value>Invalid instrumentation kind: {0}.</value>
   </data>

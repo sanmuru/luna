@@ -1078,4 +1078,12 @@ public partial class LanguageParserTests
         }
     }
     #endregion
+
+    #region 字段
+    [TestMethod]
+    public void NameValueFieldParseTests()
+    {
+
+    }
+    #endregion
 }

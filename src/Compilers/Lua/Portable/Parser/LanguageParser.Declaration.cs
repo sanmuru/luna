@@ -1,4 +1,5 @@
-﻿using Roslyn.Utilities;
+﻿using System.Diagnostics;
+using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
@@ -72,10 +73,12 @@ partial class LanguageParser
         FieldSyntax ParseField()
     {
         // 解析键值对表字段。
-        if (this.CurrentTokenKind == SyntaxKind.OpenBracketToken)
+        if (this.CurrentTokenKind == SyntaxKind.OpenBracketToken ||
+            (SyntaxFacts.IsLiteralToken(this.CurrentTokenKind) && this.PeekToken(1).Kind == SyntaxKind.EqualsToken)) // 错误使用常量作为键。
             return this.ParseKeyValueField();
         // 解析名值对表字段。
-        else if (this.CurrentTokenKind == SyntaxKind.IdentifierToken && this.PeekToken(1).Kind == SyntaxKind.EqualsToken)
+        else if (this.CurrentTokenKind == SyntaxKind.EqualsToken || // 错误遗失标识符。
+            (this.CurrentTokenKind == SyntaxKind.IdentifierToken && this.PeekToken(1).Kind == SyntaxKind.EqualsToken))
             return this.ParseNameValueField();
         // 解析列表项表字段。
         else
@@ -90,7 +93,8 @@ partial class LanguageParser
         NameValueFieldSyntax ParseNameValueField()
     {
         var name = this.ParseIdentifierName();
-        var equals = this.EatToken(SyntaxKind.EqualsToken);
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.EqualsToken);
+        var equals = this.EatToken();
         var value = this.ParseFieldValue();
         return this._syntaxFactory.NameValueField(name, equals, value);
     }
@@ -144,11 +148,11 @@ partial class LanguageParser
             // 创建缺失的标识符名称语法用来表示缺失的表达式。
             expr = this.CreateMissingIdentifierName();
 
-        // 跳过后方的标志直到字段结束。
-        var skippedTokensTrivia = this.SkipTokens(token => token.Kind is not SyntaxKind.CommaToken or SyntaxKind.CloseBraceToken);
+        // 跳过后方的标志和表达式直到字段结束。
+        var skippedTokensTrivia = this.SkipTokensAndExpressions(token => token.Kind is not SyntaxKind.CommaToken or SyntaxKind.CloseBraceToken);
         if (skippedTokensTrivia is not null)
         {
-            skippedTokensTrivia = this.AddError(skippedTokensTrivia, ErrorCode.ERR_InvalidExprTerm);
+            skippedTokensTrivia = this.AddError(skippedTokensTrivia, ErrorCode.ERR_InvalidFieldValueTerm);
             expr = this.AddTrailingSkippedSyntax(expr, skippedTokensTrivia);
         }
 
