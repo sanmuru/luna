@@ -787,22 +787,6 @@ public partial class LanguageParserTests
     [TestMethod]
     public void MemberAccessExpressionParseTests()
     {
-        var str = """
-        a.b
-        1.GetType
-        1.0.ToString
-        a.1
-        a.1.0
-        a.'string'
-        a[b]
-        a["b"]
-        1['ToString']
-        a[1]
-        a[1.0]
-        a['string']
-        a.[b]
-        a[1][0]
-        """;
         var tree = new Tree<SyntaxKind>();
         { // 通过普通成员操作语法获取标识符的成员
             var parser = LanguageParserTests.CreateLanguageParser("a.b");
@@ -949,6 +933,146 @@ public partial class LanguageParserTests
             var literal = parser.ParseLiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxKind.StringLiteralToken);
             Assert.That.IsLiteralExpression(literal, SyntaxKind.StringLiteralExpression, "string");
             Assert.That.NotContainsDiagnostics(expr.Self);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 通过索引成员操作语法获取标识符的成员，索引是标识符
+            var parser = LanguageParserTests.CreateLanguageParser("a[b]");
+            var expr = parser.ParseIndexMemberAccessExpressionSyntax(parser.ParseIdentifierName());
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.IndexMemberAccessExpression)
+            {
+                SyntaxKind.IdentifierName,
+                SyntaxKind.IdentifierName
+            };
+            Assert.That.IsIndexMemberAccessExpression(expr, root);
+            Assert.That.NotContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)expr.Self, "a");
+
+            Assert.IsInstanceOfType(expr.Member, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)expr.Member, "b");
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 通过索引成员操作语法获取标识符的成员，索引是常量
+            var parser = LanguageParserTests.CreateLanguageParser("a[\"b\"]");
+            var expr = parser.ParseIndexMemberAccessExpressionSyntax(parser.ParseIdentifierName());
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.IndexMemberAccessExpression)
+            {
+                SyntaxKind.IdentifierName,
+                SyntaxKind.StringLiteralExpression
+            };
+            Assert.That.IsIndexMemberAccessExpression(expr, root);
+            Assert.That.NotContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)expr.Self, "a");
+
+            Assert.IsInstanceOfType(expr.Member, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)expr.Member, SyntaxKind.StringLiteralExpression, "b");
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 通过索引成员操作语法获取常量表达式的成员，索引是常量
+            var parser = LanguageParserTests.CreateLanguageParser("1['ToString']");
+            var expr = parser.ParseIndexMemberAccessExpressionSyntax(parser.ParseLiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxKind.NumericLiteralToken));
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.IndexMemberAccessExpression)
+            {
+                SyntaxKind.NumericLiteralExpression,
+                SyntaxKind.StringLiteralExpression
+            };
+            Assert.That.IsIndexMemberAccessExpression(expr, root);
+            Assert.That.NotContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)expr.Self, SyntaxKind.NumericLiteralExpression, 1L);
+
+            Assert.IsInstanceOfType(expr.Member, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)expr.Member, SyntaxKind.StringLiteralExpression, "ToString");
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 通过索引成员操作语法获取标识符的成员，索引是表达式
+            var parser = LanguageParserTests.CreateLanguageParser("a[1.0..[[string]]]");
+            var expr = parser.ParseIndexMemberAccessExpressionSyntax(parser.ParseIdentifierName());
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.IndexMemberAccessExpression)
+            {
+                SyntaxKind.IdentifierName,
+                new TreeNode<SyntaxKind>(tree, SyntaxKind.ConcatenationExpression)
+                {
+                    SyntaxKind.NumericLiteralExpression,
+                    SyntaxKind.StringLiteralExpression
+                }
+            };
+            Assert.That.IsIndexMemberAccessExpression(expr, root);
+            Assert.That.NotContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr.Self, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)expr.Self, "a");
+
+            Assert.IsInstanceOfType(expr.Member, typeof(BinaryExpressionSyntax));
+            var binary = (BinaryExpressionSyntax)expr.Member;
+            {
+                Assert.IsInstanceOfType(binary.Left, typeof(LiteralExpressionSyntax));
+                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)binary.Left, SyntaxKind.NumericLiteralExpression, 1D);
+
+                Assert.IsInstanceOfType(binary.Right, typeof(LiteralExpressionSyntax));
+                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)binary.Right, SyntaxKind.StringLiteralExpression, "string");
+            }
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 通过索引成员操作语法获取标识符的成员，但错误输入普通成员操作语法
+            var parser = LanguageParserTests.CreateLanguageParser("a.[b].c");
+            var expr = parser.ParseExpression();
+            var root = new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
+            {
+                new TreeNode<SyntaxKind>(tree, SyntaxKind.IndexMemberAccessExpression)
+                {
+                    new TreeNode<SyntaxKind>(tree, SyntaxKind.SimpleMemberAccessExpression)
+                    {
+                        SyntaxKind.IdentifierName,
+                        SyntaxKind.IdentifierName
+                    },
+                    SyntaxKind.IdentifierName
+                },
+                SyntaxKind.IdentifierName
+            };
+            Assert.That.IsExpression(expr, root);
+            Assert.That.ContainsDiagnostics(expr);
+
+            Assert.IsInstanceOfType(expr, typeof(SimpleMemberAccessExpressionSyntax));
+            var outerSimple = (SimpleMemberAccessExpressionSyntax)expr;
+            {
+                Assert.That.ContainsDiagnostics(outerSimple);
+
+                Assert.That.IsIdentifierName(outerSimple.MemberName, "c");
+                Assert.That.NotContainsDiagnostics(outerSimple.MemberName);
+            }
+
+            Assert.IsInstanceOfType(outerSimple.Self, typeof(IndexMemberAccessExpressionSyntax));
+            var innerIndex = (IndexMemberAccessExpressionSyntax)outerSimple.Self;
+            {
+                Assert.That.ContainsDiagnostics(innerIndex);
+
+                Assert.IsInstanceOfType(innerIndex.Member, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)innerIndex.Member, "b");
+                Assert.That.NotContainsDiagnostics(innerIndex.Member);
+            }
+
+            Assert.IsInstanceOfType(innerIndex.Self, typeof(SimpleMemberAccessExpressionSyntax));
+            var innerSimple = (SimpleMemberAccessExpressionSyntax)innerIndex.Self;
+            {
+                Assert.That.ContainsDiagnostics(innerSimple);
+
+                Assert.IsInstanceOfType(innerSimple.Self, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)innerSimple.Self, "a");
+                Assert.That.NotContainsDiagnostics(innerSimple.Self);
+
+                Assert.That.IsMissingIdentifierName(innerSimple.MemberName);
+                Assert.That.ContainsDiagnostics(innerSimple.MemberName);
+            }
 
             Assert.That.AtEndOfFile(parser);
         }

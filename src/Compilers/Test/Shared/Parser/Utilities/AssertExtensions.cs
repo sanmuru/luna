@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.VisualStudio.TestTools.UnitTesting;
 
-internal partial static class AssertExtensions
+internal static partial class AssertExtensions
 {
     [DoesNotReturn]
     public static void Raise(this Assert assert, string message, object[]? args = null, [CallerMemberName] string? memberName = null) => assert.Raise<AssertFailedException>(message, args, memberName);

@@ -158,7 +158,7 @@ partial class LanguageParser
 #endif
                     ),
             SyntaxKind.MultiLineRawStringLiteralToken =>
-                this.ParseLiteralExpression(SyntaxKind.MultiLineRawStringLiteralToken
+                this.ParseLiteralExpression(SyntaxKind.StringLiteralExpression
 #if DEBUG
                     , SyntaxKind.MultiLineRawStringLiteralToken
 #endif
