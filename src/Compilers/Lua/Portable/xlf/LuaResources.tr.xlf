@@ -18,8 +18,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_ExpressionExpected">
-        <source>Expected expression</source>
-        <target state="new">Expected expression</target>
+        <source>Expression expected.</source>
+        <target state="new">Expression expected.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_IdentifierExpected">
@@ -53,13 +53,18 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_InvalidInstrumentationKind">
-        <source>Invalid instrumentation kind: {0}.</source>
-        <target state="new">Invalid instrumentation kind: {0}.</target>
+        <source>Invalid instrumentation kind: '{0}'.</source>
+        <target state="new">Invalid instrumentation kind: '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_InvalidNumber">
         <source>Invalid number.</source>
         <target state="new">Invalid number.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InvocationArgumentsExpected">
+        <source>Invocation arguments expected.</source>
+        <target state="new">Invocation arguments expected.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_NewlineInConst">

@@ -279,6 +279,32 @@ public static class LanguageParserTestUtilities
     }
     #endregion
 
+    #region IsEmptyArgumentList
+    internal static void IsEmptyArgumentList(this Assert assert, ArgumentListSyntax argumentList) =>
+        Assert.IsTrue(argumentList.List.Count == 0, "形参列表不为空。");
+
+    internal static void IsNotEmptyArgumentList(this Assert assert, ArgumentListSyntax argumentList) =>
+        Assert.IsFalse(argumentList.List.Count == 0, "形参列表为空。");
+    internal static void IsNotEmptyArgumentList(this Assert assert, ArgumentListSyntax argumentList, int count)
+    {
+        assert.IsNotEmptyArgumentList(argumentList);
+        Assert.AreEqual(count, argumentList.List.Count, $"形参列表参数个数为{argumentList.List.Count}个，而非{count}。");
+    }
+    #endregion
+
+    #region IsEmptyArgumentTable
+    internal static void IsEmptyArgumentTable(this Assert assert, ArgumentTableSyntax argumentTable) =>
+        Assert.IsTrue(argumentTable.Table.Fields.Fields.Count == 0, "形参表不为空。");
+
+    internal static void IsNotEmptyArgumentTable(this Assert assert, ArgumentTableSyntax argumentTable) =>
+        Assert.IsFalse(argumentTable.Table.Fields.Fields.Count == 0, "形参表为空。");
+    internal static void IsNotEmptyArgumentTable(this Assert assert, ArgumentTableSyntax argumentTable, int count)
+    {
+        assert.IsNotEmptyArgumentTable(argumentTable);
+        Assert.AreEqual(count, argumentTable.Table.Fields.Fields.Count, $"形参表参数个数为{argumentTable.Table.Fields.Fields.Count}个，而非{count}。");
+    }
+    #endregion
+
     internal static void IsExpression(this Assert assert, ExpressionSyntax expression, TreeNode<SyntaxKind> kinds)
     {
         if (kinds.Value == SyntaxKind.SimpleMemberAccessExpression)

@@ -1086,6 +1086,84 @@ public partial class LanguageParserTests
         Assert.That.NotContainsDiagnostics(table);
         FieldListTest(table.Fields);
     }
+
+    [TestMethod]
+    public void InvocationExpressionParseTests()
+    {
+        var parser = LanguageParserTests.CreateLanguageParser("""
+            empty()
+            list(a,2)
+            table{a=1,2}
+            print[[line]]
+            """);
+        { // 空的参数列表
+            var invocation = parser.ParseInvocationExpressionSyntax(parser.ParseIdentifierName());
+            Assert.That.NotContainsDiagnostics(invocation);
+
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)invocation.Expression, "empty");
+
+            Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentListSyntax));
+            Assert.That.IsEmptyArgumentList((ArgumentListSyntax)invocation.Arguments);
+
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        { // 参数列表
+            var invocation = parser.ParseInvocationExpressionSyntax(parser.ParseIdentifierName());
+            Assert.That.NotContainsDiagnostics(invocation);
+
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)invocation.Expression, "list");
+
+            Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentListSyntax));
+            var arguments = (ArgumentListSyntax)invocation.Arguments;
+            Assert.That.IsNotEmptyArgumentList(arguments, 2);
+
+            {
+                Assert.IsInstanceOfType(arguments.List[0]!.Expression, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)arguments.List[0]!.Expression, "a");
+
+                Assert.IsInstanceOfType(arguments.List[1]!.Expression, typeof(LiteralExpressionSyntax));
+                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)arguments.List[1]!.Expression, SyntaxKind.NumericLiteralExpression, 2L);
+            }
+
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        { // 参数表
+            var invocation = parser.ParseInvocationExpressionSyntax(parser.ParseIdentifierName());
+            Assert.That.NotContainsDiagnostics(invocation);
+
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)invocation.Expression, "table");
+
+            Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentTableSyntax));
+            var arguments = (ArgumentTableSyntax)invocation.Arguments;
+            Assert.That.IsNotEmptyArgumentTable(arguments, 2);
+
+            {
+                Assert.IsInstanceOfType(arguments.Table.Fields.Fields[0], typeof(NameValueFieldSyntax));
+                var field = (NameValueFieldSyntax)arguments.Table.Fields.Fields[0]!;
+                Assert.That.IsIdentifierName(field.FieldName, "a");
+                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 1L);
+            }
+            {
+                Assert.IsInstanceOfType(arguments.Table.Fields.Fields[1], typeof(ItemFieldSyntax));
+                var field = (ItemFieldSyntax)arguments.Table.Fields.Fields[1]!;
+                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 2L);
+            }
+
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        { // 参数字符串
+            var invocation = parser.ParseInvocationExpressionSyntax(parser.ParseIdentifierName());
+            Assert.That.NotContainsDiagnostics(invocation);
+
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)invocation.Expression, "print");
+
+            Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentStringSyntax));
+            var arguments = (ArgumentStringSyntax)invocation.Arguments;
+
+            Assert.IsInstanceOfType(arguments.String, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression(arguments.String, SyntaxKind.StringLiteralExpression, "line");
+        }
+    }
     #endregion
 
     #region 字段

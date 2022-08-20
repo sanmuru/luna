@@ -496,16 +496,14 @@
     <Field Name="OpenParenToken" Type="SyntaxToken">
       <Kind Name="OpenParenToken"/>
     </Field>
-    <Field Name="Arguments" Type="SeparatedSyntaxList&lt;ArgumentSyntax&gt;"/>
+    <Field Name="List" Type="SeparatedSyntaxList&lt;ArgumentSyntax&gt;"/>
     <Field Name="CloseParenToken" Type="SyntaxToken">
       <Kind Name="CloseParenToken"/>
     </Field>
   </Node>
   <Node Name="ArgumentStringSyntax" Base="InvocationArgumentsSyntax">
     <Kind Name="ArgumentString"/>
-    <Field Name="StringLiteralToken" Type="SyntaxToken">
-      <Kind Name="StringLiteralToken"/>
-    </Field>
+    <Field Name="String" Type="LiteralExpressionSyntax"/>
   </Node>
   <Node Name="ArgumentSyntax" Base="LuaSyntaxNode">
     <Kind Name="Argument"/>

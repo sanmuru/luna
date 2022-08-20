@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 #if LANG_LUA
@@ -147,6 +148,8 @@ public static partial class SyntaxFactory
             _ => throw new ArgumentException(null, nameof(kind))
         };
     }
+
+    public static SyntaxTrivia Trivia(Syntax.StructuredTriviaSyntax node) => new(default, node.Green, position: 0, index: 0);
     #endregion
 
     #region 标志
@@ -182,13 +185,15 @@ public static partial class SyntaxFactory
             trailing.Node));
     }
 
-#if DEBUG
-    internal static SyntaxNode Mock() => new ThisSyntaxNode.MockNode(Syntax.InternalSyntax.SyntaxFactory.Mock());
-
-    internal static SyntaxToken Token(SyntaxNode parent, Syntax.InternalSyntax.SyntaxToken token, int position, int index) => new(parent, token, position, index);
-#endif
-
     private static partial void ValidateTokenKind(SyntaxKind kind);
+
+#if DEBUG
+    internal static ThisSyntaxNode Mock() => new ThisSyntaxNode.MockNode(Syntax.InternalSyntax.SyntaxFactory.Mock());
+
+    internal static SyntaxToken Token(SyntaxNode parent, Syntax.InternalSyntax.SyntaxToken token, int position, int index) => SyntaxFactory.Token((ThisSyntaxNode)parent, token, position, index);
+
+    internal static SyntaxToken Token(ThisSyntaxNode parent, Syntax.InternalSyntax.SyntaxToken token, int position, int index) => new(parent, token, position, index);
+#endif
 
     public static SyntaxToken MissingToken(SyntaxKind kind) =>
         new(Syntax.InternalSyntax.SyntaxFactory.MissingToken(
@@ -203,6 +208,15 @@ public static partial class SyntaxFactory
         new(Syntax.InternalSyntax.SyntaxFactory.MissingToken(
             leading.Node,
             kind,
+            trailing.Node));
+
+    public static SyntaxToken BadToken(
+        SyntaxTriviaList leading,
+        string text,
+        SyntaxTriviaList trailing) =>
+        new(Syntax.InternalSyntax.SyntaxFactory.BadToken(
+            leading.Node,
+            text,
             trailing.Node));
 
     #region 标识符
@@ -354,21 +368,15 @@ public static partial class SyntaxFactory
     #endregion
     #endregion
 
-    public static SyntaxToken BadToken(
-        SyntaxTriviaList leading,
-        string text,
-        SyntaxTriviaList trailing) =>
-        new(Syntax.InternalSyntax.SyntaxFactory.BadToken(
-            leading.Node,
-            text,
-            trailing.Node));
+    #region List
+    public static SyntaxList<TNode> List<TNode>() where TNode : ThisSyntaxNode => default;
 
-    public static SyntaxList<TNode> List<TNode>() where TNode : SyntaxNode => default;
+    public static SyntaxList<TNode> SingletonList<TNode>(TNode node) where TNode : ThisSyntaxNode => new(node);
 
-    public static SyntaxList<TNode> SingletonList<TNode>(TNode node) where TNode : SyntaxNode => new(node);
+    public static SyntaxList<TNode> List<TNode>(IEnumerable<TNode> nodes) where TNode : ThisSyntaxNode => new(nodes);
+    #endregion
 
-    public static SyntaxList<TNode> List<TNode>(IEnumerable<TNode> nodes) where TNode : SyntaxNode => new(nodes);
-
+    #region TokenList
     public static SyntaxTokenList TokenList() => default;
 
     public static SyntaxTokenList TokenList(SyntaxToken token) => new(token);
@@ -376,9 +384,9 @@ public static partial class SyntaxFactory
     public static SyntaxTokenList TokenList(params SyntaxToken[] tokens) => new(tokens);
 
     public static SyntaxTokenList TokenList(IEnumerable<SyntaxToken> tokens) => new(tokens);
+    #endregion
 
-    public static SyntaxTrivia Trivia(Syntax.StructuredTriviaSyntax node) => new(default, node.Green, position: 0, index: 0);
-
+    #region TriviaList
     public static SyntaxTriviaList TriviaList() => default;
 
     public static SyntaxTriviaList TriviaList(SyntaxTrivia trivia) => new(trivia);
@@ -386,14 +394,58 @@ public static partial class SyntaxFactory
     public static SyntaxTriviaList TriviaList(params SyntaxTrivia[] trivia) => new(trivia);
 
     public static SyntaxTriviaList TriviaList(IEnumerable<SyntaxTrivia> trivia) => new(trivia);
+    #endregion
+
+    #region SeparatedList
+    public static SeparatedSyntaxList<TNode> SeparatedList<TNode>() where TNode : ThisSyntaxNode => default;
+
+    public static SeparatedSyntaxList<TNode> SingletonSeparatedList<TNode>(TNode node) where TNode : ThisSyntaxNode => new(new SyntaxNodeOrTokenList(node, index: 0));
+
+    public static SeparatedSyntaxList<TNode> SeparatedList<TNode>(IEnumerable<TNode>? nodes) where TNode : ThisSyntaxNode
+    {
+        if (nodes is null) return default;
+
+        var collection = nodes as ICollection<TNode>;
+        if (collection is not null && collection.Count == 0) return default;
+
+        using var enumerator = nodes.GetEnumerator();
+        if (!enumerator.MoveNext()) return default;
+
+        var firstNode = enumerator.Current;
+        if (!enumerator.MoveNext())
+            return SingletonSeparatedList(firstNode);
+
+        var builder = new SeparatedSyntaxListBuilder<TNode>(collection?.Count ?? 3);
+        builder.Add(firstNode);
+        var commaToken = SyntaxFactory.Token(SyntaxKind.CommaToken);
+        do
+        {
+            builder.AddSeparator(commaToken);
+            builder.Add(enumerator.Current);
+        }
+        while (enumerator.MoveNext());
+
+        return builder.ToList();
+    }
+
+#warning 未完成
+
+    #endregion
 
 #warning 未完成
 
     public static SyntaxTree ParseSyntaxTree(
-            SourceText text,
-            ThisParseOptions? options,
-            string path,
-            CancellationToken cancellationToken)
+        SourceText text,
+        ParseOptions? options,
+        string path,
+        CancellationToken cancellationToken) =>
+        SyntaxFactory.ParseSyntaxTree(text, (ThisParseOptions?)options, path, cancellationToken);
+
+    public static SyntaxTree ParseSyntaxTree(
+        SourceText text,
+        ThisParseOptions? options,
+        string path,
+        CancellationToken cancellationToken)
     {
         return ThisSyntaxTree.ParseText(text, options, path, cancellationToken);
     }
@@ -403,26 +455,39 @@ public static partial class SyntaxFactory
         ParseOptions? options = null,
         string path = "",
         Encoding? encoding = null) =>
+        SyntaxFactory.SyntaxTree((ThisSyntaxNode)root, (ThisParseOptions?)options, path, encoding);
+
+    public static SyntaxTree SyntaxTree(
+        ThisSyntaxNode root,
+        ThisParseOptions? options = null,
+        string path = "",
+        Encoding? encoding = null) =>
         ThisSyntaxTree.Create(
-            (ThisSyntaxNode)root,
-            (ThisParseOptions?)options,
+            root,
+            options,
             path,
             encoding);
 
     #region 语法树相等判断
-    public static bool AreEquivalent(SyntaxTree? oldTree, SyntaxTree? newTree, bool topLevel)
+    public static bool AreEquivalent(SyntaxTree? oldTree, SyntaxTree? newTree, bool topLevel) => SyntaxFactory.AreEquivalent((ThisSyntaxTree?)oldTree, (ThisSyntaxTree?)newTree, topLevel);
+
+    public static bool AreEquivalent(ThisSyntaxTree? oldTree, ThisSyntaxTree? newTree, bool topLevel)
     {
 #warning 未完成。
         throw new NotImplementedException();
     }
 
-    public static bool AreEquivalent(SyntaxNode? oldNode, SyntaxNode? newNode, bool topLevel)
+    public static bool AreEquivalent(SyntaxNode? oldNode, SyntaxNode? newNode, bool topLevel) => SyntaxFactory.AreEquivalent((ThisSyntaxNode?)oldNode, (ThisSyntaxNode?)newNode, topLevel);
+
+    public static bool AreEquivalent(ThisSyntaxNode? oldNode, ThisSyntaxNode? newNode, bool topLevel)
     {
 #warning 未完成。
         throw new NotImplementedException();
     }
 
-    public static bool AreEquivalent(SyntaxNode? oldNode, SyntaxNode? newNode, Func<SyntaxKind, bool>? ignoreChildNode = null)
+    public static bool AreEquivalent(SyntaxNode? oldNode, SyntaxNode? newNode, Func<SyntaxKind, bool>? ignoreChildNode = null) => SyntaxFactory.AreEquivalent((ThisSyntaxNode?)oldNode, (ThisSyntaxNode?)newNode, ignoreChildNode);
+
+    public static bool AreEquivalent(ThisSyntaxNode? oldNode, ThisSyntaxNode? newNode, Func<SyntaxKind, bool>? ignoreChildNode = null)
     {
 #warning 未完成。
         throw new NotImplementedException();
@@ -448,21 +513,21 @@ public static partial class SyntaxFactory
     }
 
     public static bool AreEquivalent<TNode>(SyntaxList<TNode> oldList, SyntaxList<TNode> newList, Func<SyntaxKind, bool>? ignoreChildNode = null)
-        where TNode : SyntaxNode
+        where TNode : ThisSyntaxNode
     {
 #warning 未完成。
         throw new NotImplementedException();
     }
 
     public static bool AreEquivalent<TNode>(SeparatedSyntaxList<TNode> oldList, SeparatedSyntaxList<TNode> newList, bool topLevel)
-        where TNode : SyntaxNode
+        where TNode : ThisSyntaxNode
     {
 #warning 未完成。
         throw new NotImplementedException();
     }
 
     public static bool AreEquivalent<TNode>(SeparatedSyntaxList<TNode> oldList, SeparatedSyntaxList<TNode> newList, Func<SyntaxKind, bool>? ignoreChildNode = null)
-        where TNode : SyntaxNode
+        where TNode : ThisSyntaxNode
     {
 #warning 未完成。
         throw new NotImplementedException();

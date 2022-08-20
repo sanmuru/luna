@@ -64,28 +64,22 @@ partial class LanguageParser
 #else
     private
 #endif
-        bool IsPossibleExpression() =>
-        this.CurrentTokenKind switch
-        {
-            SyntaxKind.NilKeyword or
-            SyntaxKind.FalseKeyword or
-            SyntaxKind.TrueKeyword or
-            SyntaxKind.NumericLiteralToken or
-            SyntaxKind.StringLiteralToken or
-            SyntaxKind.MultiLineRawStringLiteralToken or
-            SyntaxKind.DotDotDotToken or
-            SyntaxKind.OpenParenToken or
-            SyntaxKind.FunctionKeyword or
-            SyntaxKind.OpenBraceToken or
-            SyntaxKind.MinusToken or
-            SyntaxKind.NotKeyword or
-            SyntaxKind.HashToken or
-            SyntaxKind.TildeToken => true,
-
-            SyntaxKind.IdentifierToken => true,
-
-            _ => false
-        };
+        bool IsPossibleExpression() => this.CurrentTokenKind is
+        SyntaxKind.NilKeyword or
+        SyntaxKind.FalseKeyword or
+        SyntaxKind.TrueKeyword or
+        SyntaxKind.NumericLiteralToken or
+        SyntaxKind.StringLiteralToken or
+        SyntaxKind.MultiLineRawStringLiteralToken or
+        SyntaxKind.DotDotDotToken or
+        SyntaxKind.OpenParenToken or
+        SyntaxKind.FunctionKeyword or
+        SyntaxKind.OpenBraceToken or
+        SyntaxKind.MinusToken or
+        SyntaxKind.NotKeyword or
+        SyntaxKind.HashToken or
+        SyntaxKind.TildeToken or
+        SyntaxKind.IdentifierToken;
 
 #if TESTING
     internal
@@ -225,16 +219,16 @@ partial class LanguageParser
                     expr = this.ParseIndexMemberAccessExpressionSyntax(expr);
                     break;
 
-                case SyntaxKind.OpenParenToken:
-                case SyntaxKind.OpenBraceToken:
-                case SyntaxKind.StringLiteralToken:
-                    expr = this.ParseInvocationExpressionSyntax(expr);
-                    break;
                 case SyntaxKind.ColonToken:
                     expr = this.ParseImplicitSelfParameterInvocationExpression(expr);
                     break;
 
                 default:
+                    if (this.IsPossibleInvocationArguments())
+                    {
+                        expr = this.ParseInvocationExpressionSyntax(expr);
+                        break;
+                    }
                     return expr;
             }
         }
@@ -346,8 +340,9 @@ partial class LanguageParser
 #else
     private
 #endif
-        ExpressionSyntax ParseInvocationExpressionSyntax(ExpressionSyntax expr)
+        InvocationExpressionSyntax ParseInvocationExpressionSyntax(ExpressionSyntax expr)
     {
+        Debug.Assert(this.IsPossibleInvocationArguments());
         var arguments = this.ParseInvocationArguments();
         return this._syntaxFactory.InvocationExpression(expr, arguments);
     }
@@ -359,9 +354,20 @@ partial class LanguageParser
 #endif
         ImplicitSelfParameterInvocationExpressionSyntax ParseImplicitSelfParameterInvocationExpression(ExpressionSyntax expr)
     {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.ColonToken);
         var colon = this.EatToken(SyntaxKind.ColonToken);
         var name = this.ParseIdentifierName();
-        var arguments = this.ParseInvocationArguments();
+        InvocationArgumentsSyntax arguments;
+        if (this.IsPossibleInvocationArguments())
+            arguments = this.ParseInvocationArguments();
+        else
+        {
+            arguments = this._syntaxFactory.ArgumentList(
+                SyntaxFactory.MissingToken(SyntaxKind.OpenParenToken),
+                SyntaxFactory.SeparatedList<ArgumentSyntax>(),
+                SyntaxFactory.MissingToken(SyntaxKind.CloseParenToken));
+            arguments = this.AddError(arguments, ErrorCode.ERR_InvocationArgumentsExpected);
+        }
         return this._syntaxFactory.ImplicitSelfParameterInvocationExpression(expr, colon, name, arguments);
     }
 }

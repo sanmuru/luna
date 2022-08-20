@@ -210,13 +210,25 @@ partial class LanguageParser
     internal
 #else
     private
+# endif
+        bool IsPossibleInvocationArguments() => this.CurrentTokenKind is
+        SyntaxKind.OpenParenToken or
+        SyntaxKind.OpenBraceToken or
+        SyntaxKind.StringLiteralToken or
+        SyntaxKind.MultiLineRawStringLiteralToken;
+
+#if TESTING
+    internal
+#else
+    private
 #endif
         InvocationArgumentsSyntax ParseInvocationArguments() =>
         this.CurrentTokenKind switch
         {
             SyntaxKind.OpenParenToken => this.ParseArgumentList(),
             SyntaxKind.OpenBraceToken => this.ParseArgumentTable(),
-            SyntaxKind.StringLiteralToken => this.ParseArgumentString(),
+            SyntaxKind.StringLiteralToken or
+            SyntaxKind.MultiLineRawStringLiteralToken => this.ParseArgumentString(),
             _ => throw ExceptionUtilities.UnexpectedValue(this.CurrentTokenKind)
         };
 
@@ -231,7 +243,7 @@ partial class LanguageParser
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var arguments = this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseArgument(),
-            predicate: _ => true);
+            predicate: _ => this.IsPossibleExpression());
         var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
         return this._syntaxFactory.ArgumentList(openParen, arguments, closeParen);
     }
@@ -255,9 +267,9 @@ partial class LanguageParser
 #endif
         ArgumentStringSyntax ParseArgumentString()
     {
-        Debug.Assert(this.CurrentTokenKind == SyntaxKind.StringLiteralToken);
-        var stringLiteral = this.EatToken(SyntaxKind.StringLiteralToken);
-        return this._syntaxFactory.ArgumentString(stringLiteral);
+        Debug.Assert(this.CurrentTokenKind is SyntaxKind.StringLiteralToken or SyntaxKind.MultiLineRawStringLiteralToken);
+        var stringLiteral = this.EatToken();
+        return this._syntaxFactory.ArgumentString(this._syntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, stringLiteral));
     }
 
 #if TESTING
@@ -270,5 +282,5 @@ partial class LanguageParser
         var expr = this.ParseExpression();
         return this._syntaxFactory.Argument(expr);
     }
-    #endregion
+#endregion
 }

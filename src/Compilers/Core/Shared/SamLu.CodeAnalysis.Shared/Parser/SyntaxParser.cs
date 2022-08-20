@@ -623,8 +623,7 @@ internal abstract partial class SyntaxParser : IDisposable
     /// </summary>
     /// <param name="kind">要返回的语法标志须符合的语法部分种类，枚举值必须标志语法标志。</param>
     /// <returns>返回当前的已词法分析的语法标志，若这个语法标志不符合指定语法部分种类，则报告错误。</returns>
-    protected SyntaxToken EatTokenWithPrejudice
-        (SyntaxKind kind)
+    protected SyntaxToken EatTokenWithPrejudice(SyntaxKind kind)
     {
         var token = this.CurrentToken;
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));

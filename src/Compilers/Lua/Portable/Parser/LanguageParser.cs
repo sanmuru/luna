@@ -143,9 +143,11 @@ partial class LanguageParser
         while (this.CurrentTokenKind == SyntaxKind.CommaToken &&
             this.IsMakingProgress(ref lastTokenPosition))
         {
+            var resetPoint = this.GetResetPoint();
+
+            var separator = this.EatToken();
             if (predicate(index))
             {
-                var separator = this.EatToken();
                 builder.AddSeparator(separator);
 
                 node = parseNodeFunc(index);
@@ -153,6 +155,8 @@ partial class LanguageParser
 
                 index++;
             }
+            else
+                this.Reset(ref resetPoint);
         }
     }
 
