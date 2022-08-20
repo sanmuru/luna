@@ -82,7 +82,12 @@ partial class LanguageParser
             return this.ParseNameValueField();
         // 解析列表项表字段。
         else
-            return this._syntaxFactory.ItemField(this.ParseFieldValue());
+        {
+            if (this.CurrentTokenKind == SyntaxKind.EndOfFileToken)
+                return this._syntaxFactory.ItemField(this.CreateMissingIdentifierName());
+            else
+                return this._syntaxFactory.ItemField(this.ParseFieldValue());
+        }
     }
 
 #if TESTING
@@ -94,7 +99,7 @@ partial class LanguageParser
     {
         var name = this.ParseIdentifierName();
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.EqualsToken);
-        var equals = this.EatToken();
+        var equals = this.EatToken(SyntaxKind.EqualsToken);
         var value = this.ParseFieldValue();
         return this._syntaxFactory.NameValueField(name, equals, value);
     }
@@ -123,15 +128,55 @@ partial class LanguageParser
     {
         var expr = this.ParseExpression();
 
-        // 跳过后方的标志直到右方括号。
-        var skippedTokensTrivia = this.SkipTokens(token => token.Kind is not SyntaxKind.CloseBracketToken);
-        if (skippedTokensTrivia is not null)
-        {
-            skippedTokensTrivia = this.AddError(skippedTokensTrivia, ErrorCode.ERR_InvalidExprTerm);
-            expr = this.AddTrailingSkippedSyntax(expr, skippedTokensTrivia);
-        }
+        // 跳过后方的标志和表达式直到等于符号或右方括号。
+        var skippedSyntax = this.SkipTokensAndExpressions(
+            token => token.Kind is not (SyntaxKind.EqualsToken or SyntaxKind.CloseBracketToken or SyntaxKind.EndOfFileToken),
+            new FieldKeySkippedNodesVisitor(this));
+        if (skippedSyntax is not null)
+            expr = this.AddTrailingSkippedSyntax(expr, skippedSyntax);
 
         return expr;
+    }
+
+    /// <summary>
+    /// 处理字段键表达式后方需要跳过的语法标志和语法节点的访问器。
+    /// </summary>
+    private sealed class FieldKeySkippedNodesVisitor : LuaSyntaxVisitor<LuaSyntaxNode>
+    {
+        private readonly LanguageParser _parser;
+
+        public FieldKeySkippedNodesVisitor(LanguageParser parser) => this._parser = parser;
+
+        /// <summary>
+        /// 处理语法节点。
+        /// </summary>
+        /// <param name="node">要处理的语法节点。</param>
+        /// <returns>处理后的<paramref name="node"/>。</returns>
+        public override LuaSyntaxNode? Visit(LuaSyntaxNode? node)
+        {
+            if (node is null or SyntaxToken)
+                return base.Visit(node);
+            else
+                return this.DefaultVisit(node);
+        }
+
+        /// <summary>
+        /// 处理语法标志，向语法标志添加<see cref="ErrorCode.ERR_InvalidExprTerm"/>错误。
+        /// </summary>
+        /// <param name="token">要处理的语法标志。</param>
+        /// <returns>处理后的<paramref name="token"/>。</returns>
+        public override LuaSyntaxNode? VisitToken(SyntaxToken token) =>
+            this._parser.AddError(token, ErrorCode.ERR_InvalidExprTerm, SyntaxFacts.GetText(token.Kind));
+
+        /// <summary>
+        /// 处理所有语法节点。
+        /// </summary>
+        /// <remarks>若<paramref name="node"/>不是表达式语法，则抛出异常。</remarks>
+        /// <param name="node">要处理的语法节点。</param>
+        /// <returns>处理后的<paramref name="node"/>。</returns>
+        /// <exception cref="ExceptionUtilities.Unreachable">当<paramref name="node"/>不是表达式语法时，这种情况不应发生。</exception>
+        protected override LuaSyntaxNode? DefaultVisit(LuaSyntaxNode node) =>
+            node is ExpressionSyntax ? node : throw ExceptionUtilities.Unreachable;
     }
 
 #if TESTING
@@ -141,21 +186,21 @@ partial class LanguageParser
 #endif
         ExpressionSyntax ParseFieldValue()
     {
-        ExpressionSyntax expr;
+        ExpressionSyntax? expr = null;
         if (this.IsPossibleExpression())
-            expr = this.ParseExpression();
-        else
-            // 创建缺失的标识符名称语法用来表示缺失的表达式。
-            expr = this.CreateMissingIdentifierName();
+            expr = this.ParseExpressionCore();
 
         // 跳过后方的标志和表达式直到字段结束。
-        var skippedTokensTrivia = this.SkipTokensAndExpressions(token => token.Kind is not SyntaxKind.CommaToken or SyntaxKind.CloseBraceToken);
-        if (skippedTokensTrivia is not null)
+        var skippedSyntax = this.SkipTokensAndExpressions(token => token.Kind is not (SyntaxKind.CommaToken or SyntaxKind.CloseBraceToken or SyntaxKind.EndOfFileToken));
+        if (skippedSyntax is null) // 后方没有需要跳过的标志和表达式。
+            expr ??= this.ReportMissingExpression(this.CreateMissingIdentifierName());
+        else
         {
-            skippedTokensTrivia = this.AddError(skippedTokensTrivia, ErrorCode.ERR_InvalidFieldValueTerm);
-            expr = this.AddTrailingSkippedSyntax(expr, skippedTokensTrivia);
+            skippedSyntax = this.AddError(skippedSyntax, ErrorCode.ERR_InvalidFieldValueTerm);
+            expr = this.AddTrailingSkippedSyntax(
+                expr ?? this.ReportMissingExpression(this.CreateMissingIdentifierName()),
+                skippedSyntax);
         }
-
         return expr;
     }
     #endregion
@@ -182,6 +227,7 @@ partial class LanguageParser
 #endif
         ArgumentListSyntax ParseArgumentList()
     {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.OpenParenToken);
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var arguments = this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseArgument(),
@@ -197,6 +243,7 @@ partial class LanguageParser
 #endif
         ArgumentTableSyntax ParseArgumentTable()
     {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.OpenBraceToken);
         var table = this.ParseTableConstructorExpression();
         return this._syntaxFactory.ArgumentTable(table);
     }
@@ -208,6 +255,7 @@ partial class LanguageParser
 #endif
         ArgumentStringSyntax ParseArgumentString()
     {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.StringLiteralToken);
         var stringLiteral = this.EatToken(SyntaxKind.StringLiteralToken);
         return this._syntaxFactory.ArgumentString(stringLiteral);
     }

@@ -92,13 +92,34 @@ partial class LanguageParser
 #else
     private
 #endif
-        ExpressionSyntax ParseExpression() =>
-        this.IsPossibleExpression() ?
-            this.ParseExpressionCore() :
-            this.AddError(
-                this.CreateMissingIdentifierName(),
-                ErrorCode.ERR_InvalidExprTerm,
-                SyntaxFacts.GetText(this.CurrentTokenKind));
+        ExpressionSyntax ParseExpression(bool reportError = true)
+    {
+        if (this.IsPossibleExpression())
+            return this.ParseExpressionCore();
+        else
+        {
+            var missing = this.CreateMissingIdentifierName();
+            if (reportError)
+                return this.ReportMissingExpression(missing);
+            else
+                return missing;
+        }
+    }
+
+    /// <summary>
+    /// 报告缺失的表达式错误。
+    /// </summary>
+    /// <typeparam name="TExpression">表达式节点的类型。</typeparam>
+    /// <param name="expr">要添加错误信息的表达式节点。</param>
+    /// <returns>添加错误信息后的<paramref name="expr"/>。</returns>
+    private TExpression ReportMissingExpression<TExpression>(TExpression expr) where TExpression : ExpressionSyntax
+    {
+        var kind = this.CurrentTokenKind;
+        if (kind == SyntaxKind.EndOfFileToken)
+            return this.AddError(expr, ErrorCode.ERR_ExpressionExpected);
+        else
+            return this.AddError(expr, ErrorCode.ERR_InvalidExprTerm, SyntaxFacts.GetText(kind));
+    }
 
     private ExpressionSyntax ParseExpressionCore()
     {
@@ -328,12 +349,7 @@ partial class LanguageParser
         ExpressionSyntax ParseInvocationExpressionSyntax(ExpressionSyntax expr)
     {
         var arguments = this.ParseInvocationArguments();
-
-        // 若调用表达式已经是
-        if (expr is ImplicitSelfParameterNameSyntax implicitSelfParameterName)
-            return this._syntaxFactory.ImplicitSelfParameterInvocationExpression(implicitSelfParameterName.Left, implicitSelfParameterName.ColonToken, implicitSelfParameterName.Right, arguments);
-        else
-            return this._syntaxFactory.InvocationExpression(expr, arguments);
+        return this._syntaxFactory.InvocationExpression(expr, arguments);
     }
 
 #if TESTING

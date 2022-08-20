@@ -1077,13 +1077,219 @@ public partial class LanguageParserTests
             Assert.That.AtEndOfFile(parser);
         }
     }
+
+    [TestMethod]
+    public void TableConstructorExpressionParseTests()
+    {
+        var parser = LanguageParserTests.CreateLanguageParser($"{{{FieldListSouce}}}");
+        var table = parser.ParseTableConstructorExpression();
+        Assert.That.NotContainsDiagnostics(table);
+        FieldListTest(table.Fields);
+    }
     #endregion
 
     #region 字段
     [TestMethod]
+    public void FieldValueParseTests()
+    {
+        { // 字段值为合法表达式
+            var parser = LanguageParserTests.CreateLanguageParser("1");
+            var expr = parser.ParseFieldValue();
+            Assert.IsInstanceOfType(expr, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)expr, SyntaxKind.NumericLiteralExpression, 1L);
+            Assert.That.NotContainsDiagnostics(expr);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 字段值为合法表达式，但后方错误追加了其他标志和表达式
+            // 只识别第一个合法表达式，后方的标志和表达式作为前者的被跳过的标志的语法琐碎内容，并报告错误。
+            var parser = LanguageParserTests.CreateLanguageParser("a if b + c then return true end");
+            var expr = parser.ParseFieldValue();
+            Assert.IsInstanceOfType(expr, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)expr, "a");
+            Assert.That.ContainsDiagnostics(expr);
+            Assert.That.ContainsDiagnostics(expr.GetLastToken()!, ErrorCode.ERR_InvalidFieldValueTerm);
+            Assert.That.AtEndOfFile(parser);
+        }
+    }
+
+    [TestMethod]
     public void NameValueFieldParseTests()
     {
+        { // 合法的名值对字段
+            var parser = LanguageParserTests.CreateLanguageParser("a = 1");
+            var field = parser.ParseNameValueField();
+            Assert.That.NotContainsDiagnostics(field);
 
+            Assert.That.IsIdentifierName(field.FieldName, "a");
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 1L);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 不合法的名值对字段，缺少名称
+            var parser = LanguageParserTests.CreateLanguageParser(" = 'string'");
+            var field = parser.ParseNameValueField();
+            Assert.That.ContainsDiagnostics(field);
+
+            Assert.That.IsMissingIdentifierName(field.FieldName);
+            Assert.That.ContainsDiagnostics(field);
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.StringLiteralExpression, "string");
+            Assert.That.NotContainsDiagnostics(field.FieldValue);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+    }
+
+    [TestMethod]
+    public void KeyValueFieldParseTests()
+    {
+        { // 合法的键值对字段
+            var parser = LanguageParserTests.CreateLanguageParser("[a] = 1");
+            var field = parser.ParseKeyValueField();
+            Assert.That.NotContainsDiagnostics(field);
+
+            Assert.IsInstanceOfType(field.FieldKey, typeof(IdentifierNameSyntax));
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)field.FieldKey, "a");
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 1L);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 不合法的键值对字段，缺失键表达式
+            var parser = LanguageParserTests.CreateLanguageParser("[] = 1");
+            var field = parser.ParseKeyValueField();
+            Assert.That.ContainsDiagnostics(field);
+
+            Assert.IsInstanceOfType(field.FieldKey, typeof(IdentifierNameSyntax));
+            Assert.That.IsMissingIdentifierName((IdentifierNameSyntax)field.FieldKey);
+            Assert.That.ContainsDiagnostics(field.FieldKey);
+            Assert.That.ContainsDiagnostics(field.FieldKey, ErrorCode.ERR_InvalidExprTerm);
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 1L);
+            Assert.That.NotContainsDiagnostics(field.FieldValue);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 不合法的键值对字段，缺失值表达式
+            var parser = LanguageParserTests.CreateLanguageParser("['string'] = ");
+            var field = parser.ParseKeyValueField();
+            Assert.That.ContainsDiagnostics(field);
+
+            Assert.IsInstanceOfType(field.FieldKey, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldKey, SyntaxKind.StringLiteralExpression, "string");
+            Assert.That.NotContainsDiagnostics(field.FieldKey);
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(IdentifierNameSyntax));
+            Assert.That.IsMissingIdentifierName((IdentifierNameSyntax)field.FieldValue);
+            Assert.That.ContainsDiagnostics(field);
+        }
+        { // 不合法的键值对字段，键表达式未使用方括号包裹
+            var parser = LanguageParserTests.CreateLanguageParser("1.0 = true");
+            var field = parser.ParseKeyValueField();
+            Assert.That.ContainsDiagnostics(field);
+
+            Assert.That.IsMissing(field.OpenBracketToken);
+            Assert.That.ContainsDiagnostics(field.OpenBracketToken);
+
+            Assert.IsInstanceOfType(field.FieldKey, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldKey, SyntaxKind.NumericLiteralExpression, 1D);
+            Assert.That.NotContainsDiagnostics(field.FieldKey);
+
+            Assert.That.IsMissing(field.CloseBracketToken);
+            Assert.That.ContainsDiagnostics(field.CloseBracketToken);
+
+            Assert.That.IsNotMissing(field.EqualsToken);
+            Assert.That.NotContainsDiagnostics(field.EqualsToken);
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.TrueLiteralExpression);
+            Assert.That.NotContainsDiagnostics(field.FieldValue);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+    }
+
+    [TestMethod]
+    public void FieldListParseTests()
+    {
+        var parser = LanguageParserTests.CreateLanguageParser(FieldListSouce);
+        var fieldList = parser.ParseFieldList();
+        FieldListTest(fieldList);
+    }
+
+    private const string FieldListSouce = """
+        integer = 5,
+        float = 5.0,
+        [a+b]=c^d,
+        true,
+        'string'
+        """;
+    private static void FieldListTest(FieldListSyntax fieldList)
+    {
+        Assert.That.NotContainsDiagnostics(fieldList);
+        {
+            Assert.IsInstanceOfType(fieldList.Fields[0]!, typeof(NameValueFieldSyntax));
+            var field = (NameValueFieldSyntax)fieldList.Fields[0]!;
+
+            Assert.That.IsIdentifierName(field.FieldName, "integer");
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 5L);
+        }
+        {
+            Assert.IsInstanceOfType(fieldList.Fields[1]!, typeof(NameValueFieldSyntax));
+            var field = (NameValueFieldSyntax)fieldList.Fields[1]!;
+
+            Assert.That.IsIdentifierName(field.FieldName, "float");
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 5D);
+        }
+        {
+            Assert.IsInstanceOfType(fieldList.Fields[2]!, typeof(KeyValueFieldSyntax));
+            var field = (KeyValueFieldSyntax)fieldList.Fields[2]!;
+
+            Assert.That.IsBinaryExpression(field.FieldKey, SyntaxKind.AdditionExpression);
+            {
+                var binary = (BinaryExpressionSyntax)field.FieldKey;
+
+                Assert.IsInstanceOfType(binary.Left, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)binary.Left, "a");
+
+                Assert.IsInstanceOfType(binary.Right, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)binary.Right, "b");
+            }
+
+            Assert.That.IsBinaryExpression(field.FieldValue, SyntaxKind.ExponentiationExpression);
+            {
+                var binary = (BinaryExpressionSyntax)field.FieldValue;
+
+                Assert.IsInstanceOfType(binary.Left, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)binary.Left, "c");
+
+                Assert.IsInstanceOfType(binary.Right, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)binary.Right, "d");
+            }
+        }
+        {
+            Assert.IsInstanceOfType(fieldList.Fields[3]!, typeof(ItemFieldSyntax));
+            var field = (ItemFieldSyntax)fieldList.Fields[3]!;
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.TrueLiteralExpression);
+        }
+        {
+            Assert.IsInstanceOfType(fieldList.Fields[4]!, typeof(ItemFieldSyntax));
+            var field = (ItemFieldSyntax)fieldList.Fields[4]!;
+
+            Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.StringLiteralExpression, "string");
+        }
     }
     #endregion
 }

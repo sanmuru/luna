@@ -126,6 +126,9 @@
   <data name="ERR_BadSourceCodeKind" xml:space="preserve">
     <value>Provided source code kind is unsupported or invalid: '{0}'.</value>
   </data>
+  <data name="ERR_ExpressionExpected" xml:space="preserve">
+    <value>Expected expression</value>
+  </data>
   <data name="ERR_IdentifierExpected" xml:space="preserve">
     <value>Identifier expected.</value>
   </data>
@@ -142,7 +145,7 @@
     <value>Invalid expression term '{0}'.</value>
   </data>
   <data name="ERR_InvalidFieldValueTerm" xml:space="preserve">
-    <value>Invalid filed value expression term '{0}'.</value>
+    <value>Invalid filed value expression term.</value>
   </data>
   <data name="ERR_InvalidInstrumentationKind" xml:space="preserve">
     <value>Invalid instrumentation kind: {0}.</value>

@@ -17,6 +17,11 @@
         <target state="new">Provided source code kind is unsupported or invalid: '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_ExpressionExpected">
+        <source>Expected expression</source>
+        <target state="new">Expected expression</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_IdentifierExpected">
         <source>Identifier expected.</source>
         <target state="new">Identifier expected.</target>
@@ -43,8 +48,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ERR_InvalidFieldValueTerm">
-        <source>Invalid filed value expression term '{0}'.</source>
-        <target state="new">Invalid filed value expression term '{0}'.</target>
+        <source>Invalid filed value expression term.</source>
+        <target state="new">Invalid filed value expression term.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_InvalidInstrumentationKind">

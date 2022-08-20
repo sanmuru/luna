@@ -914,7 +914,32 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <inheritdoc cref="SyntaxParser.MakeError(int, int, ErrorCode, object[])"/>
     protected static SyntaxDiagnosticInfo MakeError(ErrorCode code, params object[] args) => new(code, args);
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法列表构造器添加指定的前方的跳过语法。
+    /// </summary>
+    /// <param name="list">要添加<paramref name="skippedSyntax"/>的语法列表构造器。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="list"/>。</returns>
+    protected void AddLeadingSkippedSyntax(SyntaxListBuilder list, GreenNode skippedSyntax) =>
+        list[0] = this.AddLeadingSkippedSyntax((ThisInternalSyntaxNode)list[0]!, skippedSyntax);
+
+    /// <summary>
+    /// 给指定的语法列表构造器添加指定的前方的跳过语法。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="list">要添加<paramref name="skippedSyntax"/>的语法列表构造器。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="list"/>。</returns>
+    protected void AddLeadingSkippedSyntax<TNode>(SyntaxListBuilder<TNode> list, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode =>
+        list[0] = this.AddTrailingSkippedSyntax(list[0]!, skippedSyntax);
+
+    /// <summary>
+    /// 给指定的语法节点添加指定的前方的跳过语法。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="node">要添加<paramref name="skippedSyntax"/>的语法节点。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="node"/>。</returns>
     protected TNode AddLeadingSkippedSyntax<TNode>(TNode node, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode
     {
         var oldToken = node as SyntaxToken ?? node.GetFirstToken()!;
@@ -922,28 +947,46 @@ internal abstract partial class SyntaxParser : IDisposable
         return SyntaxFirstTokenReplacer.Replace(node, oldToken, newToken, skippedSyntax.FullWidth);
     }
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法列表构造器添加指定的后方的跳过语法。
+    /// </summary>
+    /// <param name="list">要添加<paramref name="skippedSyntax"/>的语法列表构造器。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="list"/>。</returns>
     protected void AddTrailingSkippedSyntax(SyntaxListBuilder list, GreenNode skippedSyntax) =>
         list[^1] = this.AddTrailingSkippedSyntax((ThisInternalSyntaxNode)list[^1]!, skippedSyntax);
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法列表构造器添加指定的后方的跳过语法。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="list">要添加<paramref name="skippedSyntax"/>的语法列表构造器。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="list"/>。</returns>
     protected void AddTrailingSkippedSyntax<TNode>(SyntaxListBuilder<TNode> list, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode =>
         list[^1] = this.AddTrailingSkippedSyntax(list[^1]!, skippedSyntax);
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法节点添加指定的后方的跳过语法。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="node">要添加<paramref name="skippedSyntax"/>的语法节点。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="node"/>。</returns>
     protected TNode AddTrailingSkippedSyntax<TNode>(TNode node, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode
     {
-        if (node is SyntaxToken token)
-            return (TNode)(ThisInternalSyntaxNode)this.AddSkippedSyntax(token, skippedSyntax, trailing: true);
-        else
-        {
-            var lastToken = node.GetLastToken()!;
-            var newToken = this.AddSkippedSyntax(lastToken, skippedSyntax, trailing: true);
-            return SyntaxLastTokenReplacer.Replace(node, newToken);
-        }
+        var oldToken = node as SyntaxToken ?? node.GetLastToken()!;
+        var newToken = this.AddSkippedSyntax(oldToken, skippedSyntax, trailing: true);
+        return SyntaxLastTokenReplacer.Replace(node, newToken);
     }
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法标志添加指定的表示跳过语法的绿树节点。
+    /// </summary>
+    /// <param name="target">要添加<paramref name="skippedSyntax"/>的语法标志。</param>
+    /// <param name="skippedSyntax">要添加的表示跳过语法的绿树节点。</param>
+    /// <param name="trailing">若为<see langword="true"/>，则将<paramref name="skippedSyntax"/>添加到后方语法琐碎内容中；否则添加到前方语法琐碎内容中。</param>
+    /// <returns></returns>
     internal SyntaxToken AddSkippedSyntax(SyntaxToken target, GreenNode skippedSyntax, bool trailing)
     {
         var builder = new SyntaxListBuilder(4);

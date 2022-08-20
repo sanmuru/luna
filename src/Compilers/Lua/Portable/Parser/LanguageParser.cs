@@ -40,13 +40,16 @@ partial class LanguageParser
         return block;
     }
 
-    private SkippedTokensTriviaSyntax? SkipTokens(Func<SyntaxToken, bool> predicate)
+    private GreenNode? SkipTokens(Func<SyntaxToken, bool> predicate, LuaSyntaxVisitor<SyntaxToken>? visitor = null)
     {
         if (predicate(this.CurrentToken))
         {
             var builder = this._pool.Allocate<SyntaxToken>();
             do
-                builder.Add(this.EatToken());
+            {
+                var token = this.EatToken();
+                builder.Add(visitor is null ? token : visitor.VisitToken(token));
+            }
             while (predicate(this.CurrentToken));
             return this._syntaxFactory.SkippedTokensTrivia(this._pool.ToListAndFree(builder));
         }
@@ -54,15 +57,21 @@ partial class LanguageParser
         return null;
     }
 
-    private SkippedTokensTriviaSyntax? SkipTokensAndExpressions(Func<SyntaxToken, bool> predicate)
+    private GreenNode? SkipTokensAndExpressions(Func<SyntaxToken, bool> predicate, LuaSyntaxVisitor<LuaSyntaxNode>? visitor = null)
     {
-        var builder = this._pool.Allocate<SyntaxToken>();
+        var builder = this._pool.Allocate<LuaSyntaxNode>();
         while (true)
         {
             if (this.IsPossibleExpression())
-                this.SkipNode(ref builder, this.ParseExpressionCore());
+            {
+                var expr = this.ParseExpressionCore();
+                builder.Add(visitor is null ? expr : visitor.Visit(expr));
+            }
             else if (predicate(this.CurrentToken))
-                builder.Add(this.EatToken());
+            {
+                var token = this.EatToken();
+                builder.Add(visitor is null ? token : visitor.VisitToken(token));
+            }
             else break;
         }
 
@@ -72,19 +81,7 @@ partial class LanguageParser
             return null;
         }
         else
-            return this._syntaxFactory.SkippedTokensTrivia(this._pool.ToListAndFree(builder));
-    }
-
-    private void SkipNode(ref SyntaxListBuilder<SyntaxToken> builder, LuaSyntaxNode node)
-    {
-        for (int i = 0; i < node.SlotCount; i++)
-        {
-            var nodeInSlot = (LuaSyntaxNode)node.GetSlot(i);
-            if (nodeInSlot is SyntaxToken token)
-                builder.Add(token);
-            else
-                this.SkipNode(ref builder, nodeInSlot);
-        }
+            return this._pool.ToListAndFree(builder).Node;
     }
 
     #region ParseSyntaxList & ParseSeparatedSyntaxList

@@ -457,22 +457,20 @@
     <Kind Name="FieldList"/>
     <Field Name="Fields" Type="SeparatedSyntaxList&lt;FieldSyntax&gt;"/>
   </Node>
-  <AbstractNode Name="FieldSyntax" Base="LuaSyntaxNode"/>
+  <AbstractNode Name="FieldSyntax" Base="LuaSyntaxNode">
+    <Field Name="FieldValue" Type="ExpressionSyntax"/>
+  </AbstractNode>
   <Node Name="ItemFieldSyntax" Base="FieldSyntax">
     <Kind Name="ItemField"/>
-    <Field Name="Expression" Type="ExpressionSyntax"/>
+    <Field Name="FieldValue" Type="ExpressionSyntax" Override="true"/>
   </Node>
-  <AbstractNode Name="MemberFieldSyntax" Base="FieldSyntax">
-    <Field Name="Member" Type="ExpressionSyntax"/>
-    <Field Name="Expression" Type="ExpressionSyntax"/>
-  </AbstractNode>
   <Node Name="NameValueFieldSyntax" Base="FieldSyntax">
     <Kind Name="NameValueField"/>
     <Field Name="FieldName" Type="IdentifierNameSyntax"/>
     <Field Name="EqualsToken" Type="SyntaxToken">
       <Kind Name="EqualsToken"/>
     </Field>
-    <Field Name="FieldValue" Type="ExpressionSyntax"/>
+    <Field Name="FieldValue" Type="ExpressionSyntax" Override="true"/>
   </Node>
   <Node Name="KeyValueFieldSyntax" Base="FieldSyntax">
     <Kind Name="KeyValueField"/>
@@ -486,7 +484,7 @@
     <Field Name="EqualsToken" Type="SyntaxToken">
       <Kind Name="EqualsToken"/>
     </Field>
-    <Field Name="FieldValue" Type="ExpressionSyntax"/>
+    <Field Name="FieldValue" Type="ExpressionSyntax" Override="true"/>
   </Node>
   <AbstractNode Name="InvocationArgumentsSyntax" Base="LuaSyntaxNode"/>
   <Node Name="ArgumentTableSyntax" Base="InvocationArgumentsSyntax">
