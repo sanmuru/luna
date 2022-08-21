@@ -40,18 +40,9 @@
   <ItemGroup>
     <Folder Include="Symbols\" />
   </ItemGroup>
+  
   <ItemGroup>
-    <Compile Update="LunaResources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>LunaResources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="LunaResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>LunaResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <EmbeddedResource Update="LunaResources.resx" GenerateSource="true" />
   </ItemGroup>
 
 </Project>

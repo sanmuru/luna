@@ -38,11 +38,7 @@ internal class VisualBasicSimulator : ILexerSimulator
         };
     }
 
-    public IEnumerable<SyntaxToken> LexToEnd(SourceText sourceText)
-    {
-        var tree = SyntaxFactory.ParseSyntaxTree(sourceText);
-        return tree.GetRoot().DescendantTokens();
-    }
+    public IEnumerable<SyntaxToken> LexToEnd(SourceText sourceText) => SyntaxFactory.ParseTokens(sourceText.ToString());
 
     #region ILexerSimulator
     TokenKind ILexerSimulator.GetTokenKind(int rawKind) => this.GetTokenKind((SyntaxKind)rawKind);

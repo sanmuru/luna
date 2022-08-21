@@ -55,6 +55,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxNodeCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxRewriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SkippedTokensTriviaSyntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxEquivalence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxFactory.Parser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxNode.MockNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxNodeExtensions.cs" />
