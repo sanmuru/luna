@@ -2,7 +2,8 @@
 
 namespace Luna.Compilers.Generators.Model;
 
-public class TreeType
+#pragma warning disable CS8618
+public abstract class TreeType
 {
     [XmlAttribute]
     public string Name;
@@ -11,7 +12,7 @@ public class TreeType
     public string? Base;
 
     [XmlAttribute]
-    public string SkipConvenienceFactories;
+    public string? SkipConvenienceFactories;
 
     [XmlElement]
     public Comment? TypeComment;
@@ -22,5 +23,6 @@ public class TreeType
     [XmlElement(ElementName = "Field", Type = typeof(Field))]
     [XmlElement(ElementName = "Choice", Type = typeof(Choice))]
     [XmlElement(ElementName = "Sequence", Type = typeof(Sequence))]
-    public List<TreeTypeChild> Children = new List<TreeTypeChild>();
+    public List<TreeTypeChild> Children;
 }
+#pragma warning restore CS8618

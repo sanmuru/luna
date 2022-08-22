@@ -2,16 +2,18 @@
 
 namespace Luna.Compilers.Generators.Model;
 
+#pragma warning disable CS8618
 public class Node : TreeType
 {
     [XmlAttribute]
-    public string Root;
+    public string? Root;
 
     [XmlAttribute]
-    public string Errors;
+    public string? Errors;
 
     [XmlElement(ElementName = "Kind", Type = typeof(Kind))]
-    public List<Kind> Kinds = new List<Kind>();
+    public List<Kind> Kinds;
 
-    public readonly List<Field> Fields = new List<Field>();
+    public readonly List<Field> Fields = new();
 }
+#pragma warning restore CS8618

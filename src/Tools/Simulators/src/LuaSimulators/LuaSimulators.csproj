@@ -27,9 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="PublicAPI.Unshipped.txt" />
+    <PublicAPI Include="PublicAPI.Shipped.txt" />
+    <PublicAPI Include="PublicAPI.Unshipped.txt" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Compilers\Lua\Portable\SamLu.CodeAnalysis.Lua.csproj" />
     <ProjectReference Include="..\Luna.Compilers.Simulators\Luna.Compilers.Simulators.csproj">

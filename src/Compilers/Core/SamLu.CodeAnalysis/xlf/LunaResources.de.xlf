@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../LunaResources.resx">
     <body>
+      <trans-unit id="ArgIsNotStructuredTrivia">
+        <source>'{0}' is not structured trivia.</source>
+        <target state="new">'{0}' is not structured trivia.</target>
+        <note>{0} is the name of an argument.</note>
+      </trans-unit>
       <trans-unit id="ArgMustBeEmpty">
         <source>'{0}' must be empty.</source>
         <target state="new">'{0}' must be empty.</target>

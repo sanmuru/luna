@@ -2,6 +2,7 @@
 
 namespace Luna.Compilers.Generators.Model;
 
+#pragma warning disable CS8618
 [XmlRoot]
 public class Tree
 {
@@ -13,3 +14,4 @@ public class Tree
     [XmlElement(ElementName = "PredefinedNode", Type = typeof(PredefinedNode))]
     public List<TreeType> Types;
 }
+#pragma warning restore CS8618

@@ -1,11 +1,11 @@
 ﻿#if LANG_LUA
-using ThisInternalSyntaxNode = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.LuaSyntaxNode;
-
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
-#elif LANG_MOONSCRIPT
-using ThisInternalSyntaxNode = SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax.MoonScriptSyntaxNode;
 
+using ThisInternalSyntaxNode = LuaSyntaxNode;
+#elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
+
+using ThisInternalSyntaxNode = MoonScriptSyntaxNode;
 #endif
 
 using SamLu.CodeAnalysis.Syntax.InternalSyntax;

@@ -2,10 +2,11 @@
 
 namespace Luna.Compilers.Generators.Model;
 
+#pragma warning disable CS8618
 public class Kind : IEquatable<Kind>
 {
     [XmlAttribute]
-    public string? Name;
+    public string Name;
 
     public override bool Equals(object? obj)
         => Equals(obj as Kind);
@@ -14,5 +15,6 @@ public class Kind : IEquatable<Kind>
         => Name == other?.Name;
 
     public override int GetHashCode()
-        => Name == null ? 0 : Name.GetHashCode();
+        => Name is null ? 0 : Name.GetHashCode();
 }
+#pragma warning restore CS8618

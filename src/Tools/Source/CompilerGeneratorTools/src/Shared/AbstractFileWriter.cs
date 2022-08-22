@@ -1,4 +1,5 @@
-﻿using Luna.Compilers.Generators.Model;
+﻿using System.Diagnostics;
+using Luna.Compilers.Generators.Model;
 
 namespace Luna.Compilers.Generators;
 
@@ -26,7 +27,6 @@ internal abstract class AbstractFileWriter : IndentWriter
     protected Tree Tree { get { return _tree; } }
 
     #region Node helpers
-
     protected static string OverrideOrNewModifier(Field field)
     {
         return IsOverride(field) ? "override " : IsNew(field) ? "new " : "";
@@ -115,7 +115,7 @@ internal abstract class AbstractFileWriter : IndentWriter
     {
         if (typeName == derivedTypeName)
             return true;
-        if (derivedTypeName != null && _parentMap.TryGetValue(derivedTypeName, out var baseType))
+        if (derivedTypeName is not null && _parentMap.TryGetValue(derivedTypeName, out var baseType))
         {
             return IsDerivedType(typeName, baseType);
         }
@@ -124,7 +124,7 @@ internal abstract class AbstractFileWriter : IndentWriter
 
     protected static bool IsRoot(Node n)
     {
-        return n.Root != null && string.Compare(n.Root, "true", true) == 0;
+        return n.Root is not null && string.Compare(n.Root, "true", true) == 0;
     }
 
     protected bool IsNode(string typeName)
@@ -132,14 +132,14 @@ internal abstract class AbstractFileWriter : IndentWriter
         return _parentMap.ContainsKey(typeName);
     }
 
-    protected Node? GetNode(string typeName)
-        => _nodeMap.TryGetValue(typeName, out var node) ? node : null;
+    protected Node? GetNode(string? typeName)
+        => typeName is not null && _nodeMap.TryGetValue(typeName, out var node) ? node : null;
 
-    protected TreeType? GetTreeType(string typeName)
-        => _typeMap.TryGetValue(typeName, out var node) ? node : null;
+    protected TreeType? GetTreeType(string? typeName)
+        => typeName is not null && _typeMap.TryGetValue(typeName, out var node) ? node : null;
 
-    private static bool IsTrue(string val)
-        => val != null && string.Compare(val, "true", true) == 0;
+    private static bool IsTrue(string? val)
+        => val is not null && string.Compare(val, "true", true) == 0;
 
     protected static bool IsOptional(Field f)
         => IsTrue(f.Optional);
@@ -152,7 +152,7 @@ internal abstract class AbstractFileWriter : IndentWriter
 
     protected static bool HasErrors(Node n)
     {
-        return n.Errors == null || string.Compare(n.Errors, "true", true) == 0;
+        return n.Errors is null || string.Compare(n.Errors, "true", true) == 0;
     }
 
     protected static string CamelCase(string name)
@@ -267,21 +267,21 @@ internal abstract class AbstractFileWriter : IndentWriter
         }
     }
 
-    protected List<Kind> GetKindsOfFieldOrNearestParent(TreeType nd, Field field)
+    protected List<Kind> GetKindsOfFieldOrNearestParent(TreeType type, Field field)
     {
         while ((field.Kinds is null || field.Kinds.Count == 0) && IsOverride(field))
         {
-            nd = GetTreeType(nd.Base);
-            field = (nd switch
+            var t = GetTreeType(type.Base);
+            field = (t switch
             {
                 Node node => node.Fields,
                 AbstractNode abstractNode => abstractNode.Fields,
                 _ => throw new InvalidOperationException("Unexpected node type.")
             }).Single(f => f.Name == field.Name);
+            type = t!;
         }
 
         return field.Kinds.Distinct().ToList();
     }
-
-    #endregion Node helpers
+    #endregion
 }

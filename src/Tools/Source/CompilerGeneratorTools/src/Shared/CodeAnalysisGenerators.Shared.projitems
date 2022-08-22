@@ -19,7 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)IsExternalInit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\AbstractNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Comment.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\Field.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\TreeTypeChild.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Kind.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Node.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\PredefinedNode.cs" />

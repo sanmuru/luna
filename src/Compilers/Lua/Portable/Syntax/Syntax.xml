@@ -328,11 +328,11 @@
       <Kind Name="CommaToken"/>
     </Field>
     <Field Name="Limit" Type="ExpressionSyntax"/>
-    <Sequence Optional="true">
-      <Field Name="SecondCommaToken" Type="SyntaxToken">
+    <Sequence>
+      <Field Name="SecondCommaToken" Type="SyntaxToken" Optional="true">
         <Kind Name="CommaToken"/>
       </Field>
-      <Field Name="Step" Type="ExpressionSyntax"/>
+      <Field Name="Step" Type="ExpressionSyntax" Optional="true"/>
     </Sequence>
     <Field Name="DoKeyword" Type="SyntaxToken">
       <Kind Name="DoKeyword"/>
@@ -393,11 +393,11 @@
       <Kind Name="LocalKeyword"/>
     </Field>
     <Field Name="Identifiers" Type="SeparatedSyntaxList&lt;IdentifierNameSyntax&gt;"/>
-    <Sequence Optional="true">
-      <Field Name="EqualsToken" Type="SyntaxToken">
+    <Sequence>
+      <Field Name="EqualsToken" Type="SyntaxToken" Optional="true">
         <Kind Name="EqualsToken"/>
       </Field>
-      <Field Name="Values" Type="ExpressionListSyntax"/>
+      <Field Name="Values" Type="ExpressionListSyntax" Optional="true"/>
     </Sequence>
     <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
       <Kind Name="SemicolonToken"/>
