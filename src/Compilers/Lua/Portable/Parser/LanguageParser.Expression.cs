@@ -27,7 +27,7 @@ partial class LanguageParser
         if (this.CurrentTokenKind != SyntaxKind.CommaToken && !this.IsPossibleExpression()) return null;
 
         return this.ParseSeparatedSyntaxList(
-            index =>
+            parseNodeFunc: index =>
             {
                 if (this.IsPossibleExpression())
                     return this.ParseExpression();
@@ -39,8 +39,9 @@ partial class LanguageParser
                     return this.CreateMissingIdentifierName();
                 }
             },
-            _ => true,
-            list => list.Count == 0 ? null :
+            predicateNode: _ => true,
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
+            createListFunc: list => list.Count == 0 ? null :
                 this._syntaxFactory.ExpressionList(list));
     }
 
@@ -306,8 +307,10 @@ partial class LanguageParser
     {
         var openBrace = this.EatToken(SyntaxKind.OpenBraceToken);
         var field = this.ParseFieldList();
+        // 允许在后花括号前留下一个分隔符。
+        var separator = this.IsPossibleFieldListSeparator() ? this.EatToken() : null;
         var closeBrace = this.EatToken(SyntaxKind.CloseBraceToken);
-        return this._syntaxFactory.TableConstructorExpression(openBrace, field, closeBrace);
+        return this._syntaxFactory.TableConstructorExpression(openBrace, field, separator, closeBrace);
     }
 
 #if TESTING

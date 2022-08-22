@@ -7,6 +7,11 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 partial class LanguageParser
 {
     // Is this statement list non-empty, and large enough to make using weak children beneficial?
+    /// <summary>
+    /// 语句列表<paramref name="statements"/>是否非空，且总宽度大于一定的尺寸，使得使用若
+    /// </summary>
+    /// <param name="statements"></param>
+    /// <returns></returns>
     private static bool IsLargeEnoughNonEmptyStatementList(SyntaxListBuilder<StatementSyntax> statements)
     {
         if (statements.Count == 0)
@@ -31,7 +36,7 @@ partial class LanguageParser
         this.ParseSyntaxList(
             statementsBuilder,
             parseNodeFunc: _ => this.ParseStatement(),
-            predicate: _ => this.IsPossibleStatement());
+            predicateNode: _ => this.IsPossibleStatement());
 
 #if TESTING
     internal
@@ -242,7 +247,7 @@ partial class LanguageParser
         SyntaxList<ElseIfClauseSyntax> ParseElseIfClausesOpt() =>
         this.ParseSyntaxList(
             parseNodeFunc: _ => this.ParseElseIfClause(),
-            predicate: _ => this.CurrentTokenKind == SyntaxKind.ElseIfKeyword);
+            predicateNode: _ => this.CurrentTokenKind == SyntaxKind.ElseIfKeyword);
 
 #if TESTING
     internal

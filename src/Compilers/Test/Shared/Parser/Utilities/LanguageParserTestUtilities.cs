@@ -317,7 +317,7 @@ public static class LanguageParserTestUtilities
             Assert.IsInstanceOfType(expression, typeof(IndexMemberAccessExpressionSyntax));
             assert.IsIndexMemberAccessExpression((IndexMemberAccessExpressionSyntax)expression, kinds);
         }
-        if (kinds.Value == SyntaxKind.ParenthesizedExpression)
+        else if (kinds.Value == SyntaxKind.ParenthesizedExpression)
         {
             Assert.IsInstanceOfType(expression, typeof(ParenthesizedExpressionSyntax));
             assert.IsParenthesizedExpression((ParenthesizedExpressionSyntax)expression, kinds);

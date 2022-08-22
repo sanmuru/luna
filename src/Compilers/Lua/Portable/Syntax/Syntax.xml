@@ -82,6 +82,10 @@
       <Kind Name="OpenBraceToken"/>
     </Field>
     <Field Name="Fields" Type="FieldListSyntax"/>
+    <Field Name="SeparatorToken" Type="SyntaxToken" Optional="true">
+      <Kind Name="CommaToken"/>
+      <Kind Name="SemicolonToken"/>
+    </Field>
     <Field Name="CloseBrace" Type="SyntaxToken">
       <Kind Name="CloseBraceToken"/>
     </Field>

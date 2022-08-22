@@ -25,13 +25,15 @@ partial class LanguageParser
     private SeparatedSyntaxList<IdentifierNameSyntax> ParseSeparatedIdentifierNames() =>
         this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseIdentifierName(),
-            predicate: _ => true);
+            predicateNode: _ => true,
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
 
     private void ParseSeparatedIdentifierNames(in SeparatedSyntaxListBuilder<IdentifierNameSyntax> namesBuilder) =>
         this.ParseSeparatedSyntaxList(
             namesBuilder,
             parseNodeFunc: _ => this.ParseIdentifierName(),
-            predicate: _ => true);
+            predicateNode: _ => true,
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
 
 #if TESTING
     internal

@@ -28,7 +28,8 @@ partial class LanguageParser
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var parameters = this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseParameter(),
-            predicate: _ => true);
+            predicateNode: _ => true,
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
         var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
         return this._syntaxFactory.ParameterList(openParen, parameters, closeParen);
     }
@@ -62,8 +63,16 @@ partial class LanguageParser
         FieldListSyntax ParseFieldList() =>
         this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseField(),
-            predicate: _ => true,
+            predicateNode: _ => true,
+            predicateSeparator: _ => this.IsPossibleFieldListSeparator(),
             list => this._syntaxFactory.FieldList(list))!;
+
+#if TESTING
+    internal
+#else
+    private
+#endif
+        bool IsPossibleFieldListSeparator() => this.CurrentTokenKind is SyntaxKind.CommaToken or SyntaxKind.SemicolonToken;
 
 #if TESTING
     internal
@@ -243,7 +252,8 @@ partial class LanguageParser
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var arguments = this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseArgument(),
-            predicate: _ => this.IsPossibleExpression());
+            predicateNode: _ => this.IsPossibleExpression(),
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
         var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
         return this._syntaxFactory.ArgumentList(openParen, arguments, closeParen);
     }
