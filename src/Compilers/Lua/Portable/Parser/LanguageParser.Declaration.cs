@@ -157,19 +157,6 @@ partial class LanguageParser
         public FieldKeySkippedNodesVisitor(LanguageParser parser) => this._parser = parser;
 
         /// <summary>
-        /// 处理语法节点。
-        /// </summary>
-        /// <param name="node">要处理的语法节点。</param>
-        /// <returns>处理后的<paramref name="node"/>。</returns>
-        public override LuaSyntaxNode? Visit(LuaSyntaxNode? node)
-        {
-            if (node is null or SyntaxToken)
-                return base.Visit(node);
-            else
-                return this.DefaultVisit(node);
-        }
-
-        /// <summary>
         /// 处理语法标志，向语法标志添加<see cref="ErrorCode.ERR_InvalidExprTerm"/>错误。
         /// </summary>
         /// <param name="token">要处理的语法标志。</param>

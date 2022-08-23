@@ -191,4 +191,20 @@ partial class LanguageParser
     private partial bool MatchFactoryContext(GreenNode green, SyntaxFactoryContext context) =>
 #warning 未完成。
         true;
+
+    // Is this statement list non-empty, and large enough to make using weak children beneficial?
+    private static bool IsLargeEnoughNonEmptyStatementList(SyntaxListBuilder<StatementSyntax> statements)
+    {
+        if (statements.Count == 0)
+            return false;
+        else if (statements.Count == 1)
+            // If we have a single statement, it might be small, like "return null", or large,
+            // like a loop or if or switch with many statements inside. Use the width as a proxy for
+            // how big it is. If it's small, its better to forgo a many children list anyway, since the
+            // weak reference would consume as much memory as is saved.
+            return statements[0]!.Width > 60;
+        else
+            // For 2 or more statements, go ahead and create a many-children lists.
+            return true;
+    }
 }

@@ -6,27 +6,6 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 partial class LanguageParser
 {
-    // Is this statement list non-empty, and large enough to make using weak children beneficial?
-    /// <summary>
-    /// 语句列表<paramref name="statements"/>是否非空，且总宽度大于一定的尺寸，使得使用若
-    /// </summary>
-    /// <param name="statements"></param>
-    /// <returns></returns>
-    private static bool IsLargeEnoughNonEmptyStatementList(SyntaxListBuilder<StatementSyntax> statements)
-    {
-        if (statements.Count == 0)
-            return false;
-        else if (statements.Count == 1)
-            // If we have a single statement, it might be small, like "return null", or large,
-            // like a loop or if or switch with many statements inside. Use the width as a proxy for
-            // how big it is. If it's small, its better to forgo a many children list anyway, since the
-            // weak reference would consume as much memory as is saved.
-            return statements[0]!.Width > 60;
-        else
-            // For 2 or more statements, go ahead and create a many-children lists.
-            return true;
-    }
-
 #if TESTING
     internal
 #else
@@ -125,8 +104,7 @@ partial class LanguageParser
         var left = this.ParseExpressionList();
         var equals = this.EatToken(SyntaxKind.EqualsToken);
         var right = this.ParseExpressionList();
-        var semicolon = this.TryEatToken(SyntaxKind.SemicolonToken);
-        return this._syntaxFactory.AssignmentStatement(left, equals, right, semicolon);
+        return this._syntaxFactory.AssignmentStatement(left, equals, right);
     }
 
 #if TESTING
@@ -162,8 +140,7 @@ partial class LanguageParser
     {
         var gotoKeyword = this.EatToken(SyntaxKind.GotoKeyword);
         var labelName = this.ParseIdentifierName();
-        var semicolon = this.TryEatToken(SyntaxKind.SemicolonToken);
-        return this._syntaxFactory.GotoStatement(gotoKeyword, labelName, semicolon);
+        return this._syntaxFactory.GotoStatement(gotoKeyword, labelName);
     }
 
 #if TESTING
@@ -175,8 +152,7 @@ partial class LanguageParser
     {
         var returnKeyword = this.EatToken(SyntaxKind.ReturnKeyword);
         var expressions = this.ParseExpressionListOpt();
-        var semicolon = this.TryEatToken(SyntaxKind.SemicolonToken);
-        return this._syntaxFactory.ReturnStatement(returnKeyword, expressions, semicolon);
+        return this._syntaxFactory.ReturnStatement(returnKeyword, expressions);
     }
 
 #if TESTING
@@ -218,8 +194,7 @@ partial class LanguageParser
         var block = this.ParseBlock();
         var untilKeyword = this.EatToken(SyntaxKind.UntilKeyword);
         var condition = this.ParseExpression();
-        var semicolon = this.TryEatToken(SyntaxKind.SemicolonToken);
-        return this._syntaxFactory.RepeatStatement(repeatKeyword, block, untilKeyword, condition, semicolon);
+        return this._syntaxFactory.RepeatStatement(repeatKeyword, block, untilKeyword, condition);
     }
 
 #if TESTING
@@ -455,19 +430,7 @@ partial class LanguageParser
             equals = this.EatToken();
             values = this.ParseExpressionListOpt();
         }
-        SyntaxToken? semicolon = null;
-        if (this.CurrentTokenKind == SyntaxKind.SemicolonToken)
-        {
-            semicolon = this.EatToken();
-            if (equals is not null && values is null)
-                semicolon = this.AddError(semicolon, ErrorCode.ERR_InvalidExprTerm);
-        }
-        if (equals is not null)
-        {
-            // 创建一个缺失的标识符名称语法来组成表达式列表，并报告错误信息。
-            values ??= this.CreateMissingExpressionList();
-        }
 
-        return this._syntaxFactory.LocalDeclarationStatement(local, identifiers, equals, values, semicolon);
+        return this._syntaxFactory.LocalDeclarationStatement(local, identifiers, equals, values);
     }
 }

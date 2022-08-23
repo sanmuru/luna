@@ -206,9 +206,6 @@
       <Kind Name="EqualsToken"/>
     </Field>
     <Field Name="Right" Type="ExpressionListSyntax"/>
-    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
-      <Kind Name="SemicolonToken"/>
-    </Field>
   </Node>
   <Node Name="LabelStatementSyntax" Base="StatementSyntax">
     <Kind Name="LabelStatement"/>
@@ -232,9 +229,6 @@
       <Kind Name="GotoKeyword"/>
     </Field>
     <Field Name="Name" Type="IdentifierNameSyntax"/>
-    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
-      <Kind Name="SemicolonToken"/>
-    </Field>
   </Node>
   <Node Name="ReturnStatementSyntax" Base="StatementSyntax">
     <Kind Name="ReturnStatement"/>
@@ -242,9 +236,6 @@
       <Kind Name="ReturnKeyword"/>
     </Field>
     <Field Name="Values" Type="ExpressionListSyntax" Optional="true"/>
-    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
-      <Kind Name="SemicolonToken"/>
-    </Field>
   </Node>
   <Node Name="DoStatementSyntax" Base="StatementSyntax">
     <Kind Name="DoStatement"/>
@@ -280,9 +271,6 @@
       <Kind Name="UntilKeyword"/>
     </Field>
     <Field Name="Condition" Type="ExpressionSyntax"/>
-    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
-      <Kind Name="SemicolonToken"/>
-    </Field>
   </Node>
   <Node Name="IfStatementSyntax" Base="StatementSyntax">
     <Kind Name="IfStatement"/>
@@ -403,9 +391,6 @@
       </Field>
       <Field Name="Values" Type="ExpressionListSyntax" Optional="true"/>
     </Sequence>
-    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
-      <Kind Name="SemicolonToken"/>
-    </Field>
   </Node>
 
 
