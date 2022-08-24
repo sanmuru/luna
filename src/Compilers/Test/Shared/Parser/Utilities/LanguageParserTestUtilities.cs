@@ -305,6 +305,19 @@ public static class LanguageParserTestUtilities
     }
     #endregion
 
+    #region IsEmptyExpressionList
+    internal static void IsEmptyExpressionList(this Assert assert, ExpressionListSyntax expressionList) =>
+        Assert.IsTrue(expressionList.Expressions.Count == 0, "形参列表不为空。");
+
+    internal static void IsNotEmptyExpressionList(this Assert assert, ExpressionListSyntax expressionList) =>
+        Assert.IsFalse(expressionList.Expressions.Count == 0, "形参列表为空。");
+    internal static void IsNotEmptyExpressionList(this Assert assert, ExpressionListSyntax expressionList, int count)
+    {
+        assert.IsNotEmptyExpressionList(expressionList);
+        Assert.AreEqual(count, expressionList.Expressions.Count, $"形参列表参数个数为{expressionList.Expressions.Count}个，而非{count}。");
+    }
+    #endregion
+
     internal static void IsExpression(this Assert assert, ExpressionSyntax expression, TreeNode<SyntaxKind> kinds)
     {
         if (kinds.Value == SyntaxKind.SimpleMemberAccessExpression)

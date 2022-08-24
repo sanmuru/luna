@@ -101,10 +101,53 @@ partial class LanguageParser
 #endif
         AssignmentStatementSyntax ParseAssignmentStatement()
     {
-        var left = this.ParseExpressionList();
-        var equals = this.EatToken(SyntaxKind.EqualsToken);
+        var left = this.ParseAssgLvalueList();
+
+        // 当赋值符号缺失时，中断整个语句的分析。
+        if (this.CurrentTokenKind != SyntaxKind.EqualsToken)
+            return this._syntaxFactory.AssignmentStatement(left, this.EatToken(SyntaxKind.EqualsToken), this.CreateMissingExpressionList());
+
+        var equals = this.EatToken();
         var right = this.ParseExpressionList();
         return this._syntaxFactory.AssignmentStatement(left, equals, right);
+    }
+
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionListSyntax ParseAssgLvalueList()
+    {
+        if (this.CurrentTokenKind != SyntaxKind.CommaToken && !this.IsPossibleExpression())
+            return this.CreateMissingExpressionList(ErrorCode.ERR_IdentifierExpected);
+
+        return this.ParseSeparatedSyntaxList(
+            parseNodeFunc: index =>
+            {
+                if (this.IsPossibleExpression())
+                {
+                    var expr = this.ParseExpression();
+                    return expr switch
+                    {
+                        // 仅标识符语法和成员操作语法（普通或索引）能作为赋值符号左侧表达式。
+                        IdentifierNameSyntax or
+                        MemberAccessExpressionSyntax => expr,
+
+                        _ => this.AddError(expr, ErrorCode.ERR_AssgLvalueExpected)
+                    };
+                }
+                else
+                {
+                    // 第一项缺失的情况：
+                    if (index == 0)
+                        Debug.Assert(this.CurrentTokenKind == SyntaxKind.CommaToken);
+                    return this.AddError(this.CreateMissingIdentifierName(), ErrorCode.ERR_IdentifierExpected);
+                }
+            },
+            predicateNode: _ => true,
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
+            createListFunc: list => this._syntaxFactory.ExpressionList(list))!;
     }
 
 #if TESTING

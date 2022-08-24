@@ -1370,4 +1370,39 @@ public partial class LanguageParserTests
         }
     }
     #endregion
+
+    #region 语句
+    [TestMethod]
+    public void AssignmentStatementParseTests()
+    {
+        { // 合法的多值赋值语句。
+            var parser = LanguageParserTests.CreateLanguageParser("a, b = true, false");
+            var assignment = parser.ParseAssignmentStatement();
+            Assert.That.NotContainsDiagnostics(assignment);
+
+            var left = assignment.Left;
+            Assert.That.IsNotEmptyExpressionList(left, 2);
+            {
+                Assert.IsInstanceOfType(left.Expressions[0]!, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)left.Expressions[0]!, "a");
+
+                Assert.IsInstanceOfType(left.Expressions[1]!, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)left.Expressions[1]!, "b");
+            }
+
+            var right = assignment.Right;
+            Assert.That.IsNotEmptyExpressionList(right, 2);
+            {
+                Assert.IsInstanceOfType(right.Expressions[0]!, typeof(LiteralExpressionSyntax));
+                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)right.Expressions[0]!, SyntaxKind.TrueLiteralExpression);
+
+                Assert.IsInstanceOfType(right.Expressions[1]!, typeof(LiteralExpressionSyntax));
+                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)right.Expressions[1]!, SyntaxKind.FalseLiteralExpression);
+            }
+
+            Assert.That.AtEndOfFile(parser);
+        }
+
+    }
+    #endregion
 }

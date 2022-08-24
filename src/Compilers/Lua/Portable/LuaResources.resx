@@ -132,6 +132,9 @@
   <data name="ERR_IdentifierExpected" xml:space="preserve">
     <value>Identifier expected.</value>
   </data>
+  <data name="ERR_IdentifierExpectedKW" xml:space="preserve">
+    <value>Identifier expected; '{0}' is a keyword.</value>
+  </data>
   <data name="ERR_IllegalEscape" xml:space="preserve">
     <value>Unrecognized escape sequence.</value>
   </data>

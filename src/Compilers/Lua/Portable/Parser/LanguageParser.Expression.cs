@@ -36,7 +36,7 @@ partial class LanguageParser
                     // 第一项缺失的情况：
                     if (index == 0)
                         Debug.Assert(this.CurrentTokenKind == SyntaxKind.CommaToken);
-                    return this.CreateMissingIdentifierName();
+                    return this.ReportMissingExpression(this.CreateMissingIdentifierName());
                 }
             },
             predicateNode: _ => true,
@@ -50,15 +50,24 @@ partial class LanguageParser
 #else
     private
 #endif
-        ExpressionListSyntax CreateMissingExpressionList()
-    {
-        var missing = this._syntaxFactory.ExpressionList(
+        ExpressionListSyntax CreateMissingExpressionList() =>
+        this._syntaxFactory.ExpressionList(
             new(SyntaxList.List(
-                this.CreateMissingIdentifierName()
+                this.ReportMissingExpression(this.CreateMissingIdentifierName())
             ))
         );
-        return this.AddError(missing, ErrorCode.ERR_InvalidExprTerm);
-    }
+
+#if TESTING
+    internal
+#else
+    private
+#endif
+        ExpressionListSyntax CreateMissingExpressionList(ErrorCode code, params object[] args) =>
+        this._syntaxFactory.ExpressionList(
+            new(SyntaxList.List(
+                this.AddError(this.CreateMissingIdentifierName(), code, args)
+            ))
+        );
 
 #if TESTING
     internal

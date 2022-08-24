@@ -9,23 +9,21 @@ partial class SyntaxParser
         var code = SyntaxParser.GetExpectedTokenErrorCode(expected, actual);
         return code switch
         {
+            ErrorCode.ERR_IdentifierExpectedKW =>
+                new(offset, width, code, SyntaxFacts.GetText(actual)),
             ErrorCode.ERR_SyntaxError =>
                 new(offset, width, code, SyntaxFacts.GetText(expected)),
-#warning 需完善错误码到语法诊断信息实例的映射。
-            _ =>
-            new(offset, width, code)
+
+            _ => new(offset, width, code)
         };
     }
 
-    /// <summary>
-    /// 获取一个错误码，对应未得到期望的标志。
-    /// </summary>
-    /// <returns>对应未得到期望的标志的错误码。</returns>
-    /// <inheritdoc cref="SyntaxParser.GetExpectedTokenError(SyntaxKind, SyntaxKind)"/>
-    private static ErrorCode GetExpectedTokenErrorCode(SyntaxKind expected, SyntaxKind actual) =>
+    protected static partial ErrorCode GetExpectedTokenErrorCode(SyntaxKind expected, SyntaxKind actual) =>
         expected switch
         {
-#warning 需完善未得到期望的标志对应的错误码。
+            SyntaxKind.IdentifierToken =>
+                SyntaxFacts.IsReservedKeyword(expected) ? ErrorCode.ERR_IdentifierExpectedKW : ErrorCode.ERR_IdentifierExpected,
+
             _ => ErrorCode.ERR_SyntaxError
         };
 

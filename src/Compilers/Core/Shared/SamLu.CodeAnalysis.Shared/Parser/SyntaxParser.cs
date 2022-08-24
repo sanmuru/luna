@@ -697,6 +697,13 @@ internal abstract partial class SyntaxParser : IDisposable
     protected virtual partial SyntaxDiagnosticInfo GetExpectedTokenError(SyntaxKind expected, SyntaxKind actual, int offset, int width);
 
     /// <summary>
+    /// 获取一个错误码，对应未得到期望的标志。
+    /// </summary>
+    /// <returns>对应未得到期望的标志的错误码。</returns>
+    /// <inheritdoc cref="SyntaxParser.GetExpectedTokenError(SyntaxKind, SyntaxKind)"/>
+    protected static partial ErrorCode GetExpectedTokenErrorCode(SyntaxKind expected, SyntaxKind actual);
+
+    /// <summary>
     /// 获取缺失标志的诊断文本范围。
     /// </summary>
     /// <param name="offset">文本范围的偏移量。</param>

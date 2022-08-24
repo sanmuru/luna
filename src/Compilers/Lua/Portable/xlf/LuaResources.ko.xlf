@@ -27,6 +27,11 @@
         <target state="new">Identifier expected.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_IdentifierExpectedKW">
+        <source>Identifier expected; '{0}' is a keyword.</source>
+        <target state="new">Identifier expected; '{0}' is a keyword.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_IllegalEscape">
         <source>Unrecognized escape sequence.</source>
         <target state="new">Unrecognized escape sequence.</target>
