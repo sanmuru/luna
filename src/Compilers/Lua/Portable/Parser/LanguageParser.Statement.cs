@@ -151,6 +151,7 @@ partial class LanguageParser
 #endif
         LabelStatementSyntax ParseLabelStatement()
     {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.ColonColonToken);
         var leftColonColon = this.EatToken(SyntaxKind.ColonColonToken);
         var labelName = this.ParseIdentifierName();
         var rightColonColon = this.EatToken(SyntaxKind.ColonColonToken);
@@ -164,6 +165,7 @@ partial class LanguageParser
 #endif
         BreakStatementSyntax ParseBreakStatement()
     {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.BreakKeyword);
         var breakKeyword = this.EatToken(SyntaxKind.BreakKeyword);
         return this._syntaxFactory.BreakStatement(breakKeyword);
     }
@@ -175,6 +177,7 @@ partial class LanguageParser
 #endif
         GotoStatementSyntax ParseGotoStatement()
     {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.GotoKeyword);
         var gotoKeyword = this.EatToken(SyntaxKind.GotoKeyword);
         var labelName = this.ParseIdentifierName();
         return this._syntaxFactory.GotoStatement(gotoKeyword, labelName);
@@ -187,6 +190,7 @@ partial class LanguageParser
 #endif
         ReturnStatementSyntax ParseReturnStatement()
     {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.ReturnKeyword);
         var returnKeyword = this.EatToken(SyntaxKind.ReturnKeyword);
         var expressions = this.ParseExpressionListOpt();
         return this._syntaxFactory.ReturnStatement(returnKeyword, expressions);

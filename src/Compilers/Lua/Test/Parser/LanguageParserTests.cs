@@ -3,6 +3,8 @@
 namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
 
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Utilities;
 
 [TestClass]
@@ -1682,6 +1684,31 @@ public partial class LanguageParserTests
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.AtEndOfFile(parser);
             }
+        }
+    }
+
+    [TestMethod]
+    public void ControlStatementParseTests()
+    {
+        {
+            var parser = LanguageParserTests.CreateLanguageParser("::label::");
+            var label = parser.ParseLabelStatement();
+            Assert.That.NotContainsDiagnostics(label);
+            Assert.That.IsIdentifierName(label.Name, "label");
+            Assert.That.AtEndOfFile(parser);
+        }
+        {
+            var parser = LanguageParserTests.CreateLanguageParser("break");
+            var @break = parser.ParseBreakStatement();
+            Assert.That.NotContainsDiagnostics(@break);
+            Assert.That.AtEndOfFile(parser);
+        }
+        {
+            var parser = LanguageParserTests.CreateLanguageParser("goto label");
+            var @goto = parser.ParseGotoStatement();
+            Assert.That.NotContainsDiagnostics(@goto);
+            Assert.That.IsIdentifierName(@goto.Name, "label");
+            Assert.That.AtEndOfFile(parser);
         }
     }
     #endregion
