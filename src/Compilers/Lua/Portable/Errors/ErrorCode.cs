@@ -58,6 +58,8 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_AttributeExpected,
         /// <summary>无效的特性项。</summary>
         ERR_InvalidAttrTerm,
+        /// <summary>位于错误位置的返回语句。</summary>
+        ERR_MisplacedReturnStat,
         #endregion
 
         #region Lua 1.0的消息

@@ -171,6 +171,9 @@
   <data name="ERR_InvocationArgumentsExpected" xml:space="preserve">
     <value>Invocation arguments expected.</value>
   </data>
+  <data name="ERR_MisplacedReturnStat" xml:space="preserve">
+    <value>Return statement can only be the last statement of a block.</value>
+  </data>
   <data name="ERR_NewlineInConst" xml:space="preserve">
     <value>Newline in string literal constant.</value>
   </data>

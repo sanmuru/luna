@@ -239,7 +239,7 @@
     <Field Name="ReturnKeyword" Type="SyntaxToken">
       <Kind Name="ReturnKeyword"/>
     </Field>
-    <Field Name="Values" Type="ExpressionListSyntax" Optional="true"/>
+    <Field Name="Expressions" Type="ExpressionListSyntax" Optional="true"/>
   </Node>
   <Node Name="DoStatementSyntax" Base="StatementSyntax">
     <Kind Name="DoStatement"/>
@@ -410,6 +410,7 @@
   <Node Name="BlockSyntax" Base="LuaSyntaxNode">
     <Kind Name="Block"/>
     <Field Name="Statements" Type="SyntaxList&lt;StatementSyntax&gt;"/>
+    <Field Name="ReturnStatement" Type="ReturnStatementSyntax" Optional="true"/>
   </Node>
   <Node Name="SkippedTokensTriviaSyntax" Base="StructuredTriviaSyntax">
     <Kind Name="SkippedTokensTrivia"/>

@@ -14,8 +14,33 @@ partial class LanguageParser
         void ParseStatements(in SyntaxListBuilder<StatementSyntax> statementsBuilder) =>
         this.ParseSyntaxList(
             statementsBuilder,
-            parseNodeFunc: _ => this.ParseStatement(),
-            predicateNode: _ => this.IsPossibleStatement());
+            parseNodeFunc: _ =>
+            {
+                var stat = this.ParseStatement();
+                if (stat is ReturnStatementSyntax) // 此返回语句位置错误，报告错误。
+                    return this.AddError(stat, ErrorCode.ERR_MisplacedReturnStat);
+                else
+                    return stat;
+            },
+            predicateNode: _ =>
+            {
+                // 后续不是合法语句时停止。
+                if (!this.IsPossibleStatement()) return false;
+
+                // 正常处理处返回语句外的其他语句。
+                if (this.CurrentTokenKind != SyntaxKind.ReturnStatement) return true;
+
+                var resetPoint = this.GetResetPoint();
+                var returnStat = this.ParseReturnStatement();
+
+                if (this.IsPossibleStatement()) // 后方还有合法的语句，则此返回语句仅为位置错误。
+                    return true;
+                else // 否则此返回语句可能是块的最后一个语句，返回重置点。
+                {
+                    this.Reset(ref resetPoint);
+                    return false;
+                }
+            });
 
 #if TESTING
     internal

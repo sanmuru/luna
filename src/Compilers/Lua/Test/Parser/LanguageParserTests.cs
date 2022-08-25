@@ -1711,5 +1711,41 @@ public partial class LanguageParserTests
             Assert.That.AtEndOfFile(parser);
         }
     }
+
+    [TestMethod]
+    public void ReturnStatementParseTests()
+    {
+        { // 无返回值
+            var parser = LanguageParserTests.CreateLanguageParser("return");
+            var stat = parser.ParseReturnStatement();
+            Assert.That.NotContainsDiagnostics(stat);
+            Assert.IsNull(stat.Expressions);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 一个返回值
+            var parser = LanguageParserTests.CreateLanguageParser("return a");
+            var stat = parser.ParseReturnStatement();
+            Assert.That.NotContainsDiagnostics(stat);
+            Assert.IsNotNull(stat.Expressions);
+            Assert.That.IsNotEmptyExpressionList(stat.Expressions, 1);
+
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)stat.Expressions.Expressions[0]!, "a");
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 多个返回值
+            var parser = LanguageParserTests.CreateLanguageParser("return true, nil, false");
+            var stat = parser.ParseReturnStatement();
+            Assert.That.NotContainsDiagnostics(stat);
+            Assert.IsNotNull(stat.Expressions);
+            Assert.That.IsNotEmptyExpressionList(stat.Expressions, 3);
+
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)stat.Expressions.Expressions[0]!, SyntaxKind.TrueLiteralExpression);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)stat.Expressions.Expressions[1]!, SyntaxKind.NilLiteralExpression);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)stat.Expressions.Expressions[2]!, SyntaxKind.FalseLiteralExpression);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+    }
     #endregion
 }

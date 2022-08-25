@@ -92,6 +92,11 @@
         <target state="new">Invocation arguments expected.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_MisplacedReturnStat">
+        <source>Return statement can only be the last statement of a block.</source>
+        <target state="new">Return statement can only be the last statement of a block.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_NewlineInConst">
         <source>Newline in string literal constant.</source>
         <target state="new">Newline in string literal constant.</target>

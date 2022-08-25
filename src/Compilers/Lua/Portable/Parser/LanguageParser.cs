@@ -34,12 +34,14 @@ partial class LanguageParser
         else
             statements = statementBuilder;
 
-        var block = this._syntaxFactory.Block(statements);
+        var returnStat = this.CurrentTokenKind == SyntaxKind.ReturnStatement ? this.ParseReturnStatement() : null;
+        var block = this._syntaxFactory.Block(statements, returnStat);
 
         this._pool.Free(statementBuilder);
         return block;
     }
 
+    #region SkipTokensAndNodes
     private GreenNode? SkipTokens(Func<SyntaxToken, bool> predicate, LuaSyntaxVisitor<SyntaxToken>? visitor = null)
     {
         if (predicate(this.CurrentToken))
@@ -83,6 +85,34 @@ partial class LanguageParser
         else
             return this._pool.ToListAndFree(builder).Node;
     }
+
+    private GreenNode? SkipTokensAndStatements(Func<SyntaxToken, bool> predicate, LuaSyntaxVisitor<LuaSyntaxNode>? visitor = null)
+    {
+        var builder = this._pool.Allocate<LuaSyntaxNode>();
+        while (true)
+        {
+            if (this.IsPossibleStatement())
+            {
+                var stat = this.ParseStatement();
+                builder.Add(visitor is null ? stat : visitor.Visit(stat));
+            }
+            else if (predicate(this.CurrentToken))
+            {
+                var token = this.EatToken();
+                builder.Add(visitor is null ? token : visitor.Visit(token));
+            }
+            else break;
+        }
+
+        if (builder.Count == 0)
+        {
+            this._pool.Free(builder);
+            return null;
+        }
+        else
+            return this._pool.ToListAndFree(builder).Node;
+    }
+    #endregion
 
     #region ParseSyntaxList & ParseSeparatedSyntaxList
     private void ParseSyntaxList<TNode>(
