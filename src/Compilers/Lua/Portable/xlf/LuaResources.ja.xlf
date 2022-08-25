@@ -2,6 +2,16 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../LuaResources.resx">
     <body>
+      <trans-unit id="ERR_AssgLvalueExpected">
+        <source>The left-hand side of an assignment must be a variable or member.</source>
+        <target state="new">The left-hand side of an assignment must be a variable or member.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_AttributeExpected">
+        <source>Attribute expected.</source>
+        <target state="new">Attribute expected.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_BadDocumentationMode">
         <source>Provided documentation mode is unsupported or invalid: '{0}'.</source>
         <target state="new">Provided documentation mode is unsupported or invalid: '{0}'.</target>
@@ -50,6 +60,11 @@
       <trans-unit id="ERR_InternalError">
         <source>Internal error in the Lua compiler.</source>
         <target state="new">Internal error in the Lua compiler.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_InvalidAttrTerm">
+        <source>Invalid attribute term '{0}'.</source>
+        <target state="new">Invalid attribute term '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_InvalidExprTerm">

@@ -22,12 +22,6 @@ partial class LanguageParser
         return this._syntaxFactory.IdentifierName(identifier);
     }
 
-    private SeparatedSyntaxList<IdentifierNameSyntax> ParseSeparatedIdentifierNames() =>
-        this.ParseSeparatedSyntaxList(
-            parseNodeFunc: _ => this.ParseIdentifierName(),
-            predicateNode: _ => true,
-            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
-
     private void ParseSeparatedIdentifierNames(in SeparatedSyntaxListBuilder<IdentifierNameSyntax> namesBuilder) =>
         this.ParseSeparatedSyntaxList(
             namesBuilder,

@@ -101,6 +101,8 @@ public static partial class SyntaxFacts
             SyntaxKind.ToBeClosedMetamethod => "__close",
             SyntaxKind.WeakModeMetafield => "__mode",
             SyntaxKind.NameMetafield => "__name",
+            SyntaxKind.ConstKeyword => "const",
+            SyntaxKind.CloseKeyword => "close",
 
             _ => string.Empty
         };
@@ -188,6 +190,10 @@ public static partial class SyntaxFacts
         // 元字段和元方法
         for (int i = (int)SyntaxKind.MetatableMetafield; i <= (int)SyntaxKind.NameMetafield; i++)
             yield return (SyntaxKind)i;
+
+        // 特性
+        for (int i = (int)SyntaxKind.CloseKeyword; i <= (int)SyntaxKind.ConstKeyword; i++)
+            yield return (SyntaxKind)i;
     }
 
     /// <summary>
@@ -197,7 +203,7 @@ public static partial class SyntaxFacts
     /// <returns>若<paramref name="kind"/>表示上下文关键字，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
     public static bool IsContextualKeyword(SyntaxKind kind) =>
         // 元字段和元方法
-        SyntaxFacts.IsMetafield(kind) ||
+        SyntaxFacts.IsMetafield(kind) || SyntaxFacts.IsAttribute(kind) ||
 
         // 上下文关键词
         kind switch
@@ -220,6 +226,18 @@ public static partial class SyntaxFacts
             _ => false
         };
 
+    /// <summary>
+    /// 指定语法种类是否表示特性。
+    /// </summary>
+    /// <param name="kind">要查询的语法种类。</param>
+    public static bool IsAttribute(SyntaxKind kind) =>
+        kind switch
+        {
+            >= SyntaxKind.CloseKeyword and <= SyntaxKind.ConstKeyword => true,
+
+            _ => false
+        };
+
     public static SyntaxKind GetContextualKeywordKind(string text) =>
         text switch
         {
@@ -227,8 +245,11 @@ public static partial class SyntaxFacts
             "_G" => SyntaxKind.GlobalEnvironmentKeyword,
             "_ENV" => SyntaxKind.EnvironmentKeyword,
 
-            // 元字段和元方法
-            _ => SyntaxFacts.GetMetafieldKind(text)
+            _ => text.StartsWith("--") ?
+                // 元字段和元方法
+                SyntaxFacts.GetMetafieldKind(text) :
+                // 特性
+                SyntaxFacts.GetAttributeKind(text)
         };
     #endregion
 
@@ -525,6 +546,15 @@ public static partial class SyntaxFacts
             "__close" => SyntaxKind.ToBeClosedMetamethod,
             "__mode" => SyntaxKind.WeakModeMetafield,
             "__name" => SyntaxKind.NameMetafield,
+
+            _ => SyntaxKind.None
+        };
+
+    public static SyntaxKind GetAttributeKind(string attributeName) =>
+        attributeName switch
+        {
+            "close" => SyntaxKind.CloseKeyword,
+            "const" => SyntaxKind.ConstKeyword,
 
             _ => SyntaxKind.None
         };

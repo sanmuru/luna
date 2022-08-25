@@ -187,6 +187,12 @@ public enum SyntaxKind : ushort
     WeakModeMetafield,
     /// <summary>表示名称（<c>+</c>）元字段<c>__name</c>。</summary>
     NameMetafield,
+
+    // 特性
+    /// <summary>表示<see langword="close"/>关键词。</summary>
+    CloseKeyword,
+    /// <summary>表示<see langword="const"/>关键词。</summary>
+    ConstKeyword,
     #endregion
 
     /// <summary>表示文件的结尾。</summary>
@@ -387,5 +393,11 @@ public enum SyntaxKind : ushort
     ArgumentString,
     /// <summary>表示调用参数。</summary>
     Argument,
+    /// <summary>表示标识符后接特性列表。</summary>
+    NameAttributeList,
+    /// <summary>表示特性列表。</summary>
+    AttributeList,
+    /// <summary>表示特性。</summary>
+    Attribute,
     #endregion
 }

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -161,7 +162,7 @@ partial class LanguageParser
         /// </summary>
         /// <param name="token">要处理的语法标志。</param>
         /// <returns>处理后的<paramref name="token"/>。</returns>
-        public override LuaSyntaxNode? VisitToken(SyntaxToken token) =>
+        public override LuaSyntaxNode VisitToken(SyntaxToken token) =>
             this._parser.AddError(token, ErrorCode.ERR_InvalidExprTerm, SyntaxFacts.GetText(token.Kind));
 
         /// <summary>
@@ -171,7 +172,7 @@ partial class LanguageParser
         /// <param name="node">要处理的语法节点。</param>
         /// <returns>处理后的<paramref name="node"/>。</returns>
         /// <exception cref="ExceptionUtilities.Unreachable">当<paramref name="node"/>不是表达式语法时，这种情况不应发生。</exception>
-        protected override LuaSyntaxNode? DefaultVisit(LuaSyntaxNode node) =>
+        protected override LuaSyntaxNode DefaultVisit(LuaSyntaxNode node) =>
             node is ExpressionSyntax ? node : throw ExceptionUtilities.Unreachable;
     }
 
@@ -279,5 +280,97 @@ partial class LanguageParser
         var expr = this.ParseExpression();
         return this._syntaxFactory.Argument(expr);
     }
-#endregion
+    #endregion
+
+    #region 特性
+#if TESTING
+    internal
+#else
+    private
+#endif
+        NameAttributeListSyntax ParseNameAttributeList()
+    {
+        var identifier = this.ParseIdentifierName();
+        var attributeList = this.CurrentTokenKind == SyntaxKind.LessThanToken ? this.ParseAttributeList() : null;
+        return this._syntaxFactory.NameAttributeList(identifier, attributeList);
+    }
+
+#if TESTING
+    internal
+#else
+    private
+#endif
+        AttributeListSyntax ParseAttributeList()
+    {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.LessThanToken);
+        var lessThan = this.EatToken(SyntaxKind.LessThanToken);
+        var attributes = this.ParseSeparatedSyntaxList(
+            parseNodeFunc: _ => this.ParseAttribute(),
+            predicateNode: _ => true,
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
+        var greaterThan = this.EatToken(SyntaxKind.GreaterThanToken);
+        return this._syntaxFactory.AttributeList(lessThan, attributes, greaterThan);
+    }
+
+#if TESTING
+    internal
+#else
+    private
+#endif
+        AttributeSyntax ParseAttribute()
+    {
+        SyntaxToken token;
+        if (this.CurrentTokenKind is SyntaxKind.CloseKeyword or SyntaxKind.ConstKeyword)
+            token = this.EatToken();
+        else
+            token = SyntaxFactory.MissingToken(SyntaxKind.None);
+
+        var skippedSyntax = this.SkipTokens(token => token.Kind is not (
+            SyntaxKind.CommaToken or        // 在分隔符中止。
+            SyntaxKind.GreaterThanToken or  // 在特性列表结尾中止。
+            SyntaxKind.EqualsToken or       // 在赋值符号提前中止。
+            SyntaxKind.SemicolonToken or    // 在最近的语句结尾中止。
+            SyntaxKind.EndOfFileToken       // 在文件结尾中止。
+        ), new AttributeSkippedTokensVisitor(this));
+        if (skippedSyntax is null)
+        {
+            if (token.IsMissing)
+                token = this.AddError(token, ErrorCode.ERR_AttributeExpected);
+        }
+        else
+        {
+            token = this.AddTrailingSkippedSyntax(token, skippedSyntax);
+        }
+
+        return this._syntaxFactory.Attribute(token);
+    }
+
+    /// <summary>
+    /// 处理特性后方需要跳过的语法标志的访问器。
+    /// </summary>
+    private sealed class AttributeSkippedTokensVisitor : LuaSyntaxVisitor<SyntaxToken>
+    {
+        private readonly LanguageParser _parser;
+
+        public AttributeSkippedTokensVisitor(LanguageParser parser) => this._parser = parser;
+
+        /// <summary>
+        /// 处理语法标志，向语法标志添加<see cref="ErrorCode.ERR_InvalidAttrTerm"/>错误。
+        /// </summary>
+        /// <param name="token">要处理的语法标志。</param>
+        /// <returns>处理后的<paramref name="token"/>。</returns>
+        public override SyntaxToken VisitToken(SyntaxToken token) =>
+            this._parser.AddError(token, ErrorCode.ERR_InvalidAttrTerm, SyntaxFacts.GetText(token.Kind));
+
+        /// <summary>
+        /// 处理所有语法节点。
+        /// </summary>
+        /// <remarks>此方法必定抛出异常。</remarks>
+        /// <param name="node">要处理的语法节点。</param>
+        /// <returns>处理后的<paramref name="node"/>。</returns>
+        /// <exception cref="ExceptionUtilities.Unreachable">当<paramref name="node"/>不是表达式语法时，这种情况不应发生。</exception>
+        [DoesNotReturn]
+        protected override SyntaxToken DefaultVisit(LuaSyntaxNode node) => throw ExceptionUtilities.Unreachable;
+    }
+    #endregion
 }

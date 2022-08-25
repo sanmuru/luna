@@ -18,7 +18,9 @@ namespace SamLu.CodeAnalysis.MoonScript.Parser.UnitTests;
 [TestClass]
 public partial class QuickScannerTests
 {
+#pragma warning disable CS8618
     public TestContext TestContext { get; set; }
+#pragma warning restore CS8618
 
     internal static IEnumerable<char> GetCharByFlag(CharFlag flag)
     {

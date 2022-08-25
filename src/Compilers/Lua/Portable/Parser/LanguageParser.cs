@@ -48,7 +48,7 @@ partial class LanguageParser
             do
             {
                 var token = this.EatToken();
-                builder.Add(visitor is null ? token : visitor.VisitToken(token));
+                builder.Add(visitor is null ? token : visitor.Visit(token));
             }
             while (predicate(this.CurrentToken));
             return this._syntaxFactory.SkippedTokensTrivia(this._pool.ToListAndFree(builder));
@@ -70,7 +70,7 @@ partial class LanguageParser
             else if (predicate(this.CurrentToken))
             {
                 var token = this.EatToken();
-                builder.Add(visitor is null ? token : visitor.VisitToken(token));
+                builder.Add(visitor is null ? token : visitor.Visit(token));
             }
             else break;
         }

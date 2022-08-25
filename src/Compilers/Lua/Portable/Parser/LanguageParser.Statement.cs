@@ -459,7 +459,10 @@ partial class LanguageParser
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.LocalKeyword);
 
         var local = this.EatToken(SyntaxKind.LocalKeyword);
-        var identifiers = this.ParseSeparatedIdentifierNames();
+        var nameAttributeLists = this.ParseSeparatedSyntaxList(
+            parseNodeFunc: _ => this.ParseNameAttributeList(),
+            predicateNode: _ => true,
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
         SyntaxToken? equals = null;
         ExpressionListSyntax? values = null;
         if (this.CurrentTokenKind == SyntaxKind.EqualsToken)
@@ -468,7 +471,7 @@ partial class LanguageParser
             values = this.ParseExpressionListOpt();
         }
 
-        return this._syntaxFactory.LocalDeclarationStatement(local, identifiers, equals, values);
+        return this._syntaxFactory.LocalDeclarationStatement(local, nameAttributeLists, equals, values);
     }
 
 #if TESTING

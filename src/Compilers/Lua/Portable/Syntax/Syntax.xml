@@ -388,7 +388,7 @@
     <Field Name="LocalKeyword" Type="SyntaxToken">
       <Kind Name="LocalKeyword"/>
     </Field>
-    <Field Name="Identifiers" Type="SeparatedSyntaxList&lt;IdentifierNameSyntax&gt;"/>
+    <Field Name="NameAttributeLists" Type="SeparatedSyntaxList&lt;NameAttributeListSyntax&gt;"/>
     <Sequence>
       <Field Name="EqualsToken" Type="SyntaxToken" Optional="true">
         <Kind Name="EqualsToken"/>
@@ -501,6 +501,28 @@
   <Node Name="ArgumentSyntax" Base="LuaSyntaxNode">
     <Kind Name="Argument"/>
     <Field Name="Expression" Type="ExpressionSyntax"/>
+  </Node>
+  <Node Name="NameAttributeListSyntax" Base="LuaSyntaxNode">
+    <Kind Name="NameAttributeList"/>
+    <Field Name="Identifier" Type="IdentifierNameSyntax"/>
+    <Field Name="AttributeList" Type="AttributeListSyntax" Optional="true"/>
+  </Node>
+  <Node Name="AttributeListSyntax" Base="LuaSyntaxNode">
+    <Kind Name="AttributeList"/>
+    <Field Name="LessThanToken" Type="SyntaxToken">
+      <Kind Name="LessThanToken"/>
+    </Field>
+    <Field Name="Attributes" Type="SeparatedSyntaxList&lt;AttributeSyntax&gt;"/>
+    <Field Name="GreaterThanToken" Type="SyntaxToken">
+      <Kind Name="GreaterThanToken"/>
+    </Field>
+  </Node>
+  <Node Name="AttributeSyntax" Base="LuaSyntaxNode">
+    <Kind Name="Attribute"/>
+    <Field Name="Token" Type="SyntaxToken">
+      <Kind Name="CloseKeyword"/>
+      <Kind Name="ConstKeyword"/>
+    </Field>
   </Node>
 
 </Tree>

@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ERR_AssgLvalueExpected" xml:space="preserve">
+    <value>The left-hand side of an assignment must be a variable or member.</value>
+  </data>
+  <data name="ERR_AttributeExpected" xml:space="preserve">
+    <value>Attribute expected.</value>
+  </data>
   <data name="ERR_BadDocumentationMode" xml:space="preserve">
     <value>Provided documentation mode is unsupported or invalid: '{0}'.</value>
   </data>
@@ -146,6 +152,9 @@
   </data>
   <data name="ERR_InternalError" xml:space="preserve">
     <value>Internal error in the Lua compiler.</value>
+  </data>
+  <data name="ERR_InvalidAttrTerm" xml:space="preserve">
+    <value>Invalid attribute term '{0}'.</value>
   </data>
   <data name="ERR_InvalidExprTerm" xml:space="preserve">
     <value>Invalid expression term '{0}'.</value>
