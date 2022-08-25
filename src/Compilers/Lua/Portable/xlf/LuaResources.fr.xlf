@@ -37,6 +37,11 @@
         <target state="new">Unrecognized escape sequence.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_IllegalStatement">
+        <source>Only assignment and invocation expressions can be used as a statement</source>
+        <target state="new">Only assignment and invocation expressions can be used as a statement</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_IllegalUtf8ByteSequence">
         <source>Illegal UTF-8 byte escape sequence.</source>
         <target state="new">Illegal UTF-8 byte escape sequence.</target>

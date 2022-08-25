@@ -87,11 +87,10 @@ partial class LanguageParser
             case SyntaxKind.CommaToken: // 表达式列表的分隔符
             case SyntaxKind.EqualsToken: // 赋值操作符
                 return this.ParseAssignmentStatement();
-            default:
-                return this.ParseAssignmentStatement();
         }
 
-        throw ExceptionUtilities.Unreachable;
+        Debug.Assert(this.IsPossibleExpression());
+        return this.ParseExpressionStatement();
     }
 
 #if TESTING
@@ -102,11 +101,6 @@ partial class LanguageParser
         AssignmentStatementSyntax ParseAssignmentStatement()
     {
         var left = this.ParseAssgLvalueList();
-
-        // 当赋值符号缺失时，中断整个语句的分析。
-        if (this.CurrentTokenKind != SyntaxKind.EqualsToken)
-            return this._syntaxFactory.AssignmentStatement(left, this.EatToken(SyntaxKind.EqualsToken), this.CreateMissingExpressionList());
-
         var equals = this.EatToken();
         var right = this.ParseExpressionList();
         return this._syntaxFactory.AssignmentStatement(left, equals, right);
@@ -475,5 +469,34 @@ partial class LanguageParser
         }
 
         return this._syntaxFactory.LocalDeclarationStatement(local, identifiers, equals, values);
+    }
+
+#if TESTING
+    internal
+#else
+    private
+#endif
+        StatementSyntax ParseExpressionStatement()
+    {
+        var resetPoint = this.GetResetPoint();
+
+        var exprList = this.ParseExpressionList();
+        if (this.CurrentTokenKind == SyntaxKind.EqualsToken)
+        {
+            // 按照赋值语句解析。
+            this.Reset(ref resetPoint);
+            return this.ParseAssignmentStatement();
+        }
+        else if (exprList.Expressions.Count == 1 && exprList.Expressions[0] is InvocationExpressionSyntax invocationExpression)
+        {
+            // 按照调用语句解析。
+            return this._syntaxFactory.InvocationStatement(invocationExpression);
+        }
+
+        // 否则解析为空语句，报告不合法语句错误，将整个表达式列表添加入空语句的前方跳过的标志的语法琐碎。
+        var semicolon = this.AddLeadingSkippedSyntax(
+            SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken),
+            this.AddError(exprList, ErrorCode.ERR_IllegalStatement));
+        return this._syntaxFactory.EmptyStatement(semicolon);
     }
 }

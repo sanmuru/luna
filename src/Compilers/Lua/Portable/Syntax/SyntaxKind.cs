@@ -320,8 +320,10 @@ public enum SyntaxKind : ushort
     #region 语句
     /// <summary>表示仅有分隔符（<c>;</c>）的空语句。</summary>
     EmptyStatement = 9761,
-    /// <summary>表示赋值表达式。</summary>
+    /// <summary>表示赋值语句。</summary>
     AssignmentStatement,
+    /// <summary>表示调用语句。</summary>
+    InvocationStatement,
     /// <summary>表示标签语句。</summary>
     LabelStatement,
     /// <summary>表示中断流程（<see langword="break"/>）语句。</summary>

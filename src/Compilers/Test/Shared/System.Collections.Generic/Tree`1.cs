@@ -25,7 +25,7 @@ internal class Tree<T> : IEnumerable<T>, IReadOnlyCollection<T>
 
     public Tree() { }
 
-    public IEnumerator<T> GetEnumerator() => this.root.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => this.root?.GetEnumerator() ?? Enumerable.Empty<T>().GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 }

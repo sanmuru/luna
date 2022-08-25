@@ -207,6 +207,10 @@
     </Field>
     <Field Name="Right" Type="ExpressionListSyntax"/>
   </Node>
+  <Node Name="InvocationStatementSyntax" Base="StatementSyntax">
+    <Kind Name="InvocationStatement"/>
+    <Field Name="Expression" Type="InvocationExpressionSyntax"/>
+  </Node>
   <Node Name="LabelStatementSyntax" Base="StatementSyntax">
     <Kind Name="LabelStatement"/>
     <Field Name="LeftColonColonToken" Type="SyntaxToken">

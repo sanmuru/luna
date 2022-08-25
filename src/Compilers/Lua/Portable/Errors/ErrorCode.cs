@@ -52,6 +52,7 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_InvocationArgumentsExpected,
         /// <summary>应为赋值符号左侧表达式。</summary>
         ERR_AssgLvalueExpected,
+        ERR_IllegalStatement,
         #endregion
 
         #region Lua 1.0的消息

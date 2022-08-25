@@ -1402,7 +1402,115 @@ public partial class LanguageParserTests
 
             Assert.That.AtEndOfFile(parser);
         }
+        { // 缺失赋值左值的赋值语句。
+            var parser = LanguageParserTests.CreateLanguageParser(" = nil");
+            var assignment = parser.ParseAssignmentStatement();
+            Assert.That.ContainsDiagnostics(assignment);
 
+            var left = assignment.Left;
+            Assert.That.IsNotEmptyExpressionList(left, 1);
+            Assert.That.ContainsDiagnostics(left);
+            {
+                Assert.IsInstanceOfType(left.Expressions[0]!, typeof(IdentifierNameSyntax));
+                var identifier = (IdentifierNameSyntax)left.Expressions[0]!;
+                Assert.That.IsMissingIdentifierName(identifier);
+                Assert.That.ContainsDiagnostics(identifier);
+                Assert.That.ContainsDiagnostics(identifier, ErrorCode.ERR_IdentifierExpected);
+            }
+
+            Assert.That.IsNotMissing(assignment.EqualsToken);
+            Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+
+            var right = assignment.Right;
+            Assert.That.IsNotEmptyExpressionList(right, 1);
+            {
+                Assert.IsInstanceOfType(right.Expressions[0]!, typeof(LiteralExpressionSyntax));
+                var literal = (LiteralExpressionSyntax)right.Expressions[0]!;
+                Assert.That.IsLiteralExpression(literal, SyntaxKind.NilLiteralExpression);
+                Assert.That.NotContainsDiagnostics(literal);
+            }
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 缺失第一个赋值左值的赋值语句。
+            var parser = LanguageParserTests.CreateLanguageParser(" , b = true, false");
+            var assignment = parser.ParseAssignmentStatement();
+            Assert.That.ContainsDiagnostics(assignment);
+
+            var left = assignment.Left;
+            Assert.That.IsNotEmptyExpressionList(left, 2);
+            Assert.That.ContainsDiagnostics(left);
+            {
+                {
+                    Assert.IsInstanceOfType(left.Expressions[0]!, typeof(IdentifierNameSyntax));
+                    var literal = (IdentifierNameSyntax)left.Expressions[0]!;
+                    Assert.That.IsMissingIdentifierName(literal);
+                    Assert.That.ContainsDiagnostics(literal);
+                }
+
+                {
+                    Assert.IsInstanceOfType(left.Expressions[1]!, typeof(IdentifierNameSyntax));
+                    var literal = (IdentifierNameSyntax)left.Expressions[1]!;
+                    Assert.That.IsIdentifierName(literal, "b");
+                    Assert.That.NotContainsDiagnostics(literal);
+                }
+            }
+
+            Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+            Assert.That.NotContainsDiagnostics(assignment.Right);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 缺失最后一个赋值左值的赋值语句。
+            var parser = LanguageParserTests.CreateLanguageParser(" a, = true, false");
+            var assignment = parser.ParseAssignmentStatement();
+            Assert.That.ContainsDiagnostics(assignment);
+
+            var left = assignment.Left;
+            Assert.That.IsNotEmptyExpressionList(left, 2);
+            Assert.That.ContainsDiagnostics(left);
+            {
+                {
+                    Assert.IsInstanceOfType(left.Expressions[0]!, typeof(IdentifierNameSyntax));
+                    var literal = (IdentifierNameSyntax)left.Expressions[0]!;
+                    Assert.That.IsIdentifierName(literal, "a");
+                    Assert.That.NotContainsDiagnostics(literal);
+                }
+
+                {
+                    Assert.IsInstanceOfType(left.Expressions[1]!, typeof(IdentifierNameSyntax));
+                    var literal = (IdentifierNameSyntax)left.Expressions[1]!;
+                    Assert.That.IsMissingIdentifierName(literal);
+                    Assert.That.ContainsDiagnostics(literal);
+                }
+            }
+
+            Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+            Assert.That.NotContainsDiagnostics(assignment.Right);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 缺失赋值右值的赋值语句
+            var parser = LanguageParserTests.CreateLanguageParser("a = ");
+            var assignment = parser.ParseAssignmentStatement();
+            Assert.That.ContainsDiagnostics(assignment);
+
+            Assert.That.NotContainsDiagnostics(assignment.Left);
+            Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+
+            var right = assignment.Right;
+            Assert.That.IsNotEmptyExpressionList(right, 1);
+            Assert.That.ContainsDiagnostics(right);
+            {
+                Assert.IsInstanceOfType(right.Expressions[0]!, typeof(IdentifierNameSyntax));
+                var identifier = (IdentifierNameSyntax)right.Expressions[0]!;
+                Assert.That.IsMissingIdentifierName(identifier);
+                Assert.That.ContainsDiagnostics(identifier);
+                Assert.That.ContainsDiagnostics(identifier, ErrorCode.ERR_ExpressionExpected);
+            }
+
+            Assert.That.AtEndOfFile(parser);
+        }
     }
     #endregion
 }
