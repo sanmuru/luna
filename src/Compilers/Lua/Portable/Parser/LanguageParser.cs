@@ -96,13 +96,12 @@ partial class LanguageParser
         while (this.CurrentTokenKind != SyntaxKind.EndOfFileToken &&
             this.IsMakingProgress(ref lastTokenPosition))
         {
-            if (predicateNode(index))
-            {
-                var node = parseNodeFunc(index);
-                builder.Add(node);
+            if (!predicateNode(index)) break;
 
-                index++;
-            }
+            var node = parseNodeFunc(index);
+            builder.Add(node);
+
+            index++;
         }
     }
 

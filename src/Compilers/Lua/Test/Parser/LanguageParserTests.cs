@@ -1511,6 +1511,178 @@ public partial class LanguageParserTests
 
             Assert.That.AtEndOfFile(parser);
         }
+        { // 正确和不正确的赋值左值
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                a = nil
+                a.b = nil
+                a[b] = nil
+                a + b = nil
+                ;(a + b) = nil
+                ;-a = nil
+                nil = nil
+                false = false
+                true = true
+                1 = 1
+                1.0 = 1.0
+                ;"string" = 'string'
+                ... = ...
+                function() end = nil
+                ;{} = nil
+                a() = nil
+                a:b() = nil
+                """);
+            { // a = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.NotContainsDiagnostics(assignment);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // a.b = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.NotContainsDiagnostics(assignment);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // a[b] = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.NotContainsDiagnostics(assignment);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // a + b = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // 作为分隔用的空语句，防止产生调用表达式“nil(a + b)”歧义
+                var empty = parser.ParseStatement();
+                Assert.IsInstanceOfType(empty, typeof(EmptyStatementSyntax));
+                Assert.That.NotContainsDiagnostics(empty);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // (a + b) = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // 作为分隔用的空语句，防止产生二元运算符表达式“nil-a”歧义
+                var empty = parser.ParseStatement();
+                Assert.IsInstanceOfType(empty, typeof(EmptyStatementSyntax));
+                Assert.That.NotContainsDiagnostics(empty);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // -a = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // nil = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // false = false
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // true = true
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // 1 = 1
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // 1.0 = 1.0
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // 作为分隔用的空语句，防止产生调用表达式“1.0"string"”歧义
+                var empty = parser.ParseStatement();
+                Assert.IsInstanceOfType(empty, typeof(EmptyStatementSyntax));
+                Assert.That.NotContainsDiagnostics(empty);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // "string" = 'string'
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // ... = ...
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // function() end = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // 作为分隔用的空语句，防止产生调用表达式“nil{}”歧义
+                var empty = parser.ParseStatement();
+                Assert.IsInstanceOfType(empty, typeof(EmptyStatementSyntax));
+                Assert.That.NotContainsDiagnostics(empty);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // {} = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // a() = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // a:b() = nil
+                var assignment = parser.ParseAssignmentStatement();
+                Assert.That.ContainsDiagnostics(assignment);
+                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+                Assert.That.NotContainsDiagnostics(assignment.Right);
+                Assert.That.AtEndOfFile(parser);
+            }
+        }
     }
     #endregion
 }

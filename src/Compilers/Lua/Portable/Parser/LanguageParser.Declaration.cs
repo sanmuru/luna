@@ -29,7 +29,16 @@ partial class LanguageParser
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var parameters = this.ParseSeparatedSyntaxList(
             parseNodeFunc: _ => this.ParseParameter(),
-            predicateNode: _ => true,
+            predicateNode: index =>
+            {
+                // 检查当前的标志的种类，决定是否解析第一个形参，即是否为空的形参列表。
+                if (index <= 1) return this.CurrentTokenKind is not (
+                    SyntaxKind.CloseParenToken or // 紧跟着右圆括号，则是空列表。
+                    SyntaxKind.EndOfFileToken // 到达文件结尾，则视为空列表。
+                );
+                // 从第二个形参开始，都必须要解析。
+                else return true;
+            },
             predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
         var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
         return this._syntaxFactory.ParameterList(openParen, parameters, closeParen);
