@@ -34,7 +34,7 @@ partial class LanguageParser
         else
             statements = statementBuilder;
 
-        var returnStat = this.CurrentTokenKind == SyntaxKind.ReturnStatement ? this.ParseReturnStatement() : null;
+        var returnStat = this.CurrentTokenKind == SyntaxKind.ReturnKeyword ? this.ParseReturnStatement() : null;
         var block = this._syntaxFactory.Block(statements, returnStat);
 
         this._pool.Free(statementBuilder);

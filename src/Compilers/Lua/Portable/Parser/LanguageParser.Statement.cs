@@ -28,14 +28,18 @@ partial class LanguageParser
                 if (!this.IsPossibleStatement()) return false;
 
                 // 正常处理处返回语句外的其他语句。
-                if (this.CurrentTokenKind != SyntaxKind.ReturnStatement) return true;
+                if (this.CurrentTokenKind != SyntaxKind.ReturnKeyword) return true;
 
+                // 尝试解析这个返回语句。
                 var resetPoint = this.GetResetPoint();
                 var returnStat = this.ParseReturnStatement();
 
                 if (this.IsPossibleStatement()) // 后方还有合法的语句，则此返回语句仅为位置错误。
+                {
+                    this.Reset(ref resetPoint);
                     return true;
-                else // 否则此返回语句可能是块的最后一个语句，返回重置点。
+                }
+                else // 否则此返回语句可能是块的最后一个语句。
                 {
                     this.Reset(ref resetPoint);
                     return false;

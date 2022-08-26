@@ -1748,4 +1748,92 @@ public partial class LanguageParserTests
         }
     }
     #endregion
+
+    [TestMethod]
+    public void BlockParseTests()
+    {
+        { // 空块
+            var parser = LanguageParserTests.CreateLanguageParser("");
+            var block = parser.ParseBlock();
+            Assert.That.NotContainsDiagnostics(block);
+            Assert.AreEqual(0, block.Statements.Count);
+            Assert.IsNull(block.ReturnStatement);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 仅有一句返回语句的块
+            var parser = LanguageParserTests.CreateLanguageParser("return nil");
+            var block = parser.ParseBlock();
+            Assert.That.NotContainsDiagnostics(block);
+            Assert.AreEqual(0, block.Statements.Count);
+            Assert.IsNotNull(block.ReturnStatement);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 仅有一句非返回语句的块
+            var parser = LanguageParserTests.CreateLanguageParser("print 'Hello world!'");
+            var block = parser.ParseBlock();
+            Assert.That.NotContainsDiagnostics(block);
+            Assert.AreEqual(1, block.Statements.Count);
+            Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
+            Assert.IsNull(block.ReturnStatement);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 有一句非返回语句和一句返回语句的块
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                print 'Hello world!'
+                return nil
+                """);
+            var block = parser.ParseBlock();
+            Assert.That.NotContainsDiagnostics(block);
+            Assert.AreEqual(1, block.Statements.Count);
+            Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
+            Assert.IsNotNull(block.ReturnStatement);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 返回语句不在最后一行的块
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                print 'Hello world!'
+                return nil
+                goto label
+                """);
+            var block = parser.ParseBlock();
+            Assert.That.ContainsDiagnostics(block);
+            Assert.AreEqual(3, block.Statements.Count);
+
+            Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
+            Assert.That.NotContainsDiagnostics(block.Statements[0]!);
+
+            Assert.IsInstanceOfType(block.Statements[1]!, typeof(ReturnStatementSyntax));
+            Assert.That.ContainsDiagnostics(block.Statements[1]!, ErrorCode.ERR_MisplacedReturnStat);
+
+            Assert.IsInstanceOfType(block.Statements[2]!, typeof(GotoStatementSyntax));
+            Assert.That.NotContainsDiagnostics(block.Statements[2]!);
+
+            Assert.IsNull(block.ReturnStatement);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 返回语句不在最后一行的块
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                print 'Hello world!'
+                return nil
+                print 'After return statement'
+                return true
+                """);
+            var block = parser.ParseBlock();
+            Assert.That.ContainsDiagnostics(block);
+            Assert.AreEqual(3, block.Statements.Count);
+
+            Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
+            Assert.That.NotContainsDiagnostics(block.Statements[0]!);
+
+            Assert.IsInstanceOfType(block.Statements[1]!, typeof(ReturnStatementSyntax));
+            Assert.That.ContainsDiagnostics(block.Statements[1]!, ErrorCode.ERR_MisplacedReturnStat);
+
+            Assert.IsInstanceOfType(block.Statements[2]!, typeof(InvocationStatementSyntax));
+            Assert.That.NotContainsDiagnostics(block.Statements[2]!);
+
+            Assert.IsNotNull(block.ReturnStatement);
+            Assert.That.NotContainsDiagnostics(block.ReturnStatement!);
+            Assert.That.AtEndOfFile(parser);
+        }
+    }
 }
