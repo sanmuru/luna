@@ -27,6 +27,9 @@ partial class LanguageParser
                 // 后续不是合法语句时停止。
                 if (!this.IsPossibleStatement()) return false;
 
+                // 正在解析if/elseif语句时遇到elseif关键字时停止。
+                if (this._syntaxFactoryContext.IsInIfBlock && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) return false;
+
                 // 正常处理处返回语句外的其他语句。
                 if (this.CurrentTokenKind != SyntaxKind.ReturnKeyword) return true;
 
@@ -34,7 +37,12 @@ partial class LanguageParser
                 var resetPoint = this.GetResetPoint();
                 var returnStat = this.ParseReturnStatement();
 
-                if (this.IsPossibleStatement()) // 后方还有合法的语句，则此返回语句仅为位置错误。
+                if (this._syntaxFactoryContext.IsInIfBlock && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) // 正在解析if/elseif语句时遇到elseif语句视为不合法语句。
+                {
+                    this.Reset(ref resetPoint);
+                    return false;
+                }
+                else if (this.IsPossibleStatement()) // 后方还有合法的语句，则此返回语句仅为位置错误。
                 {
                     this.Reset(ref resetPoint);
                     return true;
@@ -64,7 +72,6 @@ partial class LanguageParser
             SyntaxKind.RepeatKeyword or
             SyntaxKind.IfStatement or
             SyntaxKind.ElseIfKeyword or
-            SyntaxKind.ElseKeyword or
             SyntaxKind.ForKeyword or
             SyntaxKind.FunctionKeyword or
             SyntaxKind.LocalKeyword => true,
@@ -277,7 +284,9 @@ partial class LanguageParser
         var ifKeyword = this.EatToken(SyntaxKind.IfKeyword);
         var condition = this.ParseExpression();
         var thenKeyword = this.EatToken(SyntaxKind.ThenKeyword);
+        this._syntaxFactoryContext.IsInIfBlock = true;
         var block = this.ParseBlock();
+        this._syntaxFactoryContext.IsInIfBlock = false;
         var elseIfClauses = this.ParseElseIfClausesOpt();
         var elseClause = this.ParseElseClauseOpt();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
@@ -291,7 +300,13 @@ partial class LanguageParser
 #endif
         SyntaxList<ElseIfClauseSyntax> ParseElseIfClausesOpt() =>
         this.ParseSyntaxList(
-            parseNodeFunc: _ => this.ParseElseIfClause(),
+            parseNodeFunc: _ =>
+            {
+                this._syntaxFactoryContext.IsInIfBlock = true;
+                var elseIfClause = this.ParseElseIfClause();
+                this._syntaxFactoryContext.IsInIfBlock = false;
+                return elseIfClause;
+            },
             predicateNode: _ => this.CurrentTokenKind == SyntaxKind.ElseIfKeyword);
 
 #if TESTING
@@ -300,7 +315,7 @@ partial class LanguageParser
     private
 #endif
         ElseClauseSyntax? ParseElseClauseOpt() =>
-        this.PeekToken().Kind == SyntaxKind.ElseIfKeyword ?
+        this.CurrentTokenKind == SyntaxKind.ElseKeyword ?
             this.ParseElseClause() : null;
 
 #if TESTING

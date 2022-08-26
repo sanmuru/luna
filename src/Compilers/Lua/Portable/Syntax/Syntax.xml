@@ -410,7 +410,7 @@
   <Node Name="BlockSyntax" Base="LuaSyntaxNode">
     <Kind Name="Block"/>
     <Field Name="Statements" Type="SyntaxList&lt;StatementSyntax&gt;"/>
-    <Field Name="ReturnStatement" Type="ReturnStatementSyntax" Optional="true"/>
+    <Field Name="Return" Type="ReturnStatementSyntax" Optional="true"/>
   </Node>
   <Node Name="SkippedTokensTriviaSyntax" Base="StructuredTriviaSyntax">
     <Kind Name="SkippedTokensTrivia"/>

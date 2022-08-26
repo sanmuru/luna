@@ -132,6 +132,9 @@
   <data name="ERR_BadSourceCodeKind" xml:space="preserve">
     <value>Provided source code kind is unsupported or invalid: '{0}'.</value>
   </data>
+  <data name="ERR_ElseIfCannotStartStatement" xml:space="preserve">
+    <value>'elseif' cannot start a statement.</value>
+  </data>
   <data name="ERR_ExpressionExpected" xml:space="preserve">
     <value>Expression expected.</value>
   </data>
