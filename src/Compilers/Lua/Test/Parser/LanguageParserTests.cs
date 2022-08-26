@@ -1996,6 +1996,47 @@ public partial class LanguageParserTests
 
             Assert.That.AtEndOfFile(parser);
         }
+        { // 错误以elseif从句开头的if语句
+            // 第一个elseif从句会被作为if解析。
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                elseif x < y then return -1
+                elseif x > y then return 1
+                else return 0
+                end
+                """);
+            var ifStat = parser.ParseMisplaceElseIf();
+            Assert.That.ContainsDiagnostics(ifStat);
+
+            Assert.That.IsMissing(ifStat.IfKeyword);
+            Assert.That.ContainsDiagnostics(ifStat.IfKeyword, ErrorCode.ERR_ElseIfCannotStartStatement);
+
+            Assert.IsInstanceOfType(ifStat.Condition, typeof(BinaryExpressionSyntax));
+            Assert.That.NotContainsDiagnostics(ifStat.Condition);
+
+            var ifBlock = ifStat.Block;
+            Assert.AreEqual(0, ifBlock.Statements.Count);
+            Assert.IsNotNull(ifBlock.Return);
+            Assert.That.NotContainsDiagnostics(ifBlock);
+
+            Assert.AreEqual(1, ifStat.ElseIfs.Count);
+
+            var elseIfClause = ifStat.ElseIfs[0]!;
+            Assert.IsInstanceOfType(ifStat.Condition, typeof(BinaryExpressionSyntax));
+            Assert.That.NotContainsDiagnostics(elseIfClause);
+
+            var elseIfBlock = elseIfClause.Block;
+            Assert.AreEqual(0, elseIfBlock.Statements.Count);
+            Assert.IsNotNull(elseIfBlock.Return);
+
+            Assert.IsNotNull(ifStat.Else);
+            Assert.That.NotContainsDiagnostics(ifStat.Else);
+
+            var elseBlock = ifStat.Else.Block;
+            Assert.AreEqual(0, elseBlock.Statements.Count);
+            Assert.IsNotNull(elseBlock.Return);
+
+            Assert.That.AtEndOfFile(parser);
+        }
     }
     #endregion
 }

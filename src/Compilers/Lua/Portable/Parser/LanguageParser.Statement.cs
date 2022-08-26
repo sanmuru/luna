@@ -353,7 +353,7 @@ partial class LanguageParser
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.ElseIfKeyword);
 
-        var ifKeyword = this.EatToken(SyntaxKind.IfKeyword, ErrorCode.ERR_ElseIfCannotStartStatement);
+        var ifKeyword = this.EatTokenAsKind(SyntaxKind.IfKeyword);
         var condition = this.ParseExpression();
         var thenKeyword = this.EatToken(SyntaxKind.ThenKeyword);
         var block = this.ParseBlock();

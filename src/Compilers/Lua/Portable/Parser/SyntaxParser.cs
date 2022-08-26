@@ -23,6 +23,8 @@ partial class SyntaxParser
         {
             SyntaxKind.IdentifierToken =>
                 SyntaxFacts.IsReservedKeyword(expected) ? ErrorCode.ERR_IdentifierExpectedKW : ErrorCode.ERR_IdentifierExpected,
+            SyntaxKind.IfKeyword =>
+                actual == SyntaxKind.ElseIfKeyword ? ErrorCode.ERR_ElseIfCannotStartStatement : ErrorCode.ERR_SyntaxError,
 
             _ => ErrorCode.ERR_SyntaxError
         };
