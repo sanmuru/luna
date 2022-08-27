@@ -42,6 +42,12 @@ partial class SyntaxToken
             writer.WriteValue(this._trailing);
         }
 
+        public override SyntaxToken TokenWithLeadingTrivia(GreenNode? trivia) =>
+            new MissingTokenWithTrivia(this.Kind, trivia, this._trailing, this.GetDiagnostics(), this.GetAnnotations());
+
+        public override SyntaxToken TokenWithTrailingTrivia(GreenNode? trivia) =>
+            new MissingTokenWithTrivia(this.Kind, this._leading, trivia, this.GetDiagnostics(), this.GetAnnotations());
+
         internal override GreenNode SetDiagnostics(DiagnosticInfo[]? diagnostics) =>
             new MissingTokenWithTrivia(this.Kind, this.GetLeadingTrivia(), this.GetTrailingTrivia(), diagnostics, this.GetAnnotations());
 

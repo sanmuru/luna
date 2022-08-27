@@ -284,13 +284,19 @@ partial class LanguageParser
         var ifKeyword = this.EatToken(SyntaxKind.IfKeyword);
         var condition = this.ParseExpression();
         var thenKeyword = this.EatToken(SyntaxKind.ThenKeyword);
-        this._syntaxFactoryContext.IsInIfBlock = true;
-        var block = this.ParseBlock();
-        this._syntaxFactoryContext.IsInIfBlock = false;
+        var block = this.ParseIfBlock();
         var elseIfClauses = this.ParseElseIfClausesOpt();
         var elseClause = this.ParseElseClauseOpt();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
         return this._syntaxFactory.IfStatement(ifKeyword, condition, thenKeyword, block, elseIfClauses, elseClause, endKeyword);
+    }
+
+    private BlockSyntax ParseIfBlock()
+    {
+        this._syntaxFactoryContext.IsInIfBlock = true;
+        var block = this.ParseBlock();
+        this._syntaxFactoryContext.IsInIfBlock = false;
+        return block;
     }
 
 #if TESTING
@@ -300,13 +306,7 @@ partial class LanguageParser
 #endif
         SyntaxList<ElseIfClauseSyntax> ParseElseIfClausesOpt() =>
         this.ParseSyntaxList(
-            parseNodeFunc: _ =>
-            {
-                this._syntaxFactoryContext.IsInIfBlock = true;
-                var elseIfClause = this.ParseElseIfClause();
-                this._syntaxFactoryContext.IsInIfBlock = false;
-                return elseIfClause;
-            },
+            parseNodeFunc: _ => this.ParseElseIfClause(),
             predicateNode: _ => this.CurrentTokenKind == SyntaxKind.ElseIfKeyword);
 
 #if TESTING
@@ -328,7 +328,7 @@ partial class LanguageParser
         var elseIfKeyword = this.EatToken(SyntaxKind.ElseIfKeyword);
         var condition = this.ParseExpression();
         var thenKeyword = this.EatToken(SyntaxKind.ThenKeyword);
-        var block = this.ParseBlock();
+        var block = this.ParseIfBlock();
         return this._syntaxFactory.ElseIfClause(elseIfKeyword, condition, thenKeyword, block);
     }
 
@@ -356,7 +356,7 @@ partial class LanguageParser
         var ifKeyword = this.EatTokenAsKind(SyntaxKind.IfKeyword);
         var condition = this.ParseExpression();
         var thenKeyword = this.EatToken(SyntaxKind.ThenKeyword);
-        var block = this.ParseBlock();
+        var block = this.ParseIfBlock();
         var elseIfClauses = this.ParseElseIfClausesOpt();
         var elseClause = this.ParseElseClauseOpt();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
