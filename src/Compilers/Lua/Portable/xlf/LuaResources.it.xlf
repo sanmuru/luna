@@ -122,6 +122,11 @@
         <target state="new">Syntax error, '{0}' expected.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_TooManyIdentifiers">
+        <source>Too many control variables.</source>
+        <target state="new">Too many control variables.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_UnexpectedCharacter">
         <source>Unexpected character '{0}'.</source>
         <target state="new">Unexpected character '{0}'.</target>

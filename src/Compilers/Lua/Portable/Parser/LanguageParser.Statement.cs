@@ -370,35 +370,37 @@ partial class LanguageParser
 #endif
         StatementSyntax ParseForStatement()
     {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.ForKeyword);
         var forKeyword = this.EatToken(SyntaxKind.ForKeyword);
         var namesBuilder = this._pool.AllocateSeparated<IdentifierNameSyntax>();
         this.ParseSeparatedIdentifierNames(namesBuilder);
         switch (this.CurrentTokenKind)
         {
-            case SyntaxKind.InKeyword:// 是迭代for循环。
-                return this.ParseIterableForStatement(forKeyword, this._pool.ToListAndFree(namesBuilder));
-            case SyntaxKind.EqualsToken: // 是增量for循环。
+            case SyntaxKind.InKeyword:// 是泛型for循环。
+                return this.ParseGenericForStatement(forKeyword, this._pool.ToListAndFree(namesBuilder));
+            case SyntaxKind.EqualsToken: // 是算术for循环。
                 if (namesBuilder.Count == 1)
-                    return this.ParseIncrementalForStatement(forKeyword, (IdentifierNameSyntax)namesBuilder[0]!);
+                    return this.ParseNumericalForStatement(forKeyword, (IdentifierNameSyntax)namesBuilder[0]!);
                 else // 定义了多个标识符。
                 {
-                    // 只保留第一个标识符，将后续的标识符标志及分隔符标志均处理为被跳过的语法标志。
-                    var names = this._pool.ToListAndFree(namesBuilder);
-                    var name = names[0]!;
-                    var skippedTokens = this._pool.Allocate<SyntaxToken>();
-                    skippedTokens.AddRange(names.GetWithSeparators(), 1, namesBuilder.Count - 1);
-                    // 将被跳过的语法标志添加到第一个标识符的尾部。
-                    name = this.AddTrailingSkippedSyntax(name, this._syntaxFactory.SkippedTokensTrivia(this._pool.ToListAndFree(skippedTokens)));
-                    // 添加错误。
-                    this.AddError(name, ErrorCode.ERR_TooManyIdentifiers);
+                    // 将标识符标志及分隔符标志均处理为被跳过的语法标志。
+                    var name = this.CreateMissingIdentifierName();
+                    var skippedSyntax = this._pool.ToListAndFree(namesBuilder).Node;
 
-                    return this.ParseIncrementalForStatement(forKeyword, name);
+                    // 添加被跳过的语法标志。
+                    Debug.Assert(skippedSyntax is not null);
+                    name = this.AddTrailingSkippedSyntax(name, skippedSyntax);
+
+                    // 添加错误。
+                    name = this.AddError(name, ErrorCode.ERR_TooManyIdentifiers);
+
+                    return this.ParseNumericalForStatement(forKeyword, name);
                 }
             default: // 不知道是什么结构，推断使用最适合的结构。
-                if (namesBuilder.Count == 1) // 单个标识符，推断使用增量for循环。
-                    return this.ParseIncrementalForStatement(forKeyword, (IdentifierNameSyntax)namesBuilder[0]!);
-                else // 多个标识符，推断使用迭代for循环。
-                    return this.ParseIterableForStatement(forKeyword, this._pool.ToListAndFree(namesBuilder));
+                if (namesBuilder.Count == 1) // 单个标识符，推断使用泛型for循环。
+                    return this.ParseNumericalForStatement(forKeyword, (IdentifierNameSyntax)namesBuilder[0]!);
+                else // 多个标识符，推断使用泛型for循环。
+                    return this.ParseGenericForStatement(forKeyword, this._pool.ToListAndFree(namesBuilder));
         }
     }
 
@@ -407,10 +409,8 @@ partial class LanguageParser
 #else
     private
 #endif
-        ForInStatementSyntax ParseIterableForStatement(SyntaxToken forKeyword, SeparatedSyntaxList<IdentifierNameSyntax> names)
+        ForInStatementSyntax ParseGenericForStatement(SyntaxToken forKeyword, SeparatedSyntaxList<IdentifierNameSyntax> names)
     {
-        Debug.Assert(this.CurrentTokenKind == SyntaxKind.InKeyword);
-
         var inKeyword = this.EatToken(SyntaxKind.InKeyword);
         var iteration = this.ParseExpression();
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
@@ -431,10 +431,8 @@ partial class LanguageParser
 #else
     private
 #endif
-        ForStatementSyntax ParseIncrementalForStatement(SyntaxToken forKeyword, IdentifierNameSyntax name)
+        ForStatementSyntax ParseNumericalForStatement(SyntaxToken forKeyword, IdentifierNameSyntax name)
     {
-        Debug.Assert(this.CurrentTokenKind == SyntaxKind.EqualsToken);
-
         var equals = this.EatToken(SyntaxKind.EqualsToken);
         var initial = this.ParseExpression();
         var firstComma = this.EatToken(SyntaxKind.CommaToken);

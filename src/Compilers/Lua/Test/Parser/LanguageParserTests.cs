@@ -2038,5 +2038,175 @@ public partial class LanguageParserTests
             Assert.That.AtEndOfFile(parser);
         }
     }
+
+    [TestMethod]
+    public void ForStatementParseTests()
+    {
+        { // 合法的算术for循环语句
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                for i = 1, 10 do
+                    print(i)
+                end
+                """);
+            var forStat = parser.ParseForStatement() as ForStatementSyntax;
+            Assert.IsNotNull(forStat);
+            Assert.That.NotContainsDiagnostics(forStat);
+
+            Assert.That.IsIdentifierName(forStat.Name, "i");
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Initial, SyntaxKind.NumericLiteralExpression, 1L);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Limit, SyntaxKind.NumericLiteralExpression, 10L);
+            Assert.IsNull(forStat.Step);
+
+            var block = forStat.Block;
+            Assert.AreEqual(1, block.Statements.Count);
+            Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
+            Assert.IsNull(block.Return);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 合法的算术for循环语句，指定增量
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                for i = 1, 10, 2 do
+                    print(i)
+                end
+                """);
+            var forStat = parser.ParseForStatement() as ForStatementSyntax;
+            Assert.IsNotNull(forStat);
+            Assert.That.NotContainsDiagnostics(forStat);
+
+            Assert.That.IsIdentifierName(forStat.Name, "i");
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Initial, SyntaxKind.NumericLiteralExpression, 1L);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Limit, SyntaxKind.NumericLiteralExpression, 10L);
+            Assert.IsNotNull(forStat.Step);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Step, SyntaxKind.NumericLiteralExpression, 2L);
+
+            var block = forStat.Block;
+            Assert.AreEqual(1, block.Statements.Count);
+            Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
+            Assert.IsNull(block.Return);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 缺少赋值等号的算术for循环语句
+            // 识别到只声明了一个标识符，判断为算术for循环语句。
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                for i 1, 10, 2 do
+                    print(i)
+                end
+                """);
+            var forStat = parser.ParseForStatement() as ForStatementSyntax;
+            Assert.IsNotNull(forStat);
+            Assert.That.ContainsDiagnostics(forStat);
+
+            Assert.That.IsNotMissing(forStat.ForKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.ForKeyword);
+
+            Assert.That.IsIdentifierName(forStat.Name, "i");
+            Assert.That.NotContainsDiagnostics(forStat.Name);
+
+            Assert.That.IsMissing(forStat.EqualsToken);
+            Assert.That.ContainsDiagnostics(forStat.EqualsToken);
+
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Initial, SyntaxKind.NumericLiteralExpression, 1L);
+            Assert.That.NotContainsDiagnostics(forStat.Initial);
+
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Limit, SyntaxKind.NumericLiteralExpression, 10L);
+            Assert.That.NotContainsDiagnostics(forStat.Limit);
+
+            Assert.IsNotNull(forStat.Step);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Step, SyntaxKind.NumericLiteralExpression, 2L);
+            Assert.That.NotContainsDiagnostics(forStat.Step);
+
+            Assert.That.IsNotMissing(forStat.DoKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.DoKeyword);
+
+            Assert.That.NotContainsDiagnostics(forStat.Block);
+
+            Assert.That.IsNotMissing(forStat.EndKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.EndKeyword);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 缺少标识符和赋值等号的算术for循环语句
+            // 标识符缺失（声明了一个缺失的标识符），判断为算术for循环语句。
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                for 1, 10, 2 do
+                    print(i)
+                end
+                """);
+            var forStat = parser.ParseForStatement() as ForStatementSyntax;
+            Assert.IsNotNull(forStat);
+            Assert.That.ContainsDiagnostics(forStat);
+
+            Assert.That.IsNotMissing(forStat.ForKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.ForKeyword);
+
+            Assert.That.IsMissingIdentifierName(forStat.Name);
+            Assert.That.ContainsDiagnostics(forStat.Name);
+
+            Assert.That.IsMissing(forStat.EqualsToken);
+            Assert.That.ContainsDiagnostics(forStat.EqualsToken);
+
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Initial, SyntaxKind.NumericLiteralExpression, 1L);
+            Assert.That.NotContainsDiagnostics(forStat.Initial);
+
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Limit, SyntaxKind.NumericLiteralExpression, 10L);
+            Assert.That.NotContainsDiagnostics(forStat.Limit);
+
+            Assert.IsNotNull(forStat.Step);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Step, SyntaxKind.NumericLiteralExpression, 2L);
+            Assert.That.NotContainsDiagnostics(forStat.Step);
+
+            Assert.That.IsNotMissing(forStat.DoKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.DoKeyword);
+
+            Assert.That.NotContainsDiagnostics(forStat.Block);
+
+            Assert.That.IsNotMissing(forStat.EndKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.EndKeyword);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 声明了过多的标识符
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                for index, item = 1, 10, 2 do
+                    print(i)
+                end
+                """);
+            var forStat = parser.ParseForStatement() as ForStatementSyntax;
+            Assert.IsNotNull(forStat);
+            Assert.That.ContainsDiagnostics(forStat);
+
+            Assert.That.IsNotMissing(forStat.ForKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.ForKeyword);
+
+            Assert.That.IsMissingIdentifierName(forStat.Name);
+            Assert.That.ContainsDiagnostics(forStat.Name);
+            Assert.That.ContainsDiagnostics(forStat.Name, ErrorCode.ERR_TooManyIdentifiers);
+
+            Assert.That.IsNotMissing(forStat.EqualsToken);
+            Assert.That.NotContainsDiagnostics(forStat.EqualsToken);
+
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Initial, SyntaxKind.NumericLiteralExpression, 1L);
+            Assert.That.NotContainsDiagnostics(forStat.Initial);
+
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Limit, SyntaxKind.NumericLiteralExpression, 10L);
+            Assert.That.NotContainsDiagnostics(forStat.Limit);
+
+            Assert.IsNotNull(forStat.Step);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Step, SyntaxKind.NumericLiteralExpression, 2L);
+            Assert.That.NotContainsDiagnostics(forStat.Step);
+
+            Assert.That.IsNotMissing(forStat.DoKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.DoKeyword);
+
+            Assert.That.NotContainsDiagnostics(forStat.Block);
+
+            Assert.That.IsNotMissing(forStat.EndKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.EndKeyword);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+    }
     #endregion
 }

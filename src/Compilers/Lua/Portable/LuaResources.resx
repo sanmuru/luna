@@ -189,6 +189,9 @@
   <data name="ERR_SyntaxError" xml:space="preserve">
     <value>Syntax error, '{0}' expected.</value>
   </data>
+  <data name="ERR_TooManyIdentifiers" xml:space="preserve">
+    <value>Too many control variables.</value>
+  </data>
   <data name="ERR_UnexpectedCharacter" xml:space="preserve">
     <value>Unexpected character '{0}'.</value>
   </data>
