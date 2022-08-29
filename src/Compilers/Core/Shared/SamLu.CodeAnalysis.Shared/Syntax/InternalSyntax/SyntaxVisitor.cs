@@ -8,46 +8,88 @@ namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 using ThisInternalSyntaxNode = MoonScriptSyntaxNode;
 #endif
 
-using SamLu.CodeAnalysis.Syntax.InternalSyntax;
-
+/// <summary>
+/// 表示访问者基类。访问者每次访问和处理一个<see cref="ThisInternalSyntaxNode"/>节点并产生类型为<typeparamref name="TResult"/>的结果。
+/// </summary>
+/// <typeparam name="TResult">访问者的处理方法的返回结果的类型。</typeparam>
 internal abstract partial class
 #if LANG_LUA
     LuaSyntaxVisitor
 #elif LANG_MOONSCRIPT
     MoonScriptSyntaxVisitor
 #endif
-    <TResult> : CommonSyntaxVisitor<TResult, ThisInternalSyntaxNode>
+    <TResult>
 {
-    public override TResult? Visit(ThisInternalSyntaxNode? node)
+    /// <summary>
+    /// 处理这个节点并产生结果。
+    /// </summary>
+    /// <param name="node">要进行处理的节点。</param>
+    /// <returns>产生的结果。</returns>
+    public virtual TResult? Visit(ThisInternalSyntaxNode? node)
     {
         if (node is null) return default;
 
         return node.Accept(this);
     }
 
+    /// <summary>
+    /// 处理这个标志并产生结果。
+    /// </summary>
+    /// <param name="token">要进行处理的标志。</param>
+    /// <returns>产生的结果。</returns>
     public virtual TResult? VisitToken(SyntaxToken token) => this.DefaultVisit(token);
 
+    /// <summary>
+    /// 处理这个琐碎内容并产生结果。
+    /// </summary>
+    /// <param name="trivia">要进行处理的琐碎内容。</param>
+    /// <returns>产生的结果。</returns>
     public virtual TResult? VisitTrivia(SyntaxTrivia trivia) => this.DefaultVisit(trivia);
 
-    protected override TResult? DefaultVisit(ThisInternalSyntaxNode node) => default;
+    /// <summary>
+    /// 内部方法，被其他访问方法调用来处理这个节点并产生默认结果。
+    /// </summary>
+    /// <param name="node">要进行处理的节点。</param>
+    /// <returns>产生的结果。</returns>
+    protected virtual TResult? DefaultVisit(ThisInternalSyntaxNode node) => default;
 }
 
+/// <summary>
+/// 表示访问者基类。访问者每次访问和处理一个<see cref="ThisInternalSyntaxNode"/>节点。
+/// </summary>
 internal abstract partial class
 #if LANG_LUA
     LuaSyntaxVisitor
 #elif LANG_MOONSCRIPT
     MoonScriptSyntaxVisitor
 #endif
-    : CommonSyntaxVisitor<ThisInternalSyntaxNode>
 {
-    public override void Visit(ThisInternalSyntaxNode? node)
+    /// <summary>
+    /// 处理这个节点。
+    /// </summary>
+    /// <param name="node">要进行处理的节点。</param>
+    public virtual void Visit(ThisInternalSyntaxNode? node)
     {
         if (node is null) return;
 
         node.Accept(this);
     }
 
+    /// <summary>
+    /// 处理这个标志。
+    /// </summary>
+    /// <param name="token">要进行处理的标志。</param>
     public virtual void VisitToken(SyntaxToken token) => this.DefaultVisit(token);
 
+    /// <summary>
+    /// 处理这个琐碎内容。
+    /// </summary>
+    /// <param name="trivia">要进行处理的琐碎内容。</param>
     public virtual void VisitTrivia(SyntaxTrivia trivia) => this.DefaultVisit(trivia);
+
+    /// <summary>
+    /// 内部方法，被其他访问方法调用来处理这个节点。
+    /// </summary>
+    /// <param name="node">要进行处理的节点。</param>
+    public virtual void DefaultVisit(ThisInternalSyntaxNode node) { }
 }

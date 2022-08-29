@@ -188,25 +188,12 @@ internal abstract partial class
         }
     }
 
-#if LANG_LUA
     /// <summary>
-    /// 使用指定语法琐碎内容创建新的<see cref="Lua.Syntax.StructuredTriviaSyntax"/>实例。
+    /// 使用指定语法琐碎内容创建新的<see cref="Syntax.StructuredTriviaSyntax"/>实例。
     /// </summary>
     /// <param name="trivia">现有的语法琐碎内容。</param>
     /// <returns>根据现有的语法琐碎内容创建的新的表示结构语法琐碎内容的语法节点。</returns>
-#elif LANG_MOONSCRIPT
-    /// <summary>
-    /// 使用指定语法琐碎内容创建新的<see cref="MoonScript.Syntax.StructuredTriviaSyntax"/>实例。
-    /// </summary>
-    /// <param name="trivia">现有的语法琐碎内容。</param>
-    /// <returns>根据现有的语法琐碎内容创建的新的表示结构语法琐碎内容的语法节点。</returns>
-#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected virtual SyntaxNode GetNewStructure(Microsoft.CodeAnalysis.SyntaxTrivia trivia) =>
-#if LANG_LUA
-        Lua
-#elif LANG_MOONSCRIPT
-        MoonScript
-#endif
-        .Syntax.StructuredTriviaSyntax.Create(trivia);
+        Syntax.StructuredTriviaSyntax.Create(trivia);
 }

@@ -47,6 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\ContextAwareSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\StructuredTriviaSyntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxAccumulator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxFirstTokenReplacer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxLastTokenReplacer.cs" />
@@ -54,6 +55,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxNode.MockNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxNodeCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxRewriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxTokenAccumulator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\SyntaxTraverser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SkippedTokensTriviaSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxEquivalence.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxFactory.Parser.cs" />

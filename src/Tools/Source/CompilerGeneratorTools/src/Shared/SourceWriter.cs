@@ -64,6 +64,8 @@ internal class SourceWriter : AbstractFileWriter
         WriteLine();
         this.WriteGreenTypes();
         this.WriteGreenVisitors();
+        this.WriteGreenAccumulator();
+        this.WriteGreenTraverser();
         this.WriteGreenRewriter();
         this.WriteContextualGreenFactories();
         this.WriteStaticGreenFactories();
@@ -474,7 +476,7 @@ internal class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine($"internal partial class {LanguageNames.This}SyntaxVisitor" + (withResult ? "<TResult>" : ""));
+        WriteLine($"partial class {LanguageNames.This}SyntaxVisitor" + (withResult ? "<TResult>" : ""));
         OpenBlock();
         foreach (var node in nodes.OfType<Node>())
         {
@@ -537,12 +539,102 @@ internal class SourceWriter : AbstractFileWriter
         CloseBlock();
     }
 
+    private void WriteGreenAccumulator()
+    {
+        var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
+
+        WriteLine();
+        WriteLine($"partial class {LanguageNames.This}SyntaxAccumulator<TResult> : {LanguageNames.This}SyntaxVisitor<IEnumerable<TResult>>");
+        OpenBlock();
+        int nWritten = 0;
+        foreach (var node in nodes.OfType<Node>())
+        {
+            var nodeFields = node.Fields.Where(nd => IsNodeOrNodeList(nd.Type)).ToList();
+
+            if (nWritten > 0)
+                WriteLine();
+            nWritten++;
+            WriteLine($"public override IEnumerable<TResult> Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
+            OpenBlock();
+
+            if (nodeFields.Count == 0)
+            {
+                WriteLine("yield break;");
+            }
+            else
+            {
+                foreach (var f in node.Fields)
+                {
+                    string visitMethod;
+                    if (IsAnyList(f.Type))
+                        visitMethod = "VisitList";
+                    else if (f.Type == "SyntaxToken")
+                        visitMethod = "Visit";
+                    else if (IsNode(f.Type))
+                        visitMethod = "Visit";
+                    else
+                        continue;
+                    if (!IsAnyList(f.Type) && IsOptional(f))
+                        Write($"if (node.{f.Name} is not null) ");
+                    WriteLine($"foreach (var result in this.{visitMethod}(node.{f.Name})) yield return result;");
+                }
+            }
+
+            CloseBlock();
+        }
+
+        CloseBlock();
+    }
+
+    private void WriteGreenTraverser()
+    {
+        var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
+
+        WriteLine();
+        WriteLine($"partial class {LanguageNames.This}SyntaxTraverser : {LanguageNames.This}SyntaxVisitor");
+        OpenBlock();
+        int nWritten = 0;
+        foreach (var node in nodes.OfType<Node>())
+        {
+            var nodeFields = node.Fields.Where(nd => IsNodeOrNodeList(nd.Type)).ToList();
+
+            if (nWritten > 0)
+                WriteLine();
+            nWritten++;
+            WriteLine($"public override void Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
+            OpenBlock();
+
+            if (nodeFields.Count != 0)
+            {
+                foreach (var f in node.Fields)
+                {
+                    string visitMethod;
+                    if (IsAnyList(f.Type))
+                        visitMethod = "VisitList";
+                    else if (f.Type == "SyntaxToken")
+                        visitMethod = "Visit";
+                    else if (IsNode(f.Type))
+                        visitMethod = "Visit";
+                    else
+                        continue;
+                    if (!IsAnyList(f.Type) && IsOptional(f))
+                        Write($"if (node.{f.Name} is not null) ");
+                    WriteLine($"this.{visitMethod}(node.{f.Name});");
+                }
+            }
+
+            CloseBlock();
+        }
+
+        CloseBlock();
+    }
+
     private void WriteGreenRewriter()
     {
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine($"internal partial class {LanguageNames.This}SyntaxRewriter : {LanguageNames.This}SyntaxVisitor<{LanguageNames.This}SyntaxNode>");
+        WriteLine($"partial class {LanguageNames.This}SyntaxRewriter : {LanguageNames.This}SyntaxVisitor<{LanguageNames.This}SyntaxNode>");
         OpenBlock();
         int nWritten = 0;
         foreach (var node in nodes.OfType<Node>())
@@ -584,7 +676,7 @@ internal class SourceWriter : AbstractFileWriter
     {
         var nodes = Tree.Types.Where(n => n is not PredefinedNode and not AbstractNode).ToList();
         WriteLine();
-        WriteLine("internal partial class ContextAwareSyntax");
+        WriteLine("partial class ContextAwareSyntax");
         OpenBlock();
         WriteLine();
         WriteLine("private SyntaxFactoryContext context;");
@@ -601,7 +693,7 @@ internal class SourceWriter : AbstractFileWriter
     {
         var nodes = Tree.Types.Where(n => n is not PredefinedNode and not AbstractNode).ToList();
         WriteLine();
-        WriteLine("internal static partial class SyntaxFactory");
+        WriteLine("static partial class SyntaxFactory");
         OpenBlock();
         WriteGreenFactories(nodes);
         WriteGreenTypeList();
@@ -1221,7 +1313,7 @@ internal class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine($"public partial class {LanguageNames.This}SyntaxVisitor" + genericArgs);
+        WriteLine($"partial class {LanguageNames.This}SyntaxVisitor{genericArgs}");
         OpenBlock();
         int nWritten = 0;
         foreach (var node in nodes.OfType<Node>())
@@ -1452,7 +1544,7 @@ internal class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine($"public partial class {LanguageNames.This}SyntaxRewriter");
+        WriteLine($"partial class {LanguageNames.This}SyntaxRewriter : {LanguageNames.This}SyntaxVisitor<{LanguageNames.This}SyntaxNode>");
         OpenBlock();
 
         int nWritten = 0;
@@ -1461,7 +1553,7 @@ internal class SourceWriter : AbstractFileWriter
             if (nWritten > 0)
                 WriteLine();
             nWritten++;
-            WriteLine($"public override {LanguageNames.This}SyntaxNode? Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
+            WriteLine($"public override {LanguageNames.This}SyntaxNode Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
 
             if (node.Fields.Count == 0)
             {
