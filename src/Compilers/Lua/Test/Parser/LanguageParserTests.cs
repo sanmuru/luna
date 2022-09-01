@@ -2207,6 +2207,93 @@ public partial class LanguageParserTests
 
             Assert.That.AtEndOfFile(parser);
         }
+        { // 合法的泛型for循环语句
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                for k, v in pairs(t) do
+                    print(k, v)
+                end
+                """);
+            var forStat = parser.ParseForStatement() as ForInStatementSyntax;
+            Assert.IsNotNull(forStat);
+            Assert.That.NotContainsDiagnostics(forStat);
+
+            Assert.AreEqual(2, forStat.Names.Count);
+            Assert.That.IsIdentifierName(forStat.Names[0]!, "k");
+            Assert.That.IsIdentifierName(forStat.Names[1]!, "v");
+
+            Assert.That.IsNotEmptyExpressionList(forStat.Expressions, 1);
+            Assert.IsInstanceOfType(forStat.Expressions.Expressions[0], typeof(InvocationExpressionSyntax));
+
+            var block = forStat.Block;
+            Assert.AreEqual(1, block.Statements.Count);
+            Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
+            Assert.IsNull(block.Return);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 合法的泛型for循环语句，使用自定义迭代逻辑
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                for k, v in next, t, nil do
+                    print(k, v)
+                end
+                """);
+            var forStat = parser.ParseForStatement() as ForInStatementSyntax;
+            Assert.IsNotNull(forStat);
+            Assert.That.NotContainsDiagnostics(forStat);
+
+            Assert.AreEqual(2, forStat.Names.Count);
+            Assert.That.IsIdentifierName(forStat.Names[0]!, "k");
+            Assert.That.IsIdentifierName(forStat.Names[1]!, "v");
+
+            Assert.That.IsNotEmptyExpressionList(forStat.Expressions, 3);
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)forStat.Expressions.Expressions[0]!, "next");
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)forStat.Expressions.Expressions[1]!, "t");
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Expressions.Expressions[2]!, SyntaxKind.NilLiteralExpression);
+
+            var block = forStat.Block;
+            Assert.AreEqual(1, block.Statements.Count);
+            Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
+            Assert.IsNull(block.Return);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 缺少in关键词的泛型for循环语句
+            // 识别到声明了多个标识符，判断为泛型for循环语句。
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                for k, v pairs(t) do
+                    print(k, v)
+                end
+                """);
+            var forStat = parser.ParseForStatement() as ForInStatementSyntax;
+            Assert.IsNotNull(forStat);
+            Assert.That.ContainsDiagnostics(forStat);
+
+            Assert.That.IsNotMissing(forStat.ForKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.ForKeyword);
+
+            Assert.AreEqual(2, forStat.Names.Count);
+            Assert.That.IsIdentifierName(forStat.Names[0]!, "k");
+            Assert.That.NotContainsDiagnostics(forStat.Names[0]!);
+            Assert.That.IsIdentifierName(forStat.Names[1]!, "v");
+            Assert.That.NotContainsDiagnostics(forStat.Names[1]!);
+
+            Assert.That.IsMissing(forStat.InKeyword);
+            Assert.That.ContainsDiagnostics(forStat.InKeyword);
+
+            Assert.That.IsNotEmptyExpressionList(forStat.Expressions, 1);
+            Assert.IsInstanceOfType(forStat.Expressions.Expressions[0], typeof(InvocationExpressionSyntax));
+            Assert.That.NotContainsDiagnostics(forStat.Expressions);
+
+            Assert.That.IsNotMissing(forStat.DoKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.DoKeyword);
+
+            Assert.That.NotContainsDiagnostics(forStat.Block);
+
+            Assert.That.IsNotMissing(forStat.EndKeyword);
+            Assert.That.NotContainsDiagnostics(forStat.EndKeyword);
+
+            Assert.That.AtEndOfFile(parser);
+        }
     }
     #endregion
 }

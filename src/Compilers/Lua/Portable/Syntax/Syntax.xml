@@ -347,7 +347,7 @@
     <Field Name="InKeyword" Type="SyntaxToken">
       <Kind Name="InKeyword"/>
     </Field>
-    <Field Name="Iteration" Type="ExpressionSyntax"/>
+    <Field Name="Expressions" Type="ExpressionListSyntax"/>
     <Field Name="DoKeyword" Type="SyntaxToken">
       <Kind Name="DoKeyword"/>
     </Field>

@@ -412,7 +412,7 @@ partial class LanguageParser
         ForInStatementSyntax ParseGenericForStatement(SyntaxToken forKeyword, SeparatedSyntaxList<IdentifierNameSyntax> names)
     {
         var inKeyword = this.EatToken(SyntaxKind.InKeyword);
-        var iteration = this.ParseExpression();
+        var expressions = this.ParseExpressionList();
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
         var block = this.ParseBlock();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
@@ -420,7 +420,7 @@ partial class LanguageParser
             forKeyword,
             names,
             inKeyword,
-            iteration,
+            expressions,
             doKeyword,
             block,
             endKeyword);
