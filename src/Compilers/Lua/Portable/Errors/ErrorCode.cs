@@ -34,7 +34,13 @@ namespace SamLu.CodeAnalysis.Lua
         WRN_ErrorOverride,
 
         #region 语法错误
-        /// <summary>未于<see langword="if"/>语句后的<see langword="elseif"/>块。。</summary>
+        /// <summary>应输入“,”。</summary>
+        ERR_CommaExpected,
+        /// <summary>应输入“;”。</summary>
+        ERR_SemicolonExpected,
+        /// <summary>应输入“,”或“;”。</summary>
+        ERR_FieldSeparatorExpected,
+        /// <summary>未于<see langword="if"/>语句后的<see langword="elseif"/>块。</summary>
         ERR_ElseIfCannotStartStatement,
         /// <summary>增量<see langword="for"/>循环语句中定义了过多的标识符。</summary>
         ERR_TooManyIdentifiers,

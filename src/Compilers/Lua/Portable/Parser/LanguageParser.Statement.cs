@@ -14,14 +14,6 @@ partial class LanguageParser
         void ParseStatements(in SyntaxListBuilder<StatementSyntax> statementsBuilder) =>
         this.ParseSyntaxList(
             statementsBuilder,
-            parseNodeFunc: _ =>
-            {
-                var stat = this.ParseStatement();
-                if (stat is ReturnStatementSyntax) // 此返回语句位置错误，报告错误。
-                    return this.AddError(stat, ErrorCode.ERR_MisplacedReturnStat);
-                else
-                    return stat;
-            },
             predicateNode: _ =>
             {
                 // 后续不是合法语句时停止。
@@ -40,18 +32,29 @@ partial class LanguageParser
                 if (this._syntaxFactoryContext.IsInIfBlock && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) // 正在解析if/elseif语句时遇到elseif语句视为不合法语句。
                 {
                     this.Reset(ref resetPoint);
+                    this.Release(ref resetPoint);
                     return false;
                 }
                 else if (this.IsPossibleStatement()) // 后方还有合法的语句，则此返回语句仅为位置错误。
                 {
                     this.Reset(ref resetPoint);
+                    this.Release(ref resetPoint);
                     return true;
                 }
                 else // 否则此返回语句可能是块的最后一个语句。
                 {
                     this.Reset(ref resetPoint);
+                    this.Release(ref resetPoint);
                     return false;
                 }
+            },
+            parseNode: (_, _) =>
+            {
+                var stat = this.ParseStatement();
+                if (stat is ReturnStatementSyntax) // 此返回语句位置错误，报告错误。
+                    return this.AddError(stat, ErrorCode.ERR_MisplacedReturnStat);
+                else
+                    return stat;
             });
 
 #if TESTING
@@ -138,7 +141,7 @@ partial class LanguageParser
     {
         var left = this.ParseAssgLvalueList();
         var equals = this.EatToken();
-        var right = this.ParseExpressionList();
+        var right = this.ParseExpressionList(minCount: 1);
         return this._syntaxFactory.AssignmentStatement(left, equals, right);
     }
 
@@ -147,15 +150,16 @@ partial class LanguageParser
 #else
     private
 #endif
-        ExpressionListSyntax ParseAssgLvalueList()
+        SeparatedSyntaxList<ExpressionSyntax> ParseAssgLvalueList()
     {
         if (this.CurrentTokenKind != SyntaxKind.CommaToken && !this.IsPossibleExpression())
             return this.CreateMissingExpressionList(ErrorCode.ERR_IdentifierExpected);
 
         return this.ParseSeparatedSyntaxList(
-            parseNodeFunc: index =>
+            predicateNode: _ => true,
+            parseNode: (index, missing) =>
             {
-                if (this.IsPossibleExpression())
+                if (!missing && this.IsPossibleExpression())
                 {
                     var expr = this.ParseExpression();
                     return expr switch
@@ -168,16 +172,11 @@ partial class LanguageParser
                     };
                 }
                 else
-                {
-                    // 第一项缺失的情况：
-                    if (index == 0)
-                        Debug.Assert(this.CurrentTokenKind == SyntaxKind.CommaToken);
                     return this.AddError(this.CreateMissingIdentifierName(), ErrorCode.ERR_IdentifierExpected);
-                }
             },
-            predicateNode: _ => true,
             predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
-            createListFunc: list => this._syntaxFactory.ExpressionList(list))!;
+            parseSeparator: (_, _) => this.EatToken(SyntaxKind.CommaToken),
+            minCount: 1);
     }
 
 #if TESTING
@@ -228,7 +227,7 @@ partial class LanguageParser
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.ReturnKeyword);
         var returnKeyword = this.EatToken(SyntaxKind.ReturnKeyword);
-        var expressions = this.ParseExpressionListOpt();
+        var expressions = this.ParseExpressionList(minCount: 0);
         return this._syntaxFactory.ReturnStatement(returnKeyword, expressions);
     }
 
@@ -306,8 +305,8 @@ partial class LanguageParser
 #endif
         SyntaxList<ElseIfClauseSyntax> ParseElseIfClausesOpt() =>
         this.ParseSyntaxList(
-            parseNodeFunc: _ => this.ParseElseIfClause(),
-            predicateNode: _ => this.CurrentTokenKind == SyntaxKind.ElseIfKeyword);
+            predicateNode: _ => this.CurrentTokenKind == SyntaxKind.ElseIfKeyword,
+            parseNode: (_, _) => this.ParseElseIfClause());
 
 #if TESTING
     internal
@@ -373,7 +372,13 @@ partial class LanguageParser
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.ForKeyword);
         var forKeyword = this.EatToken(SyntaxKind.ForKeyword);
         var namesBuilder = this._pool.AllocateSeparated<IdentifierNameSyntax>();
-        this.ParseSeparatedIdentifierNames(namesBuilder);
+        this.ParseSeparatedSyntaxList(
+            namesBuilder,
+            predicateNode: _ => true,
+            parseNode: (_, _) => this.ParseIdentifierName(),
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
+            parseSeparator: (_, _) => this.EatToken(SyntaxKind.CommaToken),
+            minCount: 1);
         switch (this.CurrentTokenKind)
         {
             case SyntaxKind.InKeyword:// 是泛型for循环。
@@ -412,7 +417,7 @@ partial class LanguageParser
         ForInStatementSyntax ParseGenericForStatement(SyntaxToken forKeyword, SeparatedSyntaxList<IdentifierNameSyntax> names)
     {
         var inKeyword = this.EatToken(SyntaxKind.InKeyword);
-        var expressions = this.ParseExpressionList();
+        var expressions = this.ParseExpressionList(minCount: 1);
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
         var block = this.ParseBlock();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
@@ -506,18 +511,27 @@ partial class LanguageParser
 
         var local = this.EatToken(SyntaxKind.LocalKeyword);
         var nameAttributeLists = this.ParseSeparatedSyntaxList(
-            parseNodeFunc: _ => this.ParseNameAttributeList(),
             predicateNode: _ => true,
-            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
-        SyntaxToken? equals = null;
-        ExpressionListSyntax? values = null;
-        if (this.CurrentTokenKind == SyntaxKind.EqualsToken)
-        {
-            equals = this.EatToken();
-            values = this.ParseExpressionListOpt();
-        }
+            parseNode: (_, _) => this.ParseNameAttributeList(),
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
+            parseSeparator: (_, _) => this.EatToken(SyntaxKind.CommaToken),
+            minCount: 1);
+        var equalsValues = this.CurrentTokenKind == SyntaxKind.EqualsToken ? this.ParseEqualsValuesClause() : null;
+        return this._syntaxFactory.LocalDeclarationStatement(local, nameAttributeLists, equalsValues);
+    }
 
-        return this._syntaxFactory.LocalDeclarationStatement(local, nameAttributeLists, equals, values);
+#if TESTING
+    internal
+#else
+    private
+#endif
+        EqualsValuesClauseSyntax ParseEqualsValuesClause()
+    {
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.EqualsToken);
+
+        var equals = this.EatToken(SyntaxKind.EqualsToken);
+        var values = this.ParseExpressionList(minCount: 1);
+        return this._syntaxFactory.EqualsValuesClause(equals, values);
     }
 
 #if TESTING
@@ -529,23 +543,28 @@ partial class LanguageParser
     {
         var resetPoint = this.GetResetPoint();
 
-        var exprList = this.ParseExpressionList();
+        var exprList = this.ParseExpressionList(minCount: 0);
         if (this.CurrentTokenKind == SyntaxKind.EqualsToken)
         {
             // 按照赋值语句解析。
             this.Reset(ref resetPoint);
+            this.Release(ref resetPoint);
             return this.ParseAssignmentStatement();
         }
-        else if (exprList.Expressions.Count == 1 && exprList.Expressions[0] is InvocationExpressionSyntax invocationExpression)
+        else if (exprList.Count == 1 && exprList[0] is InvocationExpressionSyntax invocationExpression)
         {
             // 按照调用语句解析。
+            this.Release(ref resetPoint);
             return this._syntaxFactory.InvocationStatement(invocationExpression);
         }
-
-        // 否则解析为空语句，报告不合法语句错误，将整个表达式列表添加入空语句的前方跳过的标志的语法琐碎。
-        var semicolon = this.AddLeadingSkippedSyntax(
-            SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken),
-            this.AddError(exprList, ErrorCode.ERR_IllegalStatement));
-        return this._syntaxFactory.EmptyStatement(semicolon);
+        else
+        {
+            // 否则解析为空语句，报告不合法语句错误，将整个表达式列表添加入空语句的前方跳过的标志的语法琐碎。
+            var semicolon = this.AddLeadingSkippedSyntax(
+                SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken),
+                this.AddError(exprList.Node!, ErrorCode.ERR_IllegalStatement));
+            this.Release(ref resetPoint);
+            return this._syntaxFactory.EmptyStatement(semicolon);
+        }
     }
 }

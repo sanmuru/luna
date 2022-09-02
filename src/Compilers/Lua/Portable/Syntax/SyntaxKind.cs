@@ -360,6 +360,8 @@ public enum SyntaxKind : ushort
     LocalFunctionDefinitionStatement,
     /// <summary>表示本地变量定义语句。</summary>
     LocalDeclarationStatement,
+    /// <summary>表示本地变量定义的赋值从句。</summary>
+    EqualsValuesClause,
     #endregion
 
     #region 声明
@@ -367,12 +369,6 @@ public enum SyntaxKind : ushort
     Chunk = 9889,
     /// <summary>表示代码块。</summary>
     Block,
-    /// <summary>表示带方括号的表达式。</summary>
-    BracketedExpression,
-    /// <summary>表示表达式列表。</summary>
-    ExpressionList,
-    /// <summary>表示表字段列表。</summary>
-    FieldList,
     /// <summary>表示表字段。</summary>
     Field,
     /// <summary>表示列表项表字段。</summary>

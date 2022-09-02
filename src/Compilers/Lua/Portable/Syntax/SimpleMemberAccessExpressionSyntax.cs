@@ -8,7 +8,7 @@ partial class SimpleMemberAccessExpressionSyntax
     {
         if (member is IdentifierNameSyntax memberName)
             return this.WithMemberName(memberName);
-
-        return SyntaxFactory.IndexMemberAccessExpression(this.Self, member);
+        else
+            return SyntaxFactory.IndexMemberAccessExpression(this.Self, member);
     }
 }

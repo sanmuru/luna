@@ -27,6 +27,11 @@
         <target state="new">Provided source code kind is unsupported or invalid: '{0}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_CommaExpected">
+        <source>',' expected.</source>
+        <target state="new">',' expected.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_ElseIfCannotStartStatement">
         <source>'elseif' cannot start a statement.</source>
         <target state="new">'elseif' cannot start a statement.</target>
@@ -35,6 +40,11 @@
       <trans-unit id="ERR_ExpressionExpected">
         <source>Expression expected.</source>
         <target state="new">Expression expected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_FieldSeparatorExpected">
+        <source>',' or ';' expected.</source>
+        <target state="new">',' or ';' expected.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_IdentifierExpected">
@@ -115,6 +125,11 @@
       <trans-unit id="ERR_OpenEndedComment">
         <source>End-of-file found, close long brackect expected.</source>
         <target state="new">End-of-file found, close long brackect expected.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ERR_SemicolonExpected">
+        <source>';' expected.</source>
+        <target state="new">';' expected.</target>
         <note />
       </trans-unit>
       <trans-unit id="ERR_SyntaxError">

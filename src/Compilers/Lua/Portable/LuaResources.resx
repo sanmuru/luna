@@ -132,11 +132,17 @@
   <data name="ERR_BadSourceCodeKind" xml:space="preserve">
     <value>Provided source code kind is unsupported or invalid: '{0}'.</value>
   </data>
+  <data name="ERR_CommaExpected" xml:space="preserve">
+    <value>',' expected.</value>
+  </data>
   <data name="ERR_ElseIfCannotStartStatement" xml:space="preserve">
     <value>'elseif' cannot start a statement.</value>
   </data>
   <data name="ERR_ExpressionExpected" xml:space="preserve">
     <value>Expression expected.</value>
+  </data>
+  <data name="ERR_FieldSeparatorExpected" xml:space="preserve">
+    <value>',' or ';' expected.</value>
   </data>
   <data name="ERR_IdentifierExpected" xml:space="preserve">
     <value>Identifier expected.</value>
@@ -185,6 +191,9 @@
   </data>
   <data name="ERR_OpenEndedComment" xml:space="preserve">
     <value>End-of-file found, close long brackect expected.</value>
+  </data>
+  <data name="ERR_SemicolonExpected" xml:space="preserve">
+    <value>';' expected.</value>
   </data>
   <data name="ERR_SyntaxError" xml:space="preserve">
     <value>Syntax error, '{0}' expected.</value>

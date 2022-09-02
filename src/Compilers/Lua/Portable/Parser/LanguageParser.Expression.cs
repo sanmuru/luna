@@ -12,37 +12,22 @@ partial class LanguageParser
 #else
     private
 #endif
-        ExpressionListSyntax ParseExpressionList() =>
-        this.ParseExpressionListOpt() ??
-            // 创建一个缺失的标识符名称语法来组成表达式列表，并报告错误信息。
-            this.CreateMissingExpressionList();
-
-#if TESTING
-    internal
-#else
-    private
-#endif
-        ExpressionListSyntax? ParseExpressionListOpt()
+        SeparatedSyntaxList<ExpressionSyntax> ParseExpressionList(int minCount = 1)
     {
-        if (this.CurrentTokenKind != SyntaxKind.CommaToken && !this.IsPossibleExpression()) return null;
+        Debug.Assert(minCount >= 0);
 
         return this.ParseSeparatedSyntaxList(
-            parseNodeFunc: index =>
+            predicateNode: index => index < minCount || this.IsPossibleExpression(),
+            parseNode: (_, missing) =>
             {
-                if (this.IsPossibleExpression())
+                if (!missing && this.IsPossibleExpression())
                     return this.ParseExpression();
                 else
-                {
-                    // 第一项缺失的情况：
-                    if (index == 0)
-                        Debug.Assert(this.CurrentTokenKind == SyntaxKind.CommaToken);
                     return this.ReportMissingExpression(this.CreateMissingIdentifierName());
-                }
             },
-            predicateNode: _ => true,
             predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
-            createListFunc: list => list.Count == 0 ? null :
-                this._syntaxFactory.ExpressionList(list));
+            parseSeparator: (_, _) => this.EatToken(SyntaxKind.CommaToken),
+            minCount: minCount);
     }
 
 #if TESTING
@@ -50,24 +35,20 @@ partial class LanguageParser
 #else
     private
 #endif
-        ExpressionListSyntax CreateMissingExpressionList() =>
-        this._syntaxFactory.ExpressionList(
-            new(SyntaxList.List(
-                this.ReportMissingExpression(this.CreateMissingIdentifierName())
-            ))
-        );
+        SeparatedSyntaxList<ExpressionSyntax> CreateMissingExpressionList() =>
+        new(SyntaxList.List(
+            this.ReportMissingExpression(this.CreateMissingIdentifierName())
+        ));
 
 #if TESTING
     internal
 #else
     private
 #endif
-        ExpressionListSyntax CreateMissingExpressionList(ErrorCode code, params object[] args) =>
-        this._syntaxFactory.ExpressionList(
-            new(SyntaxList.List(
-                this.AddError(this.CreateMissingIdentifierName(), code, args)
-            ))
-        );
+        SeparatedSyntaxList<ExpressionSyntax> CreateMissingExpressionList(ErrorCode code, params object[] args) =>
+        new(SyntaxList.List(
+            this.AddError(this.CreateMissingIdentifierName(), code, args)
+        ));
 
 #if TESTING
     internal
@@ -316,10 +297,8 @@ partial class LanguageParser
     {
         var openBrace = this.EatToken(SyntaxKind.OpenBraceToken);
         var field = this.ParseFieldList();
-        // 允许在后花括号前留下一个分隔符。
-        var separator = this.IsPossibleFieldListSeparator() ? this.EatToken() : null;
         var closeBrace = this.EatToken(SyntaxKind.CloseBraceToken);
-        return this._syntaxFactory.TableConstructorExpression(openBrace, field, separator, closeBrace);
+        return this._syntaxFactory.TableConstructorExpression(openBrace, field, closeBrace);
     }
 
 #if TESTING

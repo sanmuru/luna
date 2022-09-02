@@ -70,7 +70,7 @@
     <Field Name="FunctionKeyword" Type="SyntaxToken">
       <Kind Name="FunctionKeyword"/>
     </Field>
-    <Field Name="Parameters" Type="ParameterListSyntax"/>
+    <Field Name="ParameterList" Type="ParameterListSyntax"/>
     <Field Name="Block" Type="BlockSyntax"/>
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
@@ -81,11 +81,7 @@
     <Field Name="OpenBrace" Type="SyntaxToken">
       <Kind Name="OpenBraceToken"/>
     </Field>
-    <Field Name="Fields" Type="FieldListSyntax"/>
-    <Field Name="SeparatorToken" Type="SyntaxToken" Optional="true">
-      <Kind Name="CommaToken"/>
-      <Kind Name="SemicolonToken"/>
-    </Field>
+    <Field Name="Fields" Type="SeparatedSyntaxList&lt;FieldSyntax&gt;" AllowTrailingSeparator="true"/>
     <Field Name="CloseBrace" Type="SyntaxToken">
       <Kind Name="CloseBraceToken"/>
     </Field>
@@ -201,11 +197,11 @@
   </Node>
   <Node Name="AssignmentStatementSyntax" Base="StatementSyntax">
     <Kind Name="AssignmentStatement"/>
-    <Field Name="Left" Type="ExpressionListSyntax"/>
+    <Field Name="Left" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;" MinCount="1"/>
     <Field Name="EqualsToken" Type="SyntaxToken">
       <Kind Name="EqualsToken"/>
     </Field>
-    <Field Name="Right" Type="ExpressionListSyntax"/>
+    <Field Name="Right" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;" MinCount="1"/>
   </Node>
   <Node Name="InvocationStatementSyntax" Base="StatementSyntax">
     <Kind Name="InvocationStatement"/>
@@ -239,7 +235,7 @@
     <Field Name="ReturnKeyword" Type="SyntaxToken">
       <Kind Name="ReturnKeyword"/>
     </Field>
-    <Field Name="Expressions" Type="ExpressionListSyntax" Optional="true"/>
+    <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;"/>
   </Node>
   <Node Name="DoStatementSyntax" Base="StatementSyntax">
     <Kind Name="DoStatement"/>
@@ -286,7 +282,7 @@
       <Kind Name="ThenKeyword"/>
     </Field>
     <Field Name="Block" Type="BlockSyntax"/>
-    <Field Name="ElseIfs" Type="SyntaxList&lt;ElseIfClauseSyntax&gt;" Optional="true"/>
+    <Field Name="ElseIfs" Type="SyntaxList&lt;ElseIfClauseSyntax&gt;"/>
     <Field Name="Else" Type="ElseClauseSyntax" Optional="true"/>
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
@@ -324,12 +320,10 @@
       <Kind Name="CommaToken"/>
     </Field>
     <Field Name="Limit" Type="ExpressionSyntax"/>
-    <Sequence>
-      <Field Name="SecondCommaToken" Type="SyntaxToken" Optional="true">
-        <Kind Name="CommaToken"/>
-      </Field>
-      <Field Name="Step" Type="ExpressionSyntax" Optional="true"/>
-    </Sequence>
+    <Field Name="SecondCommaToken" Type="SyntaxToken" Optional="true">
+      <Kind Name="CommaToken"/>
+    </Field>
+    <Field Name="Step" Type="ExpressionSyntax" Optional="true"/>
     <Field Name="DoKeyword" Type="SyntaxToken">
       <Kind Name="DoKeyword"/>
     </Field>
@@ -343,11 +337,11 @@
     <Field Name="ForKeyword" Type="SyntaxToken">
       <Kind Name="ForKeyword"/>
     </Field>
-    <Field Name="Names" Type="SeparatedSyntaxList&lt;IdentifierNameSyntax&gt;"/>
+    <Field Name="Names" Type="SeparatedSyntaxList&lt;IdentifierNameSyntax&gt;" MinCount="1"/>
     <Field Name="InKeyword" Type="SyntaxToken">
       <Kind Name="InKeyword"/>
     </Field>
-    <Field Name="Expressions" Type="ExpressionListSyntax"/>
+    <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;" MinCount="1"/>
     <Field Name="DoKeyword" Type="SyntaxToken">
       <Kind Name="DoKeyword"/>
     </Field>
@@ -362,7 +356,7 @@
       <Kind Name="FunctionKeyword"/>
     </Field>
     <Field Name="Name" Type="NameSyntax"/>
-    <Field Name="Parameters" Type="ParameterListSyntax"/>
+    <Field Name="ParameterList" Type="ParameterListSyntax"/>
     <Field Name="Block" Type="BlockSyntax"/>
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
@@ -377,7 +371,7 @@
       <Kind Name="FunctionKeyword"/>
     </Field>
     <Field Name="Name" Type="IdentifierNameSyntax"/>
-    <Field Name="Parameters" Type="ParameterListSyntax"/>
+    <Field Name="ParameterList" Type="ParameterListSyntax"/>
     <Field Name="Block" Type="BlockSyntax"/>
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
@@ -388,13 +382,15 @@
     <Field Name="LocalKeyword" Type="SyntaxToken">
       <Kind Name="LocalKeyword"/>
     </Field>
-    <Field Name="NameAttributeLists" Type="SeparatedSyntaxList&lt;NameAttributeListSyntax&gt;"/>
-    <Sequence>
-      <Field Name="EqualsToken" Type="SyntaxToken" Optional="true">
-        <Kind Name="EqualsToken"/>
-      </Field>
-      <Field Name="Values" Type="ExpressionListSyntax" Optional="true"/>
-    </Sequence>
+    <Field Name="NameAttributeLists" Type="SeparatedSyntaxList&lt;NameAttributeListSyntax&gt;" MinCount="1"/>
+    <Field Name="Initializer" Type="EqualsValuesClauseSyntax" Optional="true"/>
+  </Node>
+  <Node Name="EqualsValuesClauseSyntax" Base="LuaSyntaxNode">
+    <Kind Name="EqualsValuesClause"/>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
+    </Field>
+    <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;" MinCount="1"/>
   </Node>
 
 
@@ -416,20 +412,6 @@
     <Kind Name="SkippedTokensTrivia"/>
     <Field Name="Tokens" Type="SyntaxList&lt;SyntaxToken&gt;"/>
   </Node>
-  <Node Name="ExpressionListSyntax" Base="LuaSyntaxNode">
-    <Kind Name="ExpressionList"/>
-    <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;"/>
-  </Node>
-  <Node Name="BracketedExpressionSyntax" Base="LuaSyntaxNode">
-    <Kind Name="BracketedExpression"/>
-    <Field Name="OpenParenToken" Type="SyntaxToken">
-      <Kind Name="OpenParenToken"/>
-    </Field>
-    <Field Name="Expression" Type="ExpressionSyntax"/>
-    <Field Name="CloseParenToken" Type="SyntaxToken">
-      <Kind Name="CloseParenToken"/>
-    </Field>
-  </Node>
   <Node Name="ParameterListSyntax" Base="LuaSyntaxNode">
     <Kind Name="ParameterList"/>
     <Field Name="OpenParenToken" Type="SyntaxToken">
@@ -447,11 +429,8 @@
       <Kind Name="DotDotDotToken"/>
     </Field>
   </Node>
-  <Node Name="FieldListSyntax" Base="LuaSyntaxNode">
-    <Kind Name="FieldList"/>
-    <Field Name="Fields" Type="SeparatedSyntaxList&lt;FieldSyntax&gt;"/>
-  </Node>
   <AbstractNode Name="FieldSyntax" Base="LuaSyntaxNode">
+    <Field Name="FieldKey" Type="ExpressionSyntax" Optional="true"/>
     <Field Name="FieldValue" Type="ExpressionSyntax"/>
   </AbstractNode>
   <Node Name="ItemFieldSyntax" Base="FieldSyntax">
@@ -471,7 +450,7 @@
     <Field Name="OpenBracketToken" Type="SyntaxToken">
       <Kind Name="OpenBracketToken"/>
     </Field>
-    <Field Name="FieldKey" Type="ExpressionSyntax"/>
+    <Field Name="FieldKey" Type="ExpressionSyntax" Override="true"/>
     <Field Name="CloseBracketToken" Type="SyntaxToken">
       <Kind Name="CloseBracketToken"/>
     </Field>
@@ -497,7 +476,10 @@
   </Node>
   <Node Name="ArgumentStringSyntax" Base="InvocationArgumentsSyntax">
     <Kind Name="ArgumentString"/>
-    <Field Name="String" Type="LiteralExpressionSyntax"/>
+    <Field Name="String" Type="SyntaxToken">
+      <Kind Name="StringLiteralToken"/>
+      <Kind Name="MultiLineRawStringLiteralToken"/>
+    </Field>
   </Node>
   <Node Name="ArgumentSyntax" Base="LuaSyntaxNode">
     <Kind Name="Argument"/>
@@ -513,7 +495,7 @@
     <Field Name="LessThanToken" Type="SyntaxToken">
       <Kind Name="LessThanToken"/>
     </Field>
-    <Field Name="Attributes" Type="SeparatedSyntaxList&lt;AttributeSyntax&gt;"/>
+    <Field Name="Attributes" Type="SeparatedSyntaxList&lt;AttributeSyntax&gt;" MinCount="1"/>
     <Field Name="GreaterThanToken" Type="SyntaxToken">
       <Kind Name="GreaterThanToken"/>
     </Field>

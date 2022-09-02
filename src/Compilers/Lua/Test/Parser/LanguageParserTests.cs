@@ -2,9 +2,7 @@
 
 namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
 
-using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
+using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 using Utilities;
 
 [TestClass]
@@ -1105,7 +1103,7 @@ public partial class LanguageParserTests
             Assert.That.IsIdentifierName((IdentifierNameSyntax)invocation.Expression, "empty");
 
             Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentListSyntax));
-            Assert.That.IsEmptyArgumentList((ArgumentListSyntax)invocation.Arguments);
+            Assert.That.IsEmptyList(((ArgumentListSyntax)invocation.Arguments).List);
 
             Assert.That.NotAtEndOfFile(parser);
         }
@@ -1117,7 +1115,7 @@ public partial class LanguageParserTests
 
             Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentListSyntax));
             var arguments = (ArgumentListSyntax)invocation.Arguments;
-            Assert.That.IsNotEmptyArgumentList(arguments, 2);
+            Assert.That.IsNotEmptyList(arguments.List, 2);
 
             {
                 Assert.IsInstanceOfType(arguments.List[0]!.Expression, typeof(IdentifierNameSyntax));
@@ -1137,17 +1135,17 @@ public partial class LanguageParserTests
 
             Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentTableSyntax));
             var arguments = (ArgumentTableSyntax)invocation.Arguments;
-            Assert.That.IsNotEmptyArgumentTable(arguments, 2);
+            Assert.That.IsNotEmptyList(arguments.Table.Fields, 2);
 
             {
-                Assert.IsInstanceOfType(arguments.Table.Fields.Fields[0], typeof(NameValueFieldSyntax));
-                var field = (NameValueFieldSyntax)arguments.Table.Fields.Fields[0]!;
+                Assert.IsInstanceOfType(arguments.Table.Fields[0], typeof(NameValueFieldSyntax));
+                var field = (NameValueFieldSyntax)arguments.Table.Fields[0]!;
                 Assert.That.IsIdentifierName(field.FieldName, "a");
                 Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 1L);
             }
             {
-                Assert.IsInstanceOfType(arguments.Table.Fields.Fields[1], typeof(ItemFieldSyntax));
-                var field = (ItemFieldSyntax)arguments.Table.Fields.Fields[1]!;
+                Assert.IsInstanceOfType(arguments.Table.Fields[1], typeof(ItemFieldSyntax));
+                var field = (ItemFieldSyntax)arguments.Table.Fields[1]!;
                 Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 2L);
             }
 
@@ -1162,8 +1160,7 @@ public partial class LanguageParserTests
             Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentStringSyntax));
             var arguments = (ArgumentStringSyntax)invocation.Arguments;
 
-            Assert.IsInstanceOfType(arguments.String, typeof(LiteralExpressionSyntax));
-            Assert.That.IsLiteralExpression(arguments.String, SyntaxKind.StringLiteralExpression, "line");
+            Assert.That.IsLiteral(arguments.String, "line");
         }
     }
     #endregion
@@ -1309,12 +1306,12 @@ public partial class LanguageParserTests
         true,
         'string'
         """;
-    private static void FieldListTest(FieldListSyntax fieldList)
+    private static void FieldListTest(SeparatedSyntaxList<FieldSyntax> fields)
     {
-        Assert.That.NotContainsDiagnostics(fieldList);
+        Assert.That.NotContainsDiagnostics(fields);
         {
-            Assert.IsInstanceOfType(fieldList.Fields[0]!, typeof(NameValueFieldSyntax));
-            var field = (NameValueFieldSyntax)fieldList.Fields[0]!;
+            Assert.IsInstanceOfType(fields[0]!, typeof(NameValueFieldSyntax));
+            var field = (NameValueFieldSyntax)fields[0]!;
 
             Assert.That.IsIdentifierName(field.FieldName, "integer");
 
@@ -1322,8 +1319,8 @@ public partial class LanguageParserTests
             Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 5L);
         }
         {
-            Assert.IsInstanceOfType(fieldList.Fields[1]!, typeof(NameValueFieldSyntax));
-            var field = (NameValueFieldSyntax)fieldList.Fields[1]!;
+            Assert.IsInstanceOfType(fields[1]!, typeof(NameValueFieldSyntax));
+            var field = (NameValueFieldSyntax)fields[1]!;
 
             Assert.That.IsIdentifierName(field.FieldName, "float");
 
@@ -1331,8 +1328,8 @@ public partial class LanguageParserTests
             Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.NumericLiteralExpression, 5D);
         }
         {
-            Assert.IsInstanceOfType(fieldList.Fields[2]!, typeof(KeyValueFieldSyntax));
-            var field = (KeyValueFieldSyntax)fieldList.Fields[2]!;
+            Assert.IsInstanceOfType(fields[2]!, typeof(KeyValueFieldSyntax));
+            var field = (KeyValueFieldSyntax)fields[2]!;
 
             Assert.That.IsBinaryExpression(field.FieldKey, SyntaxKind.AdditionExpression);
             {
@@ -1357,15 +1354,15 @@ public partial class LanguageParserTests
             }
         }
         {
-            Assert.IsInstanceOfType(fieldList.Fields[3]!, typeof(ItemFieldSyntax));
-            var field = (ItemFieldSyntax)fieldList.Fields[3]!;
+            Assert.IsInstanceOfType(fields[3]!, typeof(ItemFieldSyntax));
+            var field = (ItemFieldSyntax)fields[3]!;
 
             Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
             Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.TrueLiteralExpression);
         }
         {
-            Assert.IsInstanceOfType(fieldList.Fields[4]!, typeof(ItemFieldSyntax));
-            var field = (ItemFieldSyntax)fieldList.Fields[4]!;
+            Assert.IsInstanceOfType(fields[4]!, typeof(ItemFieldSyntax));
+            var field = (ItemFieldSyntax)fields[4]!;
 
             Assert.IsInstanceOfType(field.FieldValue, typeof(LiteralExpressionSyntax));
             Assert.That.IsLiteralExpression((LiteralExpressionSyntax)field.FieldValue, SyntaxKind.StringLiteralExpression, "string");
@@ -1471,23 +1468,23 @@ public partial class LanguageParserTests
             Assert.That.NotContainsDiagnostics(assignment);
 
             var left = assignment.Left;
-            Assert.That.IsNotEmptyExpressionList(left, 2);
+            Assert.That.IsNotEmptyList(left, 2);
             {
-                Assert.IsInstanceOfType(left.Expressions[0]!, typeof(IdentifierNameSyntax));
-                Assert.That.IsIdentifierName((IdentifierNameSyntax)left.Expressions[0]!, "a");
+                Assert.IsInstanceOfType(left[0]!, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)left[0]!, "a");
 
-                Assert.IsInstanceOfType(left.Expressions[1]!, typeof(IdentifierNameSyntax));
-                Assert.That.IsIdentifierName((IdentifierNameSyntax)left.Expressions[1]!, "b");
+                Assert.IsInstanceOfType(left[1]!, typeof(IdentifierNameSyntax));
+                Assert.That.IsIdentifierName((IdentifierNameSyntax)left[1]!, "b");
             }
 
             var right = assignment.Right;
-            Assert.That.IsNotEmptyExpressionList(right, 2);
+            Assert.That.IsNotEmptyList(right, 2);
             {
-                Assert.IsInstanceOfType(right.Expressions[0]!, typeof(LiteralExpressionSyntax));
-                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)right.Expressions[0]!, SyntaxKind.TrueLiteralExpression);
+                Assert.IsInstanceOfType(right[0]!, typeof(LiteralExpressionSyntax));
+                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)right[0]!, SyntaxKind.TrueLiteralExpression);
 
-                Assert.IsInstanceOfType(right.Expressions[1]!, typeof(LiteralExpressionSyntax));
-                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)right.Expressions[1]!, SyntaxKind.FalseLiteralExpression);
+                Assert.IsInstanceOfType(right[1]!, typeof(LiteralExpressionSyntax));
+                Assert.That.IsLiteralExpression((LiteralExpressionSyntax)right[1]!, SyntaxKind.FalseLiteralExpression);
             }
 
             Assert.That.AtEndOfFile(parser);
@@ -1498,11 +1495,11 @@ public partial class LanguageParserTests
             Assert.That.ContainsDiagnostics(assignment);
 
             var left = assignment.Left;
-            Assert.That.IsNotEmptyExpressionList(left, 1);
+            Assert.That.IsNotEmptyList(left, 1);
             Assert.That.ContainsDiagnostics(left);
             {
-                Assert.IsInstanceOfType(left.Expressions[0]!, typeof(IdentifierNameSyntax));
-                var identifier = (IdentifierNameSyntax)left.Expressions[0]!;
+                Assert.IsInstanceOfType(left[0]!, typeof(IdentifierNameSyntax));
+                var identifier = (IdentifierNameSyntax)left[0]!;
                 Assert.That.IsMissingIdentifierName(identifier);
                 Assert.That.ContainsDiagnostics(identifier);
                 Assert.That.ContainsDiagnostics(identifier, ErrorCode.ERR_IdentifierExpected);
@@ -1512,10 +1509,10 @@ public partial class LanguageParserTests
             Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
 
             var right = assignment.Right;
-            Assert.That.IsNotEmptyExpressionList(right, 1);
+            Assert.That.IsNotEmptyList(right, 1);
             {
-                Assert.IsInstanceOfType(right.Expressions[0]!, typeof(LiteralExpressionSyntax));
-                var literal = (LiteralExpressionSyntax)right.Expressions[0]!;
+                Assert.IsInstanceOfType(right[0]!, typeof(LiteralExpressionSyntax));
+                var literal = (LiteralExpressionSyntax)right[0]!;
                 Assert.That.IsLiteralExpression(literal, SyntaxKind.NilLiteralExpression);
                 Assert.That.NotContainsDiagnostics(literal);
             }
@@ -1528,19 +1525,19 @@ public partial class LanguageParserTests
             Assert.That.ContainsDiagnostics(assignment);
 
             var left = assignment.Left;
-            Assert.That.IsNotEmptyExpressionList(left, 2);
+            Assert.That.IsNotEmptyList(left, 2);
             Assert.That.ContainsDiagnostics(left);
             {
                 {
-                    Assert.IsInstanceOfType(left.Expressions[0]!, typeof(IdentifierNameSyntax));
-                    var literal = (IdentifierNameSyntax)left.Expressions[0]!;
+                    Assert.IsInstanceOfType(left[0]!, typeof(IdentifierNameSyntax));
+                    var literal = (IdentifierNameSyntax)left[0]!;
                     Assert.That.IsMissingIdentifierName(literal);
                     Assert.That.ContainsDiagnostics(literal);
                 }
 
                 {
-                    Assert.IsInstanceOfType(left.Expressions[1]!, typeof(IdentifierNameSyntax));
-                    var literal = (IdentifierNameSyntax)left.Expressions[1]!;
+                    Assert.IsInstanceOfType(left[1]!, typeof(IdentifierNameSyntax));
+                    var literal = (IdentifierNameSyntax)left[1]!;
                     Assert.That.IsIdentifierName(literal, "b");
                     Assert.That.NotContainsDiagnostics(literal);
                 }
@@ -1557,19 +1554,19 @@ public partial class LanguageParserTests
             Assert.That.ContainsDiagnostics(assignment);
 
             var left = assignment.Left;
-            Assert.That.IsNotEmptyExpressionList(left, 2);
+            Assert.That.IsNotEmptyList(left, 2);
             Assert.That.ContainsDiagnostics(left);
             {
                 {
-                    Assert.IsInstanceOfType(left.Expressions[0]!, typeof(IdentifierNameSyntax));
-                    var literal = (IdentifierNameSyntax)left.Expressions[0]!;
+                    Assert.IsInstanceOfType(left[0]!, typeof(IdentifierNameSyntax));
+                    var literal = (IdentifierNameSyntax)left[0]!;
                     Assert.That.IsIdentifierName(literal, "a");
                     Assert.That.NotContainsDiagnostics(literal);
                 }
 
                 {
-                    Assert.IsInstanceOfType(left.Expressions[1]!, typeof(IdentifierNameSyntax));
-                    var literal = (IdentifierNameSyntax)left.Expressions[1]!;
+                    Assert.IsInstanceOfType(left[1]!, typeof(IdentifierNameSyntax));
+                    var literal = (IdentifierNameSyntax)left[1]!;
                     Assert.That.IsMissingIdentifierName(literal);
                     Assert.That.ContainsDiagnostics(literal);
                 }
@@ -1589,11 +1586,11 @@ public partial class LanguageParserTests
             Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
 
             var right = assignment.Right;
-            Assert.That.IsNotEmptyExpressionList(right, 1);
+            Assert.That.IsNotEmptyList(right, 1);
             Assert.That.ContainsDiagnostics(right);
             {
-                Assert.IsInstanceOfType(right.Expressions[0]!, typeof(IdentifierNameSyntax));
-                var identifier = (IdentifierNameSyntax)right.Expressions[0]!;
+                Assert.IsInstanceOfType(right[0]!, typeof(IdentifierNameSyntax));
+                var identifier = (IdentifierNameSyntax)right[0]!;
                 Assert.That.IsMissingIdentifierName(identifier);
                 Assert.That.ContainsDiagnostics(identifier);
                 Assert.That.ContainsDiagnostics(identifier, ErrorCode.ERR_ExpressionExpected);
@@ -1639,7 +1636,7 @@ public partial class LanguageParserTests
             { // a + b = nil
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1653,7 +1650,7 @@ public partial class LanguageParserTests
             { // (a + b) = nil
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1667,7 +1664,7 @@ public partial class LanguageParserTests
             { // -a = nil
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1675,7 +1672,7 @@ public partial class LanguageParserTests
             { // nil = nil
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1683,7 +1680,7 @@ public partial class LanguageParserTests
             { // false = false
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1691,7 +1688,7 @@ public partial class LanguageParserTests
             { // true = true
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1699,7 +1696,7 @@ public partial class LanguageParserTests
             { // 1 = 1
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1707,7 +1704,7 @@ public partial class LanguageParserTests
             { // 1.0 = 1.0
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1721,7 +1718,7 @@ public partial class LanguageParserTests
             { // "string" = 'string'
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1729,7 +1726,7 @@ public partial class LanguageParserTests
             { // ... = ...
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1737,7 +1734,7 @@ public partial class LanguageParserTests
             { // function() end = nil
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1751,7 +1748,7 @@ public partial class LanguageParserTests
             { // {} = nil
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1759,7 +1756,7 @@ public partial class LanguageParserTests
             { // a() = nil
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.NotAtEndOfFile(parser);
@@ -1767,7 +1764,7 @@ public partial class LanguageParserTests
             { // a:b() = nil
                 var assignment = parser.ParseAssignmentStatement();
                 Assert.That.ContainsDiagnostics(assignment);
-                Assert.That.ContainsDiagnostics(assignment.Left.Expressions[0]!, ErrorCode.ERR_AssgLvalueExpected);
+                Assert.That.ContainsDiagnostics(assignment.Left[0]!, ErrorCode.ERR_AssgLvalueExpected);
                 Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
                 Assert.That.NotContainsDiagnostics(assignment.Right);
                 Assert.That.AtEndOfFile(parser);
@@ -1807,17 +1804,15 @@ public partial class LanguageParserTests
             var parser = LanguageParserTests.CreateLanguageParser("return");
             var stat = parser.ParseReturnStatement();
             Assert.That.NotContainsDiagnostics(stat);
-            Assert.IsNull(stat.Expressions);
             Assert.That.AtEndOfFile(parser);
         }
         { // 一个返回值
             var parser = LanguageParserTests.CreateLanguageParser("return a");
             var stat = parser.ParseReturnStatement();
             Assert.That.NotContainsDiagnostics(stat);
-            Assert.IsNotNull(stat.Expressions);
-            Assert.That.IsNotEmptyExpressionList(stat.Expressions, 1);
+            Assert.That.IsNotEmptyList(stat.Expressions, 1);
 
-            Assert.That.IsIdentifierName((IdentifierNameSyntax)stat.Expressions.Expressions[0]!, "a");
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)stat.Expressions[0]!, "a");
 
             Assert.That.AtEndOfFile(parser);
         }
@@ -1825,12 +1820,11 @@ public partial class LanguageParserTests
             var parser = LanguageParserTests.CreateLanguageParser("return true, nil, false");
             var stat = parser.ParseReturnStatement();
             Assert.That.NotContainsDiagnostics(stat);
-            Assert.IsNotNull(stat.Expressions);
-            Assert.That.IsNotEmptyExpressionList(stat.Expressions, 3);
+            Assert.That.IsNotEmptyList(stat.Expressions, 3);
 
-            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)stat.Expressions.Expressions[0]!, SyntaxKind.TrueLiteralExpression);
-            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)stat.Expressions.Expressions[1]!, SyntaxKind.NilLiteralExpression);
-            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)stat.Expressions.Expressions[2]!, SyntaxKind.FalseLiteralExpression);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)stat.Expressions[0]!, SyntaxKind.TrueLiteralExpression);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)stat.Expressions[1]!, SyntaxKind.NilLiteralExpression);
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)stat.Expressions[2]!, SyntaxKind.FalseLiteralExpression);
 
             Assert.That.AtEndOfFile(parser);
         }
@@ -2221,8 +2215,8 @@ public partial class LanguageParserTests
             Assert.That.IsIdentifierName(forStat.Names[0]!, "k");
             Assert.That.IsIdentifierName(forStat.Names[1]!, "v");
 
-            Assert.That.IsNotEmptyExpressionList(forStat.Expressions, 1);
-            Assert.IsInstanceOfType(forStat.Expressions.Expressions[0], typeof(InvocationExpressionSyntax));
+            Assert.That.IsNotEmptyList(forStat.Expressions, 1);
+            Assert.IsInstanceOfType(forStat.Expressions[0], typeof(InvocationExpressionSyntax));
 
             var block = forStat.Block;
             Assert.AreEqual(1, block.Statements.Count);
@@ -2245,10 +2239,10 @@ public partial class LanguageParserTests
             Assert.That.IsIdentifierName(forStat.Names[0]!, "k");
             Assert.That.IsIdentifierName(forStat.Names[1]!, "v");
 
-            Assert.That.IsNotEmptyExpressionList(forStat.Expressions, 3);
-            Assert.That.IsIdentifierName((IdentifierNameSyntax)forStat.Expressions.Expressions[0]!, "next");
-            Assert.That.IsIdentifierName((IdentifierNameSyntax)forStat.Expressions.Expressions[1]!, "t");
-            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Expressions.Expressions[2]!, SyntaxKind.NilLiteralExpression);
+            Assert.That.IsNotEmptyList(forStat.Expressions, 3);
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)forStat.Expressions[0]!, "next");
+            Assert.That.IsIdentifierName((IdentifierNameSyntax)forStat.Expressions[1]!, "t");
+            Assert.That.IsLiteralExpression((LiteralExpressionSyntax)forStat.Expressions[2]!, SyntaxKind.NilLiteralExpression);
 
             var block = forStat.Block;
             Assert.AreEqual(1, block.Statements.Count);
@@ -2280,9 +2274,8 @@ public partial class LanguageParserTests
             Assert.That.IsMissing(forStat.InKeyword);
             Assert.That.ContainsDiagnostics(forStat.InKeyword);
 
-            Assert.That.IsNotEmptyExpressionList(forStat.Expressions, 1);
-            Assert.IsInstanceOfType(forStat.Expressions.Expressions[0], typeof(InvocationExpressionSyntax));
-            Assert.That.NotContainsDiagnostics(forStat.Expressions);
+            Assert.That.IsNotEmptyList(forStat.Expressions, 1);
+            Assert.IsInstanceOfType(forStat.Expressions[0], typeof(InvocationExpressionSyntax));
 
             Assert.That.IsNotMissing(forStat.DoKeyword);
             Assert.That.NotContainsDiagnostics(forStat.DoKeyword);

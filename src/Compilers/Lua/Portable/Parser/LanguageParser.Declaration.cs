@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -28,18 +29,19 @@ partial class LanguageParser
     {
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var parameters = this.ParseSeparatedSyntaxList(
-            parseNodeFunc: _ => this.ParseParameter(),
             predicateNode: index =>
             {
                 // 检查当前的标志的种类，决定是否解析第一个形参，即是否为空的形参列表。
-                if (index <= 1) return this.CurrentTokenKind is not (
+                if (index == 0) return this.CurrentTokenKind is not (
                     SyntaxKind.CloseParenToken or // 紧跟着右圆括号，则是空列表。
                     SyntaxKind.EndOfFileToken // 到达文件结尾，则视为空列表。
                 );
                 // 从第二个形参开始，都必须要解析。
                 else return true;
             },
-            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
+            parseNode: (_, _) => this.ParseParameter(),
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
+            parseSeparator: (_, _) => this.EatToken(SyntaxKind.CommaToken));
         var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
         return this._syntaxFactory.ParameterList(openParen, parameters, closeParen);
     }
@@ -70,12 +72,13 @@ partial class LanguageParser
 #else
     private
 #endif
-        FieldListSyntax ParseFieldList() =>
+        SeparatedSyntaxList<FieldSyntax> ParseFieldList() =>
         this.ParseSeparatedSyntaxList(
-            parseNodeFunc: _ => this.ParseField(),
             predicateNode: _ => true,
+            parseNode: (_, _) => this.ParseField(),
             predicateSeparator: _ => this.IsPossibleFieldListSeparator(),
-            list => this._syntaxFactory.FieldList(list))!;
+            parseSeparator: (_, missing) => missing ? this.CreateMissingFieldListSeparator() : this.EatToken(),
+            allowTrailingSeparator: true);
 
 #if TESTING
     internal
@@ -83,6 +86,12 @@ partial class LanguageParser
     private
 #endif
         bool IsPossibleFieldListSeparator() => this.CurrentTokenKind is SyntaxKind.CommaToken or SyntaxKind.SemicolonToken;
+
+    private SyntaxToken CreateMissingFieldListSeparator()
+    {
+        var separator = SyntaxFactory.MissingToken(SyntaxKind.CommaToken);
+        return this.AddError(separator, ErrorCode.ERR_FieldSeparatorExpected);
+    }
 
 #if TESTING
     internal
@@ -248,9 +257,10 @@ partial class LanguageParser
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.OpenParenToken);
         var openParen = this.EatToken(SyntaxKind.OpenParenToken);
         var arguments = this.ParseSeparatedSyntaxList(
-            parseNodeFunc: _ => this.ParseArgument(),
             predicateNode: _ => this.IsPossibleExpression(),
-            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
+            parseNode: (_, _) => this.ParseArgument(),
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
+            parseSeparator: (_, _) => this.EatToken(SyntaxKind.CommaToken));
         var closeParen = this.EatToken(SyntaxKind.CloseParenToken);
         return this._syntaxFactory.ArgumentList(openParen, arguments, closeParen);
     }
@@ -276,7 +286,7 @@ partial class LanguageParser
     {
         Debug.Assert(this.CurrentTokenKind is SyntaxKind.StringLiteralToken or SyntaxKind.MultiLineRawStringLiteralToken);
         var stringLiteral = this.EatToken();
-        return this._syntaxFactory.ArgumentString(this._syntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, stringLiteral));
+        return this._syntaxFactory.ArgumentString(stringLiteral);
     }
 
 #if TESTING
@@ -314,9 +324,10 @@ partial class LanguageParser
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.LessThanToken);
         var lessThan = this.EatToken(SyntaxKind.LessThanToken);
         var attributes = this.ParseSeparatedSyntaxList(
-            parseNodeFunc: _ => this.ParseAttribute(),
             predicateNode: _ => true,
-            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken);
+            parseNode: (_, _) => this.ParseAttribute(),
+            predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
+            parseSeparator: (_, _) => this.EatToken(SyntaxKind.CommaToken));
         var greaterThan = this.EatToken(SyntaxKind.GreaterThanToken);
         return this._syntaxFactory.AttributeList(lessThan, attributes, greaterThan);
     }

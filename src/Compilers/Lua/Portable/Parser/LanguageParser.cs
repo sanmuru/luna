@@ -117,8 +117,9 @@ partial class LanguageParser
     #region ParseSyntaxList & ParseSeparatedSyntaxList
     private void ParseSyntaxList<TNode>(
         in SyntaxListBuilder<TNode> builder,
-        Func<int, TNode> parseNodeFunc,
-        Func<int, bool> predicateNode)
+        Func<int, bool> predicateNode,
+        Func<int, bool, TNode> parseNode,
+        int minCount = 0)
         where TNode : LuaSyntaxNode
     {
         int lastTokenPosition = -1;
@@ -128,7 +129,17 @@ partial class LanguageParser
         {
             if (!predicateNode(index)) break;
 
-            var node = parseNodeFunc(index);
+            const bool missing = false;
+            var node = parseNode(index, missing);
+            builder.Add(node);
+
+            index++;
+        }
+        // 处理缺失（最小数量不足）的部分。
+        while (index < minCount)
+        {
+            const bool missing = true;
+            var node = parseNode(index, missing);
             builder.Add(node);
 
             index++;
@@ -136,83 +147,121 @@ partial class LanguageParser
     }
 
     private SyntaxList<TNode> ParseSyntaxList<TNode>(
-        Func<int, TNode> parseNodeFunc,
-        Func<int, bool> predicateNode)
+        Func<int, bool> predicateNode,
+        Func<int, bool, TNode> parseNode,
+        int minCount = 0)
         where TNode : LuaSyntaxNode
     {
         var builder = this._pool.Allocate<TNode>();
-        this.ParseSyntaxList(builder, parseNodeFunc, predicateNode);
+        this.ParseSyntaxList(builder, predicateNode, parseNode, minCount);
         var list = this._pool.ToListAndFree(builder);
         return list;
     }
 
     private TList? ParseSyntaxList<TNode, TList>(
-        Func<int, TNode> parseNodeFunc,
         Func<int, bool> predicateNode,
-        Func<SyntaxList<TNode>, TList?> createListFunc)
+        Func<int, bool, TNode> parseNode,
+        Func<SyntaxList<TNode>, TList?> createListFunc,
+        int minCount = 0)
         where TNode : LuaSyntaxNode
         where TList : LuaSyntaxNode
     {
-        var list = createListFunc(this.ParseSyntaxList(parseNodeFunc, predicateNode));
+        var list = createListFunc(this.ParseSyntaxList(predicateNode, parseNode, minCount));
         return list;
     }
 
-    private void ParseSeparatedSyntaxList<TNode>(
+    private void ParseSeparatedSyntaxList<TNode, TSeparator>(
         in SeparatedSyntaxListBuilder<TNode> builder,
-        Func<int, TNode> parseNodeFunc,
         Func<int, bool> predicateNode,
-        Func<int, bool> predicateSeparator)
+        Func<int, bool, TNode> parseNode,
+        Func<int, bool> predicateSeparator,
+        Func<int, bool, TSeparator> parseSeparator,
+        bool allowTrailingSeparator = false,
+        int minCount = 0)
         where TNode : LuaSyntaxNode
+        where TSeparator : LuaSyntaxNode
     {
-        if (!predicateNode(0)) return;
-        TNode node = parseNodeFunc(0);
-        builder.Add(node);
-
-        int lastTokenPosition = -1;
-        int index = 1;
-        while (this.CurrentTokenKind != SyntaxKind.EndOfFileToken &&
-            this.IsMakingProgress(ref lastTokenPosition))
+        int index = 0;
+        if (predicateNode(index))
         {
-            if (!predicateSeparator(index - 1)) break;
+            const bool missing = false;
 
-            var resetPoint = this.GetResetPoint();
+            TNode node = parseNode(index, missing);
+            builder.Add(node);
 
-            var separator = this.EatToken();
-            if (predicateNode(index))
+            int lastTokenPosition = -1;
+            index = 1;
+            while (this.CurrentTokenKind != SyntaxKind.EndOfFileToken &&
+                this.IsMakingProgress(ref lastTokenPosition))
             {
-                builder.AddSeparator(separator);
+                if (!predicateSeparator(index - 1)) break;
 
-                node = parseNodeFunc(index);
-                builder.Add(node);
+                var resetPoint = this.GetResetPoint();
 
-                index++;
+                var separator = parseSeparator(index - 1, missing);
+                if (predicateNode(index))
+                {
+                    builder.AddSeparator(separator);
+
+                    node = parseNode(index, missing);
+                    builder.Add(node);
+
+                    index++;
+                    this.Release(ref resetPoint);
+                }
+                else
+                {
+                    this.Reset(ref resetPoint);
+                    this.Release(ref resetPoint);
+                }
             }
-            else
-                this.Reset(ref resetPoint);
+        }
+
+        // 处理缺失（最小数量不足）的部分。
+        while (index < minCount)
+        {
+            const bool missing = true;
+
+            var separator = parseSeparator(index - 1, missing && (!allowTrailingSeparator || !predicateSeparator(index - 1)));
+            if (allowTrailingSeparator) allowTrailingSeparator = false;
+            builder.AddSeparator(separator);
+
+            var node = parseNode(index, missing);
+            builder.Add(node);
+
+            index++;
         }
     }
 
-    private SeparatedSyntaxList<TNode> ParseSeparatedSyntaxList<TNode>(
-        Func<int, TNode> parseNodeFunc,
+    private SeparatedSyntaxList<TNode> ParseSeparatedSyntaxList<TNode, TSeparator>(
         Func<int, bool> predicateNode,
-        Func<int, bool> predicateSeparator)
+        Func<int, bool, TNode> parseNode,
+        Func<int, bool> predicateSeparator,
+        Func<int, bool, TSeparator> parseSeparator,
+        bool allowTrailingSeparator = false,
+        int minCount = 0)
         where TNode : LuaSyntaxNode
+        where TSeparator : LuaSyntaxNode
     {
         var builder = this._pool.AllocateSeparated<TNode>();
-        this.ParseSeparatedSyntaxList(builder, parseNodeFunc, predicateNode, predicateSeparator);
+        this.ParseSeparatedSyntaxList(builder, predicateNode, parseNode, predicateSeparator, parseSeparator, allowTrailingSeparator, minCount);
         var list = this._pool.ToListAndFree(builder);
         return list;
     }
 
-    private TList? ParseSeparatedSyntaxList<TNode, TList>(
-        Func<int, TNode> parseNodeFunc,
+    private TList? ParseSeparatedSyntaxList<TNode, TSeparator, TList>(
         Func<int, bool> predicateNode,
+        Func<int, bool, TNode> parseNodeFunc,
         Func<int, bool> predicateSeparator,
-        Func<SeparatedSyntaxList<TNode>, TList?> createListFunc)
+        Func<int, bool, TSeparator> parseSeparator,
+        Func<SeparatedSyntaxList<TNode>, TList?> createListFunc,
+        bool allowTrailingSeparator = false,
+        int minCount = 0)
         where TNode : LuaSyntaxNode
+        where TSeparator : LuaSyntaxNode
         where TList : LuaSyntaxNode
     {
-        var list = createListFunc(this.ParseSeparatedSyntaxList(parseNodeFunc, predicateNode, predicateSeparator));
+        var list = createListFunc(this.ParseSeparatedSyntaxList(predicateNode, parseNodeFunc, predicateSeparator, parseSeparator, allowTrailingSeparator, minCount));
         return list;
     }
     #endregion

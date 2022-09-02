@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
 
 #if LANG_LUA
 using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -20,31 +21,50 @@ public static class LanguageParserTestUtilities
     #endregion
 
     #region ContainsDiagnostics
-    internal static void ContainsDiagnostics(this Assert assert, ThisInternalSyntaxNode node, params ErrorCode[] codes)
+    internal static void ContainsDiagnostics(this Assert assert, ThisInternalSyntaxNode node, params ErrorCode[] codes) =>
+        assert.ContainsDiagnostics(new[] { node }, codes);
+
+    internal static void ContainsDiagnostics<TNode>(this Assert assert, SyntaxList<TNode> list, params ErrorCode[] codes) where TNode : ThisInternalSyntaxNode =>
+        assert.ContainsDiagnostics(list.Nodes, codes);
+
+    internal static void ContainsDiagnostics<TNode>(this Assert assert, SeparatedSyntaxList<TNode> list, params ErrorCode[] codes) where TNode : ThisInternalSyntaxNode =>
+        assert.ContainsDiagnostics(list.GetWithSeparators().Nodes.Cast<ThisInternalSyntaxNode>(), codes);
+
+    private static void ContainsDiagnostics(this Assert assert, IEnumerable<ThisInternalSyntaxNode> nodes, params ErrorCode[] codes)
     {
         if (codes.Length == 0)
-            Assert.IsTrue(node.ContainsDiagnostics, "未报告语法错误。");
+            Assert.IsTrue(nodes.Any(node => node.ContainsDiagnostics), "未报告语法错误。");
         else
         {
-            var diagnostics = node.GetDiagnostics();
+            var diagnostics = nodes.SelectMany(node => node.GetDiagnostics());
             var unraisedCodes = codes.Where(code => !diagnostics.Any(diag => diag.Code == (int)code)).ToArray();
             if (unraisedCodes.Length != 0)
                 Assert.Fail("未报告语法错误：{0}。", string.Join("、", unraisedCodes));
         }
     }
 
-    internal static void NotContainsDiagnostics(this Assert assert, ThisInternalSyntaxNode node, params ErrorCode[] codes)
+    internal static void NotContainsDiagnostics(this Assert assert, ThisInternalSyntaxNode node, params ErrorCode[] codes) =>
+        assert.NotContainsDiagnostics(new[] { node }, codes);
+
+    internal static void NotContainsDiagnostics<TNode>(this Assert assert, SyntaxList<TNode> list, params ErrorCode[] codes) where TNode : ThisInternalSyntaxNode =>
+        assert.NotContainsDiagnostics(list.Nodes, codes);
+
+    internal static void NotContainsDiagnostics<TNode>(this Assert assert, SeparatedSyntaxList<TNode> list, params ErrorCode[] codes) where TNode : ThisInternalSyntaxNode =>
+        assert.NotContainsDiagnostics(list.GetWithSeparators().Nodes.Cast<ThisInternalSyntaxNode>(), codes);
+
+    private static void NotContainsDiagnostics(this Assert assert, IEnumerable<ThisInternalSyntaxNode> nodes, params ErrorCode[] codes)
     {
         if (codes.Length == 0)
-            Assert.IsFalse(node.ContainsDiagnostics, "报告语法错误。");
+            Assert.IsTrue(nodes.All(node => !node.ContainsDiagnostics), "报告语法错误。");
         else
         {
-            var diagnostics = node.GetDiagnostics();
+            var diagnostics = nodes.SelectMany(node => node.GetDiagnostics());
             var raisedCodes = codes.Where(code => diagnostics.Any(diag => diag.Code == (int)code)).ToArray();
             if (raisedCodes.Length != 0)
                 Assert.Fail("报告语法错误：{0}。", string.Join("、", raisedCodes));
         }
     }
+
     #endregion
 
     #region IsIdentifierName
@@ -279,42 +299,37 @@ public static class LanguageParserTestUtilities
     }
     #endregion
 
-    #region IsEmptyArgumentList
-    internal static void IsEmptyArgumentList(this Assert assert, ArgumentListSyntax argumentList) =>
-        Assert.IsTrue(argumentList.List.Count == 0, "形参列表不为空。");
+    #region IsEmptyList
+    internal static void IsEmptyList<TNode>(this Assert assert, SyntaxList<TNode> list) where TNode : ThisInternalSyntaxNode =>
+        Assert.IsTrue(list.Count == 0, "列表不为空。");
 
-    internal static void IsNotEmptyArgumentList(this Assert assert, ArgumentListSyntax argumentList) =>
-        Assert.IsFalse(argumentList.List.Count == 0, "形参列表为空。");
-    internal static void IsNotEmptyArgumentList(this Assert assert, ArgumentListSyntax argumentList, int count)
+    internal static void IsNotEmptyList<TNode>(this Assert assert, SyntaxList<TNode> list) where TNode : ThisInternalSyntaxNode =>
+        Assert.IsFalse(list.Count == 0, "列表为空。");
+    internal static void IsNotEmptyList<TNode>(this Assert assert, SyntaxList<TNode> list, int count) where TNode : ThisInternalSyntaxNode
     {
-        assert.IsNotEmptyArgumentList(argumentList);
-        Assert.AreEqual(count, argumentList.List.Count, $"形参列表参数个数为{argumentList.List.Count}个，而非{count}。");
+        Debug.Assert(count >= 0);
+        assert.IsNotEmptyList(list);
+        Assert.AreEqual(count, list.Count, $"列表项目个数为{list.Count}个，而非{count}。");
     }
-    #endregion
 
-    #region IsEmptyArgumentTable
-    internal static void IsEmptyArgumentTable(this Assert assert, ArgumentTableSyntax argumentTable) =>
-        Assert.IsTrue(argumentTable.Table.Fields.Fields.Count == 0, "形参表不为空。");
+    internal static void IsEmptyList<TNode>(this Assert assert, SeparatedSyntaxList<TNode> list) where TNode : ThisInternalSyntaxNode =>
+        Assert.IsTrue(list.Count == 0, "列表不为空。");
 
-    internal static void IsNotEmptyArgumentTable(this Assert assert, ArgumentTableSyntax argumentTable) =>
-        Assert.IsFalse(argumentTable.Table.Fields.Fields.Count == 0, "形参表为空。");
-    internal static void IsNotEmptyArgumentTable(this Assert assert, ArgumentTableSyntax argumentTable, int count)
+    internal static void IsNotEmptyList<TNode>(this Assert assert, SeparatedSyntaxList<TNode> list) where TNode : ThisInternalSyntaxNode =>
+        Assert.IsFalse(list.Count == 0, "列表为空。");
+    internal static void IsNotEmptyList<TNode>(this Assert assert, SeparatedSyntaxList<TNode> list, int count) where TNode : ThisInternalSyntaxNode
     {
-        assert.IsNotEmptyArgumentTable(argumentTable);
-        Assert.AreEqual(count, argumentTable.Table.Fields.Fields.Count, $"形参表参数个数为{argumentTable.Table.Fields.Fields.Count}个，而非{count}。");
+        Debug.Assert(count >= 0);
+        assert.IsNotEmptyList(list);
+        Assert.AreEqual(count, list.Count, $"列表节点项目个数为{list.Count}个，而非{count}。");
     }
-    #endregion
-
-    #region IsEmptyExpressionList
-    internal static void IsEmptyExpressionList(this Assert assert, ExpressionListSyntax expressionList) =>
-        Assert.IsTrue(expressionList.Expressions.Count == 0, "形参列表不为空。");
-
-    internal static void IsNotEmptyExpressionList(this Assert assert, ExpressionListSyntax expressionList) =>
-        Assert.IsFalse(expressionList.Expressions.Count == 0, "形参列表为空。");
-    internal static void IsNotEmptyExpressionList(this Assert assert, ExpressionListSyntax expressionList, int count)
+    internal static void IsNotEmptyList<TNode>(this Assert assert, SeparatedSyntaxList<TNode> list, int nodeCount, int separatorCount) where TNode : ThisInternalSyntaxNode
     {
-        assert.IsNotEmptyExpressionList(expressionList);
-        Assert.AreEqual(count, expressionList.Expressions.Count, $"形参列表参数个数为{expressionList.Expressions.Count}个，而非{count}。");
+        Debug.Assert(nodeCount >= 0);
+        Debug.Assert(separatorCount >= 0);
+        assert.IsNotEmptyList(list);
+        Assert.AreEqual(nodeCount, list.Count, $"列表节点项目个数为{list.Count}个，而非{nodeCount}。");
+        Assert.AreEqual(separatorCount, list.SeparatorCount, $"列表间隔项目个数为{list.SeparatorCount}个，而非{separatorCount}。");
     }
     #endregion
 
