@@ -310,7 +310,10 @@ partial class LanguageParser
         NameAttributeListSyntax ParseNameAttributeList()
     {
         var identifier = this.ParseIdentifierName();
-        var attributeList = this.CurrentTokenKind == SyntaxKind.LessThanToken ? this.ParseAttributeList() : null;
+
+        if (!this.TryParseAttributeList(out AttributeListSyntax? attributeList, out Microsoft.CodeAnalysis.GreenNode? skippedSyntax) && skippedSyntax is not null)
+            identifier = this.AddTrailingSkippedSyntax(identifier, skippedSyntax);
+
         return this._syntaxFactory.NameAttributeList(identifier, attributeList);
     }
 
@@ -319,18 +322,47 @@ partial class LanguageParser
 #else
     private
 #endif
-        AttributeListSyntax ParseAttributeList()
+        bool TryParseAttributeList(
+        [NotNullWhen(true)] out AttributeListSyntax? attributeList,
+        out Microsoft.CodeAnalysis.GreenNode? skippedSyntax)
     {
-        Debug.Assert(this.CurrentTokenKind == SyntaxKind.LessThanToken);
+        if (this.CurrentTokenKind != SyntaxKind.LessThanToken) // 无特性列表。
+        {
+            attributeList = null;
+            skippedSyntax = null;
+            return false;
+        }
+
         var lessThan = this.EatToken(SyntaxKind.LessThanToken);
         var attributes = this.ParseSeparatedSyntaxList(
-            predicateNode: _ => true,
+            predicateNode: _ => this.IsPossibleAttribute(),
             parseNode: (_, _) => this.ParseAttribute(),
             predicateSeparator: _ => this.CurrentTokenKind == SyntaxKind.CommaToken,
             parseSeparator: (_, _) => this.EatToken(SyntaxKind.CommaToken));
         var greaterThan = this.EatToken(SyntaxKind.GreaterThanToken);
-        return this._syntaxFactory.AttributeList(lessThan, attributes, greaterThan);
+
+        if (attributes.Count == 0) // 特性数量为0
+        {
+            greaterThan = this.AddError(greaterThan, ErrorCode.ERR_AttributeExpected);
+
+            attributeList = null;
+            skippedSyntax = SyntaxList.List(lessThan, greaterThan);
+            return false;
+        }
+        else
+        {
+            attributeList = this._syntaxFactory.AttributeList(lessThan, attributes, greaterThan);
+            skippedSyntax = null;
+            return true;
+        }
     }
+
+#if TESTING
+    internal
+#else
+    private
+#endif
+        bool IsPossibleAttribute() => this.CurrentToken.ContextualKind is SyntaxKind.CloseKeyword or SyntaxKind.ConstKeyword;
 
 #if TESTING
     internal
@@ -339,11 +371,8 @@ partial class LanguageParser
 #endif
         AttributeSyntax ParseAttribute()
     {
-        SyntaxToken token;
-        if (this.CurrentTokenKind is SyntaxKind.CloseKeyword or SyntaxKind.ConstKeyword)
-            token = this.EatToken();
-        else
-            token = SyntaxFactory.MissingToken(SyntaxKind.None);
+        Debug.Assert(this.IsPossibleAttribute());
+        var token = this.EatContextualToken();
 
         var skippedSyntax = this.SkipTokens(token => token.Kind is not (
             SyntaxKind.CommaToken or        // 在分隔符中止。
@@ -352,12 +381,7 @@ partial class LanguageParser
             SyntaxKind.SemicolonToken or    // 在最近的语句结尾中止。
             SyntaxKind.EndOfFileToken       // 在文件结尾中止。
         ), new AttributeSkippedTokensVisitor(this));
-        if (skippedSyntax is null)
-        {
-            if (token.IsMissing)
-                token = this.AddError(token, ErrorCode.ERR_AttributeExpected);
-        }
-        else
+        if (skippedSyntax is not null)
         {
             token = this.AddTrailingSkippedSyntax(token, skippedSyntax);
         }

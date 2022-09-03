@@ -1498,6 +1498,26 @@ public partial class LanguageParserTests
             Assert.That.NotContainsDiagnostics(block.Return!);
             Assert.That.AtEndOfFile(parser);
         }
+        {
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                local t = { 2, 3, 5, 7, 11 }
+                local count = #t
+                for i = 1, count do
+                    print(t[i])
+                end
+                """);
+            var block = parser.ParseBlock();
+            Assert.That.NotContainsDiagnostics(block);
+            Assert.AreEqual(3, block.Statements.Count);
+
+            Assert.IsInstanceOfType(block.Statements[0]!, typeof(LocalDeclarationStatementSyntax));
+            Assert.IsInstanceOfType(block.Statements[1]!, typeof(LocalDeclarationStatementSyntax));
+            Assert.IsInstanceOfType(block.Statements[2]!, typeof(ForStatementSyntax));
+
+            Assert.IsNull(block.Return);
+
+            Assert.That.AtEndOfFile(parser);
+        }
     }
 
     [TestMethod]
@@ -2520,6 +2540,58 @@ public partial class LanguageParserTests
                 Assert.IsInstanceOfType(stat, typeof(EmptyStatementSyntax));
                 Assert.That.AtEndOfFile(parser);
             }
+        }
+    }
+    #endregion
+
+    #region 声明
+    [TestMethod]
+    public void NameAttributeListParseTests()
+    {
+        { // 无特性
+            var parser = LanguageParserTests.CreateLanguageParser("a");
+            var name = parser.ParseNameAttributeList();
+            Assert.That.NotContainsDiagnostics(name);
+            Assert.That.IsNameAttributeList(name, "a");
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 常量特性
+            var parser = LanguageParserTests.CreateLanguageParser("a<const>");
+            var name = parser.ParseNameAttributeList();
+            Assert.That.NotContainsDiagnostics(name);
+            Assert.That.IsNameAttributeList(name, "a", isConst: true);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 终结特性
+            var parser = LanguageParserTests.CreateLanguageParser("a<close>");
+            var name = parser.ParseNameAttributeList();
+            Assert.That.NotContainsDiagnostics(name);
+            Assert.That.IsNameAttributeList(name, "a", isClose: true);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 常量及终结特性
+            var parser = LanguageParserTests.CreateLanguageParser("a<const, close>");
+            var name = parser.ParseNameAttributeList();
+            Assert.That.NotContainsDiagnostics(name);
+            Assert.That.IsNameAttributeList(name, "a", isConst: true, isClose: true);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 特性列表第一项合法，其他项缺失
+            var parser = LanguageParserTests.CreateLanguageParser("a<const, , close>");
+            var name = parser.ParseNameAttributeList();
+            Assert.That.ContainsDiagnostics(name);
+            Assert.IsNotNull(name.AttributeList);
+            Assert.That.IsNotEmptyList(name.AttributeList.Attributes, 1);
+            Assert.That.IsNameAttributeList(name, "a", isConst: true);
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        { // 特性列表第一项合缺失
+            var parser = LanguageParserTests.CreateLanguageParser("a<, close>");
+            var name = parser.ParseNameAttributeList();
+            Assert.That.ContainsDiagnostics(name);
+            Assert.IsNull(name.AttributeList);
+            Assert.That.IsNameAttributeList(name, "a");
+            Assert.That.NotAtEndOfFile(parser);
         }
     }
     #endregion

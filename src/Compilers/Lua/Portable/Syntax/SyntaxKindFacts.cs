@@ -245,7 +245,7 @@ public static partial class SyntaxFacts
             "_G" => SyntaxKind.GlobalEnvironmentKeyword,
             "_ENV" => SyntaxKind.EnvironmentKeyword,
 
-            _ => text.StartsWith("--") ?
+            _ => text.StartsWith("__") ?
                 // 元字段和元方法
                 SyntaxFacts.GetMetafieldKind(text) :
                 // 特性

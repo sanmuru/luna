@@ -209,10 +209,11 @@ partial class LanguageParser
                     index++;
                     this.Release(ref resetPoint);
                 }
-                else
+                else // 无法继续，恢复到上一个重置点并退出循环。
                 {
                     this.Reset(ref resetPoint);
                     this.Release(ref resetPoint);
+                    break;
                 }
             }
         }

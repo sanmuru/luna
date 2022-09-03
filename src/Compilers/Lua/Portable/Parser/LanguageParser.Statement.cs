@@ -73,7 +73,7 @@ partial class LanguageParser
             SyntaxKind.DoKeyword or
             SyntaxKind.WhileKeyword or
             SyntaxKind.RepeatKeyword or
-            SyntaxKind.IfStatement or
+            SyntaxKind.IfKeyword or
             SyntaxKind.ElseIfKeyword or
             SyntaxKind.ForKeyword or
             SyntaxKind.FunctionKeyword or

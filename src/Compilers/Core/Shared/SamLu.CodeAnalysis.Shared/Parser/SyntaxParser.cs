@@ -426,7 +426,7 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <summary>
     /// 语法解析器接受并且返回当前的已词法分析的语法标志。
     /// </summary>
-    /// <returns>当前的已词法分析的语法标志</returns>
+    /// <returns>当前的已词法分析的语法标志。</returns>
     protected SyntaxToken EatToken()
     {
         var token = this.CurrentToken;
@@ -461,6 +461,7 @@ internal abstract partial class SyntaxParser : IDisposable
         if (reportError) return this.EatToken(kind);
 
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+
         if (this.CurrentToken.Kind == kind)
             return this.EatToken();
         else
@@ -595,20 +596,44 @@ internal abstract partial class SyntaxParser : IDisposable
     }
 
     /// <summary>
-    /// 语法解析器接受并且返回当前的已词法分析的语法标志，这个语法标志的上下文种类必须符合指定语法部分种类。
+    /// 语法解析器接受当前的已词法分析的语法标志，转化为关键字语法标志并且返回。
+    /// </summary>
+    /// <returns>转化当前的已词法分析的语法标志为关键字语法标志并且返回。</returns>
+    protected SyntaxToken EatContextualToken() => SyntaxParser.ConvertToKeyword(this.EatToken());
+
+    /// <summary>
+    /// 语法解析器接受当前的已词法分析的语法标志，转化为关键字语法标志并且返回，这个语法标志的上下文种类必须符合指定语法部分种类。
     /// </summary>
     /// <param name="kind">要返回的语法标志须符合的语法部分种类，枚举值必须标志语法标志。</param>
-    /// <param name="reportError">是否报告错误。</param>
-    /// <returns>若当前的已词法分析的语法标志的上下文种类符合指定语法部分种类，则返回这个语法标志；否则返回表示缺失标志的语法标志，并报告错误。</returns>
-    protected SyntaxToken EatContextualToken(SyntaxKind kind, bool reportError = true)
+    /// <returns>若当前的已词法分析的语法标志的上下文种类符合指定语法部分种类，则转化这个语法标志为关键字语法标志并且返回；否则返回表示缺失标志的语法标志，并报告错误。</returns>
+    protected SyntaxToken EatContextualToken(SyntaxKind kind)
     {
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));
 
         var contextualKind = this.CurrentToken.ContextualKind;
         if (contextualKind == kind)
-            return SyntaxParser.ConvertToKeyword(this.EatToken());
+            return this.EatContextualToken();
         else
-            return this.CreateMissingToken(kind, contextualKind, reportError);
+            return this.CreateMissingToken(kind, contextualKind, reportError: true);
+    }
+
+    /// <summary>
+    /// 语法解析器接受并且返回当前的已词法分析的语法标志，这个语法标志的上下文种类必须符合指定语法部分种类。
+    /// </summary>
+    /// <param name="kind">要返回的语法标志须符合的语法部分种类，枚举值必须标志语法标志。</param>
+    /// <param name="reportError">是否报告错误。</param>
+    /// <returns>若当前的已词法分析的语法标志的上下文种类符合指定语法部分种类，则返回这个语法标志；否则返回表示缺失标志的语法标志，并报告错误。</returns>
+    protected SyntaxToken EatContextualToken(SyntaxKind kind, bool reportError)
+    {
+        if (reportError) return this.EatContextualToken(kind);
+
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+
+        var contextualKind = this.CurrentToken.ContextualKind;
+        if (contextualKind == kind)
+            return this.EatContextualToken();
+        else
+            return SyntaxFactory.MissingToken(kind);
     }
 
     /// <param name="code">要报告的错误码。</param>
@@ -619,7 +644,7 @@ internal abstract partial class SyntaxParser : IDisposable
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));
 
         if (this.CurrentToken.ContextualKind == kind)
-            return SyntaxParser.ConvertToKeyword(this.EatToken());
+            return this.EatContextualToken();
         else
             return this.CreateMissingToken(kind, code, reportError);
     }
