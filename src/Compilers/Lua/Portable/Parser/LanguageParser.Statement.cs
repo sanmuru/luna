@@ -479,8 +479,8 @@ partial class LanguageParser
 
         var function = this.EatToken(SyntaxKind.FunctionKeyword);
         var name = this.ParseName();
-        this.ParseFunctionBody(out var parameters, out var block, out var end);
-        return this._syntaxFactory.FunctionDefinitionStatement(function, name, parameters, block, end);
+        this.ParseFunctionBody(out var parameterList, out var block, out var end);
+        return this._syntaxFactory.FunctionDefinitionStatement(function, name, parameterList, block, end);
     }
 
 #if TESTING
@@ -496,8 +496,8 @@ partial class LanguageParser
         var local = this.EatToken(SyntaxKind.LocalKeyword);
         var function = this.EatToken(SyntaxKind.FunctionKeyword);
         var name = this.ParseIdentifierName();
-        this.ParseFunctionBody(out var parameters, out var block, out var end);
-        return this._syntaxFactory.LocalFunctionDefinitionStatement(local, function, name, parameters, block, end);
+        this.ParseFunctionBody(out var parameterList, out var block, out var end);
+        return this._syntaxFactory.LocalFunctionDefinitionStatement(local, function, name, parameterList, block, end);
     }
 
 #if TESTING

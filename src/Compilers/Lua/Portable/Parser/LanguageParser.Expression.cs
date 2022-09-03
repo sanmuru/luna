@@ -284,8 +284,8 @@ partial class LanguageParser
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.FunctionKeyword);
 
         var function = this.EatToken(SyntaxKind.FunctionKeyword);
-        this.ParseFunctionBody(out var parameters, out var block, out var end);
-        return this._syntaxFactory.FunctionDefinitionExpression(function, parameters, block, end);
+        this.ParseFunctionBody(out var parameterList, out var block, out var end);
+        return this._syntaxFactory.FunctionDefinitionExpression(function, parameterList, block, end);
     }
 
 #if TESTING

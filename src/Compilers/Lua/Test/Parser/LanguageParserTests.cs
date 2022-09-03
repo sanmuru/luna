@@ -2288,5 +2288,80 @@ public partial class LanguageParserTests
             Assert.That.AtEndOfFile(parser);
         }
     }
+
+    [TestMethod]
+    public void FunctionDefinitionParseTests()
+    {
+        { // 函数定义，函数名称为标识符名称
+            var parser = LanguageParserTests.CreateLanguageParser("function func" + FunctionBodySource);
+            var func = parser.ParseFunctionDefinitionStatement();
+            Assert.That.NotContainsDiagnostics(func);
+
+            Assert.That.IsIdentifierName(func.Name, "func");
+
+            FunctionBodyTest(func.ParameterList, func.Block, func.EndKeyword);
+        }
+        { // 函数定义，函数名称为限定名称
+            var parser = LanguageParserTests.CreateLanguageParser("function a.b.c" + FunctionBodySource);
+            var func = parser.ParseFunctionDefinitionStatement();
+            Assert.That.NotContainsDiagnostics(func);
+
+            var values = new Stack<string?>();
+            values.Push("a");
+            values.Push("b");
+            values.Push("c");
+            Assert.That.IsQualifiedName(func.Name, values);
+
+            FunctionBodyTest(func.ParameterList, func.Block, func.EndKeyword);
+        }
+        { // 函数定义，函数名称为隐式self参数名称
+            var parser = LanguageParserTests.CreateLanguageParser("function a.b:c" + FunctionBodySource);
+            var func = parser.ParseFunctionDefinitionStatement();
+            Assert.That.NotContainsDiagnostics(func);
+
+            var values = new Stack<string?>();
+            values.Push("a");
+            values.Push("b");
+            values.Push("c");
+            Assert.That.IsImplicitSelfParameterName(func.Name, values);
+
+            FunctionBodyTest(func.ParameterList, func.Block, func.EndKeyword);
+        }
+        { // 临时函数定义
+            var parser = LanguageParserTests.CreateLanguageParser("local function func" + FunctionBodySource);
+            var func = parser.ParseLocalFunctionDefinitionStatement();
+            Assert.That.NotContainsDiagnostics(func);
+
+            Assert.That.IsIdentifierName(func.Name, "func");
+
+            FunctionBodyTest(func.ParameterList, func.Block, func.EndKeyword);
+        }
+    }
+
+    private const string FunctionBodySource = """
+        (...)
+            print(...)
+            return ...
+        end
+        """;
+
+    private static void FunctionBodyTest(ParameterListSyntax parameterList, BlockSyntax block, SyntaxToken endKeyword)
+    {
+        Assert.That.IsNotEmptyList(parameterList.Parameters, 1);
+        Assert.That.NotContainsDiagnostics(parameterList);
+        Assert.AreEqual(SyntaxKind.DotDotDotToken, parameterList.Parameters[0]!.Identifier.Kind);
+
+        Assert.That.IsNotEmptyList(block.Statements, 1);
+        Assert.That.NotContainsDiagnostics(block.Statements);
+        Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
+
+        Assert.IsNotNull(block.Return);
+        Assert.That.IsNotEmptyList(block.Return.Expressions, 1);
+        Assert.That.NotContainsDiagnostics(block.Return);
+        Assert.That.IsLiteralExpression((LiteralExpressionSyntax)block.Return.Expressions[0]!, SyntaxKind.VariousArgumentsExpression);
+
+        Assert.That.IsNotMissing(endKeyword);
+        Assert.That.NotContainsDiagnostics(endKeyword);
+    }
     #endregion
 }

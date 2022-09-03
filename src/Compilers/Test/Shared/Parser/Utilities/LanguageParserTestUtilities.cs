@@ -202,6 +202,7 @@ public static class LanguageParserTestUtilities
         Assert.AreEqual(kind, literalExpression.Kind);
         switch (kind)
         {
+            case SyntaxKind.VariousArgumentsExpression: break;
             case SyntaxKind.NilLiteralExpression:
                 Assert.IsNull(literalExpression.token.Value);
                 break;
