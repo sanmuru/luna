@@ -1095,6 +1095,9 @@ public partial class LanguageParserTests
             list(a,2)
             table{a=1,2}
             print[[line]]
+            a.b()
+            a[b][[line]]
+            a:b()
             """);
         { // 空的参数列表
             var invocation = parser.ParseInvocationExpressionSyntax(parser.ParseIdentifierName());
@@ -1161,6 +1164,44 @@ public partial class LanguageParserTests
             var arguments = (ArgumentStringSyntax)invocation.Arguments;
 
             Assert.That.IsLiteral(arguments.String, "line");
+        }
+        { // 左侧是普通成员操作表达式，右侧是空的参数列表
+            var invocation = parser.ParseExpression() as InvocationExpressionSyntax;
+            Assert.IsNotNull(invocation);
+            Assert.That.NotContainsDiagnostics(invocation);
+
+            Assert.That.IsSimpleMemberAccessExpression(invocation.Expression);
+
+            Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentListSyntax));
+            Assert.That.IsEmptyList(((ArgumentListSyntax)invocation.Arguments).List);
+
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        { // 左侧是索引成员操作表达式，右侧是参数字符串
+            var invocation = parser.ParseExpression() as InvocationExpressionSyntax;
+            Assert.IsNotNull(invocation);
+            Assert.That.NotContainsDiagnostics(invocation);
+
+            Assert.That.IsIndexMemberAccessExpression(invocation.Expression);
+
+            Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentStringSyntax));
+            var arguments = (ArgumentStringSyntax)invocation.Arguments;
+
+            Assert.That.IsLiteral(arguments.String, "line");
+
+            Assert.That.NotAtEndOfFile(parser);
+        }
+        { // 传入隐式self参数的调用表达式，右侧是空的参数列表
+            var invocation = parser.ParseExpression() as InvocationExpressionSyntax;
+            Assert.IsNotNull(invocation);
+            Assert.That.NotContainsDiagnostics(invocation);
+
+            Assert.IsInstanceOfType(invocation.Expression, typeof(ImplicitSelfParameterExpressionSyntax));
+
+            Assert.IsInstanceOfType(invocation.Arguments, typeof(ArgumentListSyntax));
+            Assert.That.IsEmptyList(((ArgumentListSyntax)invocation.Arguments).List);
+
+            Assert.That.AtEndOfFile(parser);
         }
     }
     #endregion
@@ -2300,6 +2341,8 @@ public partial class LanguageParserTests
             Assert.That.IsIdentifierName(func.Name, "func");
 
             FunctionBodyTest(func.ParameterList, func.Block, func.EndKeyword);
+
+            Assert.That.AtEndOfFile(parser);
         }
         { // 函数定义，函数名称为限定名称
             var parser = LanguageParserTests.CreateLanguageParser("function a.b.c" + FunctionBodySource);
@@ -2313,6 +2356,8 @@ public partial class LanguageParserTests
             Assert.That.IsQualifiedName(func.Name, values);
 
             FunctionBodyTest(func.ParameterList, func.Block, func.EndKeyword);
+
+            Assert.That.AtEndOfFile(parser);
         }
         { // 函数定义，函数名称为隐式self参数名称
             var parser = LanguageParserTests.CreateLanguageParser("function a.b:c" + FunctionBodySource);
@@ -2326,6 +2371,8 @@ public partial class LanguageParserTests
             Assert.That.IsImplicitSelfParameterName(func.Name, values);
 
             FunctionBodyTest(func.ParameterList, func.Block, func.EndKeyword);
+
+            Assert.That.AtEndOfFile(parser);
         }
         { // 临时函数定义
             var parser = LanguageParserTests.CreateLanguageParser("local function func" + FunctionBodySource);
@@ -2335,6 +2382,8 @@ public partial class LanguageParserTests
             Assert.That.IsIdentifierName(func.Name, "func");
 
             FunctionBodyTest(func.ParameterList, func.Block, func.EndKeyword);
+
+            Assert.That.AtEndOfFile(parser);
         }
     }
 
@@ -2362,6 +2411,116 @@ public partial class LanguageParserTests
 
         Assert.That.IsNotMissing(endKeyword);
         Assert.That.NotContainsDiagnostics(endKeyword);
+    }
+
+    [TestMethod]
+    public void LocalDeclarationParseTests()
+    {
+        { // 声明单个变量，不指定初始值
+            var parser = LanguageParserTests.CreateLanguageParser("local a");
+            var local = parser.ParseLocalDeclarationStatement();
+            Assert.That.NotContainsDiagnostics(local);
+
+            Assert.That.IsNotEmptyList(local.NameAttributeLists, 1);
+            Assert.That.IsNameAttributeList(local.NameAttributeLists[0]!, "a");
+
+            Assert.That.AtEndOfFile(parser);
+        }
+    }
+
+    [TestMethod]
+    public void StatementStartsWithExpressionParseTests()
+    {
+        { // 解析为赋值语句
+            var parser = LanguageParserTests.CreateLanguageParser("a, b = true, false");
+            var stat = parser.ParseStatement();
+            Assert.That.NotContainsDiagnostics(stat);
+            Assert.IsInstanceOfType(stat, typeof(AssignmentStatementSyntax));
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 解析为赋值语句
+            var parser = LanguageParserTests.CreateLanguageParser(", b = true, false");
+            var stat = parser.ParseStatement();
+            Assert.That.ContainsDiagnostics(stat);
+            Assert.IsInstanceOfType(stat, typeof(AssignmentStatementSyntax));
+            var assignment = (AssignmentStatementSyntax)stat;
+
+            Assert.That.ContainsDiagnostics(assignment.Left);
+            Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+            Assert.That.NotContainsDiagnostics(assignment.Right);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 解析为赋值语句
+            var parser = LanguageParserTests.CreateLanguageParser("= nil");
+            var stat = parser.ParseStatement();
+            Assert.That.ContainsDiagnostics(stat);
+            Assert.IsInstanceOfType(stat, typeof(AssignmentStatementSyntax));
+            var assignment = (AssignmentStatementSyntax)stat;
+
+            Assert.That.ContainsDiagnostics(assignment.Left);
+            Assert.That.NotContainsDiagnostics(assignment.EqualsToken);
+            Assert.That.NotContainsDiagnostics(assignment.Right);
+
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 解析为调用语句
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                print'Hello world!'
+                a.b[1 + 2](1, 2, 3)
+                c:d(1, 2, 3)
+                """);
+            {
+                var stat = parser.ParseStatement();
+                Assert.That.NotContainsDiagnostics(stat);
+                Assert.IsInstanceOfType(stat, typeof(InvocationStatementSyntax));
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            {
+                var stat = parser.ParseStatement();
+                Assert.That.NotContainsDiagnostics(stat);
+                Assert.IsInstanceOfType(stat, typeof(InvocationStatementSyntax));
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            {
+                var stat = parser.ParseStatement();
+                Assert.That.NotContainsDiagnostics(stat);
+                Assert.IsInstanceOfType(stat, typeof(InvocationStatementSyntax));
+                Assert.That.AtEndOfFile(parser);
+            }
+        }
+        { // 表达式列表解析为包含错误的空语句
+            var parser = LanguageParserTests.CreateLanguageParser("1, 2, 3");
+            var stat = parser.ParseStatement();
+            Assert.That.ContainsDiagnostics(stat);
+            Assert.IsInstanceOfType(stat, typeof(EmptyStatementSyntax));
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 运算符优先级低于成员操作及调用
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                c.d{ 1, 2, 3 }
+                ;-c.d{ 1, 2, 3 }
+                """);
+            {
+                var stat = parser.ParseStatement();
+                Assert.That.NotContainsDiagnostics(stat);
+                Assert.IsInstanceOfType(stat, typeof(InvocationStatementSyntax));
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            { // 间隔用空语句
+                var stat = parser.ParseStatement();
+                Assert.That.NotContainsDiagnostics(stat);
+                Assert.IsInstanceOfType(stat, typeof(EmptyStatementSyntax));
+                Assert.That.NotAtEndOfFile(parser);
+            }
+            {
+                var stat = parser.ParseStatement();
+                Assert.That.ContainsDiagnostics(stat);
+                Assert.IsInstanceOfType(stat, typeof(EmptyStatementSyntax));
+                Assert.That.AtEndOfFile(parser);
+            }
+        }
     }
     #endregion
 }

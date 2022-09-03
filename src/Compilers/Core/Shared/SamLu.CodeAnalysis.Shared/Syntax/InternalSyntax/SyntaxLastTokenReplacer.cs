@@ -34,6 +34,12 @@ internal class SyntaxLastTokenReplacer :
     {
         var oldToken = root as SyntaxToken ?? root.GetLastToken();
         Debug.Assert(oldToken is not null);
+        return SyntaxLastTokenReplacer.Replace(root, oldToken, newToken);
+    }
+
+    internal static TRoot Replace<TRoot>(TRoot root, SyntaxToken oldToken, SyntaxToken newToken)
+        where TRoot : ThisInternalSyntaxNode
+    {
         var replacer = new SyntaxLastTokenReplacer(oldToken, newToken);
         var newRoot = (TRoot)replacer.Visit(root)!;
         Debug.Assert(replacer._found);

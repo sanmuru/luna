@@ -175,14 +175,13 @@
     <Field Name="Expression" Type="ExpressionSyntax"/>
     <Field Name="Arguments" Type="InvocationArgumentsSyntax"/>
   </Node>
-  <Node Name="ImplicitSelfParameterInvocationExpressionSyntax" Base="ExpressionSyntax">
-    <Kind Name="ImplicitSelfParameterInvocationExpression"/>
+  <Node Name="ImplicitSelfParameterExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="ImplicitSelfParameterExpression"/>
     <Field Name="Expression" Type="ExpressionSyntax"/>
     <Field Name="ColonToken" Type="SyntaxToken">
       <Kind Name="ColonToken"/>
     </Field>
     <Field Name="Name" Type="IdentifierNameSyntax"/>
-    <Field Name="Arguments" Type="InvocationArgumentsSyntax"/>
   </Node>
 
 

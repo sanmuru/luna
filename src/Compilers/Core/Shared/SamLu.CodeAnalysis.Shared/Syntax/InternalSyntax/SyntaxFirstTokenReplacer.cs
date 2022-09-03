@@ -30,6 +30,14 @@ internal class SyntaxFirstTokenReplacer :
         this._diagnosticOffsetDelta = diagnosticOffsetDelta;
     }
 
+    internal static TRoot Replace<TRoot>(TRoot root, SyntaxToken newToken, int diagnosticOffsetDelta)
+        where TRoot : ThisInternalSyntaxNode
+    {
+        var oldToken = root as SyntaxToken ?? root.GetLastToken();
+        Debug.Assert(oldToken is not null);
+        return SyntaxFirstTokenReplacer.Replace(root, oldToken, newToken, diagnosticOffsetDelta);
+    }
+
     internal static TRoot Replace<TRoot>(TRoot root, SyntaxToken oldToken, SyntaxToken newToken, int diagnosticOffsetDelta)
         where TRoot : ThisInternalSyntaxNode
     {

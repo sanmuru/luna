@@ -259,8 +259,8 @@ public enum SyntaxKind : ushort
     TableConstructorExpression,
     /// <summary>表示调用表达式。</summary>
     InvocationExpression,
-    /// <summary>表示传入隐式self参数的调用表达式。</summary>
-    ImplicitSelfParameterInvocationExpression,
+    /// <summary>表示传入隐式self参数的调用表达式左侧。</summary>
+    ImplicitSelfParameterExpression,
 
     // 二元运算符表达式
     /// <summary>表示加法表达式。</summary>

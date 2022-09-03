@@ -126,10 +126,10 @@ partial class LanguageParser
             case SyntaxKind.CommaToken: // 表达式列表的分隔符
             case SyntaxKind.EqualsToken: // 赋值操作符
                 return this.ParseAssignmentStatement();
-        }
 
-        Debug.Assert(this.IsPossibleExpression());
-        return this.ParseExpressionStatement();
+            default:
+                return this.ParseStatementStartsWithExpression();
+        }
     }
 
 #if TESTING
@@ -539,11 +539,13 @@ partial class LanguageParser
 #else
     private
 #endif
-        StatementSyntax ParseExpressionStatement()
+        StatementSyntax ParseStatementStartsWithExpression()
     {
+        Debug.Assert(this.IsPossibleExpression());
+
         var resetPoint = this.GetResetPoint();
 
-        var exprList = this.ParseExpressionList(minCount: 0);
+        var exprList = this.ParseExpressionList(minCount: 1);
         if (this.CurrentTokenKind == SyntaxKind.EqualsToken)
         {
             // 按照赋值语句解析。

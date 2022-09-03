@@ -343,7 +343,7 @@ partial class LanguageParser
 #else
     private
 #endif
-        ImplicitSelfParameterInvocationExpressionSyntax ParseImplicitSelfParameterInvocationExpression(ExpressionSyntax expr)
+        InvocationExpressionSyntax ParseImplicitSelfParameterInvocationExpression(ExpressionSyntax expr)
     {
         Debug.Assert(this.CurrentTokenKind == SyntaxKind.ColonToken);
         var colon = this.EatToken(SyntaxKind.ColonToken);
@@ -359,6 +359,6 @@ partial class LanguageParser
                 SyntaxFactory.MissingToken(SyntaxKind.CloseParenToken));
             arguments = this.AddError(arguments, ErrorCode.ERR_InvocationArgumentsExpected);
         }
-        return this._syntaxFactory.ImplicitSelfParameterInvocationExpression(expr, colon, name, arguments);
+        return this._syntaxFactory.InvocationExpression(this._syntaxFactory.ImplicitSelfParameterExpression(expr, colon, name), arguments);
     }
 }

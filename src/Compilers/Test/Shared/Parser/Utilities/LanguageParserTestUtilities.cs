@@ -385,4 +385,27 @@ public static class LanguageParserTestUtilities
         else
             Debug.Fail($"暂不支持测试的表达式语法节点种类：{kinds.value}");
     }
+
+    #region IsNameAttributeList
+    internal static void IsNameAttributeList(this Assert assert, NameAttributeListSyntax nameAttributeList, string name, bool isClose = false, bool isConst = false)
+    {
+        assert.IsIdentifierName(nameAttributeList.Identifier, name);
+
+        var attributeList = nameAttributeList.AttributeList;
+        if (attributeList is null)
+        {
+            Assert.IsFalse(isClose, "包含close特性。");
+            Assert.IsFalse(isConst, "包含const特性。");
+        }
+        else
+            assert.IsAttributeList(attributeList, isClose, isConst);
+    }
+
+    private static void IsAttributeList(this Assert assert, AttributeListSyntax attributeList, bool isClose = false, bool isConst = false)
+    {
+        var attributes = attributeList.Attributes.GetWithSeparators().Nodes.OfType<AttributeSyntax>().Select(attr => attr.Token);
+        Assert.IsTrue(isConst == attributes.Any(token => token.Kind == SyntaxKind.ConstKeyword), (isClose ? "不" : string.Empty) + "包含close特性。");
+        Assert.IsTrue(isClose == attributes.Any(token => token.Kind == SyntaxKind.CloseKeyword), (isConst ? "不" : string.Empty) + "包含const特性。");
+    }
+    #endregion
 }

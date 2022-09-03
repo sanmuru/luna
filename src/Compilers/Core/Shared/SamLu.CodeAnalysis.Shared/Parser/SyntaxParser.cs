@@ -189,59 +189,6 @@ internal abstract partial class SyntaxParser : IDisposable
         }
     }
 
-#warning Need code review.
-    protected ResetPoint GetResetPoint()
-    {
-        var pos = this.CurrentTokenPosition;
-        if (this._resetCount == 0)
-            this._resetCount = pos;
-
-        this._resetCount++;
-        return new(this._resetCount, this._mode, pos, this.prevTokenTrailingTrivia);
-    }
-
-#warning Need code review.
-    protected void Reset(ref ResetPoint point)
-    {
-        var offset = point.Position - this._firstToken;
-        Debug.Assert(offset >= 0);
-
-        if (offset >= this._tokenCount)
-        {
-            this.PeekToken(offset - this._tokenOffset);
-
-            offset = point.Position - this._firstToken;
-        }
-
-        this._mode = point.Mode;
-        Debug.Assert(offset >= 0 && offset < this._tokenCount);
-        this._tokenOffset = offset;
-        this._currentToken = null;
-        this._currentNode = default;
-        this.prevTokenTrailingTrivia = point.PrevTokenTrailingTrivia;
-        if (this.IsBlending())
-        {
-            for (int i = this._tokenOffset; i < this._tokenCount; i++)
-            {
-                if (this._blendedTokens[i].Token is null)
-                {
-                    this._tokenCount = i;
-                    if (this._tokenCount == this._tokenOffset)
-                        this.FetchCurrentToken();
-                    break;
-                }
-            }
-        }
-    }
-
-    protected void Release(ref ResetPoint point)
-    {
-        Debug.Assert(this._resetCount == point.ResetCount);
-        this._resetCount--;
-        if (this._resetCount == 0)
-            this._resetCount = -1;
-    }
-
     /// <summary>
     /// 获取当前的已协调节点。
     /// </summary>
@@ -983,7 +930,7 @@ internal abstract partial class SyntaxParser : IDisposable
     {
         var oldToken = node as SyntaxToken ?? node.GetLastToken()!;
         var newToken = this.AddSkippedSyntax(oldToken, skippedSyntax, trailing: true);
-        return SyntaxLastTokenReplacer.Replace(node, newToken);
+        return SyntaxLastTokenReplacer.Replace(node, oldToken, newToken);
     }
 
     /// <summary>
