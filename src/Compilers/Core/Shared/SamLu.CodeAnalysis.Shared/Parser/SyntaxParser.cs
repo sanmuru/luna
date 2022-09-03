@@ -392,7 +392,7 @@ internal abstract partial class SyntaxParser : IDisposable
 
             this._firstToken += shiftOffset;
             this._tokenCount -= shiftOffset;
-            this._tokenCount -= shiftOffset;
+            this._tokenOffset -= shiftOffset;
         }
         else
         {

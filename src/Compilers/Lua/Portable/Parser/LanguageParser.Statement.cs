@@ -79,8 +79,9 @@ partial class LanguageParser
             SyntaxKind.FunctionKeyword or
             SyntaxKind.LocalKeyword => true,
 
-            SyntaxKind.CommaToken or // 表达式列表的分隔符
             SyntaxKind.EqualsToken => true, // 赋值操作符
+
+            SyntaxKind.CommaToken or // 表达式列表的分隔符
             _ => this.IsPossibleExpression()
         };
 
@@ -123,10 +124,10 @@ partial class LanguageParser
                 else
                     return this.ParseLocalDeclarationStatement();
 
-            case SyntaxKind.CommaToken: // 表达式列表的分隔符
             case SyntaxKind.EqualsToken: // 赋值操作符
                 return this.ParseAssignmentStatement();
 
+            case SyntaxKind.CommaToken: // 表达式列表的分隔符
             default:
                 return this.ParseStatementStartsWithExpression();
         }
@@ -140,6 +141,7 @@ partial class LanguageParser
         AssignmentStatementSyntax ParseAssignmentStatement()
     {
         var left = this.ParseAssgLvalueList();
+        Debug.Assert(this.CurrentTokenKind == SyntaxKind.EqualsToken);
         var equals = this.EatToken();
         var right = this.ParseExpressionList(minCount: 1);
         return this._syntaxFactory.AssignmentStatement(left, equals, right);
@@ -292,9 +294,9 @@ partial class LanguageParser
 
     private BlockSyntax ParseIfBlock()
     {
-        this._syntaxFactoryContext.IsInIfBlock = true;
+        this._syntaxFactoryContext.EnterIfBlock();
         var block = this.ParseBlock();
-        this._syntaxFactoryContext.IsInIfBlock = false;
+        this._syntaxFactoryContext.LeaveIfBlock();
         return block;
     }
 
@@ -541,8 +543,6 @@ partial class LanguageParser
 #endif
         StatementSyntax ParseStatementStartsWithExpression()
     {
-        Debug.Assert(this.IsPossibleExpression());
-
         var resetPoint = this.GetResetPoint();
 
         var exprList = this.ParseExpressionList(minCount: 1);

@@ -3,12 +3,26 @@
 namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests;
 
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
+using Microsoft.CodeAnalysis.Text;
 using Utilities;
 
 [TestClass]
 public partial class LanguageParserTests
 {
     internal static LanguageParser CreateLanguageParser(string source, LuaParseOptions? options = null) => new(LexerTests.CreateLexer(source, options), null, null);
+
+    [TestMethod]
+    public void TestFilesLexTests()
+    {
+        foreach (var path in Directory.GetFiles("tests"))
+        {
+            var tree = SyntaxFactory.ParseSyntaxTree(
+                text: SourceText.From(File.OpenRead(path)),
+                options: LuaParseOptions.Default,
+                path: path,
+                cancellationToken: default);
+        }
+    }
 
     #region 名称
     [TestMethod]
@@ -2090,6 +2104,29 @@ public partial class LanguageParserTests
             Assert.AreEqual(0, elseBlock.Statements.Count);
             Assert.IsNotNull(elseBlock.Return);
 
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 嵌套if语句
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                if a == 1 then
+                    if b == 1 then
+                    elseif b == 2 then
+                    else
+                    end
+                elseif a == 2 then
+                    if c == 1 then
+                    elseif c == 2 then
+                    else
+                    end
+                else
+                    if d == 1 then
+                    elseif d == 2 then
+                    else
+                    end
+                end
+                """);
+            var ifStat = parser.ParseIfStatement();
+            Assert.That.NotContainsDiagnostics(ifStat);
             Assert.That.AtEndOfFile(parser);
         }
     }
