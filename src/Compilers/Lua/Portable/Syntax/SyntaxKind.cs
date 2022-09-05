@@ -350,9 +350,9 @@ public enum SyntaxKind : ushort
     ElseIfClause,
     /// <summary>表示<see langword="else"/>条件从句。</summary>
     ElseClause,
-    /// <summary>表示泛型<see langword="for"/>循环语句。</summary>
-    ForStatement,
     /// <summary>表示算术<see langword="for"/>循环语句。</summary>
+    ForStatement,
+    /// <summary>表示泛型<see langword="for"/>循环语句。</summary>
     ForInStatement,
     /// <summary>表示函数定义语句。</summary>
     FunctionDefinitionStatement,

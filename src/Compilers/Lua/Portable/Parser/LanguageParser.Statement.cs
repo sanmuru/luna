@@ -20,7 +20,7 @@ partial class LanguageParser
                 if (!this.IsPossibleStatement()) return false;
 
                 // 正在解析if/elseif语句时遇到elseif关键字时停止。
-                if (this._syntaxFactoryContext.IsInIfBlock && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) return false;
+                if (this._syntaxFactoryContext.IsInIfOrElseIf && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) return false;
 
                 // 正常处理处返回语句外的其他语句。
                 if (this.CurrentTokenKind != SyntaxKind.ReturnKeyword) return true;
@@ -29,7 +29,7 @@ partial class LanguageParser
                 var resetPoint = this.GetResetPoint();
                 var returnStat = this.ParseReturnStatement();
 
-                if (this._syntaxFactoryContext.IsInIfBlock && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) // 正在解析if/elseif语句时遇到elseif语句视为不合法语句。
+                if (this._syntaxFactoryContext.IsInIfOrElseIf && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) // 正在解析if/elseif语句时遇到elseif语句视为不合法语句。
                 {
                     this.Reset(ref resetPoint);
                     this.Release(ref resetPoint);
@@ -241,7 +241,7 @@ partial class LanguageParser
         DoStatementSyntax ParseDoStatement()
     {
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
-        var block = this.ParseBlock();
+        var block = this.ParseBlock(SyntaxKind.DoStatement);
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
         return this._syntaxFactory.DoStatement(doKeyword, block, endKeyword);
     }
@@ -256,7 +256,7 @@ partial class LanguageParser
         var whileKeyword = this.EatToken(SyntaxKind.WhileKeyword);
         var condition = this.ParseExpression();
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
-        var block = this.ParseBlock();
+        var block = this.ParseBlock(SyntaxKind.WhileStatement);
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
         return this._syntaxFactory.WhileStatement(whileKeyword, condition, doKeyword, block, endKeyword);
     }
@@ -269,7 +269,7 @@ partial class LanguageParser
         RepeatStatementSyntax ParseRepeatStatement()
     {
         var repeatKeyword = this.EatToken(SyntaxKind.RepeatKeyword);
-        var block = this.ParseBlock();
+        var block = this.ParseBlock(SyntaxKind.RepeatStatement);
         var untilKeyword = this.EatToken(SyntaxKind.UntilKeyword);
         var condition = this.ParseExpression();
         return this._syntaxFactory.RepeatStatement(repeatKeyword, block, untilKeyword, condition);
@@ -285,19 +285,11 @@ partial class LanguageParser
         var ifKeyword = this.EatToken(SyntaxKind.IfKeyword);
         var condition = this.ParseExpression();
         var thenKeyword = this.EatToken(SyntaxKind.ThenKeyword);
-        var block = this.ParseIfBlock();
+        var block = this.ParseBlock(SyntaxKind.IfStatement);
         var elseIfClauses = this.ParseElseIfClausesOpt();
         var elseClause = this.ParseElseClauseOpt();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
         return this._syntaxFactory.IfStatement(ifKeyword, condition, thenKeyword, block, elseIfClauses, elseClause, endKeyword);
-    }
-
-    private BlockSyntax ParseIfBlock()
-    {
-        this._syntaxFactoryContext.EnterIfBlock();
-        var block = this.ParseBlock();
-        this._syntaxFactoryContext.LeaveIfBlock();
-        return block;
     }
 
 #if TESTING
@@ -329,7 +321,7 @@ partial class LanguageParser
         var elseIfKeyword = this.EatToken(SyntaxKind.ElseIfKeyword);
         var condition = this.ParseExpression();
         var thenKeyword = this.EatToken(SyntaxKind.ThenKeyword);
-        var block = this.ParseIfBlock();
+        var block = this.ParseBlock(SyntaxKind.ElseIfClause);
         return this._syntaxFactory.ElseIfClause(elseIfKeyword, condition, thenKeyword, block);
     }
 
@@ -341,7 +333,7 @@ partial class LanguageParser
         ElseClauseSyntax ParseElseClause()
     {
         var elseKeyword = this.EatToken(SyntaxKind.ElseKeyword);
-        var block = this.ParseBlock();
+        var block = this.ParseBlock(SyntaxKind.ElseClause);
         return this._syntaxFactory.ElseClause(elseKeyword, block);
     }
 
@@ -357,7 +349,7 @@ partial class LanguageParser
         var ifKeyword = this.EatTokenAsKind(SyntaxKind.IfKeyword);
         var condition = this.ParseExpression();
         var thenKeyword = this.EatToken(SyntaxKind.ThenKeyword);
-        var block = this.ParseIfBlock();
+        var block = this.ParseBlock(SyntaxKind.IfStatement);
         var elseIfClauses = this.ParseElseIfClausesOpt();
         var elseClause = this.ParseElseClauseOpt();
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
@@ -421,7 +413,7 @@ partial class LanguageParser
         var inKeyword = this.EatToken(SyntaxKind.InKeyword);
         var expressions = this.ParseExpressionList(minCount: 1);
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
-        var block = this.ParseBlock();
+        var block = this.ParseBlock(SyntaxKind.ForInStatement);
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
         return this._syntaxFactory.ForInStatement(
             forKeyword,
@@ -454,7 +446,7 @@ partial class LanguageParser
         }
 
         var doKeyword = this.EatToken(SyntaxKind.DoKeyword);
-        var block = this.ParseBlock();
+        var block = this.ParseBlock(SyntaxKind.ForStatement);
         var endKeyword = this.EatToken(SyntaxKind.EndKeyword);
         return this._syntaxFactory.ForStatement(
             forKeyword,
@@ -481,7 +473,7 @@ partial class LanguageParser
 
         var function = this.EatToken(SyntaxKind.FunctionKeyword);
         var name = this.ParseName();
-        this.ParseFunctionBody(out var parameterList, out var block, out var end);
+        this.ParseFunctionBody(SyntaxKind.FunctionDefinitionStatement, out var parameterList, out var block, out var end);
         return this._syntaxFactory.FunctionDefinitionStatement(function, name, parameterList, block, end);
     }
 
@@ -498,7 +490,7 @@ partial class LanguageParser
         var local = this.EatToken(SyntaxKind.LocalKeyword);
         var function = this.EatToken(SyntaxKind.FunctionKeyword);
         var name = this.ParseIdentifierName();
-        this.ParseFunctionBody(out var parameterList, out var block, out var end);
+        this.ParseFunctionBody(SyntaxKind.LocalFunctionDefinitionStatement, out var parameterList, out var block, out var end);
         return this._syntaxFactory.LocalFunctionDefinitionStatement(local, function, name, parameterList, block, end);
     }
 

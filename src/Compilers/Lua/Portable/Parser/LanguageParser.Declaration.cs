@@ -12,10 +12,10 @@ partial class LanguageParser
 #else
     private
 #endif
-        void ParseFunctionBody(out ParameterListSyntax parameterList, out BlockSyntax block, out SyntaxToken endKeyword)
+        void ParseFunctionBody(SyntaxKind structure, out ParameterListSyntax parameterList, out BlockSyntax block, out SyntaxToken endKeyword)
     {
         parameterList = this.ParseParameterList();
-        block = this.ParseBlock();
+        block = this.ParseBlock(structure);
         endKeyword = this.EatToken(SyntaxKind.EndKeyword);
     }
 

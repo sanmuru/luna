@@ -1,18 +1,6 @@
-﻿using System.Diagnostics;
-
-namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
+﻿namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 partial class SyntaxFactoryContext
 {
-    private int _ifBlockDepth;
-
-    internal bool IsInIfBlock => this._ifBlockDepth != 0;
-
-    internal void EnterIfBlock() => this._ifBlockDepth++;
-
-    internal void LeaveIfBlock()
-    {
-        Debug.Assert(this._ifBlockDepth > 0);
-        this._ifBlockDepth--;
-    }
+    internal bool IsInIfOrElseIf => this.CurrentStructure is SyntaxKind.IfStatement or SyntaxKind.ElseIfClause;
 }

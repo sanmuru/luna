@@ -1431,7 +1431,7 @@ public partial class LanguageParserTests
     {
         { // 空块
             var parser = LanguageParserTests.CreateLanguageParser("");
-            var block = parser.ParseBlock();
+            var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
             Assert.AreEqual(0, block.Statements.Count);
             Assert.IsNull(block.Return);
@@ -1439,7 +1439,7 @@ public partial class LanguageParserTests
         }
         { // 仅有一句返回语句的块
             var parser = LanguageParserTests.CreateLanguageParser("return nil");
-            var block = parser.ParseBlock();
+            var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
             Assert.AreEqual(0, block.Statements.Count);
             Assert.IsNotNull(block.Return);
@@ -1447,7 +1447,7 @@ public partial class LanguageParserTests
         }
         { // 仅有一句非返回语句的块
             var parser = LanguageParserTests.CreateLanguageParser("print 'Hello world!'");
-            var block = parser.ParseBlock();
+            var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
             Assert.AreEqual(1, block.Statements.Count);
             Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
@@ -1459,7 +1459,7 @@ public partial class LanguageParserTests
                 print 'Hello world!'
                 return nil
                 """);
-            var block = parser.ParseBlock();
+            var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
             Assert.AreEqual(1, block.Statements.Count);
             Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
@@ -1472,7 +1472,7 @@ public partial class LanguageParserTests
                 return nil
                 goto label
                 """);
-            var block = parser.ParseBlock();
+            var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.ContainsDiagnostics(block);
             Assert.AreEqual(3, block.Statements.Count);
 
@@ -1495,7 +1495,7 @@ public partial class LanguageParserTests
                 print 'After return statement'
                 return true
                 """);
-            var block = parser.ParseBlock();
+            var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.ContainsDiagnostics(block);
             Assert.AreEqual(3, block.Statements.Count);
 
@@ -1520,7 +1520,7 @@ public partial class LanguageParserTests
                     print(t[i])
                 end
                 """);
-            var block = parser.ParseBlock();
+            var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
             Assert.AreEqual(3, block.Statements.Count);
 
@@ -2122,6 +2122,35 @@ public partial class LanguageParserTests
                     if d == 1 then
                     elseif d == 2 then
                     else
+                    end
+                end
+                """);
+            var ifStat = parser.ParseIfStatement();
+            Assert.That.NotContainsDiagnostics(ifStat);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 嵌套if语句，但间隔非if语句
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                if a == 1 then
+                    do
+                        if b == 1 then
+                        elseif b == 2 then
+                        else
+                        end
+                    end
+                elseif a == 2 then
+                    do
+                        if c == 1 then
+                        elseif c == 2 then
+                        else
+                        end
+                    end
+                else
+                    do
+                        if d == 1 then
+                        elseif d == 2 then
+                        else
+                        end
                     end
                 end
                 """);

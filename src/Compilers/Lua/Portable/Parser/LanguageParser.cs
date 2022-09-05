@@ -13,7 +13,7 @@ partial class LanguageParser
 {
     internal ChunkSyntax ParseCompilationUnit()
     {
-        var block = this.ParseBlock();
+        var block = this.ParseBlock(SyntaxKind.Chunk);
         var endOfFile = this.EatToken(SyntaxKind.EndOfFileToken);
         return this._syntaxFactory.Chunk(block, endOfFile);
     }
@@ -23,8 +23,10 @@ partial class LanguageParser
 #else
     private
 #endif
-        BlockSyntax ParseBlock()
+        BlockSyntax ParseBlock(SyntaxKind structure)
     {
+        this._syntaxFactoryContext.EnterStructure(structure);
+
         var statementBuilder = this._pool.Allocate<StatementSyntax>();
         this.ParseStatements(statementBuilder);
 
@@ -33,6 +35,8 @@ partial class LanguageParser
             statements = new SyntaxList<StatementSyntax>(SyntaxList.List(((SyntaxListBuilder)statementBuilder).ToArray()));
         else
             statements = statementBuilder;
+
+        this._syntaxFactoryContext.LeaveStructure(structure);
 
         var returnStat = this.CurrentTokenKind == SyntaxKind.ReturnKeyword ? this.ParseReturnStatement() : null;
         var block = this._syntaxFactory.Block(statements, returnStat);
