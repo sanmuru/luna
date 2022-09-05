@@ -72,6 +72,11 @@
         <target state="new">Illegal UTF-8 byte escape sequence.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ERR_InsufficientStack">
+        <source>An expression is too long or complex to compile.</source>
+        <target state="new">An expression is too long or complex to compile.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ERR_InternalError">
         <source>Internal error in the Lua compiler.</source>
         <target state="new">Internal error in the Lua compiler.</target>

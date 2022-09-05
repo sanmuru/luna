@@ -159,6 +159,9 @@
   <data name="ERR_IllegalUtf8ByteSequence" xml:space="preserve">
     <value>Illegal UTF-8 byte escape sequence.</value>
   </data>
+  <data name="ERR_InsufficientStack" xml:space="preserve">
+    <value>An expression is too long or complex to compile.</value>
+  </data>
   <data name="ERR_InternalError" xml:space="preserve">
     <value>Internal error in the Lua compiler.</value>
   </data>

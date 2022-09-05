@@ -13,7 +13,9 @@ namespace SamLu.CodeAnalysis.Lua
         ERR_BadSourceCodeKind,
         ERR_BadDocumentationMode,
         ERR_BadLanguageVersion,
-        /// <summary>意外的字符</summary>
+        /// <summary>迭代过深，执行栈空间不足。</summary>
+        ERR_InsufficientStack,
+        /// <summary>意外的字符。</summary>
         ERR_UnexpectedCharacter,
         /// <summary>语法错误。</summary>
         ERR_SyntaxError,
