@@ -100,6 +100,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luna.Compilers.Simulators.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoslynSimulators", "src\Tools\Simulators\src\RoslynSimulators\RoslynSimulators.csproj", "{4216EEF0-25D5-4CAD-BF2C-A8097B483F0E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageParserSimulator", "src\Tools\Simulators\src\LanguageParserSimulator\LanguageParserSimulator.csproj", "{9D2FBE1E-9980-43A6-B8BD-9226E67DB896}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -256,6 +258,12 @@ Global
 		{4216EEF0-25D5-4CAD-BF2C-A8097B483F0E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4216EEF0-25D5-4CAD-BF2C-A8097B483F0E}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
 		{4216EEF0-25D5-4CAD-BF2C-A8097B483F0E}.Testing|Any CPU.Build.0 = Debug|Any CPU
+		{9D2FBE1E-9980-43A6-B8BD-9226E67DB896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D2FBE1E-9980-43A6-B8BD-9226E67DB896}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D2FBE1E-9980-43A6-B8BD-9226E67DB896}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D2FBE1E-9980-43A6-B8BD-9226E67DB896}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D2FBE1E-9980-43A6-B8BD-9226E67DB896}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D2FBE1E-9980-43A6-B8BD-9226E67DB896}.Testing|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -297,6 +305,7 @@ Global
 		{D32EC3B6-7849-4D98-B36A-2DB8ABE0A965} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
 		{057694CA-5BB2-4779-AC8B-4C067D4B70C4} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
 		{4216EEF0-25D5-4CAD-BF2C-A8097B483F0E} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
+		{9D2FBE1E-9980-43A6-B8BD-9226E67DB896} = {F1FEDF8F-5D73-413B-AD59-DE53E2271106}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6F599E08-A9EA-4FAA-897F-5D824B0210E6}

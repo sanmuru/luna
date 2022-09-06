@@ -42,6 +42,6 @@ internal class CSharpLexerSimulator : ILexerSimulator
 
     #region ILexerSimulator
     TokenKind ILexerSimulator.GetTokenKind(int rawKind) => this.GetTokenKind((SyntaxKind)rawKind);
-    void ILexerSimulator.Initialize(LexerSimulatorContext context) { }
+    void ISimulator.Initialize(SimulatorContext context) { }
     #endregion
 }

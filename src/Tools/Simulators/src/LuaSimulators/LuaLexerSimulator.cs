@@ -1,50 +1,39 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using SamLu.CodeAnalysis.Lua;
-using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
-using SyntaxToken = Microsoft.CodeAnalysis.SyntaxToken;
-using LuaInternalSyntaxNode = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.LuaSyntaxNode;
-using LuaInternalSyntaxToken = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.SyntaxToken;
-using LuaInternalSyntaxFactory = SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax.SyntaxFactory;
-using LuaSyntaxKind = SamLu.CodeAnalysis.Lua.SyntaxKind;
-using LuaSyntaxNode = SamLu.CodeAnalysis.Lua.LuaSyntaxNode;
-using LuaSyntaxFactory = SamLu.CodeAnalysis.Lua.SyntaxFactory;
+using Lua = SamLu.CodeAnalysis.Lua;
 
 namespace Luna.Compilers.Simulators;
 
 [LexerSimulator("Lua")]
-public sealed partial class LuaLexerSimulator : ILexerSimulator
+public sealed class LuaLexerSimulator : ILexerSimulator
 {
-    private partial Lexer CreateLuaLexer(SourceText text) => new(text, LuaParseOptions.Default);
-
-    private partial LuaInternalSyntaxToken LexNode(Lexer lexer) => lexer.Lex(LexerMode.Syntax);
-
-    private partial IEnumerable<SyntaxToken> DescendTokens(LuaInternalSyntaxToken node) => new[]
+    public IEnumerable<SyntaxToken> LexToEnd(SourceText sourceText)
     {
-        this.CreateToken(node)
-    };
+        return Lua.SyntaxFactory.ParseTokens(sourceText.ToString());
+    }
 
-    private partial SyntaxToken EatTokenCore(SyntaxToken token) => token;
-
-    private partial void ResetCore() { }
-
-    private TokenKind GetTokenKind(LuaSyntaxKind kind)
+    private TokenKind GetTokenKind(SyntaxKind kind)
     {
         if (SyntaxFacts.IsKeywordKind(kind)) return TokenKind.Keyword;
         else if (SyntaxFacts.IsUnaryExpressionOperatorToken(kind) || SyntaxFacts.IsBinaryExpressionOperatorToken(kind)) return TokenKind.Operator;
         else if (SyntaxFacts.IsPunctuation(kind)) return TokenKind.Punctuation;
         else return kind switch
         {
-            LuaSyntaxKind.IdentifierToken => TokenKind.Identifier,
-            LuaSyntaxKind.NumericLiteralToken => TokenKind.NumericLiteral,
-            LuaSyntaxKind.StringLiteralToken or
-            LuaSyntaxKind.MultiLineRawStringLiteralToken => TokenKind.StringLiteral,
-            LuaSyntaxKind.WhiteSpaceTrivia => TokenKind.WhiteSpace,
-            LuaSyntaxKind.EndOfLineTrivia => TokenKind.NewLine,
-            LuaSyntaxKind.SingleLineCommentTrivia or
-            LuaSyntaxKind.MultiLineCommentTrivia => TokenKind.Comment,
-            LuaSyntaxKind.SkippedTokensTrivia => TokenKind.Skipped,
+            SyntaxKind.IdentifierToken => TokenKind.Identifier,
+            SyntaxKind.NumericLiteralToken => TokenKind.NumericLiteral,
+            SyntaxKind.StringLiteralToken or
+            SyntaxKind.MultiLineRawStringLiteralToken => TokenKind.StringLiteral,
+            SyntaxKind.WhiteSpaceTrivia => TokenKind.WhiteSpace,
+            SyntaxKind.EndOfLineTrivia => TokenKind.NewLine,
+            SyntaxKind.SingleLineCommentTrivia or
+            SyntaxKind.MultiLineCommentTrivia => TokenKind.Comment,
+            SyntaxKind.SkippedTokensTrivia => TokenKind.Skipped,
             _ => TokenKind.None
         };
     }
+
+    TokenKind ILexerSimulator.GetTokenKind(int rawKind) => this.GetTokenKind((SyntaxKind)rawKind);
+
+    void ISimulator.Initialize(SimulatorContext context) { }
 }

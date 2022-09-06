@@ -5,13 +5,13 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Luna.Compilers.Simulators;
 
-public readonly struct LexerSimulatorContext
+public readonly struct SimulatorContext
 {
     private readonly string _languageName;
 
     public string LanguageName => this._languageName;
 
-    internal LexerSimulatorContext(string languageName)
+    internal SimulatorContext(string languageName)
     {
         this._languageName = languageName;
     }

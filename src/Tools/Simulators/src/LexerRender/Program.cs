@@ -96,7 +96,7 @@ ProcessOutputPath:
                 cssFiles = new[] { cssPath };
         }
 
-        LexerSimulator.RegisterSimulatorFromConfiguration(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "config.json"));
+        Simulator.RegisterSimulatorFromConfiguration(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "config.json"));
 
         var destinationDir = Path.GetDirectoryName(outputFiles[0])!;
 
@@ -144,7 +144,7 @@ ProcessOutputPath:
         string[]? cssFiles)
     {
         var extension = Path.GetExtension(inputFile);
-        if (LexerSimulator.TryGetLexerSimulatorByFileExtension(extension, out var simulators))
+        if (Simulator.TryGetLexerSimulatorByFileExtension(extension, out var simulators))
         {
             Debug.Assert(simulators is not null);
             for (var i = 0; i < simulators.Length; i++)
