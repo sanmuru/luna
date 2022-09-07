@@ -1095,10 +1095,20 @@ public partial class LanguageParserTests
     [TestMethod]
     public void TableConstructorExpressionParseTests()
     {
-        var parser = LanguageParserTests.CreateLanguageParser($"{{{FieldListSouce}}}");
-        var table = parser.ParseTableConstructorExpression();
-        Assert.That.NotContainsDiagnostics(table);
-        FieldListTest(table.Fields);
+        { // 空的表构造表达式
+            var parser = LanguageParserTests.CreateLanguageParser("{}");
+            var table = parser.ParseTableConstructorExpression();
+            Assert.That.NotContainsDiagnostics(table);
+            Assert.That.IsEmptyList(table.Fields);
+            Assert.That.AtEndOfFile(parser);
+        }
+        { // 非空的表构造表达式
+            var parser = LanguageParserTests.CreateLanguageParser($"{{{FieldListSouce}}}");
+            var table = parser.ParseTableConstructorExpression();
+            Assert.That.NotContainsDiagnostics(table);
+            FieldListTest(table.Fields);
+            Assert.That.AtEndOfFile(parser);
+        }
     }
 
     [TestMethod]
@@ -1364,6 +1374,7 @@ public partial class LanguageParserTests
     private static void FieldListTest(SeparatedSyntaxList<FieldSyntax> fields)
     {
         Assert.That.NotContainsDiagnostics(fields);
+        Assert.That.IsNotEmptyList(fields, 5);
         {
             Assert.IsInstanceOfType(fields[0]!, typeof(NameValueFieldSyntax));
             var field = (NameValueFieldSyntax)fields[0]!;

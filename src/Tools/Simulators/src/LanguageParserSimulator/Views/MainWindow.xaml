@@ -13,16 +13,93 @@
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0">
-            <MenuItem Header="打开(_O)" Click="MenuItem_Click"/>
+            <Menu.Resources>
+                <Style x:Key="MenuItemStyle" TargetType="MenuItem">
+                    <Setter Property="Padding" Value="8,2"/>
+                </Style>
+            </Menu.Resources>
+            <MenuItem
+                Style="{StaticResource MenuItemStyle}"
+                Header="打开(_O)"
+                Click="MenuItem_Click"/>
         </Menu>
 
         <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <TreeView Grid.Column="0" x:Name="treeView" Margin="0,0,5,0" BorderThickness="1"/>
+            <Grid
+                Grid.Row="0" Grid.Column="0"
+                Margin="0,0,5,5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock
+                    Grid.Row="0"
+                    Padding="5"
+                    FontWeight="Bold">语法树</TextBlock>
+                
+                <TreeView x:Name="treeView"
+                    Grid.Row="1"
+                    BorderThickness="0"
+                    SelectedItemChanged="treeView_SelectedItemChanged"/>
+                
+            </Grid>
+
+            <GridSplitter
+                Grid.Row="0" Grid.Column="0"
+                ResizeDirection="Rows"
+                HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                Height="5"/>
+
+            <Grid
+                Grid.Row="1" Grid.Column="0"
+                Margin="0,0,5,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <TextBlock
+                    Grid.Row="0"
+                    Padding="5"
+                    FontWeight="Bold">属性</TextBlock>
+
+                <Grid x:Name="gridBasicProperties"
+                    Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
+
+                <ScrollViewer
+                    Grid.Row="2"
+                    Margin="10,0,0,0">
+                    <Grid x:Name="gridProperties"
+                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+
+            <GridSplitter
+                Grid.Column="0" Grid.RowSpan="2"
+                Width="5"/>
+            
             <FlowDocumentScrollViewer Grid.Column="1" x:Name="docViewer" BorderThickness="1"/>
 
         </Grid>

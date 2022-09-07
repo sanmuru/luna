@@ -74,7 +74,12 @@ partial class LanguageParser
 #endif
         SeparatedSyntaxList<FieldSyntax> ParseFieldList() =>
         this.ParseSeparatedSyntaxList(
-            predicateNode: _ => true,
+            predicateNode: index =>
+            {
+                if (index == 0) // 解析首个字段时，必须确保是可能的字段。若不是，则立刻退出解析并产生一个空的字段列表。
+                    return this.IsPossibleField();
+                return true; // 从解析第二个字段开始，无条件向后解析，若不是可能的字段，则将返回缺失的字段。
+            },
             parseNode: (_, _) => this.ParseField(),
             predicateSeparator: _ => this.IsPossibleFieldListSeparator(),
             parseSeparator: (_, missing) => missing ? this.CreateMissingFieldListSeparator() : this.EatToken(),
@@ -92,6 +97,14 @@ partial class LanguageParser
         var separator = SyntaxFactory.MissingToken(SyntaxKind.CommaToken);
         return this.AddError(separator, ErrorCode.ERR_FieldSeparatorExpected);
     }
+
+#if TESTING
+    internal
+#else
+    private
+#endif
+        bool IsPossibleField() =>
+        this.IsPossibleExpression() || this.CurrentTokenKind is SyntaxKind.OpenBracketToken or SyntaxKind.EqualsToken;
 
 #if TESTING
     internal
