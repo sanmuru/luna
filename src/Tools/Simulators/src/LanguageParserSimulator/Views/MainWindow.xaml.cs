@@ -51,7 +51,7 @@ public partial class MainWindow : Window
                 var sourceText = SourceText.From(dialog.OpenFile());
                 var tree = this._languageParserSimulator.ParseSyntaxTree(sourceText);
                 this.FillinSyntaxTree(tree);
-                this.FillInDocument(tree);
+                this.FillInDocument(sourceText);
             }
         }
     }
@@ -99,7 +99,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void FillInDocument(SyntaxTree tree)
+    private void FillInDocument(SourceText sourceText)
     {
         var block = new Paragraph();
         var document = new FlowDocument(block)
@@ -107,7 +107,7 @@ public partial class MainWindow : Window
             FontFamily = new("Fira Code")
         };
 
-        foreach (var token in tree.GetRoot().DescendantTokens(descendIntoTrivia: true))
+        foreach (var token in this._lexerSimulator.LexToEnd(sourceText))
         {
             processTriviaList(token.LeadingTrivia);
             append(makeRun(this._lexerSimulator.GetTokenKind(token.RawKind), token.Text));
@@ -251,11 +251,16 @@ public partial class MainWindow : Window
         }
 
         {
-            TextSpan span;
+            var document = this.docViewer.Document;
+
+            new TextRange(document.ContentStart, document.ContentEnd)
+                .ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Transparent);
+
+            TextSpan span = default;
             if (nodeOrTokenOrTrivia is SyntaxNode)
             {
                 var node = (SyntaxNode)nodeOrTokenOrTrivia;
-                span = node.FullSpan;
+                span = node.Span;
             }
             else if (nodeOrTokenOrTrivia is SyntaxToken)
             {
@@ -266,6 +271,44 @@ public partial class MainWindow : Window
             {
                 var trivia = (SyntaxTrivia)nodeOrTokenOrTrivia;
                 span = trivia.FullSpan;
+            }
+
+            new TextRange(GetAbsoluteCharaterPosition(span.Start), GetAbsoluteCharaterPosition(span.End))
+                .ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.LightGray);
+
+            TextPointer GetAbsoluteCharaterPosition(int offset)
+            {
+                Debug.Assert(offset >= 0, "偏移量为负数。");
+
+                var pointer = document.ContentStart;
+                while (pointer is not null)
+                {
+                    if (pointer.GetPointerContext(LogicalDirection.Backward) == TextPointerContext.ElementStart)
+                    {
+                        if (pointer.Parent is Run run)
+                        {
+                            var length = run.Text.Length;
+                            if (length <= offset)
+                            {
+                                offset -= length;
+                            }
+                            else
+                            {
+                                pointer = run.ContentStart.GetPositionAtOffset(offset);
+                                break;
+                            }
+                        }
+                    }
+
+                    pointer = pointer.GetNextContextPosition(LogicalDirection.Forward);
+                }
+
+                if (pointer is null)
+                {
+                    Debug.Assert(offset == 0, "偏移量超出文本长度。");
+                    pointer = document.ContentEnd;
+                }
+                return pointer;
             }
         }
     }
