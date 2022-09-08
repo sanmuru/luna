@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Xml.Linq;
 using Luna.Compilers.Simulators;
@@ -50,6 +51,7 @@ public partial class MainWindow : Window
                 var sourceText = SourceText.From(dialog.OpenFile());
                 var tree = this._languageParserSimulator.ParseSyntaxTree(sourceText);
                 this.FillinSyntaxTree(tree);
+                this.FillInDocument(tree);
             }
         }
     }
@@ -97,101 +99,173 @@ public partial class MainWindow : Window
         }
     }
 
+    private void FillInDocument(SyntaxTree tree)
+    {
+        var block = new Paragraph();
+        var document = new FlowDocument(block)
+        {
+            FontFamily = new("Fira Code")
+        };
+
+        foreach (var token in tree.GetRoot().DescendantTokens(descendIntoTrivia: true))
+        {
+            processTriviaList(token.LeadingTrivia);
+            append(makeRun(this._lexerSimulator.GetTokenKind(token.RawKind), token.Text));
+            processTriviaList(token.TrailingTrivia);
+
+            void processTriviaList(SyntaxTriviaList triviaList)
+            {
+                foreach (var trivia in triviaList)
+                {
+                    var run = makeRun(this._lexerSimulator.GetTokenKind(trivia.RawKind), trivia.ToString());
+                    append(run);
+                }
+            }
+        }
+
+        this.docViewer.Document = document;
+
+        Run makeRun(TokenKind kind, string text) => new()
+        {
+            Text = text,
+            Foreground = kind switch
+            {
+                TokenKind.None => Brushes.Black,
+                TokenKind.Keyword => Brushes.Blue,
+                TokenKind.Operator => Brushes.DarkGray,
+                TokenKind.Punctuation => Brushes.DarkBlue,
+                TokenKind.NumericLiteral => Brushes.DarkOrange,
+                TokenKind.StringLiteral => Brushes.DarkRed,
+                TokenKind.WhiteSpace => Brushes.Transparent,
+                TokenKind.Comment => Brushes.DarkGreen,
+                TokenKind.Documentation => Brushes.DarkOliveGreen,
+                _ => Brushes.Black,
+            },
+            Background = kind switch
+            {
+                _ => Brushes.Transparent
+            }
+        };
+        void append(Run run) => block.Inlines.Add(run);
+    }
+
     private void treeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
         var nodeOrTokenOrTrivia = (e.NewValue as TreeViewItem)?.Tag;
-        Debug.Assert(nodeOrTokenOrTrivia is not null);
-        var basicProperties = new Dictionary<string, string>();
-        var properties = nodeOrTokenOrTrivia.GetType()
-            .GetProperties()
-            .Where(pi => pi.CanRead && !pi.IsSpecialName)
-            .OrderBy(pi => pi.Name)
-            .ToDictionary(
-                pi => pi.Name,
-                pi => pi.GetValue(nodeOrTokenOrTrivia)?.ToString()
-            );
-        if (nodeOrTokenOrTrivia is SyntaxNode)
-        {
-            var node = (SyntaxNode)nodeOrTokenOrTrivia;
-            basicProperties.Add("类型", node.GetType().Name);
-            basicProperties.Add("种类", this._languageParserSimulator.GetKindText(node.RawKind));
-        }
-        else if (nodeOrTokenOrTrivia is SyntaxToken)
-        {
-            var token = (SyntaxToken)nodeOrTokenOrTrivia;
-            basicProperties.Add("类型", nameof(SyntaxToken));
-            basicProperties.Add("种类", this._languageParserSimulator.GetKindText(token.RawKind));
-        }
-        else if (nodeOrTokenOrTrivia is SyntaxTrivia)
-        {
-            var trivia = (SyntaxTrivia)nodeOrTokenOrTrivia;
-            basicProperties.Add("类型", nameof(SyntaxTrivia));
-            basicProperties.Add("种类", this._languageParserSimulator.GetKindText(trivia.RawKind));
-        }
+        if (nodeOrTokenOrTrivia is null) return;
 
-        UpdateBasicProperties();
-        UpdateProperties();
-
-        void UpdateBasicProperties()
         {
-            this.gridBasicProperties.RowDefinitions.Clear();
-            this.gridBasicProperties.Children.Clear();
-            var index = 0;
-            foreach (var basicProperty in basicProperties)
+            var basicProperties = new Dictionary<string, string>();
+            var properties = nodeOrTokenOrTrivia.GetType()
+                .GetProperties()
+                .Where(pi => pi.CanRead && !pi.IsSpecialName)
+                .OrderBy(pi => pi.Name)
+                .ToDictionary(
+                    pi => pi.Name,
+                    pi => pi.GetValue(nodeOrTokenOrTrivia)?.ToString()
+                );
+            if (nodeOrTokenOrTrivia is SyntaxNode)
             {
-                var key = new TextBlock()
-                {
-                    Text = basicProperty.Key,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                this.gridBasicProperties.Children.Add(key);
-                Grid.SetRow(key, index);
-                Grid.SetColumn(key, 0);
-
-                var value = new TextBlock() { Text = basicProperty.Value };
-                this.gridBasicProperties.Children.Add(value);
-                Grid.SetRow(value, index);
-                Grid.SetColumn(value, 1);
-
-                index++;
+                var node = (SyntaxNode)nodeOrTokenOrTrivia;
+                basicProperties.Add("类型", node.GetType().Name);
+                basicProperties.Add("种类", this._languageParserSimulator.GetKindText(node.RawKind));
             }
-            for (var i = 0; i < index; i++)
+            else if (nodeOrTokenOrTrivia is SyntaxToken)
             {
-                this.gridBasicProperties.RowDefinitions.Add(new() { Height = new(18D) });
+                var token = (SyntaxToken)nodeOrTokenOrTrivia;
+                basicProperties.Add("类型", nameof(SyntaxToken));
+                basicProperties.Add("种类", this._languageParserSimulator.GetKindText(token.RawKind));
+            }
+            else if (nodeOrTokenOrTrivia is SyntaxTrivia)
+            {
+                var trivia = (SyntaxTrivia)nodeOrTokenOrTrivia;
+                basicProperties.Add("类型", nameof(SyntaxTrivia));
+                basicProperties.Add("种类", this._languageParserSimulator.GetKindText(trivia.RawKind));
+            }
+
+            UpdateBasicProperties();
+            UpdateProperties();
+
+            void UpdateBasicProperties()
+            {
+                this.gridBasicProperties.RowDefinitions.Clear();
+                this.gridBasicProperties.Children.Clear();
+                var index = 0;
+                foreach (var basicProperty in basicProperties)
+                {
+                    var key = new TextBlock()
+                    {
+                        Text = basicProperty.Key,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    this.gridBasicProperties.Children.Add(key);
+                    Grid.SetRow(key, index);
+                    Grid.SetColumn(key, 0);
+
+                    var value = new TextBlock() { Text = basicProperty.Value };
+                    this.gridBasicProperties.Children.Add(value);
+                    Grid.SetRow(value, index);
+                    Grid.SetColumn(value, 1);
+
+                    index++;
+                }
+                for (var i = 0; i < index; i++)
+                {
+                    this.gridBasicProperties.RowDefinitions.Add(new() { Height = new(18D) });
+                }
+            }
+            void UpdateProperties()
+            {
+                this.gridProperties.RowDefinitions.Clear();
+                this.gridProperties.Children.Clear();
+                var index = 0;
+                foreach (var property in properties)
+                {
+                    if (property.Value is null) continue;
+
+                    var key = new TextBlock()
+                    {
+                        Text = property.Key,
+                        Padding = new(2D, 1D, 20D, 1D)
+                    };
+                    this.gridProperties.Children.Add(key);
+                    Grid.SetRow(key, index);
+                    Grid.SetColumn(key, 0);
+
+                    var value = new TextBlock()
+                    {
+                        Text = property.Value,
+                        Padding = new(2D, 1D, 2D, 1D)
+                    };
+                    this.gridProperties.Children.Add(value);
+                    Grid.SetRow(value, index);
+                    Grid.SetColumn(value, 1);
+
+                    index++;
+                }
+                for (var i = 0; i < index; i++)
+                {
+                    this.gridProperties.RowDefinitions.Add(new() { Height = new(18D) });
+                }
             }
         }
-        void UpdateProperties()
+
         {
-            this.gridProperties.RowDefinitions.Clear();
-            this.gridProperties.Children.Clear();
-            var index = 0;
-            foreach (var property in properties)
+            TextSpan span;
+            if (nodeOrTokenOrTrivia is SyntaxNode)
             {
-                if (property.Value is null) continue;
-
-                var key = new TextBlock()
-                {
-                    Text = property.Key,
-                    Padding = new(2D, 1D, 20D, 1D)
-                };
-                this.gridProperties.Children.Add(key);
-                Grid.SetRow(key, index);
-                Grid.SetColumn(key, 0);
-
-                var value = new TextBlock()
-                {
-                    Text = property.Value,
-                    Padding = new(2D, 1D, 2D, 1D)
-                };
-                this.gridProperties.Children.Add(value);
-                Grid.SetRow(value, index);
-                Grid.SetColumn(value, 1);
-
-                index++;
+                var node = (SyntaxNode)nodeOrTokenOrTrivia;
+                span = node.FullSpan;
             }
-            for (var i = 0; i < index; i++)
+            else if (nodeOrTokenOrTrivia is SyntaxToken)
             {
-                this.gridProperties.RowDefinitions.Add(new() { Height = new(18D) });
+                var token = (SyntaxToken)nodeOrTokenOrTrivia;
+                span = token.Span;
+            }
+            else if (nodeOrTokenOrTrivia is SyntaxTrivia)
+            {
+                var trivia = (SyntaxTrivia)nodeOrTokenOrTrivia;
+                span = trivia.FullSpan;
             }
         }
     }

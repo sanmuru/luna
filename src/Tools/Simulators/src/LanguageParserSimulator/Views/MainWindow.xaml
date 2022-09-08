@@ -99,8 +99,10 @@
             <GridSplitter
                 Grid.Column="0" Grid.RowSpan="2"
                 Width="5"/>
-            
-            <FlowDocumentScrollViewer Grid.Column="1" x:Name="docViewer" BorderThickness="1"/>
+
+            <FlowDocumentScrollViewer x:Name="docViewer"
+                Grid.Row="0" Grid.Column="1" Grid.RowSpan="2"
+                BorderThickness="1"/>
 
         </Grid>
     </Grid>
