@@ -165,7 +165,11 @@ internal abstract class SlidingTextWindow : IDisposable
         }
     }
 
-    protected bool MoreChars()
+    /// <summary>
+    /// 移动或扩充字符缓冲数组以容纳更多的字符。
+    /// </summary>
+    /// <returns>若操作成功，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
+    protected internal bool MoreChars()
     {
         if (this._offset >= this._characterWindowCount)
         {

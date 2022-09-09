@@ -423,6 +423,36 @@ internal partial class Lexer : AbstractLexer
         return false;
     }
 
+    /// <summary>
+    /// 将字符添加到标识符缓冲中。
+    /// </summary>
+    /// <param name="c">要添加的字符，将会是标识符的一部分。</param>
+    private void AddIdentifierChar(char c)
+    {
+        if (this._identifierLength >= this._identifierBuffer.Length)
+            this.GrowIdentifierBuffer();
+
+        this._identifierBuffer[this._identifierLength++] = c;
+    }
+
+    /// <summary>
+    /// 翻倍标识符缓冲数组<see cref="_identifierBuffer"/>的容量。
+    /// </summary>
+    private void GrowIdentifierBuffer()
+    {
+        var tmp = new char[this._identifierBuffer.Length * 2];
+        Array.Copy(this._identifierBuffer, tmp, this._identifierBuffer.Length);
+        this._identifierBuffer = tmp;
+    }
+
+    /// <summary>
+    /// 清空标识符缓冲。
+    /// </summary>
+    private void ResetIdentifierBuffer()
+    {
+        this._identifierLength = 0;
+    }
+
     private void CheckFeatureAvaliability(MessageID feature)
     {
         var info = feature.GetFeatureAvailabilityDiagnosticInfo(this.Options);
