@@ -1109,6 +1109,13 @@ public partial class LanguageParserTests
             FieldListTest(table.Fields);
             Assert.That.AtEndOfFile(parser);
         }
+        { // 以分隔符结尾的非空的表构造表达式
+            var parser = LanguageParserTests.CreateLanguageParser($"{{{FieldListSouce},}}");
+            var table = parser.ParseTableConstructorExpression();
+            Assert.That.NotContainsDiagnostics(table);
+            FieldListTest(table.Fields);
+            Assert.That.AtEndOfFile(parser);
+        }
     }
 
     [TestMethod]

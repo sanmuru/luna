@@ -74,12 +74,12 @@ partial class LanguageParser
 #endif
         SeparatedSyntaxList<FieldSyntax> ParseFieldList() =>
         this.ParseSeparatedSyntaxList(
-            predicateNode: index =>
-            {
-                if (index == 0) // 解析首个字段时，必须确保是可能的字段。若不是，则立刻退出解析并产生一个空的字段列表。
-                    return this.IsPossibleField();
-                return true; // 从解析第二个字段开始，无条件向后解析，若不是可能的字段，则将返回缺失的字段。
-            },
+            predicateNode: _ =>
+                this.IsPossibleField() ||                // 是可能的字段
+                this.IsPossibleFieldListSeparator() &&   // 是可能的字段列表分隔（此时字段缺失）
+                this.CurrentTokenKind is not (           // 遇到以下语法标志都将不尝试解析字段并直接退出：
+                    SyntaxKind.CloseBraceToken or        // 表示字段列表的结尾
+                    SyntaxKind.EndOfFileToken),          // 表示文件结尾
             parseNode: (_, _) => this.ParseField(),
             predicateSeparator: _ => this.IsPossibleFieldListSeparator(),
             parseSeparator: (_, missing) => missing ? this.CreateMissingFieldListSeparator() : this.EatToken(),

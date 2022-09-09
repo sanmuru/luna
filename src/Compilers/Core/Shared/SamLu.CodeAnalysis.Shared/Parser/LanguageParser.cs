@@ -292,6 +292,12 @@ internal partial class LanguageParser : SyntaxParser
                     index++;
                     this.Release(ref resetPoint);
                 }
+                else if (allowTrailingSeparator) // 刚才解析的分隔为最后一个语法节点，处理结束后直接退出循环。
+                {
+                    builder.AddSeparator(separator);
+                    this.Release(ref resetPoint);
+                    break;
+                }
                 else // 无法继续，恢复到上一个重置点并退出循环。
                 {
                     this.Reset(ref resetPoint);
@@ -302,18 +308,27 @@ internal partial class LanguageParser : SyntaxParser
         }
 
         // 处理缺失（最小数量不足）的部分。
-        while (index < minCount)
+        if (index < minCount)
         {
             const bool missing = true;
 
-            var separator = parseSeparator(index - 1, missing && (!allowTrailingSeparator || !predicateSeparator(index - 1)));
-            if (allowTrailingSeparator) allowTrailingSeparator = false;
-            builder.AddSeparator(separator);
+            if (index == 0)
+            {
+                var node = parseNode(0, missing);
+                builder.Add(node);
+            }
 
-            var node = parseNode(index, missing);
-            builder.Add(node);
+            index = 1;
+            while (index < minCount)
+            {
+                var separator = parseSeparator(index - 1, missing);
+                builder.AddSeparator(separator);
 
-            index++;
+                var node = parseNode(index, missing);
+                builder.Add(node);
+
+                index++;
+            }
         }
     }
 
