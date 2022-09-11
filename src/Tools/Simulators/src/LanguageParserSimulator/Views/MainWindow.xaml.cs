@@ -113,14 +113,14 @@ public partial class MainWindow : Window
         foreach (var token in this._lexerSimulator.LexToEnd(sourceText))
         {
             processTriviaList(token.LeadingTrivia);
-            append(makeRun(this._lexerSimulator.GetTokenKind(token.RawKind), token.Text));
+            append(makeRun(this._lexerSimulator.GetTokenKind(token.RawKind), token.GetDiagnostics(), token.Text));
             processTriviaList(token.TrailingTrivia);
 
             void processTriviaList(SyntaxTriviaList triviaList)
             {
                 foreach (var trivia in triviaList)
                 {
-                    var run = makeRun(this._lexerSimulator.GetTokenKind(trivia.RawKind), trivia.ToString());
+                    var run = makeRun(this._lexerSimulator.GetTokenKind(trivia.RawKind), Enumerable.Empty<Diagnostic>(), trivia.ToString());
                     append(run);
                 }
             }
@@ -128,27 +128,53 @@ public partial class MainWindow : Window
 
         this.docViewer.Document = document;
 
-        Run makeRun(TokenKind kind, string text) => new()
+        Run makeRun(TokenKind kind, IEnumerable<Diagnostic> diagnostics, string text)
         {
-            Text = text,
-            Foreground = kind switch
+            var run = new Run()
             {
-                TokenKind.None => Brushes.Black,
-                TokenKind.Keyword => Brushes.Blue,
-                TokenKind.Operator => Brushes.DarkGray,
-                TokenKind.Punctuation => Brushes.DarkBlue,
-                TokenKind.NumericLiteral => Brushes.DarkOrange,
-                TokenKind.StringLiteral => Brushes.DarkRed,
-                TokenKind.WhiteSpace => Brushes.Transparent,
-                TokenKind.Comment => Brushes.DarkGreen,
-                TokenKind.Documentation => Brushes.DarkOliveGreen,
-                _ => Brushes.Black,
-            },
-            Background = kind switch
+                Text = text,
+                Foreground = kind switch
+                {
+                    TokenKind.None => Brushes.Black,
+                    TokenKind.Keyword => Brushes.Blue,
+                    TokenKind.Identifier => Brushes.CornflowerBlue,
+                    TokenKind.Operator => Brushes.DarkBlue,
+                    TokenKind.Punctuation => Brushes.DarkSlateBlue,
+                    TokenKind.NumericLiteral => Brushes.Goldenrod,
+                    TokenKind.StringLiteral => Brushes.DarkRed,
+                    TokenKind.WhiteSpace => Brushes.Transparent,
+                    TokenKind.Comment => Brushes.OliveDrab,
+                    TokenKind.Documentation => Brushes.Olive,
+                    TokenKind.Skipped => Brushes.DarkGray,
+                    _ => Brushes.Black,
+                },
+                Background = kind switch
+                {
+                    _ => Brushes.Transparent
+                },
+            };
+            foreach (var diagnostic in diagnostics)
             {
-                _ => Brushes.Transparent
+                var decoration = new TextDecoration()
+                {
+                    Location = TextDecorationLocation.Underline,
+                    Pen = new()
+                    {
+                        Brush = diagnostic.Severity switch
+                        {
+                            DiagnosticSeverity.Error => Brushes.DarkRed,
+                            DiagnosticSeverity.Warning => Brushes.DarkGreen,
+                            DiagnosticSeverity.Info => Brushes.SkyBlue,
+                            DiagnosticSeverity.Hidden => Brushes.LightGray,
+                            _ => Brushes.Transparent
+                        },
+                        Thickness = 1D
+                    }
+                };
+                run.TextDecorations.Add(decoration);
             }
-        };
+            return run;
+        }
         void append(Run run) => block.Inlines.Add(run);
     }
 

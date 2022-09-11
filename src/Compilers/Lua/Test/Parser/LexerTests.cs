@@ -57,29 +57,6 @@ public partial class LexerTests
         }
     }
 
-    /// <summary>
-    /// 精准抽样测试，因为发现某些语法标志被错误处理。
-    /// </summary>
-    [TestMethod]
-    public void SampleLexTests()
-    {
-        { // 输入中第一个'deg'被分析成'de'和'g'，后续的正常
-            var lexer = LexerTests.CreateLexer("a = to(\"tocfunction\", math.deg)deg deg");
-            lexer.LexSyntaxToken();
-            lexer.LexSyntaxToken();
-            lexer.LexSyntaxToken();
-            lexer.LexSyntaxToken();
-            lexer.LexSyntaxToken();
-            lexer.LexSyntaxToken();
-            Assert.AreEqual("math", lexer.LexSyntaxToken().Text);
-            Assert.AreEqual(".", lexer.LexSyntaxToken().Text);
-            Assert.AreEqual("deg", lexer.LexSyntaxToken().Text);
-            lexer.LexSyntaxToken();
-            Assert.AreEqual("deg", lexer.LexSyntaxToken().Text);
-            Assert.AreEqual("deg", lexer.LexSyntaxToken().Text);
-        }
-    }
-
     #region 正向测试
     [TestMethod]
     public void NumericLiteralLexTests()
