@@ -1374,7 +1374,7 @@ public partial class LanguageParserTests
     private const string FieldListSouce = """
         integer = 5,
         float = 5.0,
-        [a+b]=c^d,
+        [a+b]=c^d;
         true,
         'string'
         """;

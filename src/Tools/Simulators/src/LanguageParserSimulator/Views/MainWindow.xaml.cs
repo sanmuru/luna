@@ -54,6 +54,7 @@ public partial class MainWindow : Window
                 var tree = this._languageParserSimulator.ParseSyntaxTree(sourceText);
                 this.FillinSyntaxTree(tree);
                 this.FillInDocument(sourceText);
+                this.ShowProperties();
             }
         }
     }
@@ -154,6 +155,17 @@ public partial class MainWindow : Window
     private void treeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
         var nodeOrTokenOrTrivia = (e.NewValue as TreeViewItem)?.Tag;
+        this.ShowProperties(nodeOrTokenOrTrivia);
+    }
+
+    private void ShowProperties(object? nodeOrTokenOrTrivia = null)
+    {
+        this.gridBasicProperties.RowDefinitions.Clear();
+        this.gridBasicProperties.Children.Clear();
+
+        this.gridProperties.RowDefinitions.Clear();
+        this.gridProperties.Children.Clear();
+
         if (nodeOrTokenOrTrivia is null) return;
 
         {
@@ -190,8 +202,6 @@ public partial class MainWindow : Window
 
             void UpdateBasicProperties()
             {
-                this.gridBasicProperties.RowDefinitions.Clear();
-                this.gridBasicProperties.Children.Clear();
                 var index = 0;
                 foreach (var basicProperty in basicProperties)
                 {
@@ -218,8 +228,6 @@ public partial class MainWindow : Window
             }
             void UpdateProperties()
             {
-                this.gridProperties.RowDefinitions.Clear();
-                this.gridProperties.Children.Clear();
                 var index = 0;
                 foreach (var property in properties)
                 {
