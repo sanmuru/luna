@@ -1,5 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection.Metadata;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -253,9 +255,6 @@ public partial class MainWindow : Window
         {
             var document = this.docViewer.Document;
 
-            new TextRange(document.ContentStart, document.ContentEnd)
-                .ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Transparent);
-
             TextSpan span = default;
             if (nodeOrTokenOrTrivia is SyntaxNode)
             {
@@ -273,8 +272,9 @@ public partial class MainWindow : Window
                 span = trivia.FullSpan;
             }
 
-            new TextRange(GetAbsoluteCharaterPosition(span.Start), GetAbsoluteCharaterPosition(span.End))
-                .ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.LightGray);
+            this.HighlightTextRange(document,
+                new TextRange(GetAbsoluteCharaterPosition(span.Start), GetAbsoluteCharaterPosition(span.End))
+            );
 
             TextPointer GetAbsoluteCharaterPosition(int offset)
             {
@@ -310,6 +310,22 @@ public partial class MainWindow : Window
                 }
                 return pointer;
             }
+        }
+    }
+
+    private TextRange? _textRange;
+    private void HighlightTextRange(FlowDocument document, TextRange? newRange = null)
+    {
+        if (this._textRange is not null)
+        {
+            this._textRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.Transparent);
+            this._textRange = null;
+        }
+
+        if (newRange is not null)
+        {
+            this._textRange = newRange;
+            newRange.ApplyPropertyValue(TextElement.BackgroundProperty, Brushes.LightGray);
         }
     }
 }
