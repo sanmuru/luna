@@ -136,7 +136,7 @@ internal partial class LanguageParser : SyntaxParser
                 builder.Add(visitor is null ? token : visitor.Visit(token));
             }
             while (predicate(this.CurrentToken));
-            return this._syntaxFactory.SkippedTokensTrivia(this._pool.ToListAndFree(builder));
+            return this._pool.ToListAndFree(builder).Node;
         }
 
         return null;

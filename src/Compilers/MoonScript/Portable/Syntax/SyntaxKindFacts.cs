@@ -350,6 +350,19 @@ public static partial class SyntaxFacts
         };
 
     /// <summary>
+    /// 指定语法种类是否表示注释琐碎内容。
+    /// </summary>
+    /// <param name="kind">要查询的语法种类。</param>
+    /// <returns>若<paramref name="kind"/>表示注释琐碎内容，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
+    public static bool IsCommentTrivia(SyntaxKind kind) =>
+        kind switch
+        {
+            >= SyntaxKind.SingleLineCommentTrivia and <= SyntaxKind.MultiLineCommentTrivia => true,
+
+            _ => false
+        };
+
+    /// <summary>
     /// 指定语法种类是否表示名称。
     /// </summary>
     /// <param name="kind">要查询的语法种类。</param>

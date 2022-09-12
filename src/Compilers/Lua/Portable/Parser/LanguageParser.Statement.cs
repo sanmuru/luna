@@ -22,14 +22,18 @@ partial class LanguageParser
                 // 正在解析if/elseif语句时遇到elseif关键字时停止。
                 if (this._syntaxFactoryContext.IsInIfOrElseIf && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) return false;
 
-                // 正常处理处返回语句外的其他语句。
+                // 正常处理除返回语句外的其他语句。
                 if (this.CurrentTokenKind != SyntaxKind.ReturnKeyword) return true;
 
                 // 尝试解析这个返回语句。
                 var resetPoint = this.GetResetPoint();
                 var returnStat = this.ParseReturnStatement();
 
-                if (this._syntaxFactoryContext.IsInIfOrElseIf && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) // 正在解析if/elseif语句时遇到elseif语句视为不合法语句。
+                // 跳过返回语句后方所有连续的空语句。
+                while (this.CurrentTokenKind == SyntaxKind.SemicolonToken)
+                    this.EatToken();
+
+                if (this._syntaxFactoryContext.IsInIfOrElseIf && this.CurrentTokenKind == SyntaxKind.ElseIfKeyword) // 正在解析if/elseif语句时遇到elseif语句时停止。
                 {
                     this.Reset(ref resetPoint);
                     this.Release(ref resetPoint);

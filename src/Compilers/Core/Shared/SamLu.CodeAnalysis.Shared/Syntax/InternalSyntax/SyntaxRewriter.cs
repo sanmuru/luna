@@ -57,7 +57,8 @@ internal partial class
                 alternate = new(n);
                 alternate.AddRange(list, 0, i);
             }
-            else if (alternate is not null)
+            
+            if (alternate is not null)
             {
                 Debug.Assert(visited is not null && visited.Kind != SyntaxKind.None, "无法移除节点。");
                 alternate.Add(visited);

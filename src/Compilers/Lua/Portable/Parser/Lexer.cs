@@ -243,7 +243,7 @@ internal partial class Lexer
                         break;
 
                     case '=':
-                        for (int i = 3; ; i++)
+                        for (int i = 2; ; i++)
                         {
                             char nextChar = this.TextWindow.PeekChar(i);
                             if (nextChar == '=') continue;

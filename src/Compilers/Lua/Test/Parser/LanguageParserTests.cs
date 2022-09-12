@@ -1451,7 +1451,7 @@ public partial class LanguageParserTests
             var parser = LanguageParserTests.CreateLanguageParser("");
             var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
-            Assert.AreEqual(0, block.Statements.Count);
+            Assert.That.IsEmptyList(block.Statements);
             Assert.IsNull(block.Return);
             Assert.That.AtEndOfFile(parser);
         }
@@ -1459,7 +1459,7 @@ public partial class LanguageParserTests
             var parser = LanguageParserTests.CreateLanguageParser("return nil");
             var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
-            Assert.AreEqual(0, block.Statements.Count);
+            Assert.That.IsEmptyList(block.Statements);
             Assert.IsNotNull(block.Return);
             Assert.That.AtEndOfFile(parser);
         }
@@ -1467,7 +1467,7 @@ public partial class LanguageParserTests
             var parser = LanguageParserTests.CreateLanguageParser("print 'Hello world!'");
             var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
-            Assert.AreEqual(1, block.Statements.Count);
+            Assert.That.IsNotEmptyList(block.Statements, 1);
             Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
             Assert.IsNull(block.Return);
             Assert.That.AtEndOfFile(parser);
@@ -1479,7 +1479,7 @@ public partial class LanguageParserTests
                 """);
             var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
-            Assert.AreEqual(1, block.Statements.Count);
+            Assert.That.IsNotEmptyList(block.Statements, 1);
             Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
             Assert.IsNotNull(block.Return);
             Assert.That.AtEndOfFile(parser);
@@ -1492,7 +1492,7 @@ public partial class LanguageParserTests
                 """);
             var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.ContainsDiagnostics(block);
-            Assert.AreEqual(3, block.Statements.Count);
+            Assert.That.IsNotEmptyList(block.Statements, 3);
 
             Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
             Assert.That.NotContainsDiagnostics(block.Statements[0]!);
@@ -1515,7 +1515,7 @@ public partial class LanguageParserTests
                 """);
             var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.ContainsDiagnostics(block);
-            Assert.AreEqual(3, block.Statements.Count);
+            Assert.That.IsNotEmptyList(block.Statements, 3);
 
             Assert.IsInstanceOfType(block.Statements[0]!, typeof(InvocationStatementSyntax));
             Assert.That.NotContainsDiagnostics(block.Statements[0]!);
@@ -1530,6 +1530,17 @@ public partial class LanguageParserTests
             Assert.That.NotContainsDiagnostics(block.Return!);
             Assert.That.AtEndOfFile(parser);
         }
+        { // 返回语句后方有不少于一个空语句
+            var parser = LanguageParserTests.CreateLanguageParser("""
+                return nil;
+                ;
+                """);
+            var block = parser.ParseBlock(SyntaxKind.Chunk);
+            Assert.That.NotContainsDiagnostics(block);
+            Assert.That.IsEmptyList(block.Statements);
+            Assert.IsNotNull(block.Return);
+            Assert.That.AtEndOfFile(parser);
+        }
         {
             var parser = LanguageParserTests.CreateLanguageParser("""
                 local t = { 2, 3, 5, 7, 11 }
@@ -1540,7 +1551,7 @@ public partial class LanguageParserTests
                 """);
             var block = parser.ParseBlock(SyntaxKind.Chunk);
             Assert.That.NotContainsDiagnostics(block);
-            Assert.AreEqual(3, block.Statements.Count);
+            Assert.That.IsNotEmptyList(block.Statements, 3);
 
             Assert.IsInstanceOfType(block.Statements[0]!, typeof(LocalDeclarationStatementSyntax));
             Assert.IsInstanceOfType(block.Statements[1]!, typeof(LocalDeclarationStatementSyntax));

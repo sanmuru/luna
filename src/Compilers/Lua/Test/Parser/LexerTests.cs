@@ -118,13 +118,38 @@ public partial class LexerTests
             first line
             second line
             ]===]
-            """, "first line\nsecond line\n"); // 字面多行，如果第一行没有字符则忽略这行。
+            """, "first line\nsecond line\n"); // 多行原始字符串，如果第一行没有字符则忽略这行。
+        // 测试长括号级数从0-100的多行原始字符串。
+        {
+            const string raw = "some text";
+            const int maxLevel = 100;
+            var buffer = new char[maxLevel + 2];
+            for (int level = 0; level <= maxLevel; level++)
+            {
+                string openLongBracket, closeLongBracket;
+                // 构造左右长方括号。
+                {
+                    for (int i = 1; i <= level; i++) buffer[i] = '=';
+
+                    buffer[0] = buffer[level + 1] = '[';
+                    openLongBracket = new string(buffer, 0, level + 2);
+
+                    buffer[0] = buffer[level + 1] = ']';
+                    closeLongBracket = new string(buffer, 0, level + 2);
+                }
+
+                var source = openLongBracket + raw + closeLongBracket;
+
+                LiteralLexTest(source, raw);
+            }
+        }
     }
 
     [TestMethod]
     public void CommentLexTests()
     {
-        string source = """
+        {
+            string source = """
             --     a single line comment.       
             --[=a=[also a single line comment because of character 'a'.]=a=]
             -- [==[another single line comment because of the space before long bracket.]==]
@@ -135,25 +160,25 @@ public partial class LexerTests
             many lines.
             ]==]     --last single line comment.
             """;
-        Lexer lexer = LexerTests.CreateLexer(source);
-        LexerMode mode = LexerMode.Syntax;
-        SyntaxToken token;
+            Lexer lexer = LexerTests.CreateLexer(source);
+            LexerMode mode = LexerMode.Syntax;
+            SyntaxToken token;
 
-        token = lexer.Lex(mode);
-        var list = token.LeadingTrivia;
-        Assert.IsTrue(list.Count == 9);
+            token = lexer.Lex(mode);
+            var list = token.LeadingTrivia.Nodes.OfType<SyntaxTrivia>().Where(trivia => SyntaxFacts.IsCommentTrivia(trivia.Kind)).ToArray();
+            Assert.IsTrue(list.Length == 5);
 
-        Assert.IsTrue(list[0]!.Kind == SyntaxKind.SingleLineCommentTrivia);
-        Assert.AreEqual(((SyntaxTrivia)list[0]!).Text, "--     a single line comment.       ");
+            Assert.IsTrue(list[0].Kind == SyntaxKind.SingleLineCommentTrivia);
+            Assert.AreEqual(((SyntaxTrivia)list[0]).Text, "--     a single line comment.       ");
 
-        Assert.IsTrue(list[2]!.Kind == SyntaxKind.SingleLineCommentTrivia);
-        Assert.AreEqual(((SyntaxTrivia)list[2]!).Text, "--[=a=[also a single line comment because of character 'a'.]=a=]");
+            Assert.IsTrue(list[1].Kind == SyntaxKind.SingleLineCommentTrivia);
+            Assert.AreEqual(((SyntaxTrivia)list[1]).Text, "--[=a=[also a single line comment because of character 'a'.]=a=]");
 
-        Assert.IsTrue(list[4]!.Kind == SyntaxKind.SingleLineCommentTrivia);
-        Assert.AreEqual(((SyntaxTrivia)list[4]!).Text, "-- [==[another single line comment because of the space before long bracket.]==]");
+            Assert.IsTrue(list[2].Kind == SyntaxKind.SingleLineCommentTrivia);
+            Assert.AreEqual(((SyntaxTrivia)list[2]).Text, "-- [==[another single line comment because of the space before long bracket.]==]");
 
-        Assert.IsTrue(list[6]!.Kind == SyntaxKind.MultiLineCommentTrivia);
-        Assert.AreEqual(((SyntaxTrivia)list[6]!).Text, """
+            Assert.IsTrue(list[3].Kind == SyntaxKind.MultiLineCommentTrivia);
+            Assert.AreEqual(((SyntaxTrivia)list[3]).Text, """
             --[==[a multiline comment
             that,
             though contains other level of [=====[long brackets]=====], can
@@ -162,8 +187,42 @@ public partial class LexerTests
             ]==]
             """);
 
-        Assert.IsTrue(list[8]!.Kind == SyntaxKind.SingleLineCommentTrivia);
-        Assert.AreEqual(((SyntaxTrivia)list[8]!).Text, "--last single line comment.");
+            Assert.IsTrue(list[4].Kind == SyntaxKind.SingleLineCommentTrivia);
+            Assert.AreEqual(((SyntaxTrivia)list[4]).Text, "--last single line comment.");
+        }
+
+        // 测试长括号级数从0-100的多行注释。
+        {
+            const string raw = "some text";
+            const int maxLevel = 100;
+            var buffer = new char[maxLevel + 2];
+            for (int level = 0; level <= maxLevel; level++)
+            {
+                string openLongBracket, closeLongBracket;
+                // 构造左右长方括号。
+                {
+                    for (int i = 1; i <= level; i++) buffer[i] = '=';
+
+                    buffer[0] = buffer[level + 1] = '[';
+                    openLongBracket = new string(buffer, 0, level + 2);
+
+                    buffer[0] = buffer[level + 1] = ']';
+                    closeLongBracket = new string(buffer, 0, level + 2);
+                }
+
+                var source = "--" + openLongBracket + raw + closeLongBracket;
+
+                Lexer lexer = LexerTests.CreateLexer(source);
+                LexerMode mode = LexerMode.Syntax;
+                SyntaxToken token;
+
+                token = lexer.Lex(mode);
+                var list = token.LeadingTrivia;
+                Assert.IsTrue(list.Count == 1);
+
+                Assert.IsTrue(list[0]!.Kind == SyntaxKind.MultiLineCommentTrivia);
+            }
+        }
     }
     #endregion
 }

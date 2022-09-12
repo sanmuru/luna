@@ -162,13 +162,13 @@ public partial class MainWindow : Window
                     {
                         Brush = diagnostic.Severity switch
                         {
-                            DiagnosticSeverity.Error => Brushes.DarkRed,
-                            DiagnosticSeverity.Warning => Brushes.DarkGreen,
-                            DiagnosticSeverity.Info => Brushes.SkyBlue,
+                            DiagnosticSeverity.Error => Brushes.Red,
+                            DiagnosticSeverity.Warning => Brushes.Green,
+                            DiagnosticSeverity.Info => Brushes.Blue,
                             DiagnosticSeverity.Hidden => Brushes.LightGray,
                             _ => Brushes.Transparent
                         },
-                        Thickness = 1D
+                        Thickness = 5D
                     }
                 };
                 run.TextDecorations.Add(decoration);

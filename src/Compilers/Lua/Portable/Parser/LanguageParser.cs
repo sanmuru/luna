@@ -39,6 +39,14 @@ partial class LanguageParser
         this._syntaxFactoryContext.LeaveStructure(structure);
 
         var returnStat = this.CurrentTokenKind == SyntaxKind.ReturnKeyword ? this.ParseReturnStatement() : null;
+        if (returnStat is not null)
+        {
+            // 跳过后方的连续的表示空语句的分号标志。
+            var skippedSyntax = this.SkipTokens(token => token.Kind == SyntaxKind.SemicolonToken);
+            if (skippedSyntax is not null)
+                returnStat = this.AddTrailingSkippedSyntax(returnStat, skippedSyntax);
+        }
+
         var block = this._syntaxFactory.Block(statements, returnStat);
 
         this._pool.Free(statementBuilder);

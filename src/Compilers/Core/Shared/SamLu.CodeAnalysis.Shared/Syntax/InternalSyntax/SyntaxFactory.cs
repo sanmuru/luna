@@ -115,10 +115,12 @@ internal static partial class SyntaxFactory
         {
             for (int i = 3; i < text.Length; i++)
             {
-                if (i == '[')
+                if (text[i] == '[')
                     return SyntaxTrivia.Create(SyntaxKind.MultiLineCommentTrivia, text);
-                else if (i == '=')
+                else if (text[i] == '=')
                     continue;
+                else // 不符合左长方括号的结构，判定为非多行注释。
+                    break;
             }
         }
 
