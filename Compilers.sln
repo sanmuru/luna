@@ -12,8 +12,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AnalyzerDriver", "src\Compi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{E35DA3D1-16C0-4318-9187-6B664F12A870}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RunTests", "src\Tools\Source\RunTests\RunTests.csproj", "{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{3CDEA9FB-CD44-4AB4-98A8-5537AAA2169B}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.CodeAnalysis.PooledObjects", "src\Dependencies\PooledObjects\Microsoft.CodeAnalysis.PooledObjects.shproj", "{C1930979-C824-496B-A630-70F5369A636F}"
@@ -100,7 +98,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Luna.Compilers.Simulators.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoslynSimulators", "src\Tools\Simulators\src\RoslynSimulators\RoslynSimulators.csproj", "{4216EEF0-25D5-4CAD-BF2C-A8097B483F0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LanguageParserSimulator", "src\Tools\Simulators\src\LanguageParserSimulator\LanguageParserSimulator.csproj", "{9D2FBE1E-9980-43A6-B8BD-9226E67DB896}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LanguageParserSimulator", "src\Tools\Simulators\src\LanguageParserSimulator\LanguageParserSimulator.csproj", "{9D2FBE1E-9980-43A6-B8BD-9226E67DB896}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,12 +113,6 @@ Global
 		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Testing|Any CPU.ActiveCfg = Testing|Any CPU
 		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C}.Testing|Any CPU.Build.0 = Testing|Any CPU
-		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}.Testing|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA}.Testing|Any CPU.Build.0 = Debug|Any CPU
 		{7AD4FE65-9A30-41A6-8004-AA8F89BCB7F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7AD4FE65-9A30-41A6-8004-AA8F89BCB7F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7AD4FE65-9A30-41A6-8004-AA8F89BCB7F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -271,7 +263,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1EE8CAD3-55F9-4D91-96B2-084641DA9A6C} = {A41D1B99-F489-4C43-BBDF-96D61B19A6B9}
 		{D0BC9BE7-24F6-40CA-8DC6-FCB93BD44B34} = {A41D1B99-F489-4C43-BBDF-96D61B19A6B9}
-		{1A3941F1-1E1F-4EF7-8064-7729C4C2E2AA} = {FD0FAF5F-1DED-485C-99FA-84B97F3A8EEC}
 		{C1930979-C824-496B-A630-70F5369A636F} = {3CDEA9FB-CD44-4AB4-98A8-5537AAA2169B}
 		{D73ADF7D-2C1C-42AE-B2AB-EDC9497E4B71} = {3CDEA9FB-CD44-4AB4-98A8-5537AAA2169B}
 		{7AD4FE65-9A30-41A6-8004-AA8F89BCB7F3} = {A41D1B99-F489-4C43-BBDF-96D61B19A6B9}

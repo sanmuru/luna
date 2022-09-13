@@ -15,6 +15,8 @@ partial class MessageProvider : CommonMessageProvider
 
     public override Type ErrorCodeType => throw new NotImplementedException();
 
+    public override int WRN_DuplicateAnalyzerReference => throw new NotImplementedException();
+
     public override int ERR_FailedToCreateTempFile => throw new NotImplementedException();
 
     public override int ERR_MultipleAnalyzerConfigsInSameDir => throw new NotImplementedException();

@@ -417,4 +417,14 @@ public sealed partial class
     {
         throw new NotImplementedException();
     }
+
+    protected override IMethodSymbol CommonCreateBuiltinOperator(string name, ITypeSymbol returnType, ITypeSymbol leftType, ITypeSymbol rightType)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override IMethodSymbol CommonCreateBuiltinOperator(string name, ITypeSymbol returnType, ITypeSymbol operandType)
+    {
+        throw new NotImplementedException();
+    }
 }
