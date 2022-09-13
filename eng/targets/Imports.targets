@@ -358,9 +358,23 @@
            AlwaysCreate="true"
            Condition="'@(ReferencesCopiedInThisBuild)' != ''"/>
   </Target>
+
+  <!-- Workaround for https://github.com/dotnet/roslyn/issues/63189 -->
+  <Target Name="DisableJsonGenerator"
+           AfterTargets="ResolvePackageAssets">
+    <ItemGroup>
+      <ResolvedAnalyzers Remove="@(ResolvedAnalyzers)" Condition="'%(NuGetPackageId)' == 'System.Text.Json'" />
+    </ItemGroup>
+  </Target>
   
   <!-- Workaround for https://github.com/dotnet/wpf/issues/6792 -->
-  <Import Project="WpfRemoveDuplicateAnalyzers.targets" Condition="'$(UseWPF)' == 'true'" />
+  <Target Name="RemoveDuplicateAnalyzers" BeforeTargets="CoreCompile" Condition="'$(UseWpf)' == 'true'">
+    <ItemGroup>
+        <FilteredAnalyzer Include="@(Analyzer->Distinct())" />
+        <Analyzer Remove="@(Analyzer)" />
+        <Analyzer Include="@(FilteredAnalyzer)" />
+    </ItemGroup>
+  </Target>
 
   <Import Project="DoNotDeployToSymStore_Workaround.targets" Condition="'$(UsingToolPdbConverter)' == 'false'" />
   <Import Project="DoNotGenerateSatelliteAssemblies_Workaround.targets" Condition="'$(GenerateSatelliteAssemblies)' == 'false'" />
