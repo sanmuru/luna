@@ -2,6 +2,7 @@
 
 namespace SamLu.CodeAnalysis.Lua;
 
+using System.Collections.Generic;
 using Syntax;
 
 public static partial class SyntaxFactory
@@ -108,6 +109,11 @@ public static partial class SyntaxFactory
             trailing.Node));
     #endregion
     #endregion
+
+    internal static partial IEnumerable<SyntaxToken> ParseTokens(Syntax.InternalSyntax.SyntaxToken green, int position)
+    {
+        yield return new(parent: null, token: green, position: position, index: 0);
+    }
 
     public static ChunkSyntax ParseCompilationUnit(string text, int offset = 0, LuaParseOptions? options = null)
     {

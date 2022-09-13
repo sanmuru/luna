@@ -50,7 +50,7 @@ partial class Lexer
 exitWhile:
 
         this.TextWindow.AdvanceChar(i - this.TextWindow.Offset);
-        Debug.Assert(state == QuickScanState.Bad || state == QuickScanState.Done, "无法在Bad和Done的状态下推出。");
+        Debug.Assert(state == QuickScanState.Bad || state == QuickScanState.Done, "无法在Bad和Done的状态下退出。");
 
         if (state == QuickScanState.Done) // 成功扫描到标志。
         {

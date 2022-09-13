@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
+using Roslyn.Utilities;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -13,9 +14,9 @@ using ThisInternalSyntaxNode = SamLu.CodeAnalysis.MoonScript.Syntax.InternalSynt
 
 internal partial class
 #if LANG_LUA
-    LuaSyntaxRewriter : LuaSyntaxVisitor<ThisInternalSyntaxNode>
+    LuaSyntaxRewriter
 #elif LANG_MOONSCRIPT
-    MoonScriptSyntaxRewriter : MoonScriptSyntaxVisitor<ThisInternalSyntaxNode>
+    MoonScriptSyntaxRewriter
 #endif
 {
     protected readonly bool VisitIntoStructuredTrivia;
@@ -28,7 +29,7 @@ internal partial class
 #endif
     (bool visitIntoStructuredTrivia = false) => this.VisitIntoStructuredTrivia = visitIntoStructuredTrivia;
 
-    public override ThisInternalSyntaxNode? VisitToken(SyntaxToken token)
+    public override ThisInternalSyntaxNode VisitToken(SyntaxToken token)
     {
         var leading = this.VisitList(token.LeadingTrivia);
         var trailing = this.VisitList(token.TrailingTrivia);
@@ -42,6 +43,8 @@ internal partial class
         return token;
     }
 
+    public override ThisInternalSyntaxNode VisitTrivia(SyntaxTrivia trivia) => trivia;
+
     public SyntaxList<TNode> VisitList<TNode>(SyntaxList<TNode> list) where TNode : ThisInternalSyntaxNode
     {
         SyntaxListBuilder? alternate = null;
@@ -54,7 +57,8 @@ internal partial class
                 alternate = new(n);
                 alternate.AddRange(list, 0, i);
             }
-            else if (alternate is not null)
+            
+            if (alternate is not null)
             {
                 Debug.Assert(visited is not null && visited.Kind != SyntaxKind.None, "无法移除节点。");
                 alternate.Add(visited);
@@ -76,4 +80,9 @@ internal partial class
 
         return list;
     }
+
+    /// <remarks>在此类及子类中不应调用此方法。</remarks>
+    /// <exception cref="ExceptionUtilities.Unreachable">当在此类及子类中调用此方法时。</exception>
+    /// <inheritdoc/>
+    protected sealed override ThisInternalSyntaxNode? DefaultVisit(ThisInternalSyntaxNode node) => throw ExceptionUtilities.Unreachable;
 }

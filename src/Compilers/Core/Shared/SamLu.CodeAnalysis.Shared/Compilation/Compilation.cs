@@ -44,7 +44,7 @@ public sealed partial class
 
     protected override CompilationOptions CommonOptions => throw new NotImplementedException();
 
-    protected override ImmutableArray<SyntaxTree> CommonSyntaxTrees => throw new NotImplementedException();
+    protected internal override ImmutableArray<SyntaxTree> CommonSyntaxTrees => throw new NotImplementedException();
 
     protected override IAssemblySymbol CommonAssembly => throw new NotImplementedException();
 
@@ -414,6 +414,16 @@ public sealed partial class
     }
 
     private protected override bool IsSymbolAccessibleWithinCore(ISymbol symbol, ISymbol within, ITypeSymbol? throughType)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override IMethodSymbol CommonCreateBuiltinOperator(string name, ITypeSymbol returnType, ITypeSymbol leftType, ITypeSymbol rightType)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override IMethodSymbol CommonCreateBuiltinOperator(string name, ITypeSymbol returnType, ITypeSymbol operandType)
     {
         throw new NotImplementedException();
     }

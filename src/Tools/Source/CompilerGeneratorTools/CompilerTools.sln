@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CompilersIOperationGenerato
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SyntaxGenerator.Shared", "src\Shared\SyntaxGenerator.Shared.shproj", "{663ACC36-C493-4FA5-B8D7-A5124CB30514}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ErrorFactsGenerator.Shared", "src\Shared\ErrorFactsGenerator.Shared.shproj", "{16D73FFE-6BEC-4064-A313-898B5E231B6A}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ErrorFactsGenerators.Shared", "src\Shared\ErrorFactsGenerators.Shared.shproj", "{16D73FFE-6BEC-4064-A313-898B5E231B6A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{8D97F96D-BC12-459B-A46C-38BD2C817183}"
 EndProject
@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LuaSyntaxGenerator", "src\L
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LuaErrorFactsGenerator", "src\LuaCodeAnalysisSourceGenerators\LuaErrorFactsGenerator.csproj", "{5A1EAADD-DC3E-450B-9922-2F77C13FA160}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CodeAnalysisGenerator.Shared", "src\Shared\CodeAnalysisGenerator.Shared.shproj", "{B2D21490-8284-48C7-8E96-85EBFB70C11F}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CodeAnalysisGenerators.Shared", "src\Shared\CodeAnalysisGenerators.Shared.shproj", "{B2D21490-8284-48C7-8E96-85EBFB70C11F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MoonScript", "MoonScript", "{D5E3A6DA-929E-4B6B-9849-7DA0E411D5C2}"
 EndProject
@@ -88,14 +88,14 @@ Global
 		SolutionGuid = {111669A5-6F61-4184-AAA6-EE639B755D1F}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\Shared\ErrorFactsGenerator.Shared.projitems*{16d73ffe-6bec-4064-a313-898b5e231b6a}*SharedItemsImports = 13
-		src\Shared\CodeAnalysisGenerator.Shared.projitems*{37fd3add-848f-492b-89d8-f874fd4eff21}*SharedItemsImports = 5
-		src\Shared\ErrorFactsGenerator.Shared.projitems*{427fe16c-7a31-4be7-a951-d45afa842f41}*SharedItemsImports = 5
-		src\Shared\CodeAnalysisGenerator.Shared.projitems*{469fa24e-8ddb-496a-a75b-40b082830d80}*SharedItemsImports = 5
-		src\Shared\ErrorFactsGenerator.Shared.projitems*{5a1eaadd-dc3e-450b-9922-2f77c13fa160}*SharedItemsImports = 5
+		src\Shared\ErrorFactsGenerators.Shared.projitems*{16d73ffe-6bec-4064-a313-898b5e231b6a}*SharedItemsImports = 13
+		src\Shared\CodeAnalysisGenerators.Shared.projitems*{37fd3add-848f-492b-89d8-f874fd4eff21}*SharedItemsImports = 5
+		src\Shared\ErrorFactsGenerators.Shared.projitems*{427fe16c-7a31-4be7-a951-d45afa842f41}*SharedItemsImports = 5
+		src\Shared\CodeAnalysisGenerators.Shared.projitems*{469fa24e-8ddb-496a-a75b-40b082830d80}*SharedItemsImports = 5
+		src\Shared\ErrorFactsGenerators.Shared.projitems*{5a1eaadd-dc3e-450b-9922-2f77c13fa160}*SharedItemsImports = 5
 		src\Shared\SyntaxGenerator.Shared.projitems*{663acc36-c493-4fa5-b8d7-a5124cb30514}*SharedItemsImports = 13
 		src\Shared\SyntaxGenerator.Shared.projitems*{99fe6f53-13af-4d94-b13f-b3803e9df22a}*SharedItemsImports = 5
-		src\Shared\CodeAnalysisGenerator.Shared.projitems*{b2d21490-8284-48c7-8e96-85ebfb70c11f}*SharedItemsImports = 13
+		src\Shared\CodeAnalysisGenerators.Shared.projitems*{b2d21490-8284-48c7-8e96-85ebfb70c11f}*SharedItemsImports = 13
 		src\Shared\SyntaxGenerator.Shared.projitems*{ba77d25a-2565-4c89-898a-54b5cdb59c8b}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

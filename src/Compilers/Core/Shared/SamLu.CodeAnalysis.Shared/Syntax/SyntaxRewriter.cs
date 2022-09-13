@@ -8,20 +8,24 @@ using Microsoft.CodeAnalysis.Syntax;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
+
+using ThisSyntaxNode = LuaSyntaxNode;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
+
+using ThisSyntaxNode = MoonScriptSyntaxNode;
 #endif
 
 using Syntax;
 
 public abstract partial class
 #if LANG_LUA
-    LuaSyntaxRewriter : LuaSyntaxVisitor<LuaSyntaxNode?>
+    LuaSyntaxRewriter
 #elif LANG_MOONSCRIPT
-    MoonScriptSyntaxRewriter : MoonScriptSyntaxVisitor<MoonScriptSyntaxNode?>
+    MoonScriptSyntaxRewriter
 #endif
 {
-    public virtual bool VisitInfoStructuredTrivia { get; init; }
+    public virtual bool VisitIntoStructuredTrivia { get; init; }
 
     public
 #if LANG_LUA
@@ -29,20 +33,15 @@ public abstract partial class
 #elif LANG_MOONSCRIPT
         MoonScriptSyntaxRewriter
 #endif
-        (bool visitInfoStructuredTrivia = false) => this.VisitInfoStructuredTrivia = visitInfoStructuredTrivia;
+        (bool visitIntoStructuredTrivia = false) => this.VisitIntoStructuredTrivia = visitIntoStructuredTrivia;
 
-    #region 访问方法
     /// <summary>
     /// 当前的递归深度。
     /// </summary>
     private int _recursionDepth;
 
     [return: NotNullIfNotNull("node")]
-#if LANG_LUA
-    public override LuaSyntaxNode? Visit(LuaSyntaxNode? node)
-#elif LANG_MOONSCRIPT
-    public override MoonScriptSyntaxNode? Visit(MoonScriptSyntaxNode? node)
-#endif
+    public override ThisSyntaxNode? Visit(ThisSyntaxNode? node)
     {
         if (node is null) return null;
 
@@ -57,7 +56,6 @@ public abstract partial class
 
         return result;
     }
-    #endregion
 
     /// <summary>
     /// 处理语法标志并产生结果。
@@ -123,33 +121,18 @@ public abstract partial class
     /// <returns>产生的结果。</returns>
     public virtual SyntaxTrivia VisitTrivia(SyntaxTrivia trivia)
     {
-        if (this.VisitInfoStructuredTrivia && trivia.HasStructure)
+        if (this.VisitIntoStructuredTrivia && trivia.HasStructure)
         {
-            var structure =
-#if LANG_LUA
-                (LuaSyntaxNode?)
-#elif LANG_MOONSCRIPT
-                (MoonScriptSyntaxNode)
-#endif
-                trivia.GetStructure();
-            var newStructure = (StructuredTriviaSyntax?)this.Visit(structure);
+            var structure = (ThisSyntaxNode)trivia.GetStructure()!;
+            var newStructure = (StructuredTriviaSyntax)this.Visit(structure);
             if (newStructure != structure)
-            {
-                if (newStructure is null) return default;
-                else return SyntaxFactory.Trivia(newStructure);
-            }
+                return SyntaxFactory.Trivia(newStructure);
         }
 
         return trivia;
     }
 
-    public virtual SyntaxList<TNode> VisitList<TNode>(SyntaxList<TNode> list)
-        where TNode :
-#if LANG_LUA
-        LuaSyntaxNode
-#elif LANG_MOONSCRIPT
-        MoonScriptSyntaxNode
-#endif
+    public virtual SyntaxList<TNode> VisitList<TNode>(SyntaxList<TNode> list) where TNode : ThisSyntaxNode
     {
         SyntaxListBuilder? alternate = null;
         for (int i = 0, n = list.Count; i < n; i++)
@@ -172,22 +155,11 @@ public abstract partial class
         else return alternate.ToList();
     }
 
-    public virtual TNode? VisitListElement<TNode>(TNode? node)
-        where TNode :
-#if LANG_LUA
-        LuaSyntaxNode
-#elif LANG_MOONSCRIPT
-        MoonScriptSyntaxNode
-#endif
+    [return: NotNullIfNotNull("node")]
+    public virtual TNode? VisitListElement<TNode>(TNode? node) where TNode : ThisSyntaxNode
         => (TNode?)this.Visit(node);
 
-    public virtual SeparatedSyntaxList<TNode> VisitList<TNode>(SeparatedSyntaxList<TNode> list)
-        where TNode :
-#if LANG_LUA
-        LuaSyntaxNode
-#elif LANG_MOONSCRIPT
-        MoonScriptSyntaxNode
-#endif
+    public virtual SeparatedSyntaxList<TNode> VisitList<TNode>(SeparatedSyntaxList<TNode> list) where TNode : ThisSyntaxNode
     {
         var count = list.Count;
         var sepCount = list.SeparatorCount;

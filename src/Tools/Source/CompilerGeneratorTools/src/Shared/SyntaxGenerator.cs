@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Xml;
@@ -35,6 +36,14 @@ public sealed class SyntaxGenerator : CachingSourceGenerator
         category: "SyntaxGenerator",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+#if false && DEBUG
+    public override void Initialize(GeneratorInitializationContext context)
+    {
+        if (!Debugger.IsAttached)
+            Debugger.Launch();
+    }
+#endif
 
     /// <inheritdoc/>
     protected override bool TryGetRelevantInput(
@@ -90,7 +99,7 @@ public sealed class SyntaxGenerator : CachingSourceGenerator
             diagnostics = ImmutableArray.Create(
                 Diagnostic.Create(
                     s_SyntaxXmlError,
-                    location: Location.Create(inputPath, span, lineSpan),
+                    location: Location.Create(inputPath!, span, lineSpan),
                     xmlException.Message));
 
             return false;

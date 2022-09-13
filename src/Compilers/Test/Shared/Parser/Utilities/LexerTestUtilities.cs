@@ -1,4 +1,6 @@
 ﻿#if LANG_LUA
+using System.Runtime.CompilerServices;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 namespace SamLu.CodeAnalysis.Lua.Parser.UnitTests.Utilities;
@@ -10,6 +12,12 @@ namespace SamLu.CodeAnalysis.MoonScript.Parser.UnitTests.Utilities;
 
 public static class LexerTestUtilities
 {
+    #region IsMissing
+    internal static void IsMissing(this Assert assert, SyntaxToken token) => Assert.IsTrue(token.IsMissing);
+
+    internal static void IsNotMissing(this Assert assert, SyntaxToken token) => Assert.IsFalse(token.IsMissing);
+    #endregion
+
     #region IsPunctuation
     internal static void IsPunctuation(this Assert assert, SyntaxToken token, string? punctuation = null) =>
         Assert.IsTrue(LexerTestUtilities.IsPunctuationCore(token, punctuation));
@@ -57,16 +65,29 @@ public static class LexerTestUtilities
 
     #region IsLiteral
     internal static void IsLiteral(this Assert assert, SyntaxToken token) =>
-        Assert.IsTrue(LexerTestUtilities.IsLiteralCore(token));
+        LexerTestUtilities.IsLiteralCore(token);
 
-    internal static void IsLiteral(this Assert assert, SyntaxToken token, string message) =>
-        Assert.IsTrue(LexerTestUtilities.IsLiteralCore(token), message);
+    internal static void IsLiteral<T>(this Assert assert, SyntaxToken token, T? value) =>
+        LexerTestUtilities.IsLiteralCore(token, value);
 
-    internal static void IsLiteral(this Assert assert, SyntaxToken token, string message, params object[] parameters) =>
-        Assert.IsTrue(LexerTestUtilities.IsLiteralCore(token), message, parameters);
+    internal static void IsLiteralCore(SyntaxToken token, [CallerMemberName] string? memberName = null)
+    {
+        if (!SyntaxFacts.IsLiteral(token.Kind))
+            Assert.That.Raise<UnexpectedSyntaxKindException<SyntaxKind>>(UnexpectedSyntaxKindException<SyntaxKind>.MakeMessage(expected: null, actual: token.Kind), memberName: memberName);
+    }
 
-    internal static bool IsLiteralCore(SyntaxToken token) =>
-        SyntaxFacts.IsLiteral(token.Kind);
+    internal static void IsLiteralCore<T>(SyntaxToken token, T? value, [CallerMemberName] string? memberName = null)
+    {
+        LexerTestUtilities.IsLiteralCore(token, memberName: memberName);
+        try
+        {
+            Assert.AreEqual(value, token.Value);
+        }
+        catch (AssertFailedException ex)
+        {
+            Assert.That.Raise(ex, memberName: memberName);
+        }
+    }
     #endregion
 
     #region IsEndOfFile

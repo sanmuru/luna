@@ -15,6 +15,8 @@ partial class MessageProvider : CommonMessageProvider
 
     public override Type ErrorCodeType => throw new NotImplementedException();
 
+    public override int WRN_DuplicateAnalyzerReference => throw new NotImplementedException();
+
     public override int ERR_FailedToCreateTempFile => throw new NotImplementedException();
 
     public override int ERR_MultipleAnalyzerConfigsInSameDir => throw new NotImplementedException();
@@ -145,6 +147,8 @@ partial class MessageProvider : CommonMessageProvider
 
     public override int ERR_BadAssemblyName => throw new NotImplementedException();
 
+    public override int WRN_AnalyzerReferencesNewerCompiler => throw new NotImplementedException();
+
     public override Diagnostic CreateDiagnostic(DiagnosticInfo info)
     {
         throw new NotImplementedException();
@@ -255,9 +259,14 @@ partial class MessageProvider : CommonMessageProvider
     }
 
 #if DEBUG
-    internal override bool ShouldAssertExpectedMessageArgumentsLength(int errorCode)
+    internal override bool ShouldAssertExpectedMessageArgumentsLength(int errorCode) =>
+        (ErrorCode)errorCode switch
     {
-        throw new NotImplementedException();
-    }
+        0 => false,
+        ErrorCode.Unknown => false,
+        ErrorCode.Void => false,
+        ErrorCode.ERR_IdentifierExpectedKW => false, // 格式化时使用 {1} 而非 {0} 。
+        _ => true
+    };
 #endif
 }

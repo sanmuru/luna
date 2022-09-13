@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Roslyn.Utilities;
 
 namespace SamLu.CodeAnalysis.Lua;
 
@@ -100,6 +101,8 @@ public static partial class SyntaxFacts
             SyntaxKind.ToBeClosedMetamethod => "__close",
             SyntaxKind.WeakModeMetafield => "__mode",
             SyntaxKind.NameMetafield => "__name",
+            SyntaxKind.ConstKeyword => "const",
+            SyntaxKind.CloseKeyword => "close",
 
             _ => string.Empty
         };
@@ -187,6 +190,10 @@ public static partial class SyntaxFacts
         // 元字段和元方法
         for (int i = (int)SyntaxKind.MetatableMetafield; i <= (int)SyntaxKind.NameMetafield; i++)
             yield return (SyntaxKind)i;
+
+        // 特性
+        for (int i = (int)SyntaxKind.CloseKeyword; i <= (int)SyntaxKind.ConstKeyword; i++)
+            yield return (SyntaxKind)i;
     }
 
     /// <summary>
@@ -196,7 +203,7 @@ public static partial class SyntaxFacts
     /// <returns>若<paramref name="kind"/>表示上下文关键字，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
     public static bool IsContextualKeyword(SyntaxKind kind) =>
         // 元字段和元方法
-        SyntaxFacts.IsMetafield(kind) ||
+        SyntaxFacts.IsMetafield(kind) || SyntaxFacts.IsAttribute(kind) ||
 
         // 上下文关键词
         kind switch
@@ -219,6 +226,18 @@ public static partial class SyntaxFacts
             _ => false
         };
 
+    /// <summary>
+    /// 指定语法种类是否表示特性。
+    /// </summary>
+    /// <param name="kind">要查询的语法种类。</param>
+    public static bool IsAttribute(SyntaxKind kind) =>
+        kind switch
+        {
+            >= SyntaxKind.CloseKeyword and <= SyntaxKind.ConstKeyword => true,
+
+            _ => false
+        };
+
     public static SyntaxKind GetContextualKeywordKind(string text) =>
         text switch
         {
@@ -226,8 +245,11 @@ public static partial class SyntaxFacts
             "_G" => SyntaxKind.GlobalEnvironmentKeyword,
             "_ENV" => SyntaxKind.EnvironmentKeyword,
 
-            // 元字段和元方法
-            _ => SyntaxFacts.GetMetafieldKind(text)
+            _ => text.StartsWith("__") ?
+                // 元字段和元方法
+                SyntaxFacts.GetMetafieldKind(text) :
+                // 特性
+                SyntaxFacts.GetAttributeKind(text)
         };
     #endregion
 
@@ -309,6 +331,19 @@ public static partial class SyntaxFacts
         };
 
     /// <summary>
+    /// 指定语法种类是否表示注释琐碎内容。
+    /// </summary>
+    /// <param name="kind">要查询的语法种类。</param>
+    /// <returns>若<paramref name="kind"/>表示注释琐碎内容，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
+    public static bool IsCommentTrivia(SyntaxKind kind) =>
+        kind switch
+        {
+            >= SyntaxKind.SingleLineCommentTrivia and <= SyntaxKind.MultiLineCommentTrivia => true,
+
+            _ => false
+        };
+
+    /// <summary>
     /// 指定语法种类是否表示名称。
     /// </summary>
     /// <param name="kind">要查询的语法种类。</param>
@@ -321,23 +356,20 @@ public static partial class SyntaxFacts
             _ => false
         };
 
-    public static bool IsUnaryExpression(SyntaxKind token) =>
-        SyntaxFacts.GetUnaryExpression(token) != SyntaxKind.None;
-
-    public static bool IsUnaryExpressionOperatorToken(SyntaxKind token) => GetUnaryExpression(token) != SyntaxKind.None;
-
-    public static SyntaxKind GetUnaryExpression(SyntaxKind token) =>
-        token switch
+    public static bool IsLiteralExpression(SyntaxKind expression) =>
+        expression switch
         {
-            SyntaxKind.MinusToken => SyntaxKind.UnaryMinusExpression,
-            SyntaxKind.NotKeyword => SyntaxKind.LogicalNotExpression,
-            SyntaxKind.HashToken => SyntaxKind.LengthExpression,
-            SyntaxKind.TildeToken => SyntaxKind.BitwiseNotExpression,
+            SyntaxKind.NilLiteralExpression or
+            SyntaxKind.FalseLiteralExpression or
+            SyntaxKind.TrueLiteralExpression or
+            SyntaxKind.NumericLiteralExpression or
+            SyntaxKind.StringLiteralExpression or
+            SyntaxKind.VariousArgumentsExpression => true,
 
-            _ => SyntaxKind.None
+            _ => false
         };
 
-    public static bool IsLiteralExpression(SyntaxKind token) =>
+    public static bool IsLiteralToken(SyntaxKind token) =>
         SyntaxFacts.GetLiteralExpression(token) != SyntaxKind.None;
 
     public static SyntaxKind GetLiteralExpression(SyntaxKind token) =>
@@ -354,8 +386,48 @@ public static partial class SyntaxFacts
             _ => SyntaxKind.None
         };
 
-    public static bool IsBinaryExpression(SyntaxKind token) =>
-        SyntaxFacts.GetBinaryExpression(token) != SyntaxKind.None;
+    public static bool IsUnaryExpression(SyntaxKind expression) =>
+        SyntaxFacts.GetUnaryExpressionOperatorToken(expression) != SyntaxKind.None;
+
+    public static bool IsUnaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.GetUnaryExpression(token) != SyntaxKind.None;
+
+    public static SyntaxKind GetUnaryExpression(SyntaxKind token) =>
+        token switch
+        {
+            SyntaxKind.MinusToken => SyntaxKind.UnaryMinusExpression,
+            SyntaxKind.NotKeyword => SyntaxKind.LogicalNotExpression,
+            SyntaxKind.HashToken => SyntaxKind.LengthExpression,
+            SyntaxKind.TildeToken => SyntaxKind.BitwiseNotExpression,
+
+            _ => SyntaxKind.None
+        };
+
+    public static SyntaxKind GetUnaryExpressionOperatorToken(SyntaxKind expression) =>
+        expression switch
+        {
+            SyntaxKind.UnaryMinusExpression => SyntaxKind.MinusToken,
+            SyntaxKind.LogicalNotExpression => SyntaxKind.NotKeyword,
+            SyntaxKind.LengthExpression => SyntaxKind.HashToken,
+            SyntaxKind.BitwiseNotExpression => SyntaxKind.TildeToken,
+
+            _ => SyntaxKind.None
+        };
+
+    public static bool IsBinaryExpression(SyntaxKind expression) =>
+        SyntaxFacts.GetBinaryExpressionOperatorToken(expression) != SyntaxKind.None;
+
+    public static bool IsBinaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.GetBinaryExpression(token) != SyntaxKind.None;
+
+    internal static bool IsLeftAssociativeBinaryExpressionOperatorToken(SyntaxKind token) => SyntaxFacts.IsBinaryExpressionOperatorToken(token) && !SyntaxFacts.IsRightAssociativeBinaryExpressionOperatorToken(token);
+
+    internal static bool IsRightAssociativeBinaryExpressionOperatorToken(SyntaxKind token) =>
+        token switch
+        {
+            SyntaxKind.CaretToken or
+            SyntaxKind.DotDotToken => true,
+
+            _ => false
+        };
 
     public static SyntaxKind GetBinaryExpression(SyntaxKind token) =>
         token switch
@@ -385,21 +457,73 @@ public static partial class SyntaxFacts
             _ => SyntaxKind.None
         };
 
-    public static bool IsAssignmentExpression(SyntaxKind kind) =>
-        kind switch
-        {
-            SyntaxKind.AssignmentExpression => true,
-
-            _ => false
-        };
-
-    public static bool IsAssignmentExpressionOperatorToken(SyntaxKind token) =>
-        SyntaxFacts.GetAssignmentExpression(token) != SyntaxKind.None;
-
-    public static SyntaxKind GetAssignmentExpression(SyntaxKind token) =>
+    internal static int GetOperatorPrecedence(SyntaxKind token, bool isUnary) =>
         token switch
         {
-            SyntaxKind.EqualsToken => SyntaxKind.AssignmentExpression,
+            SyntaxKind.CaretToken => 12,
+
+            SyntaxKind.NotKeyword or
+            SyntaxKind.HashToken => 11,
+            SyntaxKind.MinusToken => isUnary ? 11 : 9,
+            SyntaxKind.TildeToken => isUnary ? 11 : 5,
+
+            SyntaxKind.AsteriskToken or
+            SyntaxKind.SlashToken or
+            SyntaxKind.SlashSlashToken or
+            SyntaxKind.PersentToken => 10,
+
+            SyntaxKind.PlusToken => 9,
+            //SyntaxKind.MinusToken => 9,
+
+            SyntaxKind.DotDotToken => 8,
+
+            SyntaxKind.LessThanLessThanToken or
+            SyntaxKind.GreaterThanGreaterThanToken => 7,
+
+            SyntaxKind.AmpersandToken => 6,
+
+            //SyntaxKind.Tilde == 5,
+
+            SyntaxKind.BarToken => 4,
+
+            SyntaxKind.LessThanToken or
+            SyntaxKind.GreaterThanToken or
+            SyntaxKind.LessThanEqualsToken or
+            SyntaxKind.GreaterThanEqualsToken or
+            SyntaxKind.TildeEqualsToken or
+            SyntaxKind.EqualsEqualsToken => 3,
+
+            SyntaxKind.AndKeyword => 2,
+
+            SyntaxKind.OrKeyword => 1,
+
+            _ => 0
+        };
+
+    public static SyntaxKind GetBinaryExpressionOperatorToken(SyntaxKind expression) =>
+        expression switch
+        {
+            SyntaxKind.AdditionExpression => SyntaxKind.PlusToken,
+            SyntaxKind.SubtractionExpression => SyntaxKind.MinusToken,
+            SyntaxKind.MultiplicationExpression => SyntaxKind.AsteriskToken,
+            SyntaxKind.DivisionExpression => SyntaxKind.SlashToken,
+            SyntaxKind.FloorDivisionExpression => SyntaxKind.SlashSlashToken,
+            SyntaxKind.ExponentiationExpression => SyntaxKind.CaretToken,
+            SyntaxKind.ModuloExpression => SyntaxKind.PersentToken,
+            SyntaxKind.BitwiseAndExpression => SyntaxKind.AmpersandToken,
+            SyntaxKind.BitwiseExclusiveOrExpression => SyntaxKind.TildeToken,
+            SyntaxKind.BitwiseOrExpression => SyntaxKind.BarToken,
+            SyntaxKind.BitwiseLeftShiftExpression => SyntaxKind.LessThanLessThanToken,
+            SyntaxKind.BitwiseRightShiftExpression => SyntaxKind.GreaterThanGreaterThanToken,
+            SyntaxKind.ConcatenationExpression => SyntaxKind.DotDotToken,
+            SyntaxKind.LessThanExpression => SyntaxKind.LessThanToken,
+            SyntaxKind.LessThanOrEqualExpression => SyntaxKind.LessThanEqualsToken,
+            SyntaxKind.GreaterThanExpression => SyntaxKind.GreaterThanToken,
+            SyntaxKind.GreaterThanOrEqualExpression => SyntaxKind.GreaterThanEqualsToken,
+            SyntaxKind.EqualExpression => SyntaxKind.EqualsEqualsToken,
+            SyntaxKind.NotEqualExpression => SyntaxKind.TildeEqualsToken,
+            SyntaxKind.AndExpression => SyntaxKind.AndKeyword,
+            SyntaxKind.OrExpression => SyntaxKind.OrKeyword,
 
             _ => SyntaxKind.None
         };
@@ -435,6 +559,15 @@ public static partial class SyntaxFacts
             "__close" => SyntaxKind.ToBeClosedMetamethod,
             "__mode" => SyntaxKind.WeakModeMetafield,
             "__name" => SyntaxKind.NameMetafield,
+
+            _ => SyntaxKind.None
+        };
+
+    public static SyntaxKind GetAttributeKind(string attributeName) =>
+        attributeName switch
+        {
+            "close" => SyntaxKind.CloseKeyword,
+            "const" => SyntaxKind.ConstKeyword,
 
             _ => SyntaxKind.None
         };

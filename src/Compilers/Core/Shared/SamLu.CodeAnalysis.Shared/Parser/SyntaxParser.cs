@@ -41,7 +41,7 @@ internal abstract partial class SyntaxParser : IDisposable
     private BlendedNode[]? _blendedTokens;
     private SyntaxToken? _currentToken;
     private ArrayElement<SyntaxToken>[]? _lexedTokens;
-    private GreenNode? _prevTokenTrailingTrivia;
+    protected GreenNode? prevTokenTrailingTrivia;
     /// <summary>
     /// <see cref="_lexedTokens"/>或<see cref="_blendedTokens"/>的第一项的位置。
     /// </summary>
@@ -71,6 +71,10 @@ internal abstract partial class SyntaxParser : IDisposable
     /// 获取一个值，指示解析的是脚本类代码文本。
     /// </summary>
     public bool IsScript => this.Options.Kind == SourceCodeKind.Script;
+
+#if TESTING
+    protected internal bool IsAtEndOfFile => this.CurrentTokenKind == SyntaxKind.EndOfFileToken;
+#endif
 
     /// <summary>
     /// 获取或设置词法器模式。
@@ -160,7 +164,7 @@ internal abstract partial class SyntaxParser : IDisposable
         this._resetCount = 0;
         this._resetStart = 0;
         this._currentToken = null;
-        this._prevTokenTrailingTrivia = null;
+        this.prevTokenTrailingTrivia = null;
         if (this.IsBlending())
             this._firstBlender = new(this.lexer, null, null);
     }
@@ -183,59 +187,6 @@ internal abstract partial class SyntaxParser : IDisposable
             // 遇到文件结尾。
             if (token.Kind == SyntaxKind.EndOfFileToken) break;
         }
-    }
-
-#warning Need code review.
-    protected ResetPoint GetResetPoint()
-    {
-        var pos = this.CurrentTokenPosition;
-        if (this._resetCount == 0)
-            this._resetCount = pos;
-
-        this._resetCount++;
-        return new(this._resetCount, this._mode, pos, this._prevTokenTrailingTrivia);
-    }
-
-#warning Need code review.
-    protected void Reset(ref ResetPoint point)
-    {
-        var offset = point.Position - this._firstToken;
-        Debug.Assert(offset >= 0);
-
-        if (offset >= this._tokenCount)
-        {
-            this.PeekToken(offset - this._tokenOffset);
-
-            offset = point.Position - this._firstToken;
-        }
-
-        this._mode = point.Mode;
-        Debug.Assert(offset >= 0 && offset < this._tokenCount);
-        this._tokenOffset = offset;
-        this._currentToken = null;
-        this._currentNode = default;
-        this._prevTokenTrailingTrivia = point.PrevTokenTrailingTrivia;
-        if (this.IsBlending())
-        {
-            for (int i = this._tokenOffset; i < this._tokenCount; i++)
-            {
-                if (this._blendedTokens[i].Token is null)
-                {
-                    this._tokenCount = i;
-                    if (this._tokenCount == this._tokenOffset)
-                        this.FetchCurrentToken();
-                    break;
-                }
-            }
-        }
-    }
-
-    protected void Release(ref ResetPoint point)
-    {
-        Debug.Assert(this._resetCount == point.ResetCount);
-        this._resetCount--;
-        if (this._resetCount == 0)
-            this._resetCount = -1;
     }
 
     /// <summary>
@@ -307,9 +258,22 @@ internal abstract partial class SyntaxParser : IDisposable
     }
 
     /// <summary>
+    /// 语法解析器接受当前的语法节点，并返回其对应的指定类型的绿树节点。
+    /// </summary>
+    /// <typeparam name="T">要返回的绿树节点的类型。</typeparam>
+    /// <returns>接受的语法节点对应的绿树节点。</returns>
+    [MemberNotNull(nameof(SyntaxParser._blendedTokens))]
+    protected T? EatNode<T>() where T : ThisInternalSyntaxNode => this.EatNode() as T;
+
+    /// <summary>
     /// 获取当前的已词法分析的标志。
     /// </summary>
     protected SyntaxToken CurrentToken => this._currentToken ??= this.FetchCurrentToken();
+
+    /// <summary>
+    /// 获取当前的已词法分析的语法部分种类。
+    /// </summary>
+    protected SyntaxKind CurrentTokenKind => this.CurrentToken.Kind;
 
     /// <summary>
     /// 取得当前的已词法分析的标志。
@@ -428,7 +392,7 @@ internal abstract partial class SyntaxParser : IDisposable
 
             this._firstToken += shiftOffset;
             this._tokenCount -= shiftOffset;
-            this._tokenCount -= shiftOffset;
+            this._tokenOffset -= shiftOffset;
         }
         else
         {
@@ -444,9 +408,10 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <param name="n">表示要查看的语法节点在当前后方的位置。</param>
     /// <returns>当前后方第<paramref name="n"/>个位置的语法节点。</returns>
     /// <remarks>此操作不会改变此语法解析器的内容和状态。</remarks>
-    protected SyntaxToken PeekToken(int n)
+    protected SyntaxToken PeekToken(int n = 0)
     {
         Debug.Assert(n >= 0);
+        if (n == 0) return this.CurrentToken;
 
         // 补充不足的标志。
         while (this._tokenOffset + n >= this._tokenCount)
@@ -461,7 +426,7 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <summary>
     /// 语法解析器接受并且返回当前的已词法分析的语法标志。
     /// </summary>
-    /// <returns>当前的已词法分析的语法标志</returns>
+    /// <returns>当前的已词法分析的语法标志。</returns>
     protected SyntaxToken EatToken()
     {
         var token = this.CurrentToken;
@@ -496,6 +461,7 @@ internal abstract partial class SyntaxParser : IDisposable
         if (reportError) return this.EatToken(kind);
 
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+
         if (this.CurrentToken.Kind == kind)
             return this.EatToken();
         else
@@ -533,7 +499,7 @@ internal abstract partial class SyntaxParser : IDisposable
     private void MoveToNextToken()
     {
         // 设置上一个标志的后方琐碎内容。
-        this._prevTokenTrailingTrivia = this.CurrentToken.GetTrailingTrivia();
+        this.prevTokenTrailingTrivia = this.CurrentToken.GetTrailingTrivia();
 
         // 初始化部分变量。
         this._currentToken = null;
@@ -605,8 +571,7 @@ internal abstract partial class SyntaxParser : IDisposable
     /// </summary>
     /// <param name="kind">要返回的语法标志须符合的语法部分种类，枚举值必须标志语法标志。</param>
     /// <returns>返回当前的已词法分析的语法标志，若这个语法标志不符合指定语法部分种类，则报告错误。</returns>
-    protected SyntaxToken EatTokenWithPrejudice
-        (SyntaxKind kind)
+    protected SyntaxToken EatTokenWithPrejudice(SyntaxKind kind)
     {
         var token = this.CurrentToken;
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));
@@ -623,11 +588,33 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <param name="code">要报告的错误码。</param>
     /// <param name="args">诊断信息的参数。</param>
     /// <returns>返回当前的已词法分析的语法标志，并报告指定错误码和诊断消参数的错误。</returns>
-    protected SyntaxToken EatTokenWithPrejuice(ErrorCode code, params object[] args)
+    protected SyntaxToken EatTokenWithPrejudice(ErrorCode code, params object[] args)
     {
         var token = this.EatToken();
         token = this.WithAdditionalDiagnostics(token, SyntaxParser.MakeError(token.GetLeadingTriviaWidth(), token.Width, code, args));
         return token;
+    }
+
+    /// <summary>
+    /// 语法解析器接受当前的已词法分析的语法标志，转化为关键字语法标志并且返回。
+    /// </summary>
+    /// <returns>转化当前的已词法分析的语法标志为关键字语法标志并且返回。</returns>
+    protected SyntaxToken EatContextualToken() => SyntaxParser.ConvertToKeyword(this.EatToken());
+
+    /// <summary>
+    /// 语法解析器接受当前的已词法分析的语法标志，转化为关键字语法标志并且返回，这个语法标志的上下文种类必须符合指定语法部分种类。
+    /// </summary>
+    /// <param name="kind">要返回的语法标志须符合的语法部分种类，枚举值必须标志语法标志。</param>
+    /// <returns>若当前的已词法分析的语法标志的上下文种类符合指定语法部分种类，则转化这个语法标志为关键字语法标志并且返回；否则返回表示缺失标志的语法标志，并报告错误。</returns>
+    protected SyntaxToken EatContextualToken(SyntaxKind kind)
+    {
+        Debug.Assert(SyntaxFacts.IsAnyToken(kind));
+
+        var contextualKind = this.CurrentToken.ContextualKind;
+        if (contextualKind == kind)
+            return this.EatContextualToken();
+        else
+            return this.CreateMissingToken(kind, contextualKind, reportError: true);
     }
 
     /// <summary>
@@ -636,15 +623,17 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <param name="kind">要返回的语法标志须符合的语法部分种类，枚举值必须标志语法标志。</param>
     /// <param name="reportError">是否报告错误。</param>
     /// <returns>若当前的已词法分析的语法标志的上下文种类符合指定语法部分种类，则返回这个语法标志；否则返回表示缺失标志的语法标志，并报告错误。</returns>
-    protected SyntaxToken EatContextualToken(SyntaxKind kind, bool reportError = true)
+    protected SyntaxToken EatContextualToken(SyntaxKind kind, bool reportError)
     {
+        if (reportError) return this.EatContextualToken(kind);
+
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));
 
         var contextualKind = this.CurrentToken.ContextualKind;
         if (contextualKind == kind)
-            return SyntaxParser.ConvertToKeyword(this.EatToken());
+            return this.EatContextualToken();
         else
-            return this.CreateMissingToken(kind, contextualKind, reportError);
+            return SyntaxFactory.MissingToken(kind);
     }
 
     /// <param name="code">要报告的错误码。</param>
@@ -655,7 +644,7 @@ internal abstract partial class SyntaxParser : IDisposable
         Debug.Assert(SyntaxFacts.IsAnyToken(kind));
 
         if (this.CurrentToken.ContextualKind == kind)
-            return SyntaxParser.ConvertToKeyword(this.EatToken());
+            return this.EatContextualToken();
         else
             return this.CreateMissingToken(kind, code, reportError);
     }
@@ -680,6 +669,13 @@ internal abstract partial class SyntaxParser : IDisposable
     protected virtual partial SyntaxDiagnosticInfo GetExpectedTokenError(SyntaxKind expected, SyntaxKind actual, int offset, int width);
 
     /// <summary>
+    /// 获取一个错误码，对应未得到期望的标志。
+    /// </summary>
+    /// <returns>对应未得到期望的标志的错误码。</returns>
+    /// <inheritdoc cref="SyntaxParser.GetExpectedTokenError(SyntaxKind, SyntaxKind)"/>
+    protected static partial ErrorCode GetExpectedTokenErrorCode(SyntaxKind expected, SyntaxKind actual);
+
+    /// <summary>
     /// 获取缺失标志的诊断文本范围。
     /// </summary>
     /// <param name="offset">文本范围的偏移量。</param>
@@ -691,7 +687,7 @@ internal abstract partial class SyntaxParser : IDisposable
     protected void GetDiagnosticSpanForMissingToken(out int offset, out int width)
     {
         // 若上一个标志后方跟着的琐碎内容中包含行尾琐碎内容，则缺失标志的诊断位置将置于包含上一个标志的行尾，并且宽度为零。
-        var trivia = this._prevTokenTrailingTrivia;
+        var trivia = this.prevTokenTrailingTrivia;
         if (trivia is not null)
         {
             var triviaList = new SyntaxList<ThisInternalSyntaxNode>(trivia);
@@ -896,7 +892,32 @@ internal abstract partial class SyntaxParser : IDisposable
     /// <inheritdoc cref="SyntaxParser.MakeError(int, int, ErrorCode, object[])"/>
     protected static SyntaxDiagnosticInfo MakeError(ErrorCode code, params object[] args) => new(code, args);
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法列表构造器添加指定的前方的跳过语法。
+    /// </summary>
+    /// <param name="list">要添加<paramref name="skippedSyntax"/>的语法列表构造器。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="list"/>。</returns>
+    protected void AddLeadingSkippedSyntax(SyntaxListBuilder list, GreenNode skippedSyntax) =>
+        list[0] = this.AddLeadingSkippedSyntax((ThisInternalSyntaxNode)list[0]!, skippedSyntax);
+
+    /// <summary>
+    /// 给指定的语法列表构造器添加指定的前方的跳过语法。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="list">要添加<paramref name="skippedSyntax"/>的语法列表构造器。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="list"/>。</returns>
+    protected void AddLeadingSkippedSyntax<TNode>(SyntaxListBuilder<TNode> list, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode =>
+        list[0] = this.AddTrailingSkippedSyntax(list[0]!, skippedSyntax);
+
+    /// <summary>
+    /// 给指定的语法节点添加指定的前方的跳过语法。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="node">要添加<paramref name="skippedSyntax"/>的语法节点。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="node"/>。</returns>
     protected TNode AddLeadingSkippedSyntax<TNode>(TNode node, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode
     {
         var oldToken = node as SyntaxToken ?? node.GetFirstToken()!;
@@ -904,28 +925,46 @@ internal abstract partial class SyntaxParser : IDisposable
         return SyntaxFirstTokenReplacer.Replace(node, oldToken, newToken, skippedSyntax.FullWidth);
     }
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法列表构造器添加指定的后方的跳过语法。
+    /// </summary>
+    /// <param name="list">要添加<paramref name="skippedSyntax"/>的语法列表构造器。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="list"/>。</returns>
     protected void AddTrailingSkippedSyntax(SyntaxListBuilder list, GreenNode skippedSyntax) =>
         list[^1] = this.AddTrailingSkippedSyntax((ThisInternalSyntaxNode)list[^1]!, skippedSyntax);
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法列表构造器添加指定的后方的跳过语法。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="list">要添加<paramref name="skippedSyntax"/>的语法列表构造器。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="list"/>。</returns>
     protected void AddTrailingSkippedSyntax<TNode>(SyntaxListBuilder<TNode> list, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode =>
         list[^1] = this.AddTrailingSkippedSyntax(list[^1]!, skippedSyntax);
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法节点添加指定的后方的跳过语法。
+    /// </summary>
+    /// <typeparam name="TNode">语法节点的类型。</typeparam>
+    /// <param name="node">要添加<paramref name="skippedSyntax"/>的语法节点。</param>
+    /// <param name="skippedSyntax">要添加的跳过语法。</param>
+    /// <returns>添加<paramref name="skippedSyntax"/>后的<paramref name="node"/>。</returns>
     protected TNode AddTrailingSkippedSyntax<TNode>(TNode node, GreenNode skippedSyntax) where TNode : ThisInternalSyntaxNode
     {
-        if (node is SyntaxToken token)
-            return (TNode)(ThisInternalSyntaxNode)this.AddSkippedSyntax(token, skippedSyntax, trailing: true);
-        else
-        {
-            var lastToken = node.GetLastToken()!;
-            var newToken = this.AddSkippedSyntax(lastToken, skippedSyntax, trailing: true);
-            return SyntaxLastTokenReplacer.Replace(node, newToken);
-        }
+        var oldToken = node as SyntaxToken ?? node.GetLastToken()!;
+        var newToken = this.AddSkippedSyntax(oldToken, skippedSyntax, trailing: true);
+        return SyntaxLastTokenReplacer.Replace(node, oldToken, newToken);
     }
 
-#warning Need code review.
+    /// <summary>
+    /// 给指定的语法标志添加指定的表示跳过语法的绿树节点。
+    /// </summary>
+    /// <param name="target">要添加<paramref name="skippedSyntax"/>的语法标志。</param>
+    /// <param name="skippedSyntax">要添加的表示跳过语法的绿树节点。</param>
+    /// <param name="trailing">若为<see langword="true"/>，则将<paramref name="skippedSyntax"/>添加到后方语法琐碎内容中；否则添加到前方语法琐碎内容中。</param>
+    /// <returns></returns>
     internal SyntaxToken AddSkippedSyntax(SyntaxToken target, GreenNode skippedSyntax, bool trailing)
     {
         var builder = new SyntaxListBuilder(4);

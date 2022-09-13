@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System.Diagnostics;
+using Microsoft.CodeAnalysis;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -6,7 +7,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
 
-internal partial class SyntaxParser
+partial class SyntaxParser
 {
     protected struct ResetPoint
     {
@@ -27,5 +28,56 @@ internal partial class SyntaxParser
             this.Position = position;
             this.PrevTokenTrailingTrivia = prevTokenTrailingTrivia;
         }
+    }
+
+    protected ResetPoint GetResetPoint()
+    {
+        var pos = this.CurrentTokenPosition;
+        if (this._resetCount == 0)
+            this._resetStart = pos;
+
+        this._resetCount++;
+        return new(this._resetCount, this._mode, pos, this.prevTokenTrailingTrivia);
+    }
+
+    protected void Reset(ref ResetPoint point)
+    {
+        var offset = point.Position - this._firstToken;
+        Debug.Assert(offset >= 0);
+
+        if (offset >= this._tokenCount)
+        {
+            this.PeekToken(offset - this._tokenOffset);
+
+            offset = point.Position - this._firstToken;
+        }
+
+        this._mode = point.Mode;
+        Debug.Assert(offset >= 0 && offset < this._tokenCount);
+        this._tokenOffset = offset;
+        this._currentToken = null;
+        this._currentNode = default;
+        this.prevTokenTrailingTrivia = point.PrevTokenTrailingTrivia;
+        if (this.IsBlending())
+        {
+            for (int i = this._tokenOffset; i < this._tokenCount; i++)
+            {
+                if (this._blendedTokens[i].Token is null)
+                {
+                    this._tokenCount = i;
+                    if (this._tokenCount == this._tokenOffset)
+                        this.FetchCurrentToken();
+                    break;
+                }
+            }
+        }
+    }
+
+    protected void Release(ref ResetPoint point)
+    {
+        Debug.Assert(this._resetCount == point.ResetCount);
+        this._resetCount--;
+        if (this._resetCount == 0)
+            this._resetStart = -1;
     }
 }

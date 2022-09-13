@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System.Diagnostics;
+using System.Xml;
 using Luna.Compilers.Generators.Model;
 using SamLu.CodeAnalysis;
 
@@ -7,14 +8,21 @@ namespace Luna.Compilers.Generators;
 internal class SourceWriter : AbstractFileWriter
 {
     private SourceWriter(TextWriter writer, Tree tree, CancellationToken cancellationToken = default)
-        : base(writer, tree, cancellationToken)
-    {
-    }
+        : base(writer, tree, cancellationToken) { }
 
+    /// <summary>
+    /// 写入红树节点的访问、重写和工厂方法。
+    /// </summary>
     public static void WriteMain(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) => new SourceWriter(writer, tree, cancellationToken).WriteMain();
 
+    /// <summary>
+    /// 写入绿树节点的类型定义及访问、重写和上下文、静态工厂方法。
+    /// </summary>
     public static void WriteInternal(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) => new SourceWriter(writer, tree, cancellationToken).WriteInternal();
 
+    /// <summary>
+    /// 写入红树节点的类型定义。
+    /// </summary>
     public static void WriteSyntax(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) => new SourceWriter(writer, tree, cancellationToken).WriteSyntax();
 
     private void WriteFileHeader()
@@ -33,6 +41,20 @@ internal class SourceWriter : AbstractFileWriter
         WriteLine();
     }
 
+    private void WriteMain()
+    {
+        WriteFileHeader();
+        WriteLine($"namespace SamLu.CodeAnalysis.{LanguageNames.This}");
+        OpenBlock();
+        WriteLine("using System.Diagnostics.CodeAnalysis;");
+        WriteLine("using Microsoft.CodeAnalysis;");
+        WriteLine($"using SamLu.CodeAnalysis.{LanguageNames.This}.Syntax;");
+        this.WriteRedVisitors();
+        this.WriteRedRewriter();
+        this.WriteRedFactories();
+        CloseBlock();
+    }
+
     private void WriteInternal()
     {
         WriteFileHeader();
@@ -42,6 +64,8 @@ internal class SourceWriter : AbstractFileWriter
         WriteLine();
         this.WriteGreenTypes();
         this.WriteGreenVisitors();
+        this.WriteGreenAccumulator();
+        this.WriteGreenTraverser();
         this.WriteGreenRewriter();
         this.WriteContextualGreenFactories();
         this.WriteStaticGreenFactories();
@@ -58,23 +82,9 @@ internal class SourceWriter : AbstractFileWriter
         CloseBlock();
     }
 
-    private void WriteMain()
-    {
-        WriteFileHeader();
-        WriteLine($"namespace SamLu.CodeAnalysis.{LanguageNames.This}");
-        OpenBlock();
-        WriteLine("using System.Diagnostics.CodeAnalysis;");
-        WriteLine("using Microsoft.CodeAnalysis;");
-        WriteLine($"using SamLu.CodeAnalysis.{LanguageNames.This}.Syntax;");
-        this.WriteRedVisitors();
-        this.WriteRedRewriter();
-        this.WriteRedFactories();
-        CloseBlock();
-    }
-
     private void WriteGreenTypes()
     {
-        var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
+        var nodes = this.Tree.Types.Where(n => n is not PredefinedNode).ToList();
         foreach (var node in nodes)
         {
             WriteLine();
@@ -128,20 +138,17 @@ internal class SourceWriter : AbstractFileWriter
 
             foreach (var field in nodeFields)
             {
-                if (IsNodeOrNodeList(field.Type))
-                {
-                    WriteLine();
-                    WriteComment(field.PropertyComment, "");
+                WriteLine();
+                WriteComment(field.PropertyComment, "");
 
-                    if (IsSeparatedNodeList(field.Type) ||
-                        IsNodeList(field.Type))
-                    {
-                        WriteLine($"public abstract {(IsNew(field) ? "new " : "")}Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {field.Name} {{ get; }}");
-                    }
-                    else
-                    {
-                        WriteLine($"public abstract {(IsNew(field) ? "new " : "")}{(GetFieldType(field, green: true))} {field.Name} {{ get; }}");
-                    }
+                if (IsSeparatedNodeList(field.Type) ||
+                    IsNodeList(field.Type))
+                {
+                    WriteLine($"public abstract {(IsNew(field) ? "new " : "")}Microsoft.CodeAnalysis.Syntax.InternalSyntax.{field.Type} {field.Name} {{ get; }}");
+                }
+                else
+                {
+                    WriteLine($"public abstract {(IsNew(field) ? "new " : "")}{(GetFieldType(field, green: true))} {field.Name} {{ get; }}");
                 }
             }
 
@@ -336,7 +343,7 @@ internal class SourceWriter : AbstractFileWriter
 
             if (IsAnyList(field.Type) || IsOptional(field))
             {
-                WriteLine($"if ({CamelCase(field.Name)} != null)");
+                WriteLine($"if ({CamelCase(field.Name)} is not null)");
                 OpenBlock();
                 WriteLine($"AdjustFlagsAndWidth({CamelCase(field.Name)});");
                 WriteLine($"this.{CamelCase(field.Name)} = {CamelCase(field.Name)};");
@@ -406,7 +413,7 @@ internal class SourceWriter : AbstractFileWriter
         {
             if (IsAnyList(field.Type) || IsOptional(field))
             {
-                WriteLine($"if ({CamelCase(field.Name)} != null)");
+                WriteLine($"if ({CamelCase(field.Name)} is not null)");
                 OpenBlock();
                 WriteLine($"this.AdjustFlagsAndWidth({CamelCase(field.Name)});");
                 WriteLine($"this.{CamelCase(field.Name)} = {CamelCase(field.Name)};");
@@ -455,7 +462,7 @@ internal class SourceWriter : AbstractFileWriter
     {
         WriteLine();
         WriteLine($"public override void Accept({LanguageNames.This}SyntaxVisitor visitor) => visitor.Visit{StripPost(node.Name, "Syntax")}(this);");
-        WriteLine($"public override TResult Accept<TResult>({LanguageNames.This}SyntaxVisitor<TResult> visitor) => visitor.Visit{StripPost(node.Name, "Syntax")}(this);");
+        WriteLine($"public override TResult? Accept<TResult>({LanguageNames.This}SyntaxVisitor<TResult> visitor) where TResult : default => visitor.Visit{StripPost(node.Name, "Syntax")}(this);");
     }
 
     private void WriteGreenVisitors()
@@ -469,11 +476,11 @@ internal class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine($"internal partial class {LanguageNames.This}SyntaxVisitor" + (withResult ? "<TResult>" : ""));
+        WriteLine($"partial class {LanguageNames.This}SyntaxVisitor" + (withResult ? "<TResult>" : ""));
         OpenBlock();
         foreach (var node in nodes.OfType<Node>())
         {
-            WriteLine($"public virtual {(withResult ? "TResult" : "void")} Visit{StripPost(node.Name, "Syntax")}({node.Name} node) => this.DefaultVisit(node);");
+            WriteLine($"public virtual {(withResult ? "TResult?" : "void")} Visit{StripPost(node.Name, "Syntax")}({node.Name} node) => this.DefaultVisit(node);");
         }
         CloseBlock();
     }
@@ -489,7 +496,7 @@ internal class SourceWriter : AbstractFileWriter
                 f.Type == "SyntaxTokenList" ? "Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<SyntaxToken>" :
                 IsNodeList(f.Type) ? "Microsoft.CodeAnalysis.Syntax.InternalSyntax." + f.Type :
                 IsSeparatedNodeList(f.Type) ? "Microsoft.CodeAnalysis.Syntax.InternalSyntax." + f.Type :
-                f.Type;
+                f.Type + (IsOptional(f) ? "?" : string.Empty);
 
             return $"{type} {CamelCase(f.Name)}";
         })));
@@ -532,12 +539,102 @@ internal class SourceWriter : AbstractFileWriter
         CloseBlock();
     }
 
+    private void WriteGreenAccumulator()
+    {
+        var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
+
+        WriteLine();
+        WriteLine($"partial class {LanguageNames.This}SyntaxAccumulator<TResult> : {LanguageNames.This}SyntaxVisitor<IEnumerable<TResult>>");
+        OpenBlock();
+        int nWritten = 0;
+        foreach (var node in nodes.OfType<Node>())
+        {
+            var nodeFields = node.Fields.Where(nd => IsNodeOrNodeList(nd.Type)).ToList();
+
+            if (nWritten > 0)
+                WriteLine();
+            nWritten++;
+            WriteLine($"public override IEnumerable<TResult> Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
+            OpenBlock();
+
+            if (nodeFields.Count == 0)
+            {
+                WriteLine("yield break;");
+            }
+            else
+            {
+                foreach (var f in node.Fields)
+                {
+                    string visitMethod;
+                    if (IsAnyList(f.Type))
+                        visitMethod = "VisitList";
+                    else if (f.Type == "SyntaxToken")
+                        visitMethod = "Visit";
+                    else if (IsNode(f.Type))
+                        visitMethod = "Visit";
+                    else
+                        continue;
+                    if (!IsAnyList(f.Type) && IsOptional(f))
+                        Write($"if (node.{f.Name} is not null) ");
+                    WriteLine($"foreach (var result in this.{visitMethod}(node.{f.Name})) yield return result;");
+                }
+            }
+
+            CloseBlock();
+        }
+
+        CloseBlock();
+    }
+
+    private void WriteGreenTraverser()
+    {
+        var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
+
+        WriteLine();
+        WriteLine($"partial class {LanguageNames.This}SyntaxTraverser : {LanguageNames.This}SyntaxVisitor");
+        OpenBlock();
+        int nWritten = 0;
+        foreach (var node in nodes.OfType<Node>())
+        {
+            var nodeFields = node.Fields.Where(nd => IsNodeOrNodeList(nd.Type)).ToList();
+
+            if (nWritten > 0)
+                WriteLine();
+            nWritten++;
+            WriteLine($"public override void Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
+            OpenBlock();
+
+            if (nodeFields.Count != 0)
+            {
+                foreach (var f in node.Fields)
+                {
+                    string visitMethod;
+                    if (IsAnyList(f.Type))
+                        visitMethod = "VisitList";
+                    else if (f.Type == "SyntaxToken")
+                        visitMethod = "Visit";
+                    else if (IsNode(f.Type))
+                        visitMethod = "Visit";
+                    else
+                        continue;
+                    if (!IsAnyList(f.Type) && IsOptional(f))
+                        Write($"if (node.{f.Name} is not null) ");
+                    WriteLine($"this.{visitMethod}(node.{f.Name});");
+                }
+            }
+
+            CloseBlock();
+        }
+
+        CloseBlock();
+    }
+
     private void WriteGreenRewriter()
     {
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine($"internal partial class {LanguageNames.This}SyntaxRewriter : {LanguageNames.This}SyntaxVisitor<{LanguageNames.This}SyntaxNode>");
+        WriteLine($"partial class {LanguageNames.This}SyntaxRewriter : {LanguageNames.This}SyntaxVisitor<{LanguageNames.This}SyntaxNode>");
         OpenBlock();
         int nWritten = 0;
         foreach (var node in nodes.OfType<Node>())
@@ -560,9 +657,9 @@ internal class SourceWriter : AbstractFileWriter
                 Write(CommaJoin(node.Fields.Select(f =>
                 {
                     if (IsAnyList(f.Type))
-                        return $"VisitList(node.{f.Name})";
+                        return $"this.VisitList(node.{f.Name})";
                     else if (IsNode(f.Type))
-                        return $"({f.Type})Visit(node.{f.Name})";
+                        return $"({f.Type}{(IsOptional(f) ? "?" : string.Empty)})this.Visit(node.{f.Name}){(!IsOptional(f) ? "!" : string.Empty)}";
                     else
                         return $"node.{f.Name}";
                 })));
@@ -579,7 +676,7 @@ internal class SourceWriter : AbstractFileWriter
     {
         var nodes = Tree.Types.Where(n => n is not PredefinedNode and not AbstractNode).ToList();
         WriteLine();
-        WriteLine("internal partial class ContextAwareSyntax");
+        WriteLine("partial class ContextAwareSyntax");
         OpenBlock();
         WriteLine();
         WriteLine("private SyntaxFactoryContext context;");
@@ -596,7 +693,7 @@ internal class SourceWriter : AbstractFileWriter
     {
         var nodes = Tree.Types.Where(n => n is not PredefinedNode and not AbstractNode).ToList();
         WriteLine();
-        WriteLine("internal static partial class SyntaxFactory");
+        WriteLine("static partial class SyntaxFactory");
         OpenBlock();
         WriteGreenFactories(nodes);
         WriteGreenTypeList();
@@ -662,13 +759,13 @@ internal class SourceWriter : AbstractFileWriter
 
             if (!IsAnyList(field.Type) && !IsOptional(field))
             {
-                WriteLine($"if ({CamelCase(field.Name)} == null) throw new ArgumentNullException(nameof({CamelCase(field.Name)}));");
+                WriteLine($"if ({CamelCase(field.Name)} is null) throw new ArgumentNullException(nameof({CamelCase(field.Name)}));");
             }
-            if (field.Type == "SyntaxToken" && field.Kinds != null && field.Kinds.Count > 0)
+            if (field.Type == "SyntaxToken" && field.Kinds is not null && field.Kinds.Count > 0)
             {
                 if (IsOptional(field))
                 {
-                    WriteLine($"if ({CamelCase(field.Name)} != null)");
+                    WriteLine($"if ({CamelCase(field.Name)} is not null)");
                     OpenBlock();
                 }
 
@@ -682,7 +779,7 @@ internal class SourceWriter : AbstractFileWriter
                     OpenBlock();
                     var kinds = field.Kinds.Distinct().ToList();
 
-                    //we need to check for Kind=None as well as node == null because that's what the red factory will pass
+                    //we need to check for Kind=None as well as node is null because that's what the red factory will pass
                     if (IsOptional(field))
                     {
                         kinds.Add(new Kind { Name = "None" });
@@ -712,7 +809,7 @@ internal class SourceWriter : AbstractFileWriter
         {
             //int hash;
             //var cached = SyntaxNodeCache.TryGetNode((int)SyntaxKind.IdentifierName, identifier, this.context, out hash);
-            //if (cached != null) return (IdentifierNameSyntax)cached;
+            //if (cached is not null) return (IdentifierNameSyntax)cached;
 
             //var result = new IdentifierNameSyntax(SyntaxKind.IdentifierName, identifier, this.context);
             //if (hash >= 0)
@@ -737,8 +834,8 @@ internal class SourceWriter : AbstractFileWriter
 
             WriteCtorArgList(nd, withSyntaxFactoryContext, valueFields, nodeFields);
             WriteLine(", out hash);");
-            //    if (cached != null) return (IdentifierNameSyntax)cached;
-            WriteLine($"if (cached != null) return ({nd.Name})cached;");
+            //    if (cached is not null) return (IdentifierNameSyntax)cached;
+            WriteLine($"if (cached is not null) return ({nd.Name})cached;");
             WriteLine();
 
             //var result = new IdentifierNameSyntax(SyntaxKind.IdentifierName, identifier);
@@ -855,7 +952,7 @@ internal class SourceWriter : AbstractFileWriter
                     else
                     {
                         var referencedNode = TryGetNodeForNestedList(field);
-                        if (referencedNode != null)
+                        if (referencedNode is not null)
                         {
                             foreach (var referencedNodeField in referencedNode.Fields)
                             {
@@ -881,7 +978,7 @@ internal class SourceWriter : AbstractFileWriter
             }
 
             var baseType = GetTreeType(node.Base);
-            if (baseType != null)
+            if (baseType is not null)
             {
                 var baseNodeFields = GetNodeOrNodeListFields(baseType);
                 if (baseNodeFields.Count > 0)
@@ -905,7 +1002,7 @@ internal class SourceWriter : AbstractFileWriter
                     else
                     {
                         var referencedNode = TryGetNodeForNestedList(baseField);
-                        if (referencedNode != null)
+                        if (referencedNode is not null)
                         {
                             // look for list members...
                             foreach (var referencedNodeField in referencedNode.Fields)
@@ -995,7 +1092,7 @@ internal class SourceWriter : AbstractFileWriter
                         WriteLine("get");
                         OpenBlock();
                         WriteLine($"var slot = ((Syntax.InternalSyntax.{node.Name})this.Green).{CamelCase(field.Name)};");
-                        WriteLine($"return slot != null ? new SyntaxToken(this, slot, {GetChildPosition(i)}, {GetChildIndex(i)}) : default;");
+                        WriteLine($"return slot is not null ? new SyntaxToken(this, slot, {GetChildPosition(i)}, {GetChildIndex(i)}) : default;");
                         CloseBlock();
                         CloseBlock();
                     }
@@ -1018,7 +1115,7 @@ internal class SourceWriter : AbstractFileWriter
                     WriteLine("get");
                     OpenBlock();
                     WriteLine($"var slot = this.Green.GetSlot({i});");
-                    WriteLine($"return slot != null ? new SyntaxTokenList(this, slot, {GetChildPosition(i)}, {GetChildIndex(i)}) : default;");
+                    WriteLine($"return slot is not null ? new SyntaxTokenList(this, slot, {GetChildPosition(i)}, {GetChildIndex(i)}) : default;");
                     CloseBlock();
                     CloseBlock();
                 }
@@ -1045,7 +1142,7 @@ internal class SourceWriter : AbstractFileWriter
                         OpenBlock();
 
                         WriteLine($"var red = GetRed(ref this.{CamelCase(field.Name)}, {i});");
-                        WriteLine($"return red != null ? new {field.Type}(red, {GetChildIndex(i)}) : default;");
+                        WriteLine($"return red is not null ? new {field.Type}(red, {GetChildIndex(i)}) : default;");
                         CloseBlock();
                         CloseBlock();
                     }
@@ -1216,7 +1313,7 @@ internal class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine($"public partial class {LanguageNames.This}SyntaxVisitor" + genericArgs);
+        WriteLine($"partial class {LanguageNames.This}SyntaxVisitor{genericArgs}");
         OpenBlock();
         int nWritten = 0;
         foreach (var node in nodes.OfType<Node>())
@@ -1285,12 +1382,12 @@ internal class SourceWriter : AbstractFileWriter
             if (IsOverride(field))
             {
                 var name = field.Name;
-                var overriddenName = (string.Compare(field.Override, "true", true) == 0) ? name : field.Override;
+                var overriddenName = (string.Compare(field.Override, "true", true) == 0) ? name : field.Override!;
                 var (baseType, baseField) = GetHighestBaseTypeWithField(node, overriddenName);
-                if (baseType != null)
+                if (baseType is not null)
                 {
-                    Write($"internal override {baseType.Name} With{overriddenName}Core({GetRedPropertyType(baseField)} {CamelCase(overriddenName)}) => With{name}({CamelCase(overriddenName)}");
-                    if (baseField.Type != "SyntaxToken" && IsOptional(baseField) && !IsOptional(field))
+                    Write($"internal override {baseType.Name} With{overriddenName}Core({GetRedPropertyType(baseField!)} {CamelCase(overriddenName)}) => With{name}({CamelCase(overriddenName)}");
+                    if (baseField!.Type != "SyntaxToken" && IsOptional(baseField) && !IsOptional(field))
                     {
                         Write($" ?? throw new ArgumentNullException(nameof({CamelCase(name)}))");
                     }
@@ -1315,11 +1412,11 @@ internal class SourceWriter : AbstractFileWriter
     {
         TreeType? bestType = null;
         Field? bestField = null;
-        for (var current = node; current != null; current = TryGetBaseType(current))
+        for (var current = node; current is not null; current = TryGetBaseType(current))
         {
             var fields = GetNodeOrNodeListFields(current);
             var field = fields.FirstOrDefault(f => f.Name == name);
-            if (field != null)
+            if (field is not null)
             {
                 bestType = current;
                 bestField = field;
@@ -1354,7 +1451,7 @@ internal class SourceWriter : AbstractFileWriter
             else
             {
                 var referencedNode = TryGetNodeForNestedList(field);
-                if (referencedNode != null)
+                if (referencedNode is not null)
                 {
                     // look for list members...
                     foreach (var referencedNodeField in referencedNode.Fields)
@@ -1374,10 +1471,10 @@ internal class SourceWriter : AbstractFileWriter
         }
     }
 
-    private Node TryGetNodeForNestedList(Field field)
+    private Node? TryGetNodeForNestedList(Field field)
     {
-        Node referencedNode = GetNode(field.Type);
-        if (referencedNode != null && (!IsOptional(field) || RequiredFactoryArgumentCount(referencedNode) == 0))
+        var referencedNode = GetNode(field.Type);
+        if (referencedNode is not null && (!IsOptional(field) || RequiredFactoryArgumentCount(referencedNode) == 0))
         {
             return referencedNode;
         }
@@ -1393,11 +1490,11 @@ internal class SourceWriter : AbstractFileWriter
         if (IsOverride(field))
         {
             var name = field.Name;
-            var overriddenName = (string.Compare(field.Override, "true", true) == 0) ? name : field.Override;
+            var overriddenName = (string.Compare(field.Override, "true", true) == 0) ? name : field.Override!;
             var (baseType, baseField) = GetHighestBaseTypeWithField(node, overriddenName);
-            if (baseType != null)
+            if (baseType is not null)
             {
-                var baseArgType = GetElementType(baseField.Type);
+                var baseArgType = GetElementType(baseField!.Type);
                 WriteLine($"internal override {baseType.Name} Add{overriddenName}Core(params {baseArgType}[] items) => Add{name}(items);");
                 isNew = true;
             }
@@ -1414,9 +1511,9 @@ internal class SourceWriter : AbstractFileWriter
         if (IsOverride(field))
         {
             var name = field.Name;
-            var overriddenName = (string.Compare(field.Override, "true", true) == 0) ? name : field.Override;
+            var overriddenName = (string.Compare(field.Override, "true", true) == 0) ? name : field.Override!;
             var (baseType, _) = GetHighestBaseTypeWithField(node, overriddenName);
-            if (baseType != null)
+            if (baseType is not null)
             {
                 WriteLine($"internal override {baseType.Name} Add{StripPost(overriddenName, "Opt")}{referencedNodeField.Name}Core(params {argType}[] items) => Add{StripPost(name, "Opt")}{referencedNodeField.Name}(items);");
                 isNew = true;
@@ -1447,7 +1544,7 @@ internal class SourceWriter : AbstractFileWriter
         var nodes = Tree.Types.Where(n => n is not PredefinedNode).ToList();
 
         WriteLine();
-        WriteLine($"public partial class {LanguageNames.This}SyntaxRewriter");
+        WriteLine($"partial class {LanguageNames.This}SyntaxRewriter : {LanguageNames.This}SyntaxVisitor<{LanguageNames.This}SyntaxNode>");
         OpenBlock();
 
         int nWritten = 0;
@@ -1456,7 +1553,7 @@ internal class SourceWriter : AbstractFileWriter
             if (nWritten > 0)
                 WriteLine();
             nWritten++;
-            WriteLine($"public override {LanguageNames.This}SyntaxNode? Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
+            WriteLine($"public override {LanguageNames.This}SyntaxNode Visit{StripPost(node.Name, "Syntax")}({node.Name} node)");
 
             if (node.Fields.Count == 0)
             {
@@ -1498,7 +1595,7 @@ internal class SourceWriter : AbstractFileWriter
         foreach (var node in nodes)
         {
             this.WriteRedFactory(node);
-            bool skipConvenienceFactories = node.SkipConvenienceFactories != null && string.Compare(node.SkipConvenienceFactories, "true", true) == 0;
+            bool skipConvenienceFactories = node.SkipConvenienceFactories is not null && string.Compare(node.SkipConvenienceFactories, "true", true) == 0;
             if (!skipConvenienceFactories)
             {
                 this.WriteRedFactoryWithNoAutoCreatableTokens(node);
@@ -1517,14 +1614,14 @@ internal class SourceWriter : AbstractFileWriter
     private bool IsAutoCreatableToken(Node node, Field field)
     {
         return field.Type == "SyntaxToken"
-            && field.Kinds != null
+            && field.Kinds is not null
             && ((field.Kinds.Count == 1 && field.Kinds[0].Name != "IdentifierToken" && !field.Kinds[0].Name.EndsWith("LiteralToken", StringComparison.Ordinal)) || (field.Kinds.Count > 1 && field.Kinds.Count == node.Kinds.Count));
     }
 
     private bool IsAutoCreatableNode(Field field)
     {
         var referencedNode = GetNode(field.Type);
-        return (referencedNode != null && RequiredFactoryArgumentCount(referencedNode) == 0);
+        return (referencedNode is not null && RequiredFactoryArgumentCount(referencedNode) == 0);
     }
 
     private bool IsRequiredFactoryField(Node node, Field field)
@@ -1610,7 +1707,7 @@ internal class SourceWriter : AbstractFileWriter
             if (field.Type == "SyntaxToken")
             {
                 var fieldKinds = GetKindsOfFieldOrNearestParent(nd, field);
-                if (fieldKinds != null && fieldKinds.Count > 0)
+                if (fieldKinds is not null && fieldKinds.Count > 0)
                 {
                     var kinds = fieldKinds.ToList();
                     if (IsOptional(field))
@@ -1637,7 +1734,7 @@ internal class SourceWriter : AbstractFileWriter
             }
             else if (!IsAnyList(field.Type) && !IsOptional(field))
             {
-                WriteLine($"if ({CamelCase(field.Name)} == null) throw new ArgumentNullException(nameof({CamelCase(field.Name)}));");
+                WriteLine($"if ({CamelCase(field.Name)} is null) throw new ArgumentNullException(nameof({CamelCase(field.Name)}));");
             }
         }
 
@@ -1663,7 +1760,7 @@ internal class SourceWriter : AbstractFileWriter
                 else if (f.Type == "SyntaxNodeOrTokenList")
                     return $"{CamelCase(f.Name)}.Node.ToGreenList<Syntax.InternalSyntax.{LanguageNames.This}SyntaxNode>()";
                 else if (IsOptional(f))
-                    return $"{CamelCase(f.Name)} == null ? null : (Syntax.InternalSyntax.{f.Type}){CamelCase(f.Name)}.Green";
+                    return $"{CamelCase(f.Name)} is null ? null : (Syntax.InternalSyntax.{f.Type}){CamelCase(f.Name)}.Green";
                 else
                     return $"(Syntax.InternalSyntax.{f.Type}){CamelCase(f.Name)}.Green";
             }),
@@ -1692,7 +1789,7 @@ internal class SourceWriter : AbstractFileWriter
 
     private string GetDefaultValue(Node nd, Field field)
     {
-        System.Diagnostics.Debug.Assert(!IsRequiredFactoryField(nd, field));
+        Debug.Assert(!IsRequiredFactoryField(nd, field));
 
         if (IsOptional(field) || IsAnyList(field.Type))
         {
@@ -1713,7 +1810,7 @@ internal class SourceWriter : AbstractFileWriter
         }
         else
         {
-            var referencedNode = GetNode(field.Type);
+            var referencedNode = GetNode(field.Type)!;
             return $"SyntaxFactory.{StripPost(referencedNode.Name, "Syntax")}()";
         }
     }
@@ -1759,7 +1856,7 @@ internal class SourceWriter : AbstractFileWriter
 
         var factoryWithNoAutoCreatableTokenFields = new HashSet<Field>(DetermineRedFactoryWithNoAutoCreatableTokenFields(nd));
         var minimalFactoryFields = DetermineMinimalFactoryFields(nd);
-        if (minimalFactoryFields != null && factoryWithNoAutoCreatableTokenFields.SetEquals(minimalFactoryFields))
+        if (minimalFactoryFields is not null && factoryWithNoAutoCreatableTokenFields.SetEquals(minimalFactoryFields))
         {
             return; // will be handled in minimal factory case
         }
@@ -1784,7 +1881,7 @@ internal class SourceWriter : AbstractFileWriter
         WriteLine(");");
     }
 
-    private Field DetermineMinimalOptionalField(Node nd)
+    private Field? DetermineMinimalOptionalField(Node nd)
     {
         // first if there is a single list, then choose the list because it would not have been optional
         int listCount = nd.Fields.Count(f => IsAnyNodeList(f.Type) && !IsAttributeOrModifiersList(f));
@@ -1812,11 +1909,11 @@ internal class SourceWriter : AbstractFileWriter
         return f.Name is "AttributeLists" or "Modifiers";
     }
 
-    private IEnumerable<Field> DetermineMinimalFactoryFields(Node nd)
+    private IEnumerable<Field>? DetermineMinimalFactoryFields(Node nd)
     {
         // special case to allow a single optional argument if there would have been no arguments
         // and we can determine a best single argument.
-        Field allowOptionalField = null;
+        Field? allowOptionalField = null;
 
         var optionalCount = OptionalFactoryArgumentCount(nd);
         if (optionalCount == 0)
@@ -1922,7 +2019,7 @@ internal class SourceWriter : AbstractFileWriter
 
     private bool IsIdentifierToken(Field field)
     {
-        return field.Type == "SyntaxToken" && field.Kinds != null && field.Kinds.Count == 1 && field.Kinds[0].Name == "IdentifierToken";
+        return field.Type == "SyntaxToken" && field.Kinds is not null && field.Kinds.Count == 1 && field.Kinds[0].Name == "IdentifierToken";
     }
 
     private bool IsIdentifierNameSyntax(Field field)
@@ -1952,7 +2049,7 @@ internal class SourceWriter : AbstractFileWriter
     /// </summary>
     private void WriteComment(string comment)
     {
-        if (comment != null)
+        if (comment is not null)
         {
             var lines = comment.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var line in lines.Where(l => !string.IsNullOrWhiteSpace(l)))
@@ -1966,17 +2063,16 @@ internal class SourceWriter : AbstractFileWriter
     /// Anything inside a &lt;Comment&gt; tag gets written out (escaping untouched) as the
     /// XML doc comment.  Line breaks will be preserved.
     /// </summary>
-    private void WriteComment(Comment comment, string indent)
+    private void WriteComment(Comment? comment, string indent)
     {
-        if (comment != null)
+        if (comment is null) return;
+
+        foreach (XmlElement element in comment.Body)
         {
-            foreach (XmlElement element in comment.Body)
+            string[] lines = element.OuterXml.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string line in lines.Where(l => !string.IsNullOrWhiteSpace(l)))
             {
-                string[] lines = element.OuterXml.Split(new string[] { "\r", "\n", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string line in lines.Where(l => !string.IsNullOrWhiteSpace(l)))
-                {
-                    WriteLine($"{indent}/// {line.TrimStart()}");
-                }
+                WriteLine($"{indent}/// {line.TrimStart()}");
             }
         }
     }

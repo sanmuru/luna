@@ -10,6 +10,6 @@ partial class SyntaxFactory
     /// <param name="name">The identifier name.</param>
     public static IdentifierNameSyntax IdentifierName(string name)
     {
-        return IdentifierName(SyntaxFactory.Identifier(name));
+        return SyntaxFactory.IdentifierName(SyntaxFactory.Identifier(name));
     }
 }

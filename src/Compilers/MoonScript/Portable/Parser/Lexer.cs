@@ -353,7 +353,7 @@ partial class Lexer
                         break;
 
                     case '=':
-                        for (int i = 3; ; i++)
+                        for (int i = 2; ; i++)
                         {
                             char nextChar = this.TextWindow.PeekChar(i);
                             if (nextChar == '=') continue;
@@ -542,7 +542,7 @@ partial class Lexer
                 else
                     info.Text = this.TextWindow.GetText(intern: true);
 
-                this.AddError(ErrorCode.ERR_UnexpectedCharacter, info);
+                this.AddError(ErrorCode.ERR_UnexpectedCharacter, info.Text);
                 break;
         }
     }

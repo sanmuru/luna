@@ -52,14 +52,14 @@ public partial class LexerTests
              third line'
             """, "first line\n  second line\nthird line"); // 换行字面量的缩进量以除第一行外缩进量最小的一行为准。
         LiteralLexTest("""
-            '\97o\10\049t23+\23383456'
-            """, "ao\n1t23+字456"); // 转义十进制Unicode字符。
+            '\97o\10\049t23\043456'
+            """, "ao\n1t23+456"); // 转义十进制Ascii编码。
         LiteralLexTest("""
-            '\x61\x6F\n\x3123'
-            """, "ao\n123"); // 转义十六进制Ascii字符。
+            '\x61\x6F\n\x312\xe5\xad\xa63'
+            """, "ao\n12学3"); // 转义十六进制UTF-8编码序列。
         LiteralLexTest("""
             '\u{61}o\u{A}\u{0031}t23+\u{00000000000000000000000000005B57}456'
-            """, "ao\n1t23+字456"); // 转义十进制Unicode字符。
+            """, "ao\n1t23+字456"); // 转义十进制Unicode码点。
 
         LiteralLexTest("""
             [===[a,[b],[[c]],[=[d]=],[==[e]==],[====[f]====],g]===]

@@ -165,7 +165,11 @@ internal abstract class SlidingTextWindow : IDisposable
         }
     }
 
-    protected bool MoreChars()
+    /// <summary>
+    /// 移动或扩充字符缓冲数组以容纳更多的字符。
+    /// </summary>
+    /// <returns>若操作成功，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
+    protected internal bool MoreChars()
     {
         if (this._offset >= this._characterWindowCount)
         {
@@ -278,17 +282,17 @@ internal abstract class SlidingTextWindow : IDisposable
         if (count is < 0) throw new ArgumentOutOfRangeException(nameof(count));
         else if (count is 0) return string.Empty;
 
-        char[] chars = new char[count];
         for (int i = 0; i < count; i++)
         {
             int position = this._offset + i;
             if (position >= this._characterWindowCount && !this.MoreChars())
-                chars[i] = SlidingTextWindow.InvalidCharacter;
-            else
-                chars[i] = this._characterWindow[position];
+            {
+                count = i + 1;
+                break;
+            }
         }
 
-        return new(chars);
+        return this.GetText(this._offset, count, intern: true);
     }
 
     /// <summary>

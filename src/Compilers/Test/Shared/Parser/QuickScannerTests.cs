@@ -18,13 +18,9 @@ namespace SamLu.CodeAnalysis.MoonScript.Parser.UnitTests;
 [TestClass]
 public partial class QuickScannerTests
 {
-    protected internal static TestContext Context;
-
-    [ClassInitialize]
-    public static void SetupTests(TestContext testContext)
-    {
-        QuickScannerTests.Context = testContext;
-    }
+#pragma warning disable CS8618
+    public TestContext TestContext { get; set; }
+#pragma warning restore CS8618
 
     internal static IEnumerable<char> GetCharByFlag(CharFlag flag)
     {
@@ -113,6 +109,6 @@ public partial class QuickScannerTests
                 })
                 .All(QuickScannerTests.Check)
         );
-        QuickScannerTests.Context.WriteLine($"共 {count} 种状态组合均通过测试。"); // 7位数数量级。
+        this.TestContext.WriteLine($"共 {count} 种状态组合均通过测试。"); // 7位数数量级。
     }
 }

@@ -27,10 +27,6 @@ partial class LexerTests
         // 忽略可能的负号。
         if (LexerTestUtilities.IsPunctuationCore(token, "-"))
             token = lexer.Lex(LexerMode.Syntax);
-        Assert.That.IsLiteral(token);
-
-        var tokenValue = token.GetValue();
-        Assert.IsInstanceOfType(value, typeof(T));
-        Assert.AreEqual(value, (T?)tokenValue);
+        Assert.That.IsLiteral(token, value);
     }
 }

@@ -111,20 +111,26 @@ internal static partial class SyntaxFactory
     internal static SyntaxTrivia Comment(string text)
     {
         // 检测text是否为多行注释的格式（“--[”与“[”之间间隔零个或复数个“=”）。
-        if (text[2] == '[')
+        if (text.Length > 2 && text[2] == '[')
         {
             for (int i = 3; i < text.Length; i++)
             {
-                if (i == '[')
+                if (text[i] == '[')
                     return SyntaxTrivia.Create(SyntaxKind.MultiLineCommentTrivia, text);
-                else if (i == '=')
+                else if (text[i] == '=')
                     continue;
+                else // 不符合左长方括号的结构，判定为非多行注释。
+                    break;
             }
         }
 
         // 否则text为单行注释。
         return SyntaxTrivia.Create(SyntaxKind.SingleLineCommentTrivia, text);
     }
+
+#if DEBUG
+    internal static ThisInternalSyntaxNode Mock() => new ThisInternalSyntaxNode.MockNode();
+#endif
 
     public static SyntaxToken Token(SyntaxKind kind) => SyntaxToken.Create(kind);
 
@@ -164,12 +170,6 @@ internal static partial class SyntaxFactory
     internal static SyntaxToken Literal(GreenNode? leading, string text, string value, GreenNode? trailing) => SyntaxToken.WithValue(SyntaxKind.StringLiteralToken, leading, text, value, trailing);
 
     internal static SyntaxToken Literal(GreenNode? leading, string text, SyntaxKind kind, string value, GreenNode? trailing) => SyntaxToken.WithValue(kind, leading, text, value, trailing);
-
-    internal static SyntaxTrivia SkippedTokensTrivia(SyntaxToken token)
-    {
-#warning 未实现。
-        throw new NotImplementedException();
-    }
 
     #region SyntaxKind到SyntaxToken的转换方法
     // 各种语法部分的转换方法在各语言的独立项目中定义

@@ -8,15 +8,15 @@ public class LuaException : Exception
 
     public LuaException() : base() { }
 
-    public LuaException(Object value!!) : this(value.ToString()) => this.Value = Value;
+    public LuaException(Object value) : this((value ?? throw new ArgumentNullException(nameof(value))).ToString()) => this.Value = Value;
 
     public LuaException(string? message) : base(message) { }
 
-    public LuaException(string? message, Object value!!) : base(message) => this.Value = value;
+    public LuaException(string? message, Object value) : base(message) => this.Value = value ?? throw new ArgumentNullException(nameof(value));
 
     public LuaException(string? message, Exception? innerException) : base(message, innerException) { }
 
-    public LuaException(string? message, Object value!!, Exception? innerException) : this(message, innerException) => this.Value = value;
+    public LuaException(string? message, Object value, Exception? innerException) : this(message, innerException) => this.Value = value ?? throw new ArgumentNullException(nameof(value));
 
     protected LuaException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
