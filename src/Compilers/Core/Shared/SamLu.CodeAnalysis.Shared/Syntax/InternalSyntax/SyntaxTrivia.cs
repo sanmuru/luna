@@ -9,7 +9,7 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
 
-internal class SyntaxTrivia :
+internal partial class SyntaxTrivia :
 #if LANG_LUA
     LuaSyntaxNode
 #elif LANG_MOONSCRIPT
@@ -68,6 +68,10 @@ internal class SyntaxTrivia :
     /// <summary>此语法节点是否为琐碎内容。</summary>
     /// <remarks>此属性的值永远为<see langword="true"/>。</remarks>
     public sealed override bool IsTrivia => true;
+
+    public virtual bool IsWhiteSpace => this.Kind == SyntaxKind.WhiteSpaceTrivia;
+
+    public virtual bool IsEndOfLine => this.Kind == SyntaxKind.EndOfLineTrivia;
 
     internal override bool ShouldReuseInSerialization => this.Kind == SyntaxKind.WhiteSpaceTrivia && this.FullWidth < Lexer.MaxCachedTokenSize;
 

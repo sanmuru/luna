@@ -23,11 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.2.0" />
-    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.3.36" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Update="XunitXml.TestLogger" Version="3.0.62" />
   </ItemGroup>
 

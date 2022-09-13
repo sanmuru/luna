@@ -1,4 +1,6 @@
-﻿#if LANG_LUA
+﻿using System.Diagnostics;
+
+#if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
@@ -17,5 +19,22 @@ internal partial class SyntaxFactoryContext
      * 基于Lua的所有支持语言通用的字段放置于此文件；
      * 各语言特定的字段放置于其对应项目的同名文件中。
      */
-#warning 需补充上下文信息字段。
+
+    private readonly Stack<SyntaxKind> _structureStack = new();
+
+    internal SyntaxKind CurrentStructure => this._structureStack.Count > 0 ? this._structureStack.Peek() : SyntaxKind.None;
+
+    internal void EnterStructure(SyntaxKind kind) => this._structureStack.Push(kind);
+
+    private void LeaveStructure()
+    {
+        Debug.Assert(this._structureStack.Count != 0);
+        this._structureStack.Pop();
+    }
+
+    internal void LeaveStructure(SyntaxKind kind)
+    {
+        Debug.Assert(this._structureStack.Count != 0);
+        Debug.Assert(kind == this._structureStack.Pop());
+    }
 }

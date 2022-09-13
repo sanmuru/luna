@@ -22,7 +22,7 @@ partial class Lexer
                 this.TextWindow.AdvanceChar();
                 break;
             }
-            // 字符串可能中包含非正规的Utf-16以外的字符，检查是否真正到达文本结尾来验证这些字符不是由用户代码引入的情况。
+            // 字符串中可能包含非正规的Utf-16以外的字符，检查是否真正到达文本结尾来验证这些字符不是由用户代码引入的情况。
             else if (SyntaxFacts.IsNewLine(c) ||
                 (c == SlidingTextWindow.InvalidCharacter && this.TextWindow.IsReallyAtEnd())
             )

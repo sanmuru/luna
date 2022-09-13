@@ -13,11 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.2.0" />
-    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.3.37" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <InternalsVisibleTo Include="Lua.Core.UnitTest" />
   </ItemGroup>
   

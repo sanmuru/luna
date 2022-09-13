@@ -165,7 +165,11 @@ internal abstract class SlidingTextWindow : IDisposable
         }
     }
 
-    protected bool MoreChars()
+    /// <summary>
+    /// 移动或扩充字符缓冲数组以容纳更多的字符。
+    /// </summary>
+    /// <returns>若操作成功，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
+    protected internal bool MoreChars()
     {
         if (this._offset >= this._characterWindowCount)
         {
@@ -247,7 +251,7 @@ internal abstract class SlidingTextWindow : IDisposable
     }
 
     /// <summary>
-    /// 抓取后方第<paramref name="delta"/>位上的字符并推进字符偏移量<paramref name="delta"/>个字符位置。
+    /// 查看后方第<paramref name="delta"/>位上的字符。
     /// </summary>
     /// <param name="delta">相对于当前识别的字符位置的偏移量。</param>
     /// <returns>后方第<paramref name="delta"/>位上的字符。若已到达结尾，则返回<see cref="SlidingTextWindow.InvalidCharacter"/>。</returns>
@@ -265,6 +269,30 @@ internal abstract class SlidingTextWindow : IDisposable
 
         this.Reset(position);
         return c;
+    }
+
+    /// <summary>
+    /// 查看后方共<paramref name="count"/>位字符。
+    /// </summary>
+    /// <param name="count">查看的字符位数。</param>
+    /// <returns>后方共<paramref name="count"/>位字符。若已到达结尾，则该位上的字符为<see cref="SlidingTextWindow.InvalidCharacter"/>。</returns>
+    [DebuggerStepThrough]
+    public virtual string PeekChars(int count)
+    {
+        if (count is < 0) throw new ArgumentOutOfRangeException(nameof(count));
+        else if (count is 0) return string.Empty;
+
+        for (int i = 0; i < count; i++)
+        {
+            int position = this._offset + i;
+            if (position >= this._characterWindowCount && !this.MoreChars())
+            {
+                count = i + 1;
+                break;
+            }
+        }
+
+        return this.GetText(this._offset, count, intern: true);
     }
 
     /// <summary>

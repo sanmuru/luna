@@ -92,7 +92,7 @@ static partial class SyntaxReplacer
             this._visitInfoStructuredTrivia = visitInfoStructuredTrivia;
         }
 
-        public override bool VisitInfoStructuredTrivia => this._visitInfoStructuredTrivia;
+        public override bool VisitIntoStructuredTrivia => this._visitInfoStructuredTrivia;
 
         private bool ShouldVisit(TextSpan span) => span.IntersectsWith(this._elementSpan);
 
@@ -127,7 +127,7 @@ static partial class SyntaxReplacer
         {
             SyntaxTrivia rewritten;
 
-            if (this.VisitInfoStructuredTrivia && trivia.HasStructure && this.ShouldVisit(trivia.FullSpan))
+            if (this.VisitIntoStructuredTrivia && trivia.HasStructure && this.ShouldVisit(trivia.FullSpan))
                 rewritten = this.VisitTrivia(trivia);
             else
                 rewritten = trivia;

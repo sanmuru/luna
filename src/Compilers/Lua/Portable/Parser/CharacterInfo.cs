@@ -1,11 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Roslyn.Utilities;
 
-#if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
-#elif LANG_MOONSCRIPT
-namespace SamLu.CodeAnalysis.MoonScript;
-#endif
 
 public static partial class SyntaxFacts
 {

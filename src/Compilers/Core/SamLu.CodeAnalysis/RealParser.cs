@@ -50,7 +50,7 @@ internal static class RealParser
             offset++;
         }
         // 若第53位为0，则左移尾数部分，直到第53位为1，计算偏移量。
-        while (mantissa <= 0xFFFFFFFFFFFFF)
+        while (mantissa != 0 && mantissa <= 0xFFFFFFFFFFFFF)
         {
             mantissa <<= 1;
             offset--;

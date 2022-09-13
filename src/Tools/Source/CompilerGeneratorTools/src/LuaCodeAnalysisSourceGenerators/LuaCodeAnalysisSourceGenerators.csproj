@@ -14,31 +14,21 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>LANG_LUA;$(DefineConstants)TRACE</DefineConstants>
+    <DefineConstants>LANG_LUA;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\..\..\..\Compilers\Core\SamLu.CodeAnalysis\Symbols\LanguageNames.cs" Link="LanguageNames.cs" />
+    <Compile Include="..\..\..\..\..\Compilers\Lua\Portable\Errors\ErrorCode.cs" Link="ErrorCode.cs" />
     <Compile Include="..\..\..\..\..\Compilers\Lua\Portable\Syntax\SyntaxKind.cs" Link="SyntaxKind.cs" />
     <Compile Include="..\..\..\..\..\Compilers\Lua\Portable\Syntax\SyntaxKindFacts.cs" Link="SyntaxKindFacts.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Make sure to reference the same version of Microsoft.CodeAnalysis.Analyzers as the rest of the build -->
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.2.0" PrivateAssets="all" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-  </ItemGroup>
-  
-  <Import Project="..\Shared\CodeAnalysisGenerator.Shared.projitems" Label="Shared" />
+  <Import Project="..\Shared\CodeAnalysisGenerators.Shared.projitems" Label="Shared" />
 
   <ItemGroup>
     <InternalsVisibleTo Include="LuaErrorFactsGenerator" />
     <InternalsVisibleTo Include="LuaSyntaxGenerator" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.2.0" />
-    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.3.37" />
-  </ItemGroup>
-  
 </Project>

@@ -6,10 +6,10 @@ public sealed class TupleItemTypeAttribute : Attribute
     public int ItemIndex { get; }
     public Type? ItemType { get; }
 
-    public TupleItemTypeAttribute(int itemIndex, Type itemType!!)
+    public TupleItemTypeAttribute(int itemIndex, Type itemType)
     {
         this.ItemIndex = itemIndex;
-        this.ItemType = itemType;
+        this.ItemType = itemType ?? throw new ArgumentNullException(nameof(itemType));
     }
 }
 
@@ -19,9 +19,9 @@ public sealed class TupleItemTypeSameAsAttribute : Attribute
     public int ItemIndex { get; }
     public string ParamName { get; }
 
-    public TupleItemTypeSameAsAttribute(int itemIndex, string paramName!!)
+    public TupleItemTypeSameAsAttribute(int itemIndex, string paramName)
     {
         this.ItemIndex= itemIndex;
-        this.ParamName = paramName;
+        this.ParamName = paramName ?? throw new ArgumentNullException(nameof(paramName));
     }
 }

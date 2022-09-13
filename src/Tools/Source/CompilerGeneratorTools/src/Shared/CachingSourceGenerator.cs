@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
@@ -8,47 +9,52 @@ namespace Luna.Compilers.Generators;
 
 public abstract class CachingSourceGenerator : ISourceGenerator
 {
-    /// <summary>
-    /// ⚠ This value may be accessed by multiple threads.
-    /// </summary>
-    private static readonly WeakReference<CachedSourceGeneratorResult> s_cachedResult = new(null);
+    /// <remarks>
+    /// ⚠ 此字段可能可能会被多个线程同时访问。
+    /// </remarks>
+    private static readonly WeakReference<CachedSourceGeneratorResult?> s_cachedResult = new(null);
 
-    protected abstract bool TryGetRelevantInput(in GeneratorExecutionContext context, out AdditionalText? input, out SourceText? inputText);
+    /// <summary>
+    /// 尝试筛选有价值的输入。
+    /// </summary>
+    /// <param name="context">生成器执行上下文。</param>
+    /// <param name="inputPath">有价值的文件的路径。</param>
+    /// <param name="inputText">有价值的文件的文本内容。</param>
+    /// <returns></returns>
+    protected abstract bool TryGetRelevantInput(
+        in GeneratorExecutionContext context,
+        out string? inputPath,
+        [NotNullWhen(true)] out SourceText? inputText);
 
     protected abstract bool TryGenerateSources(
-        AdditionalText input,
+        string? inputPath,
         SourceText inputText,
         out ImmutableArray<(string hintName, SourceText sourceText)> sources,
         out ImmutableArray<Diagnostic> diagnostics,
         CancellationToken cancellationToken);
 
-    public void Initialize(GeneratorInitializationContext context)
-    {
-    }
+    public virtual void Initialize(GeneratorInitializationContext context) { }
 
     public void Execute(GeneratorExecutionContext context)
     {
-        if (!TryGetRelevantInput(in context, out var input, out var inputText))
-        {
-            return;
-        }
+        if (!this.TryGetRelevantInput(in context, out var input, out var inputText)) return;
 
-        // Get the current input checksum, which will either be used for verifying the current cache or updating it
-        // with the new results.
+        // 获取当前输入的检验和，用于验证或更新当前缓存。
         var currentChecksum = inputText.GetChecksum();
 
-        // Read the current cached result once to avoid race conditions
+        // 仅读取一次当前缓存以避免竞争状态。
         if (s_cachedResult.TryGetTarget(out var cachedResult)
-            && cachedResult.Checksum.SequenceEqual(currentChecksum))
-        {
-            // Add the previously-cached sources, and leave the cache as it was
-            AddSources(in context, sources: cachedResult.Sources);
+            && cachedResult!.Checksum.SequenceEqual(currentChecksum))
+        { // 检验和相等，输入未发生更改。
+            // 添加上一次缓存的源文件，不更改缓存。
+            addSources(sources: cachedResult.Sources);
             return;
         }
 
-        if (TryGenerateSources(input, inputText, out var sources, out var diagnostics, context.CancellationToken))
+        // 检验和不相等，输入发生更改。
+        if (this.TryGenerateSources(input, inputText, out var sources, out var diagnostics, context.CancellationToken))
         {
-            AddSources(in context, sources);
+            addSources(sources);
 
             if (diagnostics.IsEmpty)
             {
@@ -76,24 +82,22 @@ public abstract class CachingSourceGenerator : ISourceGenerator
         }
         else
         {
-            // Invalidate the cache since generation failed
+            // 生成失败，取消缓存。
             s_cachedResult.SetTarget(null);
         }
 
-        // Always report the diagnostics (if any)
+        // 报告所有的诊断。
         foreach (var diagnostic in diagnostics)
         {
             context.ReportDiagnostic(diagnostic);
         }
-    }
 
-    private static void AddSources(
-        in GeneratorExecutionContext context,
-        ImmutableArray<(string hintName, SourceText sourceText)> sources)
-    {
-        foreach (var (hintName, sourceText) in sources)
+        void addSources(ImmutableArray<(string hintName, SourceText sourceText)> sources)
         {
-            context.AddSource(hintName, sourceText);
+            foreach (var (hintName, sourceText) in sources)
+            {
+                context.AddSource(hintName, sourceText);
+            }
         }
     }
 

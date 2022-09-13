@@ -1,4 +1,6 @@
-﻿namespace SamLu.Lua;
+﻿using System.Diagnostics;
+
+namespace SamLu.Lua;
 
 public sealed class TypeInfo : Object, IEquatable<TypeInfo>, IEquatable<String>, IEquatable<string>
 {
@@ -25,8 +27,9 @@ public sealed class TypeInfo : Object, IEquatable<TypeInfo>, IEquatable<String>,
     public static readonly TypeInfo Thread = new(BasicType.Thread);
     public static readonly TypeInfo Table = new(BasicType.Table);
 
-    internal TypeInfo(string name!!)
+    internal TypeInfo(string name)
     {
+        Debug.Assert(name is not null);
         this._name = name;
         this._type = name switch
         {
@@ -107,12 +110,14 @@ public sealed class TypeInfo : Object, IEquatable<TypeInfo>, IEquatable<String>,
 
     public override int GetHashCode() => this._name.GetHashCode() ^ (this._type is null ? 0 : this._type.GetHashCode());
 
+    public override string ToString() => this._name;
+
     /// <inheritdoc/>
     /// <exception cref="InvalidCastException"><paramref name="type"/> 不是能接受的转换目标类型。</exception>
     public override object ChangeType(Type type) => ((String)this).ChangeType(type);
 
-    public static implicit operator TypeInfo(string type!!) => new(type);
-    public static implicit operator TypeInfo(String type!!) => new((string)type);
+    public static implicit operator TypeInfo(string type) => new(type ?? throw new ArgumentNullException(nameof(type)));
+    public static implicit operator TypeInfo(String type) => new((string)(type ?? throw new ArgumentNullException(nameof(type))));
     public static implicit operator TypeInfo(Type? type) => new(type);
 
     public static explicit operator string(TypeInfo typeInfo) => typeInfo._name;

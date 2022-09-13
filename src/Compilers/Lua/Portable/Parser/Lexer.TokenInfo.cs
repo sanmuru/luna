@@ -11,7 +11,7 @@ internal partial class Lexer
     /// <summary>
     /// 存放语法标志的必要信息。
     /// </summary>
-    internal struct TokenInfo
+    internal partial struct TokenInfo
     {
         /// <summary>
         /// 直接语法类别。

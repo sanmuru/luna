@@ -28,7 +28,12 @@ internal partial class Lexer : AbstractLexer
     private readonly ThisParseOptions _options;
 
     /// <summary>词法分析器的当前分析模式。</summary>
-    private LexerMode _mode;
+#if TESTING
+    internal
+#else
+    private
+#endif
+        LexerMode _mode;
     private readonly StringBuilder _builder;
     /// <summary>标识符缓冲数组。</summary>
     private char[] _identifierBuffer;
@@ -146,7 +151,12 @@ internal partial class Lexer : AbstractLexer
     /// 分析一个语法标志。
     /// </summary>
     /// <returns>分析得到的语法标志。</returns>
-    private SyntaxToken LexSyntaxToken()
+#if TESTING
+    internal
+#else
+    private
+#endif
+        SyntaxToken LexSyntaxToken()
     {
         // 分析前方语法琐碎内容。
         this.LexSyntaxLeadingTriviaCore();
@@ -411,6 +421,36 @@ internal partial class Lexer : AbstractLexer
         // 代码执行到这里的情况都是格式不符的情况。
         isTerminal = default;
         return false;
+    }
+
+    /// <summary>
+    /// 将字符添加到标识符缓冲中。
+    /// </summary>
+    /// <param name="c">要添加的字符，将会是标识符的一部分。</param>
+    private void AddIdentifierChar(char c)
+    {
+        if (this._identifierLength >= this._identifierBuffer.Length)
+            this.GrowIdentifierBuffer();
+
+        this._identifierBuffer[this._identifierLength++] = c;
+    }
+
+    /// <summary>
+    /// 翻倍标识符缓冲数组<see cref="_identifierBuffer"/>的容量。
+    /// </summary>
+    private void GrowIdentifierBuffer()
+    {
+        var tmp = new char[this._identifierBuffer.Length * 2];
+        Array.Copy(this._identifierBuffer, tmp, this._identifierBuffer.Length);
+        this._identifierBuffer = tmp;
+    }
+
+    /// <summary>
+    /// 清空标识符缓冲。
+    /// </summary>
+    private void ResetIdentifierBuffer()
+    {
+        this._identifierLength = 0;
     }
 
     private void CheckFeatureAvaliability(MessageID feature)

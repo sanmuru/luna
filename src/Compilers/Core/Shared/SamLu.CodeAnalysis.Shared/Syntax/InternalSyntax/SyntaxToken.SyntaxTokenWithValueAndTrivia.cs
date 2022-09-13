@@ -8,14 +8,14 @@ namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 #endif
 
-internal partial class SyntaxToken
+partial class SyntaxToken
 {
     internal class SyntaxTokenWithValueAndTrivia<T> : SyntaxTokenWithValue<T>
     {
         static SyntaxTokenWithValueAndTrivia() => ObjectBinder.RegisterTypeReader(typeof(SyntaxTokenWithValueAndTrivia<T>), r => new SyntaxTokenWithValueAndTrivia<T>(r));
 
-        private readonly GreenNode? _leading;
-        private readonly GreenNode? _trailing;
+        protected readonly GreenNode? _leading;
+        protected readonly GreenNode? _trailing;
 
         internal SyntaxTokenWithValueAndTrivia(
             SyntaxKind kind,

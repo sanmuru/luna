@@ -54,7 +54,6 @@ public sealed partial class
     /// </summary>
     public LanguageVersion SpecifiedLanguageVersion { get; init; }
 
-    [Obsolete("Lua.NET不支持预处理指令", false)]
     public
 #if LANG_LUA
         LuaParseOptions
@@ -87,11 +86,11 @@ public sealed partial class
 
     private
 #if LANG_LUA
-        LuaParseOptions(LuaParseOptions
+        LuaParseOptions
 #elif LANG_MOONSCRIPT
-        MoonScriptParseOptions(MoonScriptParseOptions
+        MoonScriptParseOptions
 #endif
-        other) :
+        (ThisParseOptions other) :
         this(
         languageVersion: other.SpecifiedLanguageVersion,
         documentationMode: other.DocumentationMode,

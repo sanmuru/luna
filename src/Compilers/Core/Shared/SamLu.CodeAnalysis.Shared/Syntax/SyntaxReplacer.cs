@@ -60,7 +60,7 @@ internal static partial class SyntaxReplacer
     /// 进行替换工作的替换器。
     /// </summary>
     /// <typeparam name="TNode">替换器处理的语法节点的类型。</typeparam>
-    private class Replacer<TNode> : ThisSyntaxRewriter
+    private sealed class Replacer<TNode> : ThisSyntaxRewriter
         where TNode : ThisSyntaxNode
     {
         private readonly Func<TNode, TNode, ThisSyntaxNode>? _computeReplacementNode;
@@ -109,12 +109,12 @@ internal static partial class SyntaxReplacer
             // 快速计算总文本范围，缩小搜索范围。
             this._totalSpan = Replacer<TNode>.ComputeTotalSpan(this._spanSet);
 
-            this.VisitInfoStructuredTrivia =
+            this.VisitIntoStructuredTrivia =
                 this._nodeSet.Any(n => n.IsPartOfStructuredTrivia()) ||
                 this._tokenSet.Any(t => t.IsPartOfStructuredTrivia()) ||
                 this._triviaSet.Any(t => t.IsPartOfStructuredTrivia());
 
-            this._shouldVisitTrivia = this._triviaSet.Count > 0 || this.VisitInfoStructuredTrivia;
+            this._shouldVisitTrivia = this._triviaSet.Count > 0 || this.VisitIntoStructuredTrivia;
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ internal static partial class SyntaxReplacer
         {
             SyntaxTrivia rewritten;
 
-            if (this.VisitInfoStructuredTrivia && trivia.HasStructure && this.ShouldVisit(trivia.FullSpan))
+            if (this.VisitIntoStructuredTrivia && trivia.HasStructure && this.ShouldVisit(trivia.FullSpan))
                 rewritten = this.VisitTrivia(trivia);
             else
                 rewritten = trivia;

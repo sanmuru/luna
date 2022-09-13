@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;netstandard2.0</TargetFrameworks>
+    <Configurations>$(Configurations);Testing</Configurations>
+    <DefineConstants Condition="'$(Configuration)' == 'Testing'">DEBUG;$(DefineConstants)</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -30,10 +32,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>LANG_LUA;$(DefineConstants)TRACE</DefineConstants>
+    <DefineConstants>LANG_LUA;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\..\..\Tools\Source\CompilerGeneratorTools\src\Shared\Syntax.xsd" Link="Syntax\Syntax.xsd" />
     <AdditionalFiles Include="Syntax\Syntax.xml" />
 
     <!-- 不将上一个源代码生成器产生的输出结果包含进入后续的运行流程。 -->
@@ -53,15 +56,11 @@
     </ProjectReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Update="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.2.0" />
-    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.3.37" />
-  </ItemGroup>
-  
   <Import Project="..\..\Core\Shared\SamLu.CodeAnalysis.Shared\SamLu.CodeAnalysis.Shared.projitems" Label="Shared" />
 
   <ItemGroup>
     <InternalsVisibleTo Include="SamLu.CodeAnalysis.Lua.Parser.UnitTests" />
+    <InternalsVisibleTo Include="Luna.Compilers.Simulators.Lua" />
   </ItemGroup>
 
 </Project>

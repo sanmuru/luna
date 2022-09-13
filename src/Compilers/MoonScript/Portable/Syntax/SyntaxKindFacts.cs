@@ -26,6 +26,7 @@ public static partial class SyntaxFacts
             SyntaxKind.LessThanToken => "<",
             SyntaxKind.GreaterThanToken => ">",
             SyntaxKind.EqualsToken => "=",
+            SyntaxKind.ExclamationToken => "!",
             SyntaxKind.OpenParenToken => "(",
             SyntaxKind.CloseParenToken => ")",
             SyntaxKind.OpenBraceToken => "{",
@@ -33,7 +34,6 @@ public static partial class SyntaxFacts
             SyntaxKind.OpenBracketToken => "[",
             SyntaxKind.CloseBracketToken => "]",
             SyntaxKind.ColonToken => ":",
-            SyntaxKind.SemicolonToken => ";",
             SyntaxKind.CommaToken => ",",
             SyntaxKind.DotToken => ".",
             SyntaxKind.CommercialAtToken => "@",
@@ -77,6 +77,7 @@ public static partial class SyntaxFacts
             SyntaxKind.ExtendsKeyword => "extend",
             SyntaxKind.FalseKeyword => "false",
             SyntaxKind.ForKeyword => "for",
+            SyntaxKind.FromKeyword => "from",
             SyntaxKind.IfKeyword => "if",
             SyntaxKind.ImportKeyword => "import",
             SyntaxKind.InKeyword => "in",
@@ -97,6 +98,7 @@ public static partial class SyntaxFacts
             SyntaxKind.EnvironmentKeyword => "_ENV",
             SyntaxKind.SelfKeyword => "self",
             SyntaxKind.SuperKeyword => "super",
+            SyntaxKind.NewKeyword => "new",
             SyntaxKind.MetatableMetafield => "__metatable",
             SyntaxKind.ClassMetafield => "__class",
             SyntaxKind.NameMetafield => "__name",
@@ -187,6 +189,7 @@ public static partial class SyntaxFacts
             "extends" => SyntaxKind.ExtendsKeyword,
             "false" => SyntaxKind.FalseKeyword,
             "for" => SyntaxKind.ForKeyword,
+            "from" => SyntaxKind.FromKeyword,
             "if" => SyntaxKind.IfKeyword,
             "import" => SyntaxKind.ImportKeyword,
             "in" => SyntaxKind.InKeyword,
@@ -260,6 +263,7 @@ public static partial class SyntaxFacts
             // 上下文关键字
             "_G" => SyntaxKind.GlobalEnvironmentKeyword,
             "_ENV" => SyntaxKind.EnvironmentKeyword,
+            "new" => SyntaxKind.NewKeyword,
             "self" => SyntaxKind.SelfKeyword,
             "super" => SyntaxKind.SuperKeyword,
 
@@ -346,6 +350,19 @@ public static partial class SyntaxFacts
         };
 
     /// <summary>
+    /// 指定语法种类是否表示注释琐碎内容。
+    /// </summary>
+    /// <param name="kind">要查询的语法种类。</param>
+    /// <returns>若<paramref name="kind"/>表示注释琐碎内容，则返回<see langword="true"/>；否则返回<see langword="false"/>。</returns>
+    public static bool IsCommentTrivia(SyntaxKind kind) =>
+        kind switch
+        {
+            >= SyntaxKind.SingleLineCommentTrivia and <= SyntaxKind.MultiLineCommentTrivia => true,
+
+            _ => false
+        };
+
+    /// <summary>
     /// 指定语法种类是否表示名称。
     /// </summary>
     /// <param name="kind">要查询的语法种类。</param>
@@ -354,14 +371,6 @@ public static partial class SyntaxFacts
         kind switch
         {
             SyntaxKind.IdentifierName => true,
-
-            _ => false
-        };
-
-    public static bool IsClassDeclaration(SyntaxKind kind) =>
-        kind switch
-        {
-            SyntaxKind.ClassDeclaration => true,
 
             _ => false
         };
@@ -378,7 +387,6 @@ public static partial class SyntaxFacts
             SyntaxKind.NotKeyword => SyntaxKind.LogicalNotExpression,
             SyntaxKind.HashToken => SyntaxKind.LengthExpression,
             SyntaxKind.TildeToken => SyntaxKind.BitwiseNotExpression,
-            SyntaxKind.AsteriskToken => SyntaxKind.NumericallyIterateExpression,
 
             _ => SyntaxKind.None
         };

@@ -102,8 +102,10 @@ public abstract partial class Object : IDynamicMetaObjectProvider
     /// </summary>
     /// <param name="index">获取元值的字符串键。</param>
     /// <returns>此实例的元表中 <paramref name="index"/> 对应的元值</returns>
-    protected internal Object? GetMetavalue(String index!!)
+    protected internal Object? GetMetavalue(String index)
     {
+        if (index is null) throw new ArgumentNullException(nameof(index));
+
         if (this.GetMetatable() is not Table mt)
             return null;
         else
@@ -119,7 +121,7 @@ public abstract partial class Object : IDynamicMetaObjectProvider
     /// </summary>
     /// <param name="args">传入的参数。</param>
     /// <returns>调用的返回值。</returns>
-    public virtual MultiReturns Invoke(params Object?[] args!!)
+    public virtual MultiReturns Invoke(params Object?[] args)
     {
         var mvCall = this.GetMetavalue(Lua.Metatable.Metavalue_CallOperation);
 
@@ -147,8 +149,10 @@ public abstract partial class Object : IDynamicMetaObjectProvider
     /// <param name="result">一个类型为 <paramref name="type"/> 的对象，其值与此实例相等。</param>
     /// <returns>若为 <see langword="true"/> 时，表示转型成功；若为 <see langword="false"/> 时，表示转型失败。</returns>
     /// <exception cref="ArgumentNullException"><paramref name="type"/> 的值为 <see langword="null"/>。</exception>
-    public bool TryChangeType(Type type!!, out object result)
+    public bool TryChangeType(Type type, out object result)
     {
+        if (type is null) throw new ArgumentNullException(nameof(type));
+
         try
         {
             result = this.ChangeType(type);

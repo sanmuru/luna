@@ -14,6 +14,8 @@ public enum SyntaxKind : ushort
     AsteriskToken,
     /// <summary>表示<c>/</c>标记。</summary>
     SlashToken,
+    /// <summary>表示<c>\</c>标记。</summary>
+    BackSlashToken,
     /// <summary>表示<c>^</c>标记。</summary>
     CaretToken,
     /// <summary>表示<c>%</c>标记。</summary>
@@ -48,8 +50,6 @@ public enum SyntaxKind : ushort
     CloseBracketToken,
     /// <summary>表示<c>:</c>标记。</summary>
     ColonToken,
-    /// <summary>表示<c>;</c>标记。</summary>
-    SemicolonToken,
     /// <summary>表示<c>,</c>标记。</summary>
     CommaToken,
     /// <summary>表示<c>.</c>标记。</summary>
@@ -145,6 +145,8 @@ public enum SyntaxKind : ushort
     FalseKeyword,
     /// <summary>表示<see langword="for"/>关键词。</summary>
     ForKeyword,
+    /// <summary>表示<see langword="from"/>关键词。</summary>
+    FromKeyword,
     /// <summary>表示<see langword="if"/>关键词。</summary>
     IfKeyword,
     /// <summary>表示<see langword="import"/>关键词。</summary>
@@ -183,6 +185,8 @@ public enum SyntaxKind : ushort
     GlobalEnvironmentKeyword = 8385,
     /// <summary>表示<c>_ENV</c>关键词。编译器在编译期间将这个关键词作为所有游离的变量的作用环境，它的值不是固定的。（自Lua 5.2版本添加。）</summary>
     EnvironmentKeyword,
+    /// <summary>表示<see langword="new"/>上下文关键词。</summary>
+    NewKeyword,
     /// <summary>表示<see langword="self"/>上下文关键词。</summary>
     SelfKeyword,
     /// <summary>表示<see langword="super"/>上下文关键词。</summary>
@@ -272,11 +276,17 @@ public enum SyntaxKind : ushort
     MultiLineRawStringLiteralToken,
 
     /// <summary>表示整个插值字符串字面量（" ... #{ 表达式 } ..."）标记。</summary>
-    /// <remarks>只应在解析过程中临时使用。</remarks>
-    InterpolatedStringToken,
+    InterpolatedStringLiteralToken,
     /// <summary>表示插值字符串字面量中普通文本的标记。</summary>
     /// <remarks>只应在解析过程中临时使用。</remarks>
     InterpolatedStringTextToken,
+    /// <summary>表示插值字符串字面量中表达式的标记。</summary>
+    /// <remarks>只应在解析过程中临时使用。</remarks>
+    InterpolationToken,
+    /// <summary>表示插值字符串字面量中表达式的起始标记（“#{”）。</summary>
+    InterpolationStartToken,
+    /// <summary>表示插值字符串字面量中表达式的起始标记（“}”）。</summary>
+    InterpolationEndToken,
     #endregion
 
     #region 琐碎内容
@@ -335,9 +345,9 @@ public enum SyntaxKind : ushort
     AnomymousClassExpression,
     /// <summary>表示<see langword="do"/>表达式。</summary>
     DoExpression,
-    /// <summary>表示迭代<see langword="for"/>循环表达式。</summary>
-    ForExpression,
     /// <summary>表示逐量<see langword="for"/>循环表达式。</summary>
+    ForExpression,
+    /// <summary>表示迭代<see langword="for"/>循环表达式。</summary>
     ForInExpression,
     /// <summary>表示<see langword="if"/>条件表达式。</summary>
     IfExpression,
@@ -353,20 +363,20 @@ public enum SyntaxKind : ushort
     ListComprehensionExpression,
     /// <summary>表示表推导式表达式。</summary>
     TableComprehensionExpression,
+    /// <summary>表示逐量<see langword="for"/>推导式从句。</summary>
+    ForComprehensionClause,
+    /// <summary>表示迭代<see langword="for"/>推导式从句。</summary>
+    ForInComprehensionClause,
+    /// <summary>表示<see langword="when"/>推导式从句。</summary>
+    WhenComprehensionClause,
+    /// <summary>表示迭代数字索引表达式。</summary>
+    NumericallyIterateExpression, // 标识符前缀“*”
     /// <summary>表示切片表达式。</summary>
     SlicingExpression,
     /// <summary>表示调用表达式。</summary>
     InvocationExpression,
-    /// <summary>表示方法的参数列表。</summary>
-    ArgumentList,
-    /// <summary>表示方法的参数。</summary>
-    Argument,
-    /// <summary>表示带默认值的方法的参数表达式。</summary>
-    ArgumentDefaultValueExpression,
-    /// <summary>表示不带括号的Lambda表达式。</summary>
-    SimpleLambdaExpression,
-    /// <summary>表示带括号的Lambda表达式。</summary>
-    ParenthesizedLambdaExpression,
+    /// <summary>表示Lambda表达式。</summary>
+    LambdaExpression,
 
     // 二元运算符表达式
     /// <summary>表示加法表达式。</summary>
@@ -389,10 +399,10 @@ public enum SyntaxKind : ushort
     BitwiseExclusiveOrExpression,
     /// <summary>表示按位或表达式。</summary>
     BitwiseOrExpression,
-    /// <summary>表示按位右移表达式。</summary>
-    BitwiseRightShiftExpression,
     /// <summary>表示按位左移表达式。</summary>
     BitwiseLeftShiftExpression,
+    /// <summary>表示按位右移表达式。</summary>
+    BitwiseRightShiftExpression,
     /// <summary>表示连接表达式。</summary>
     ConcatenationExpression,
     /// <summary>表示小于表达式。</summary>
@@ -421,8 +431,6 @@ public enum SyntaxKind : ushort
     LengthExpression,
     /// <summary>表示按位非表达式。</summary>
     BitwiseNotExpression,
-    /// <summary>表示迭代数字索引表达式。</summary>
-    NumericallyIterateExpression, // 标识符前缀“*”
 
     // 赋值表达式
     /// <summary>表示一般赋值表达式。</summary>
@@ -469,6 +477,13 @@ public enum SyntaxKind : ushort
     SelfMemberAccessExpression, // 带有“@”前缀
     /// <summary>表示类型成员操作表达式。</summary>
     TypeMemberAccessExpression, // 带有“@@”前缀
+
+    // 插值表达式
+    /// <summary>表示插值表达式。</summary>
+    Interpolation,
+    InterpolatedStringText,
+    /// <summary>表示差值字符串表达式。</summary>
+    InterpolatedStringExpression,
     #endregion
 
     #region 语句
@@ -476,6 +491,10 @@ public enum SyntaxKind : ushort
     ExpressionStatement = 9761,
     /// <summary>表示中断流程（<see langword="break"/>）语句。</summary>
     BreakStatement,
+    /// <summary>表示类声明语句。</summary>
+    ClassStatement,
+    /// <summary>表示类成员声明语句。</summary>
+    MemberStatement,
     /// <summary>表示跳过流程（<see langword="continue"/>）语句。</summary>
     ContinueStatement,
     /// <summary>表示执行代码块（<see langword="do"/>）语句。</summary>
@@ -489,7 +508,7 @@ public enum SyntaxKind : ushort
     /// <summary>表示<see langword="if"/>条件语句。</summary>
     IfStatement,
     /// <summary>表示<see langword="elseif"/>条件从句。</summary>
-    ElseifClause,
+    ElseIfClause,
     /// <summary>表示<see langword="else"/>条件从句。</summary>
     ElseClause,
     /// <summary>表示导入（<see langword="import"/>）语句。</summary>
@@ -502,13 +521,38 @@ public enum SyntaxKind : ushort
     UnlessStatement,
     /// <summary>表示函数覆写外部变量列表（<see langword="using"/>）从句。</summary>
     UsingClause,
+    /// <summary>表示<see langword="when"/>条件从句。</summary>
+    WhenClause,
     /// <summary>表示<see langword="while"/>循环语句。</summary>
     WhileStatement,
     /// <summary>表示<see langword="with"/>限定语句。</summary>
     WithStatement,
 
-    /// <summary>表示解构赋值表达式。</summary>
-    DestructuringAssignment,
+    // 解构
+    /// <summary>表示解构赋值语句。</summary>
+    DestructuringAssignmentStatement,
+    /// <summary>表示解构标识符名称结构。</summary>
+    DestructuringIdentifierName,
+    /// <summary>表示解构列表结构。</summary>
+    DestructuringList,
+    /// <summary>表示解构表的成员结构。</summary>
+    DestructuringField,
+    /// <summary>表示解构表结构。</summary>
+    DestructuringTable,
+
+    // 行装饰器
+    /// <summary>表示逐量<see langword="for"/>循环行装饰器。</summary>
+    ForLineDecorator,
+    /// <summary>表示迭代<see langword="for"/>循环行装饰器。</summary>
+    ForInLineDecorator,
+    /// <summary>表示<see langword="if"/>条件行装饰器。</summary>
+    IfLineDecorator,
+    /// <summary>表示<see langword="unless"/>条件行装饰器。</summary>
+    /// <remarks>仅在MoonScript预览版本中使用。</remarks>
+    UnlessLineDecorator,
+    /// <summary>表示<see langword="while"/>循环行装饰器。</summary>
+    /// <remarks>仅在MoonScript预览版本中使用。</remarks>
+    WhileLineDecorator,
     #endregion
 
     #region 声明
@@ -516,7 +560,30 @@ public enum SyntaxKind : ushort
     Chunk = 9889,
     /// <summary>表示代码块。</summary>
     Block,
-    /// <summary>表示类声明。</summary>
-    ClassDeclaration,
+    /// <summary>表示表达式列表。</summary>
+    ExpressionList,
+    /// <summary>表示表字段列表。</summary>
+    FieldList,
+    /// <summary>表示表字段。</summary>
+    Field,
+    /// <summary>表示函数参数列表。</summary>
+    ParameterList,
+    /// <summary>表示函数参数。</summary>
+    Parameter,
+    /// <summary>表示调用参数列表。</summary>
+    ArgumentList,
+    /// <summary>表示调用参数。</summary>
+    Argument,
+    /// <summary>表示标识符后接冒号。</summary>
+    NameColon,
+    /// <summary>表示冒号后接标识符。</summary>
+    ColonName,
+    /// <summary>表示反斜杠后接标识符。</summary>
+    BackSlashName,
+    /// <summary>表示传入隐式self参数的调用头。</summary>
+    ImplicitSelfCall,
+    /// <summary>表示<see langword="import"/>导入的名称。</summary>
+    ImportName,
+    DestructingHolder
     #endregion
 }

@@ -1,133 +1,32 @@
-﻿using Luna.Compilers.Generators.Model;
+﻿using System.Diagnostics;
+using Luna.Compilers.Generators.Model;
 
 namespace Luna.Compilers.Generators;
 
-internal abstract class AbstractFileWriter
+internal abstract class AbstractFileWriter : IndentWriter
 {
-    private readonly TextWriter _writer;
     private readonly Tree _tree;
-    private readonly IDictionary<string, string> _parentMap;
+    private readonly IDictionary<string, string?> _parentMap;
     private readonly ILookup<string, string> _childMap;
 
     private readonly IDictionary<string, Node> _nodeMap;
     private readonly IDictionary<string, TreeType> _typeMap;
 
-    private const int INDENT_SIZE = 4;
-    private int _indentLevel;
-    private bool _needIndent = true;
-
-    protected AbstractFileWriter(TextWriter writer, Tree tree, CancellationToken cancellationToken)
+    protected AbstractFileWriter(TextWriter writer, Tree tree, CancellationToken cancellationToken) : base(writer, 4, cancellationToken)
     {
-        _writer = writer;
         _tree = tree;
         _nodeMap = tree.Types.OfType<Node>().ToDictionary(n => n.Name);
         _typeMap = tree.Types.ToDictionary(n => n.Name);
         _parentMap = tree.Types.ToDictionary(n => n.Name, n => n.Base);
         _parentMap.Add(tree.Root, null);
-        _childMap = tree.Types.ToLookup(n => n.Base, n => n.Name);
-
-        CancellationToken = cancellationToken;
+        _childMap = tree.Types.Where(n => n.Base is not null).ToLookup(n => n.Base!, n => n.Name);
     }
 
-    protected IDictionary<string, string> ParentMap { get { return _parentMap; } }
+    protected IDictionary<string, string?> ParentMap { get { return _parentMap; } }
     protected ILookup<string, string> ChildMap { get { return _childMap; } }
     protected Tree Tree { get { return _tree; } }
-    protected CancellationToken CancellationToken { get; }
-
-    #region Output helpers
-
-    protected void Indent()
-    {
-        _indentLevel++;
-    }
-
-    protected void Unindent()
-    {
-        if (_indentLevel <= 0)
-        {
-            throw new InvalidOperationException("Cannot unindent from base level");
-        }
-        _indentLevel--;
-    }
-
-    protected void Write(string msg)
-    {
-        WriteIndentIfNeeded();
-        _writer.Write(msg);
-    }
-
-    protected void Write(string format, params object[] args) => this.Write(string.Format(format, args));
-
-    protected void WriteLine()
-    {
-        WriteLine("");
-    }
-
-    protected void WriteLine(string msg)
-    {
-        CancellationToken.ThrowIfCancellationRequested();
-
-        if (msg != "")
-        {
-            WriteIndentIfNeeded();
-        }
-
-        _writer.WriteLine(msg);
-        _needIndent = true; //need an indent after each line break
-    }
-
-    protected void WriteLine(string format, params object[] args) => this.WriteLine(string.Format(format, args));
-
-    protected void WriteLineWithoutIndent(string msg)
-    {
-        _writer.WriteLine(msg);
-        _needIndent = true; //need an indent after each line break
-    }
-
-    protected void WriteLineWithoutIndent(string format, params object[] args) => this.WriteLineWithoutIndent(string.Format(format, args));
-
-    private void WriteIndentIfNeeded()
-    {
-        if (_needIndent)
-        {
-            _writer.Write(new string(' ', _indentLevel * INDENT_SIZE));
-            _needIndent = false;
-        }
-    }
-
-    /// <summary>
-    /// Joins all the values together in <paramref name="values"/> into one string with each
-    /// value separated by a comma.  Values can be either <see cref="string"/>s or <see
-    /// cref="IEnumerable{T}"/>s of <see cref="string"/>.  All of these are flattened into a
-    /// single sequence that is joined. Empty strings are ignored.
-    /// </summary>
-    protected string CommaJoin(params object[] values)
-        => Join(", ", values);
-
-    protected string Join(string separator, params object[] values)
-        => string.Join(separator, values.SelectMany(v => (v switch
-        {
-            string s => new[] { s },
-            IEnumerable<string> ss => ss,
-            _ => throw new InvalidOperationException("Join must be passed strings or collections of strings")
-        }).Where(s => s != "")));
-
-    protected void OpenBlock()
-    {
-        WriteLine("{");
-        Indent();
-    }
-
-    protected void CloseBlock(string extra = "")
-    {
-        Unindent();
-        WriteLine("}" + extra);
-    }
-
-    #endregion Output helpers
 
     #region Node helpers
-
     protected static string OverrideOrNewModifier(Field field)
     {
         return IsOverride(field) ? "override " : IsNew(field) ? "new " : "";
@@ -212,11 +111,11 @@ internal abstract class AbstractFileWriter
         return IsNodeList(typeName) || IsSeparatedNodeList(typeName) || typeName == "SyntaxNodeOrTokenList";
     }
 
-    protected bool IsDerivedType(string typeName, string derivedTypeName)
+    protected bool IsDerivedType(string typeName, string? derivedTypeName)
     {
         if (typeName == derivedTypeName)
             return true;
-        if (derivedTypeName != null && _parentMap.TryGetValue(derivedTypeName, out var baseType))
+        if (derivedTypeName is not null && _parentMap.TryGetValue(derivedTypeName, out var baseType))
         {
             return IsDerivedType(typeName, baseType);
         }
@@ -225,7 +124,7 @@ internal abstract class AbstractFileWriter
 
     protected static bool IsRoot(Node n)
     {
-        return n.Root != null && string.Compare(n.Root, "true", true) == 0;
+        return n.Root is not null && string.Compare(n.Root, "true", true) == 0;
     }
 
     protected bool IsNode(string typeName)
@@ -233,27 +132,27 @@ internal abstract class AbstractFileWriter
         return _parentMap.ContainsKey(typeName);
     }
 
-    protected Node GetNode(string typeName)
-        => _nodeMap.TryGetValue(typeName, out var node) ? node : null;
+    protected Node? GetNode(string? typeName)
+        => typeName is not null && _nodeMap.TryGetValue(typeName, out var node) ? node : null;
 
-    protected TreeType GetTreeType(string typeName)
-        => _typeMap.TryGetValue(typeName, out var node) ? node : null;
+    protected TreeType? GetTreeType(string? typeName)
+        => typeName is not null && _typeMap.TryGetValue(typeName, out var node) ? node : null;
 
-    private static bool IsTrue(string val)
-        => val != null && string.Compare(val, "true", true) == 0;
+    private static bool IsTrue(string? val)
+        => val is not null && string.Compare(val, "true", true) == 0;
 
     protected static bool IsOptional(Field f)
         => IsTrue(f.Optional);
 
     protected static bool IsOverride(Field f)
-        => IsTrue(f.Override);
+        => f.Override is not null;
 
     protected static bool IsNew(Field f)
         => IsTrue(f.New);
 
     protected static bool HasErrors(Node n)
     {
-        return n.Errors == null || string.Compare(n.Errors, "true", true) == 0;
+        return n.Errors is null || string.Compare(n.Errors, "true", true) == 0;
     }
 
     protected static string CamelCase(string name)
@@ -368,21 +267,21 @@ internal abstract class AbstractFileWriter
         }
     }
 
-    protected List<Kind> GetKindsOfFieldOrNearestParent(TreeType nd, Field field)
+    protected List<Kind> GetKindsOfFieldOrNearestParent(TreeType type, Field field)
     {
         while ((field.Kinds is null || field.Kinds.Count == 0) && IsOverride(field))
         {
-            nd = GetTreeType(nd.Base);
-            field = (nd switch
+            var t = GetTreeType(type.Base);
+            field = (t switch
             {
                 Node node => node.Fields,
                 AbstractNode abstractNode => abstractNode.Fields,
                 _ => throw new InvalidOperationException("Unexpected node type.")
             }).Single(f => f.Name == field.Name);
+            type = t!;
         }
 
         return field.Kinds.Distinct().ToList();
     }
-
-    #endregion Node helpers
+    #endregion
 }

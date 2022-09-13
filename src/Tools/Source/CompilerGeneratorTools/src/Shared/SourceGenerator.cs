@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
@@ -35,7 +36,10 @@ public sealed class SourceGenerator : CachingSourceGenerator
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    protected override bool TryGetRelevantInput(in GeneratorExecutionContext context, out AdditionalText? input, out SourceText? inputText)
+    protected override bool TryGetRelevantInput(
+        in GeneratorExecutionContext context,
+        [NotNullWhen(true)] out AdditionalText? input,
+        [NotNullWhen(true)] out SourceText? inputText)
     {
         input = context.AdditionalFiles.SingleOrDefault(a => Path.GetFileName(a.Path) == "Syntax.xml");
         if (input == null)

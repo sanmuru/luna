@@ -117,6 +117,99 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ERR_AssgLvalueExpected" xml:space="preserve">
+    <value>The left-hand side of an assignment must be a variable or member.</value>
+  </data>
+  <data name="ERR_AttributeExpected" xml:space="preserve">
+    <value>Attribute expected.</value>
+  </data>
+  <data name="ERR_BadDocumentationMode" xml:space="preserve">
+    <value>Provided documentation mode is unsupported or invalid: '{0}'.</value>
+  </data>
+  <data name="ERR_BadLanguageVersion" xml:space="preserve">
+    <value>Provided language version is unsupported or invalid: '{0}'.</value>
+  </data>
+  <data name="ERR_BadSourceCodeKind" xml:space="preserve">
+    <value>Provided source code kind is unsupported or invalid: '{0}'.</value>
+  </data>
+  <data name="ERR_CommaExpected" xml:space="preserve">
+    <value>',' expected.</value>
+  </data>
+  <data name="ERR_ElseIfCannotStartStatement" xml:space="preserve">
+    <value>'elseif' cannot start a statement.</value>
+  </data>
+  <data name="ERR_ExpressionExpected" xml:space="preserve">
+    <value>Expression expected.</value>
+  </data>
+  <data name="ERR_FieldSeparatorExpected" xml:space="preserve">
+    <value>',' or ';' expected.</value>
+  </data>
+  <data name="ERR_IdentifierExpected" xml:space="preserve">
+    <value>Identifier expected.</value>
+  </data>
+  <data name="ERR_IdentifierExpectedKW" xml:space="preserve">
+    <value>Identifier expected; '{0}' is a keyword.</value>
+  </data>
+  <data name="ERR_IllegalEscape" xml:space="preserve">
+    <value>Unrecognized escape sequence.</value>
+  </data>
+  <data name="ERR_IllegalStatement" xml:space="preserve">
+    <value>Only assignment and invocation expressions can be used as a statement</value>
+  </data>
+  <data name="ERR_IllegalUtf8ByteSequence" xml:space="preserve">
+    <value>Illegal UTF-8 byte escape sequence.</value>
+  </data>
+  <data name="ERR_InsufficientStack" xml:space="preserve">
+    <value>An expression is too long or complex to compile.</value>
+  </data>
+  <data name="ERR_InternalError" xml:space="preserve">
+    <value>Internal error in the Lua compiler.</value>
+  </data>
+  <data name="ERR_InvalidAttrTerm" xml:space="preserve">
+    <value>Invalid attribute term '{0}'.</value>
+  </data>
+  <data name="ERR_InvalidExprTerm" xml:space="preserve">
+    <value>Invalid expression term '{0}'.</value>
+  </data>
+  <data name="ERR_InvalidFieldValueTerm" xml:space="preserve">
+    <value>Invalid filed value expression term.</value>
+  </data>
+  <data name="ERR_InvalidInstrumentationKind" xml:space="preserve">
+    <value>Invalid instrumentation kind: '{0}'.</value>
+  </data>
+  <data name="ERR_InvalidNumber" xml:space="preserve">
+    <value>Invalid number.</value>
+  </data>
+  <data name="ERR_InvocationArgumentsExpected" xml:space="preserve">
+    <value>Invocation arguments expected.</value>
+  </data>
+  <data name="ERR_MisplacedReturnStat" xml:space="preserve">
+    <value>Return statement can only be the last statement of a block.</value>
+  </data>
+  <data name="ERR_NewlineInConst" xml:space="preserve">
+    <value>Newline in string literal constant.</value>
+  </data>
+  <data name="ERR_NumberOverflow" xml:space="preserve">
+    <value>Number constant is too large.</value>
+  </data>
+  <data name="ERR_OpenEndedComment" xml:space="preserve">
+    <value>End-of-file found, close long brackect expected.</value>
+  </data>
+  <data name="ERR_SemicolonExpected" xml:space="preserve">
+    <value>';' expected.</value>
+  </data>
+  <data name="ERR_SyntaxError" xml:space="preserve">
+    <value>Syntax error, '{0}' expected.</value>
+  </data>
+  <data name="ERR_TooManyIdentifiers" xml:space="preserve">
+    <value>Too many control variables.</value>
+  </data>
+  <data name="ERR_UnexpectedCharacter" xml:space="preserve">
+    <value>Unexpected character '{0}'.</value>
+  </data>
+  <data name="ERR_UnterminatedStringLiteral" xml:space="preserve">
+    <value>Unterminated string literal.</value>
+  </data>
   <data name="ThisMethodCanOnlyBeUsedToCreateTokens" xml:space="preserve">
     <value>This method can only be used to create tokens - {0} is not a token kind.</value>
     <comment>此方法仅用于创建标志。</comment>
@@ -128,5 +221,8 @@
   <data name="UseLiteralForNumeric" xml:space="preserve">
     <value>Use SamLu.CodeAnalysis.Lua.SyntaxFactory.Literal to create numeric literal tokens.</value>
     <comment>应使用SamLu.CodeAnalysis.Lua.SyntaxFactory.Literal创建数字字面量标志。</comment>
+  </data>
+  <data name="WRN_ErrorOverride" xml:space="preserve">
+    <value>{0}. See also error LUA{1}.</value>
   </data>
 </root>

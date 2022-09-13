@@ -129,6 +129,11 @@ internal partial class Lexer
                     info.Kind = SyntaxKind.SlashToken;
                 break;
 
+            case '^':
+                this.TextWindow.AdvanceChar();
+                info.Kind = SyntaxKind.CaretToken;
+                break;
+
             case '%':
                 this.TextWindow.AdvanceChar();
                 info.Kind = SyntaxKind.PersentToken;
@@ -188,7 +193,7 @@ internal partial class Lexer
                         this.TextWindow.AdvanceChar();
                         info.Kind = SyntaxKind.GreaterThanEqualsToken;
                         break;
-                    case '<':
+                    case '>':
                         this.TextWindow.AdvanceChar();
                         info.Kind = SyntaxKind.GreaterThanGreaterThanToken;
                         break;
@@ -231,14 +236,14 @@ internal partial class Lexer
                 break;
 
             case '[':
-                switch (this.TextWindow.PeekChar(2))
+                switch (this.TextWindow.PeekChar(1))
                 {
                     case '[':
                         this.ScanMultiLineRawStringLiteral(ref info);
                         break;
 
                     case '=':
-                        for (int i = 3; ; i++)
+                        for (int i = 2; ; i++)
                         {
                             char nextChar = this.TextWindow.PeekChar(i);
                             if (nextChar == '=') continue;
@@ -403,7 +408,7 @@ internal partial class Lexer
                 else
                     info.Text = this.TextWindow.GetText(intern: true);
 
-                this.AddError(ErrorCode.ERR_UnexpectedCharacter, info);
+                this.AddError(ErrorCode.ERR_UnexpectedCharacter, info.Text);
                 break;
         }
     }

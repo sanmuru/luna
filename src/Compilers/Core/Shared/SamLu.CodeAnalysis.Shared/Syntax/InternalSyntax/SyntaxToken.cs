@@ -8,11 +8,13 @@ using Roslyn.Utilities;
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
 
 using ThisInternalSyntaxNode = LuaSyntaxNode;
+using SyntaxTriviaList = Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<LuaSyntaxNode>;
 #elif LANG_MOONSCRIPT
 
 namespace SamLu.CodeAnalysis.MoonScript.Syntax.InternalSyntax;
 
 using ThisInternalSyntaxNode = MoonScriptSyntaxNode;
+using SyntaxTriviaList = Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<MoonScriptSyntaxNode>;
 #endif
 
 internal partial class SyntaxToken : ThisInternalSyntaxNode
@@ -32,9 +34,9 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
 
     public override int Width => this.Text.Length;
 
-    internal Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<ThisInternalSyntaxNode> LeadingTrivia => new(this.GetLeadingTrivia());
+    internal SyntaxTriviaList LeadingTrivia => new(this.GetLeadingTrivia());
 
-    internal Microsoft.CodeAnalysis.Syntax.InternalSyntax.SyntaxList<ThisInternalSyntaxNode> TrailingTrivia => new(this.GetTrailingTrivia());
+    internal SyntaxTriviaList TrailingTrivia => new(this.GetTrailingTrivia());
 
     public sealed override bool IsToken => true;
 
@@ -162,13 +164,9 @@ internal partial class SyntaxToken : ThisInternalSyntaxNode
             return new SyntaxIdentifierWithTrivia(contextualKind, text, valueText, leading, trailing);
     }
 
-    internal static SyntaxToken WithValue<T>(SyntaxKind kind, string text, T value) => new SyntaxTokenWithValue<T>(kind, text, value);
+    internal static SyntaxToken WithValue<T>(SyntaxKind kind, string text, T? value) => new SyntaxTokenWithValue<T>(kind, text, value);
 
     internal static SyntaxToken WithValue<T>(SyntaxKind kind, GreenNode? leading, string text, T? value, GreenNode? trailing) => new SyntaxTokenWithValueAndTrivia<T>(kind, text, value, leading, trailing);
-
-    internal static SyntaxToken StringLiteral(string text) => new SyntaxTokenWithValue<string>(SyntaxKind.StringLiteralToken, text, text);
-
-    internal static SyntaxToken StringLiteral(ThisInternalSyntaxNode leading, string text, ThisInternalSyntaxNode trailing) => new SyntaxTokenWithValueAndTrivia<string>(SyntaxKind.StringLiteralToken, text, text, leading, trailing);
 
     /// <summary>
     /// 表示语法标志在序列化过程中是否应被重用。

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Syntax.InternalSyntax;
@@ -146,6 +147,11 @@ internal abstract partial class
 
     public override partial Microsoft.CodeAnalysis.SyntaxToken CreateSeparator<TNode>(SyntaxNode element);
 
+    public virtual bool IsTokenAtEndOfLine() =>
+        this is SyntaxToken token &&
+            token.TrailingTrivia.Count > 0 &&
+                token.TrailingTrivia.Last?.IsTriviaWithEndOfLine() == true;
+
     public override partial bool IsTriviaWithEndOfLine();
 
     /// <summary>
@@ -153,54 +159,41 @@ internal abstract partial class
     /// </summary>
     private static readonly ConditionalWeakTable<SyntaxNode, Dictionary<Microsoft.CodeAnalysis.SyntaxTrivia, WeakReference<SyntaxNode>>> s_structuresTable = new();
 
-    public override SyntaxNode? GetStructure(Microsoft.CodeAnalysis.SyntaxTrivia trivia)
+    public override SyntaxNode GetStructure(Microsoft.CodeAnalysis.SyntaxTrivia trivia)
     {
-        if (trivia.HasStructure)
-        {
-            var parent = trivia.Token.Parent;
-            if (parent is null)
-                return this.GetNewStructure(trivia);
-            else
-            {
-                SyntaxNode? structure;
-                var structsInParent = s_structuresTable.GetOrCreateValue(parent);
-                lock (structsInParent)
-                {
-                    if (!structsInParent.TryGetValue(trivia, out var weekStructure))
-                    {
-                        structure = this.GetNewStructure(trivia);
-                        structsInParent.Add(trivia, new(structure));
-                    }
-                    else if (!weekStructure.TryGetTarget(out structure))
-                    {
-                        structure = this.GetNewStructure(trivia);
-                        structsInParent.Add(trivia, new(structure));
-                    }
-                }
+        if (!trivia.HasStructure) throw new ArgumentException(string.Format(LunaResources.ArgIsNotStructuredTrivia), nameof(trivia));
 
-                return structure;
+        var parent = trivia.Token.Parent;
+        if (parent is null)
+            return this.GetNewStructure(trivia);
+        else
+        {
+            SyntaxNode? structure;
+            var structsInParent = s_structuresTable.GetOrCreateValue(parent);
+            lock (structsInParent)
+            {
+                if (!structsInParent.TryGetValue(trivia, out var weekStructure))
+                {
+                    structure = this.GetNewStructure(trivia);
+                    structsInParent.Add(trivia, new(structure));
+                }
+                else if (!weekStructure.TryGetTarget(out structure))
+                {
+                    structure = this.GetNewStructure(trivia);
+                    structsInParent.Add(trivia, new(structure));
+                }
             }
+
+            return structure;
         }
-        else return null;
     }
 
-#if LANG_LUA
     /// <summary>
-    /// 使用指定语法琐碎内容创建新的<see cref="Lua.Syntax.StructuredTriviaSyntax"/>实例。
+    /// 使用指定语法琐碎内容创建新的<see cref="Syntax.StructuredTriviaSyntax"/>实例。
     /// </summary>
-#elif LANG_MOONSCRIPT
-    /// <summary>
-    /// 使用指定语法琐碎内容创建新的<see cref="MoonScript.Syntax.StructuredTriviaSyntax"/>实例。
-    /// </summary>
-#endif
     /// <param name="trivia">现有的语法琐碎内容。</param>
     /// <returns>根据现有的语法琐碎内容创建的新的表示结构语法琐碎内容的语法节点。</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected virtual SyntaxNode GetNewStructure(Microsoft.CodeAnalysis.SyntaxTrivia trivia) =>
-#if LANG_LUA
-        Lua
-#elif LANG_MOONSCRIPT
-        MoonScript
-#endif
-        .Syntax.StructuredTriviaSyntax.Create(trivia);
+        Syntax.StructuredTriviaSyntax.Create(trivia);
 }

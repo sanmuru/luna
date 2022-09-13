@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Roslyn.Utilities;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua.Syntax.InternalSyntax;
@@ -61,9 +62,10 @@ partial class Lexer
     {
         bool isHex = false; // 是否为十六进制。
         bool hasDecimal = false; // 是否含有小数部分。
+        bool mayHasDecimal = false; // 可能含有小数部分。
         bool hasExponent = false; // 是否含有指数部分。
         bool integeralPartIsAbsent = true; // 整数部分是否缺省。
-        bool fractionalPartIsAbsent = true; // 小数部分是否缺省。
+        bool fractionalPartMayAbsent = true; // 小数部分是否缺省。
         info.Text = null;
         info.ValueKind = SpecialType.None;
         this._builder.Clear();
@@ -98,17 +100,22 @@ partial class Lexer
                 SyntaxFacts.IsDecDigit(c)
             ) // 符合小数部分格式。
             {
-                // 确认含有小数部分。
-                hasDecimal = true;
+                // 可能含有小数部分。
+                mayHasDecimal = true;
                 this._builder.Append('.');
                 this.TextWindow.AdvanceChar();
 
                 // 先将回退记号推进到第一个连续的0-9的最后一位。
-                this.ScanNumericLiteralSingleInteger(ref fractionalPartIsAbsent, isHex: false);
-                resetMarker = this.TextWindow.Position;
+                this.ScanNumericLiteralSingleInteger(ref fractionalPartMayAbsent, isHex: false);
+                if (!fractionalPartMayAbsent)
+                {
+                    resetMarker = this.TextWindow.Position;
+                    // 确认含有小数部分。
+                    hasDecimal = true;
+                }
 
-                this.ScanNumericLiteralSingleInteger(ref fractionalPartIsAbsent, isHex);
-                Debug.Assert(fractionalPartIsAbsent == false); // 必定存在小数部分。
+                this.ScanNumericLiteralSingleInteger(ref fractionalPartMayAbsent, isHex);
+                Debug.Assert(fractionalPartMayAbsent == false); // 可能不缺失小数部分。
             }
             else if (integeralPartIsAbsent)
             {
@@ -120,8 +127,12 @@ partial class Lexer
 
             }
             else
-                // 小数部分缺失。
-                hasDecimal = true;
+            {
+                // 可能含有小数部分。
+                mayHasDecimal = true;
+                this._builder.Append('.');
+                this.TextWindow.AdvanceChar();
+            }
         }
 
         // 现在数字部分已经处理完，接下来处理指数表示。
@@ -163,15 +174,24 @@ partial class Lexer
                 Debug.Assert(exponentPartIsAbsent == false); // 必定存在指数部分。
             }
         }
-        // 指数部分格式不符，为了防止破坏后续的标志，尽可能回退到上一个可接受的回退记号的位置。
-        if (!hasExponent)
+
+        // 确认点字符及其后方已扫描的部分是否为小数部分，若不是则回退。
+        if (!hasDecimal && mayHasDecimal)
         {
-            if (resetMarker != this.TextWindow.Position)
-            {
-                int length = this.TextWindow.Position - resetMarker;
-                this._builder.Remove(this._builder.Length - length, length);
-                this.Reset(resetMarker);
+            if (this.TextWindow.Position - resetMarker == 1 ? // 是否以小数点结尾。
+                // 只考虑与标识符产生语法歧义的情况。
+                SyntaxFacts.IsIdentifierStartCharacter(this.TextWindow.PeekChar()) :
+                SyntaxFacts.IsIdentifierPartCharacter(this.TextWindow.PeekChar()))
+            { // 后续是标识符，为了防止破坏后续的标志，回退到上一个可接受的回退记号的位置。
+                if (resetMarker != this.TextWindow.Position)
+                {
+                    int length = this.TextWindow.Position - resetMarker;
+                    this._builder.Remove(this._builder.Length - length, length);
+                    this.Reset(resetMarker);
+                }
             }
+            else
+                hasDecimal = true;
         }
 
         // 填充标志信息前最后一步：检查特性的可用性。
@@ -209,6 +229,12 @@ partial class Lexer
                 info.LongValue = result;
                 return;
             }
+            else if (RealParser.TryParseHexadecimalDouble(text, out double doubleValue))
+            {
+                info.ValueKind = SpecialType.System_Double;
+                info.DoubleValue = doubleValue;
+            }
+            else throw ExceptionUtilities.UnexpectedValue(text);
         }
         else
         {
@@ -226,6 +252,12 @@ partial class Lexer
                 }
                 return;
             }
+            else if (RealParser.TryParseDecimalDouble(text, out double doubleValue))
+            {
+                info.ValueKind = SpecialType.System_Double;
+                info.DoubleValue = doubleValue;
+            }
+            else throw ExceptionUtilities.UnexpectedValue(text);
         }
 
         this.AddError(Lexer.MakeError(ErrorCode.ERR_NumberOverflow));

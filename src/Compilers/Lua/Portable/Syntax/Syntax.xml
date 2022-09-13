@@ -8,48 +8,36 @@
 
 
   <!-- 名称 -->
-  <AbstractNode Name="NameSyntax" Base="LuaSyntaxNode">
-    <TypeComment>
-      <summary>提供表示名称语法节点继承用的父类，此类必须被继承。</summary>
-    </TypeComment>
-  </AbstractNode>
-  <AbstractNode Name="SimpleNameSyntax" Base="NameSyntax">
-    <Field Name="Identifier" Type="SyntaxToken">
-      <PropertyComment>
-        <summary>表示简单名称的语法标志。</summary>
-      </PropertyComment>
-      <Kind Name="IdentifierToken" />
-    </Field>
-    <TypeComment>
-      <summary>提供表示简单名称语法节点继承用的父类，此类必须被继承。</summary>
-    </TypeComment>
-  </AbstractNode>
-  <Node Name="IdentifierNameSyntax" Base="SimpleNameSyntax">
+  <AbstractNode Name="NameSyntax" Base="ExpressionSyntax"/>
+  <Node Name="IdentifierNameSyntax" Base="NameSyntax">
     <Kind Name="IdentifierName"/>
-    <Field Name="Identifier" Type="SyntaxToken" Override="true">
+    <Field Name="Identifier" Type="SyntaxToken">
       <Kind Name="IdentifierToken"/>
       <Kind Name="GlobalEnvironmentKeyword"/>
       <Kind Name="EnvironmentKeyword"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the keyword for the kind of the identifier name.</summary>
-      </PropertyComment>
     </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for identifier name.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates an IdentifierNameSyntax node.</summary>
-    </FactoryComment>
+  </Node>
+  <Node Name="QualifiedNameSyntax" Base="NameSyntax">
+    <Kind Name="QualifiedName" />
+    <Field Name="Left" Type="NameSyntax"/>
+    <Field Name="DotToken" Type="SyntaxToken">
+      <Kind Name="DotToken"/>
+    </Field>
+    <Field Name="Right" Type="IdentifierNameSyntax"/>
+  </Node>
+  <Node Name="ImplicitSelfParameterNameSyntax" Base="NameSyntax">
+    <Kind Name="ImplicitSelfParameterName" />
+    <Field Name="Left" Type="NameSyntax"/>
+    <Field Name="ColonToken" Type="SyntaxToken">
+      <Kind Name="ColonToken"/>
+    </Field>
+    <Field Name="Right" Type="IdentifierNameSyntax"/>
   </Node>
 
 
 
-  <!-- 语句 -->
-  <AbstractNode Name="ExpressionSyntax" Base="LuaSyntaxNode">
-    <TypeComment>
-      <summary>Provides the base class from which the classes that represent expression syntax nodes are derived. This is an abstract class.</summary>
-    </TypeComment>
-  </AbstractNode>
+  <!-- 表达式 -->
+  <AbstractNode Name="ExpressionSyntax" Base="LuaSyntaxNode"/>
   <Node Name="LiteralExpressionSyntax" Base="ExpressionSyntax">
     <Kind Name="NilLiteralExpression"/>
     <Kind Name="FalseLiteralExpression"/>
@@ -65,64 +53,25 @@
       <Kind Name="StringLiteralToken"/>
       <Kind Name="MultiLineRawStringLiteralToken"/>
       <Kind Name="DotDotDotToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the keyword corresponding to the kind of the literal expression.</summary>
-      </PropertyComment>
     </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for a literal expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a LiteralExpressionSyntax node.</summary>
-    </FactoryComment>
   </Node>
   <Node Name="ParenthesizedExpressionSyntax" Base="ExpressionSyntax">
     <Kind Name="ParenthesizedExpression"/>
     <Field Name="OpenParenToken" Type="SyntaxToken">
       <Kind Name="OpenParenToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the open parenthesis.</summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Expression" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the expression enclosed within the parenthesis.</summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Expression" Type="ExpressionSyntax"/>
     <Field Name="CloseParenToken" Type="SyntaxToken">
       <Kind Name="CloseParenToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the close parenthesis.</summary>
-      </PropertyComment>
     </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for parenthesized expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a ParenthesizedExpressionSyntax node.</summary>
-    </FactoryComment>
-  </Node>
-  <Node Name="ExpressionListSyntax" Base="LuaSyntaxNode">
-    <Kind Name="ExpressionList"/>
-    <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;">
-      <PropertyComment>
-        <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of expressions.</summary>
-      </PropertyComment>
-    </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for the list of expressions.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates an ExpressionListSyntax node.</summary>
-    </FactoryComment>
   </Node>
   <Node Name="FunctionDefinitionExpressionSyntax" Base="ExpressionSyntax">
     <Kind Name="FunctionDefinitionExpression"/>
     <Field Name="FunctionKeyword" Type="SyntaxToken">
       <Kind Name="FunctionKeyword"/>
     </Field>
-    <Field Name="Parameters" Type="ParameterListSyntax"/>
-    <Field Name="Body" Type="BlockSyntax"/>
+    <Field Name="ParameterList" Type="ParameterListSyntax"/>
+    <Field Name="Block" Type="BlockSyntax"/>
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
     </Field>
@@ -131,27 +80,11 @@
     <Kind Name="TableConstructorExpression"/>
     <Field Name="OpenBrace" Type="SyntaxToken">
       <Kind Name="OpenBraceToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing open brace.</summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Fields" Type="SeparatedSyntaxList&lt;FieldListSyntax&gt;">
-      <PropertyComment>
-        <summary>SeparatedSyntaxList of ExpressionSyntax nodes representing the list of fields.</summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Fields" Type="SeparatedSyntaxList&lt;FieldSyntax&gt;" AllowTrailingSeparator="true"/>
     <Field Name="CloseBrace" Type="SyntaxToken">
       <Kind Name="CloseBraceToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing close brace.</summary>
-      </PropertyComment>
     </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for the table constructor expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates an TableConstructorExpressionSyntax node.</summary>
-    </FactoryComment>
   </Node>
   <Node Name="BinaryExpressionSyntax" Base="ExpressionSyntax">
     <Kind Name="AdditionExpression"/>
@@ -175,11 +108,7 @@
     <Kind Name="NotEqualExpression"/>
     <Kind Name="AndExpression"/>
     <Kind Name="OrExpression"/>
-    <Field Name="Left" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the expression on the left of the binary operator.</summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Left" Type="ExpressionSyntax"/>
     <Field Name="OperatorToken" Type="SyntaxToken">
       <Kind Name="PlusToken"/>
       <Kind Name="MinusToken"/>
@@ -202,21 +131,8 @@
       <Kind Name="TildeEqualsToken"/>
       <Kind Name="AndKeyword"/>
       <Kind Name="OrKeyword"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the operator of the binary expression.</summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Right" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the expression on the right of the binary operator.</summary>
-      </PropertyComment>
-    </Field>
-    <TypeComment>
-      <summary>Class which represents an expression that has a binary operator.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a BinaryExpressionSyntax node.</summary>
-    </FactoryComment>
+    <Field Name="Right" Type="ExpressionSyntax"/>
   </Node>
   <Node Name="UnaryExpressionSyntax" Base="ExpressionSyntax">
     <Kind Name="UnaryMinusExpression"/>
@@ -228,163 +144,77 @@
       <Kind Name="NotKeyword"/>
       <Kind Name="HashToken"/>
       <Kind Name="TildeToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the kind of the operator of the prefix unary expression.</summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Operand" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>ExpressionSyntax representing the operand of the prefix unary expression.</summary>
-      </PropertyComment>
-    </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for prefix unary expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a UnaryExpressionSyntax node.</summary>
-    </FactoryComment>
-  </Node>
-  <Node Name="AssignmentExpressionSyntax" Base="ExpressionSyntax">
-      <Kind Name="AssignmentExpression"/>
-      <Field Name="Left" Type="ExpressionSyntax">athere
-        <PropertyComment>
-          <summary>ExpressionSyntax node representing the expression on the left of the assignment operator.</summary>
-        </PropertyComment>
-      </Field>
-      <Field Name="EqualsToken" Type="SyntaxToken">
-        <Kind Name="EqualsToken"/>
-        <PropertyComment>
-          <summary>SyntaxToken representing the operator of the assignment expression.</summary>
-        </PropertyComment>
-      </Field>
-      <Field Name="Right" Type="ExpressionSyntax">
-        <PropertyComment>
-          <summary>ExpressionSyntax node representing the expression on the right of the assignment operator.</summary>
-        </PropertyComment>
-      </Field>
-      <TypeComment>
-        <summary>Class which represents an expression that has an assignment operator.</summary>
-      </TypeComment>
-      <FactoryComment>
-        <summary>Creates an AssignmentExpressionSyntax node.</summary>
-      </FactoryComment>
+    <Field Name="Operand" Type="ExpressionSyntax"/>
   </Node>
   <AbstractNode Name="MemberAccessExpressionSyntax" Base="ExpressionSyntax">
-    <Field Name="Expression" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
-      </PropertyComment>
-    </Field>
-    <Field Name="MemberExpression" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>SimpleNameSyntax node representing the member being accessed.</summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Self" Type="ExpressionSyntax"/>
+    <Field Name="Member" Type="ExpressionSyntax"/>
   </AbstractNode>
-  <Node Name="SimpleMemberAccessExpression" Base="MemberAccessExpressionSyntax">
+  <Node Name="SimpleMemberAccessExpressionSyntax" Base="MemberAccessExpressionSyntax">
     <Kind Name="SimpleMemberAccessExpression"/>
-    <Field Name="Expression" Type="ExpressionSyntax" Override="true">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Self" Type="ExpressionSyntax" Override="true"/>
     <Field Name="OperatorToken" Type="SyntaxToken">
       <Kind Name="DotToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the kind of the operator in the member access expression.</summary>
-      </PropertyComment>
     </Field>
-    <Field Name="MemberExpression" Type="ExpressionSyntax" Override="true">
-      <PropertyComment>
-        <summary>SimpleNameSyntax node representing the member being accessed.</summary>
-      </PropertyComment>
-    </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for member access expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a MemberAccessExpressionSyntax node.</summary>
-    </FactoryComment>
+    <Field Name="MemberName" Type="IdentifierNameSyntax"/>
   </Node>
   <Node Name="IndexMemberAccessExpressionSyntax" Base="MemberAccessExpressionSyntax">
     <Kind Name="IndexMemberAccessExpression"/>
-    <Field Name="Expression" Type="ExpressionSyntax" Override="true">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the object that the member belongs to.</summary>
-      </PropertyComment>
+    <Field Name="Self" Type="ExpressionSyntax" Override="true"/>
+    <Field Name="OpenBracketToken" Type="SyntaxToken">
+      <Kind Name="OpenBracketToken"/>
     </Field>
-    <Field Name="Key" Type="BracketedExpressionSyntax"/>
-    <TypeComment>
-      <summary>Class which represents the syntax node for member access expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a MemberAccessExpressionSyntax node.</summary>
-    </FactoryComment>
+    <Field Name="Member" Type="ExpressionSyntax" Override="true"/>
+    <Field Name="CloseBracketToken" Type="SyntaxToken">
+      <Kind Name="CloseBracketToken"/>
+    </Field>
   </Node>
   <Node Name="InvocationExpressionSyntax" Base="ExpressionSyntax">
     <Kind Name="InvocationExpression"/>
-    <Choice>
-      <Field Name="Expression" Type="ExpressionSyntax">
-        <PropertyComment>
-          <summary>ExpressionSyntax node representing the expression part of the invocation.</summary>
-        </PropertyComment>
-      </Field>
-      <Field Name="SelfCall" Type="ImplicitSelfCallSyntax"/>
-    </Choice>
-    <Field Name="ArgumentList" Type="ArgumentListSyntax">
-      <PropertyComment>
-        <summary>ArgumentListSyntax node representing the list of arguments of the invocation expression.</summary>
-      </PropertyComment>
+    <Field Name="Expression" Type="ExpressionSyntax"/>
+    <Field Name="Arguments" Type="InvocationArgumentsSyntax"/>
+  </Node>
+  <Node Name="ImplicitSelfParameterExpressionSyntax" Base="ExpressionSyntax">
+    <Kind Name="ImplicitSelfParameterExpression"/>
+    <Field Name="Expression" Type="ExpressionSyntax"/>
+    <Field Name="ColonToken" Type="SyntaxToken">
+      <Kind Name="ColonToken"/>
     </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for invocation expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates an InvocationExpressionSyntax node.</summary>
-    </FactoryComment>
+    <Field Name="Name" Type="IdentifierNameSyntax"/>
   </Node>
 
 
 
   <!-- 语句 -->
-  <AbstractNode Name="StatementSyntax" Base="LuaSyntaxNode">
-    <TypeComment>
-      <summary>Provides the base class from which the classes that represent statement syntax nodes are derived. This is an abstract class.</summary>
-    </TypeComment>
-  </AbstractNode>
+  <AbstractNode Name="StatementSyntax" Base="LuaSyntaxNode"/>
   <Node Name="EmptyStatementSyntax" Base="StatementSyntax">
     <Kind Name="EmptyStatement"/>
-    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
+    <Field Name="SemicolonToken" Type="SyntaxToken">
       <Kind Name="SemicolonToken"/>
     </Field>
   </Node>
-  <Node Name="LabeledStatementSyntax" Base="StatementSyntax">
-    <Kind Name="LabeledStatement"/>
+  <Node Name="AssignmentStatementSyntax" Base="StatementSyntax">
+    <Kind Name="AssignmentStatement"/>
+    <Field Name="Left" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;" MinCount="1"/>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
+    </Field>
+    <Field Name="Right" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;" MinCount="1"/>
+  </Node>
+  <Node Name="InvocationStatementSyntax" Base="StatementSyntax">
+    <Kind Name="InvocationStatement"/>
+    <Field Name="Expression" Type="InvocationExpressionSyntax"/>
+  </Node>
+  <Node Name="LabelStatementSyntax" Base="StatementSyntax">
+    <Kind Name="LabelStatement"/>
     <Field Name="LeftColonColonToken" Type="SyntaxToken">
       <Kind Name="ColonColonToken"/>
-      <PropertyComment>
-        <summary>Gets a SyntaxToken that represents the double colons leading the statement's label.</summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Identifier" Type="SyntaxToken">
-      <PropertyComment>
-        <summary>Gets the identifier.</summary>
-      </PropertyComment>
-      <Kind Name="IdentifierToken"/>
-    </Field>
+    <Field Name="Name" Type="IdentifierNameSyntax"/>
     <Field Name="RightColonColonToken" Type="SyntaxToken">
       <Kind Name="ColonColonToken"/>
-      <PropertyComment>
-        <summary>Gets a SyntaxToken that represents the double colons trailing the statement's label.</summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Statement" Type="StatementSyntax"/>
-    <TypeComment>
-      <summary>Represents a labeled statement syntax.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a LabeledStatementSyntax node</summary>
-    </FactoryComment>
   </Node>
   <Node Name="BreakStatementSyntax" Base="StatementSyntax">
     <Kind Name="BreakStatement"/>
@@ -396,63 +226,15 @@
     <Kind Name="GotoStatement"/>
     <Field Name="GotoKeyword" Type="SyntaxToken">
       <Kind Name="GotoKeyword"/>
-      <PropertyComment>
-        <summary>
-          Gets a SyntaxToken that represents the goto keyword.
-        </summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Name" Type="IdentifierNameSyntax">
-      <PropertyComment>
-        <summary>
-          Gets the name for a goto statement to goto.
-        </summary>
-      </PropertyComment>
-    </Field>
-    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
-      <Kind Name="SemicolonToken"/>
-    </Field>
-    <TypeComment>
-      <summary>
-        Represents a goto statement syntax
-      </summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>
-        Creates a GotoStatementSyntax node.
-      </summary>
-    </FactoryComment>
+    <Field Name="Name" Type="IdentifierNameSyntax"/>
   </Node>
   <Node Name="ReturnStatementSyntax" Base="StatementSyntax">
     <Kind Name="ReturnStatement"/>
     <Field Name="ReturnKeyword" Type="SyntaxToken">
       <Kind Name="ReturnKeyword"/>
-      <PropertyComment>
-        <summary>
-          Gets a SyntaxToken that represents the return keyword.
-        </summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Values" Type="ExpressionListSyntax" Optional="true">
-      <PropertyComment>
-        <summary>
-          Gets the values to return.
-        </summary>
-      </PropertyComment>
-    </Field>
-    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
-      <Kind Name="SemicolonToken"/>
-    </Field>
-    <TypeComment>
-      <summary>
-        Represents a goto statement syntax
-      </summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>
-        Creates a GotoStatementSyntax node.
-      </summary>
-    </FactoryComment>
+    <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;"/>
   </Node>
   <Node Name="DoStatementSyntax" Base="StatementSyntax">
     <Kind Name="DoStatement"/>
@@ -488,114 +270,40 @@
       <Kind Name="UntilKeyword"/>
     </Field>
     <Field Name="Condition" Type="ExpressionSyntax"/>
-    <Field Name="SemicolonToken" Type="SyntaxToken" Optional="true">
-      <Kind Name="SemicolonToken"/>
-    </Field>
   </Node>
   <Node Name="IfStatementSyntax" Base="StatementSyntax">
     <Kind Name="IfStatement"/>
     <Field Name="IfKeyword" Type="SyntaxToken">
       <Kind Name="IfKeyword"/>
-      <PropertyComment>
-        <summary>
-          Gets a SyntaxToken that represents the if keyword.
-        </summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Condition" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>
-          Gets an ExpressionSyntax that represents the condition of the if statement.
-        </summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Condition" Type="ExpressionSyntax"/>
     <Field Name="ThenKeyword" Type="SyntaxToken">
       <Kind Name="ThenKeyword"/>
     </Field>
-    <Field Name="Block" Type="BlockSyntax">
-      <PropertyComment>
-        <summary>
-          Gets a StatementSyntax the represents the statement to be executed when the condition is true.
-        </summary>
-      </PropertyComment>
-    </Field>
-    <Field Name="ElseIfs" Type="SyntaxList&lt;ElseIfClauseSyntax&gt;" Optional="true">
-      <PropertyComment>
-        <summary>
-          Gets a list of ElseIfClauseSyntax that represents the statement to be executed when the condition is false and its condition is true if such statement exists.
-        </summary>
-      </PropertyComment>
-    </Field>
-    <Field Name="Else" Type="ElseClauseSyntax" Optional="true">
-      <PropertyComment>
-        <summary>
-          Gets an ElseClauseSyntax that represents the statement to be executed when the condition is false if such statement exists.
-        </summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Block" Type="BlockSyntax"/>
+    <Field Name="ElseIfs" Type="SyntaxList&lt;ElseIfClauseSyntax&gt;"/>
+    <Field Name="Else" Type="ElseClauseSyntax" Optional="true"/>
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
     </Field>
-    <TypeComment>
-      <summary>
-        Represents an if statement syntax.
-      </summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates an IfStatementSyntax node</summary>
-    </FactoryComment>
   </Node>
   <Node Name="ElseIfClauseSyntax" Base="LuaSyntaxNode">
     <Kind Name="ElseIfClause"/>
     <Field Name="ElseIfKeyword" Type="SyntaxToken">
       <Kind Name="ElseIfKeyword"/>
-      <PropertyComment>
-        <summary>
-          Gets a SyntaxToken that represents the elseif keyword.
-        </summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Condition" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>
-          Gets an ExpressionSyntax that represents the condition of the elseif clause.
-        </summary>
-      </PropertyComment>
-    </Field>
+    <Field Name="Condition" Type="ExpressionSyntax"/>
     <Field Name="ThenKeyword" Type="SyntaxToken">
       <Kind Name="ThenKeyword"/>
     </Field>
-    <Field Name="Block" Type="BlockSyntax">
-      <PropertyComment>
-        <summary>
-          Gets a StatementSyntax the represents the statement to be executed when the condition is true.
-        </summary>
-      </PropertyComment>
-    </Field>
-    <TypeComment>
-      <summary>Represents an elseif clause syntax.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a ElseIfClauseSyntax node</summary>
-    </FactoryComment>
+    <Field Name="Block" Type="BlockSyntax"/>
   </Node>
   <Node Name="ElseClauseSyntax" Base="LuaSyntaxNode">
     <Kind Name="ElseClause"/>
     <Field Name="ElseKeyword" Type="SyntaxToken">
       <Kind Name="ElseKeyword"/>
-      <PropertyComment>
-        <summary>
-          Gets a SyntaxToken that represents the else keyword.
-        </summary>
-      </PropertyComment>
     </Field>
-    <Field Name="Statement" Type="StatementSyntax"/>
-    <TypeComment>
-      <summary>Represents an else statement syntax.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a ElseClauseSyntax node</summary>
-    </FactoryComment>
+    <Field Name="Block" Type="BlockSyntax"/>
   </Node>
   <Node Name="ForStatementSyntax" Base="StatementSyntax">
     <Kind Name="ForStatement"/>
@@ -611,12 +319,10 @@
       <Kind Name="CommaToken"/>
     </Field>
     <Field Name="Limit" Type="ExpressionSyntax"/>
-    <Sequence Optional="true">
-      <Field Name="SecondCommaToken" Type="SyntaxToken">
-        <Kind Name="CommaToken"/>
-      </Field>
-      <Field Name="Step" Type="ExpressionSyntax"/>
-    </Sequence>
+    <Field Name="SecondCommaToken" Type="SyntaxToken" Optional="true">
+      <Kind Name="CommaToken"/>
+    </Field>
+    <Field Name="Step" Type="ExpressionSyntax" Optional="true"/>
     <Field Name="DoKeyword" Type="SyntaxToken">
       <Kind Name="DoKeyword"/>
     </Field>
@@ -624,6 +330,66 @@
     <Field Name="EndKeyword" Type="SyntaxToken">
       <Kind Name="EndKeyword"/>
     </Field>
+  </Node>
+  <Node Name="ForInStatementSyntax" Base="StatementSyntax">
+    <Kind Name="ForInStatement"/>
+    <Field Name="ForKeyword" Type="SyntaxToken">
+      <Kind Name="ForKeyword"/>
+    </Field>
+    <Field Name="Names" Type="SeparatedSyntaxList&lt;IdentifierNameSyntax&gt;" MinCount="1"/>
+    <Field Name="InKeyword" Type="SyntaxToken">
+      <Kind Name="InKeyword"/>
+    </Field>
+    <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;" MinCount="1"/>
+    <Field Name="DoKeyword" Type="SyntaxToken">
+      <Kind Name="DoKeyword"/>
+    </Field>
+    <Field Name="Block" Type="BlockSyntax"/>
+    <Field Name="EndKeyword" Type="SyntaxToken">
+      <Kind Name="EndKeyword"/>
+    </Field>
+  </Node>
+  <Node Name="FunctionDefinitionStatementSyntax" Base="StatementSyntax">
+    <Kind Name="FunctionDefinitionStatement"/>
+    <Field Name="FunctionKeyword" Type="SyntaxToken">
+      <Kind Name="FunctionKeyword"/>
+    </Field>
+    <Field Name="Name" Type="NameSyntax"/>
+    <Field Name="ParameterList" Type="ParameterListSyntax"/>
+    <Field Name="Block" Type="BlockSyntax"/>
+    <Field Name="EndKeyword" Type="SyntaxToken">
+      <Kind Name="EndKeyword"/>
+    </Field>
+  </Node>
+  <Node Name="LocalFunctionDefinitionStatementSyntax" Base="StatementSyntax">
+    <Kind Name="LocalFunctionDefinitionStatement"/>
+    <Field Name="LocalKeyword" Type="SyntaxToken">
+      <Kind Name="LocalKeyword"/>
+    </Field>
+    <Field Name="FunctionKeyword" Type="SyntaxToken">
+      <Kind Name="FunctionKeyword"/>
+    </Field>
+    <Field Name="Name" Type="IdentifierNameSyntax"/>
+    <Field Name="ParameterList" Type="ParameterListSyntax"/>
+    <Field Name="Block" Type="BlockSyntax"/>
+    <Field Name="EndKeyword" Type="SyntaxToken">
+      <Kind Name="EndKeyword"/>
+    </Field>
+  </Node>
+  <Node Name="LocalDeclarationStatementSyntax" Base="StatementSyntax">
+    <Kind Name="LocalDeclarationStatement"/>
+    <Field Name="LocalKeyword" Type="SyntaxToken">
+      <Kind Name="LocalKeyword"/>
+    </Field>
+    <Field Name="NameAttributeLists" Type="SeparatedSyntaxList&lt;NameAttributeListSyntax&gt;" MinCount="1"/>
+    <Field Name="Initializer" Type="EqualsValuesClauseSyntax" Optional="true"/>
+  </Node>
+  <Node Name="EqualsValuesClauseSyntax" Base="LuaSyntaxNode">
+    <Kind Name="EqualsValuesClause"/>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
+    </Field>
+    <Field Name="Expressions" Type="SeparatedSyntaxList&lt;ExpressionSyntax&gt;" MinCount="1"/>
   </Node>
 
 
@@ -639,173 +405,105 @@
   <Node Name="BlockSyntax" Base="LuaSyntaxNode">
     <Kind Name="Block"/>
     <Field Name="Statements" Type="SyntaxList&lt;StatementSyntax&gt;"/>
+    <Field Name="Return" Type="ReturnStatementSyntax" Optional="true"/>
   </Node>
   <Node Name="SkippedTokensTriviaSyntax" Base="StructuredTriviaSyntax">
     <Kind Name="SkippedTokensTrivia"/>
     <Field Name="Tokens" Type="SyntaxList&lt;SyntaxToken&gt;"/>
   </Node>
-  <Node Name="BracketedExpressionSyntax" Base="LuaSyntaxNode">
-    <Kind Name="BracketedExpression"/>
-    <Field Name="OpenParenToken" Type="SyntaxToken">
-      <Kind Name="OpenParenToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the open parenthesis.</summary>
-      </PropertyComment>
-    </Field>
-    <Field Name="Expression" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the expression enclosed within the parenthesis.</summary>
-      </PropertyComment>
-    </Field>
-    <Field Name="CloseParenToken" Type="SyntaxToken">
-      <Kind Name="CloseParenToken"/>
-      <PropertyComment>
-        <summary>SyntaxToken representing the close parenthesis.</summary>
-      </PropertyComment>
-    </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for parenthesized expression.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates a BracketedExpressionSyntax node.</summary>
-    </FactoryComment>
-  </Node>
   <Node Name="ParameterListSyntax" Base="LuaSyntaxNode">
-    <TypeComment>
-      <summary>Parameter list syntax.</summary>
-    </TypeComment>
     <Kind Name="ParameterList"/>
     <Field Name="OpenParenToken" Type="SyntaxToken">
-      <PropertyComment>
-        <summary>Gets the open paren token.</summary>
-      </PropertyComment>
       <Kind Name="OpenParenToken"/>
     </Field>
     <Field Name="Parameters" Type="SeparatedSyntaxList&lt;ParameterSyntax&gt;"/>
     <Field Name="CloseParenToken" Type="SyntaxToken">
-      <PropertyComment>
-        <summary>Gets the close paren token.</summary>
-      </PropertyComment>
       <Kind Name="CloseParenToken"/>
     </Field>
   </Node>
   <Node Name="ParameterSyntax" Base="LuaSyntaxNode">
-    <TypeComment>
-      <summary>Parameter syntax.</summary>
-    </TypeComment>
     <Kind Name="Parameter"/>
     <Field Name="Identifier" Type="SyntaxToken">
-      <PropertyComment>
-        <summary>Gets the identifier.</summary>
-      </PropertyComment>
       <Kind Name="IdentifierToken"/>
       <Kind Name="DotDotDotToken"/>
     </Field>
   </Node>
-  <Node Name="FieldListSyntax" Base="LuaSyntaxNode">
-    <Kind Name="FieldList"/>
-    <Field Name="Fields" Type="SeparatedSyntaxList&lt;FieldSyntax&gt;">
-      <PropertyComment>
-        <summary>SeparatedSyntaxList of FieldSyntax nodes representing the list of fields.</summary>
-      </PropertyComment>
+  <AbstractNode Name="FieldSyntax" Base="LuaSyntaxNode">
+    <Field Name="FieldKey" Type="ExpressionSyntax" Optional="true"/>
+    <Field Name="FieldValue" Type="ExpressionSyntax"/>
+  </AbstractNode>
+  <Node Name="ItemFieldSyntax" Base="FieldSyntax">
+    <Kind Name="ItemField"/>
+    <Field Name="FieldValue" Type="ExpressionSyntax" Override="true"/>
+  </Node>
+  <Node Name="NameValueFieldSyntax" Base="FieldSyntax">
+    <Kind Name="NameValueField"/>
+    <Field Name="FieldName" Type="IdentifierNameSyntax"/>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
     </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for the list of fields.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates an FieldListSyntax node.</summary>
-    </FactoryComment>
+    <Field Name="FieldValue" Type="ExpressionSyntax" Override="true"/>
   </Node>
-  <Node Name="FieldSyntax" Base="LuaSyntaxNode">
-    <Kind Name="Field"/>
-    <Choice>
-      <Field Name="Expression" Type="ExpressionSyntax"/>
-      <Sequence>
-        <Choice>
-          <Field Name="Name" Type="IdentifierNameSyntax">
-            <Kind Name="IdentifierName"/>
-            <PropertyComment>
-              <summary>IdentifierNameSyntax representing the field name.</summary>
-            </PropertyComment>
-          </Field>
-          <Field Name="FieldKey" Type="BracketedExpressionSyntax">
-            <Kind Name="BracketedExpression"/>
-          </Field>
-        </Choice>
-        <Field Name="EqualsToken" Type="SyntaxToken">
-          <Kind Name="EqualsToken"/>
-          <PropertyComment>
-            <summary>SyntaxToken representing the operator of the assignment expression.</summary>
-          </PropertyComment>
-        </Field>
-        <Field Name="FieldValue" Type="ExpressionSyntax">
-          <PropertyComment>
-            <summary>ExpressionSyntax node representing the expression on the right of the assignment operator.</summary>
-          </PropertyComment>
-        </Field>
-      </Sequence>
-    </Choice>
+  <Node Name="KeyValueFieldSyntax" Base="FieldSyntax">
+    <Kind Name="KeyValueField"/>
+    <Field Name="OpenBracketToken" Type="SyntaxToken">
+      <Kind Name="OpenBracketToken"/>
+    </Field>
+    <Field Name="FieldKey" Type="ExpressionSyntax" Override="true"/>
+    <Field Name="CloseBracketToken" Type="SyntaxToken">
+      <Kind Name="CloseBracketToken"/>
+    </Field>
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="EqualsToken"/>
+    </Field>
+    <Field Name="FieldValue" Type="ExpressionSyntax" Override="true"/>
   </Node>
-  <Node Name="ArgumentListSyntax" Base="LuaSyntaxNode">
+  <AbstractNode Name="InvocationArgumentsSyntax" Base="LuaSyntaxNode"/>
+  <Node Name="ArgumentTableSyntax" Base="InvocationArgumentsSyntax">
+    <Kind Name="ArgumentTable"/>
+    <Field Name="Table" Type="TableConstructorExpressionSyntax"/>
+  </Node>
+  <Node Name="ArgumentListSyntax" Base="InvocationArgumentsSyntax">
     <Kind Name="ArgumentList"/>
-    <Choice>
-      <Field Name="ArgumentTable" Type="TableConstructorExpressionSyntax"/>
-      <Sequence>
-        <Field Name="OpenParenToken" Type="SyntaxToken">
-          <Kind Name="OpenParenToken"/>
-          <PropertyComment>
-            <summary>SyntaxToken representing open parenthesis.</summary>
-          </PropertyComment>
-        </Field>
-        <Field Name="Arguments" Type="SeparatedSyntaxList&lt;ArgumentSyntax&gt;">
-          <PropertyComment>
-            <summary>SeparatedSyntaxList of ArgumentSyntax representing the list of arguments.</summary>
-          </PropertyComment>
-        </Field>
-        <Field Name="CloseParenToken" Type="SyntaxToken">
-          <Kind Name="CloseParenToken"/>
-          <PropertyComment>
-            <summary>SyntaxToken representing close parenthesis.</summary>
-          </PropertyComment>
-        </Field>
-      </Sequence>
-    </Choice>
-    <TypeComment>
-      <summary>Class which represents the syntax node for the list of arguments.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates an ArgumentListSyntax node.</summary>
-    </FactoryComment>
+    <Field Name="OpenParenToken" Type="SyntaxToken">
+      <Kind Name="OpenParenToken"/>
+    </Field>
+    <Field Name="List" Type="SeparatedSyntaxList&lt;ArgumentSyntax&gt;"/>
+    <Field Name="CloseParenToken" Type="SyntaxToken">
+      <Kind Name="CloseParenToken"/>
+    </Field>
+  </Node>
+  <Node Name="ArgumentStringSyntax" Base="InvocationArgumentsSyntax">
+    <Kind Name="ArgumentString"/>
+    <Field Name="String" Type="SyntaxToken">
+      <Kind Name="StringLiteralToken"/>
+      <Kind Name="MultiLineRawStringLiteralToken"/>
+    </Field>
   </Node>
   <Node Name="ArgumentSyntax" Base="LuaSyntaxNode">
     <Kind Name="Argument"/>
-    <Field Name="Expression" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the argument.</summary>
-      </PropertyComment>
-    </Field>
-    <TypeComment>
-      <summary>Class which represents the syntax node for argument.</summary>
-    </TypeComment>
-    <FactoryComment>
-      <summary>Creates an ArgumentSyntax node.</summary>
-    </FactoryComment>
+    <Field Name="Expression" Type="ExpressionSyntax"/>
   </Node>
-  <Node Name="ImplicitSelfCallSyntax" Base="LuaSyntaxNode">
-    <Kind Name="ImplicitSelfCall"/>
-    <Field Name="Expression" Type="ExpressionSyntax">
-      <PropertyComment>
-        <summary>ExpressionSyntax node representing the expression part of the implicit self call.</summary>
-      </PropertyComment>
+  <Node Name="NameAttributeListSyntax" Base="LuaSyntaxNode">
+    <Kind Name="NameAttributeList"/>
+    <Field Name="Identifier" Type="IdentifierNameSyntax"/>
+    <Field Name="AttributeList" Type="AttributeListSyntax" Optional="true"/>
+  </Node>
+  <Node Name="AttributeListSyntax" Base="LuaSyntaxNode">
+    <Kind Name="AttributeList"/>
+    <Field Name="LessThanToken" Type="SyntaxToken">
+      <Kind Name="LessThanToken"/>
     </Field>
-    <Field Name="ColonToken" Type="SyntaxToken">
-      <Kind Name="ColonToken"/>
+    <Field Name="Attributes" Type="SeparatedSyntaxList&lt;AttributeSyntax&gt;" MinCount="1"/>
+    <Field Name="GreaterThanToken" Type="SyntaxToken">
+      <Kind Name="GreaterThanToken"/>
     </Field>
-    <Field Name="Name" Type="IdentifierNameSyntax">
-      <Kind Name="IdentifierName"/>
-      <PropertyComment>
-        <summary>IdentifierNameSyntax representing the identifier name.</summary>
-      </PropertyComment>
+  </Node>
+  <Node Name="AttributeSyntax" Base="LuaSyntaxNode">
+    <Kind Name="Attribute"/>
+    <Field Name="Token" Type="SyntaxToken">
+      <Kind Name="CloseKeyword"/>
+      <Kind Name="ConstKeyword"/>
     </Field>
   </Node>
 
