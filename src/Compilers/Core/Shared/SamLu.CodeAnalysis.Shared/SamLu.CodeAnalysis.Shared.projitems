@@ -42,12 +42,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Parser\SyntaxParser.ResetPoint.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SymbolDisplay\SymbolDisplay.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\AssemblySymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\LexicalSortKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\ModuleSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamedTypeSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamespaceExtent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamespaceOrTypeSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamespaceSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\SymbolVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\TypeSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\ContextAwareSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\IdentifierNameSyntax.cs" />
@@ -93,5 +95,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTreeDiagnosticEnumerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_PREPROCESS_.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Symbols\Symbols.xml" />
   </ItemGroup>
 </Project>

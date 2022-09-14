@@ -6,18 +6,32 @@ namespace SamLu.CodeAnalysis.Lua;
 partial class Symbol
 {
     /// <summary>
-    /// Returns true if this symbol can be referenced by its name in code. Examples of symbols
-    /// that cannot be referenced by name are:
-    ///    constructors, destructors, operators, explicit interface implementations,
-    ///    accessor methods for properties and events, array types.
+    /// 此符号是否能在代码中通过名称引用。
     /// </summary>
+    /// <value>
+    /// 若此符号是否能在代码中通过名称引用，则返回<see langword="true"/>；否则返回<see langword="false"/>。
+    /// </value>
     public bool CanBeReferencedByName
     {
         get
         {
             switch (this.Kind)
             {
-#warning 需要补充符号类型处理
+                case SymbolKind.Local:
+                case SymbolKind.Label:
+                    return true;
+
+                case SymbolKind.Assembly:
+                case SymbolKind.DynamicType:
+                case SymbolKind.NetModule:
+                    return false;
+
+                case SymbolKind.Namespace:
+                case SymbolKind.Field:
+                case SymbolKind.Parameter:
+                case SymbolKind.NamedType:
+                    break;
+
                 default:
                     throw ExceptionUtilities.UnexpectedValue(this.Kind);
             }

@@ -137,12 +137,18 @@
     <value>'{0}' must not be empty.</value>
     <comment>{0} is the name of an argument.</comment>
   </data>
+  <data name="LocationIsNotInSyntaxTree" xml:space="preserve">
+    <value>Location is not in a syntax tree.</value>
+  </data>
   <data name="MissingListItem" xml:space="preserve">
     <value>The item specified is not the element of a list.</value>
   </data>
   <data name="SyntaxNodeTypeMustBeDerivedFromCertainType" xml:space="preserve">
     <value>Syntax node type '{0}' must be derived from '{1}'</value>
     <comment>{0} is a description of the syntax node type that derived from {2} which also a description of a certain syntax node type.</comment>
+  </data>
+  <data name="SyntaxTokenIsNotInSyntaxTree" xml:space="preserve">
+    <value>Syntax token is not in a syntax tree.</value>
   </data>
   <data name="ThisMethodCanOnlyBeUsedToCreateTokens" xml:space="preserve">
     <value>This method can only be used to create tokens - {0} is not a token kind.</value>

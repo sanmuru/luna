@@ -1,8 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.MemoryMappedFiles;
+using System.Runtime.CompilerServices;
 using Microsoft.Cci;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.PooledObjects;
 using Microsoft.CodeAnalysis.Symbols;
 
 #if LANG_LUA
@@ -20,12 +23,11 @@ using ThisSemanticModel = MoonScriptSemanticModel;
 #endif
 
 using Symbols;
-using Microsoft.CodeAnalysis.PooledObjects;
 
 [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-internal abstract partial class Symbol : ISymbolInternal, IFormattable
+internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatable<Symbol>
 {
-    private ISymbol _lazySymbol;
+    private ISymbol? _lazyISymbol;
 
     #region 名称
     /// <summary>
@@ -128,7 +130,7 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable
     }
     #endregion
 
-    #region 声明关系=
+    #region 声明关系
     /// <summary>
     /// 获取声明此符号的可访问性。
     /// </summary>
@@ -385,6 +387,81 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable
     /// </remarks>
     public virtual bool IsImplicitlyDeclared => false;
 
+    /// <summary>
+    /// Perform additional checks after the member has been
+    /// added to the member list of the containing type.
+    /// </summary>
+    internal virtual void AfterAddingTypeMembersChecks(ConversionsBase conversions, BindingDiagnosticBag diagnostics)
+    {
+    }
+
+    #region 相等项
+    public static bool operator ==(Symbol? left, Symbol? right) => Symbol.Equals(left, right, SymbolEqualityComparer.Default.CompareKind);
+
+    public static bool operator !=(Symbol? left, Symbol? right) => !(left == right);
+
+    public sealed override bool Equals(object? obj) => this.Equals(obj as Symbol);
+
+    public bool Equals(Symbol? other) => this.Equals(other, SymbolEqualityComparer.Default.CompareKind);
+
+    bool ISymbolInternal.Equals(ISymbolInternal? other, TypeCompareKind compareKind) => this.Equals(other as Symbol, compareKind);
+
+    public virtual bool Equals(Symbol? other, TypeCompareKind compareKind) => object.ReferenceEquals(this, other);
+
+    public static bool Equals(Symbol? first, Symbol? second, TypeCompareKind compareKind)
+    {
+        if (first is null)
+            return second is null;
+        else if (object.ReferenceEquals(first, second))
+            return true;
+        else
+            return first.Equals(second, compareKind);
+    }
+
+    public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
+    #endregion
+
+    #region 公共符号
+    internal ISymbol ISymbol
+    {
+        get
+        {
+            if (this._lazyISymbol is null)
+                Interlocked.CompareExchange(ref _lazyISymbol, this.CreateISymbol(), null);
+
+            return _lazyISymbol;
+        }
+    }
+
+    protected abstract ISymbol CreateISymbol();
+    #endregion
+
+    #region 访问方法
+    public abstract void Accept(
+#if LANG_LUA
+        LuaSymbolVisitor
+#elif LANG_MOONSCRIPT
+        MoonScriptSymbolVisitor
+#endif
+        visitor);
+
+    public abstract TResult? Accept<TResult>(
+#if LANG_LUA
+        LuaSymbolVisitor
+#elif LANG_MOONSCRIPT
+        MoonScriptSymbolVisitor
+#endif
+        <TResult> visitor);
+
+    internal abstract TResult? Accept<TArgument, TResult>(
+#if LANG_LUA
+        LuaSymbolVisitor
+#elif LANG_MOONSCRIPT
+        MoonScriptSymbolVisitor
+#endif
+        <TArgument, TResult> visitor, TArgument a);
+    #endregion
+
     internal virtual UseSiteInfo<AssemblySymbol> GetUseSiteInfo() => default;
 
     internal static bool ReportUseSiteDiagnostic(DiagnosticInfo info, DiagnosticBag diagnostics, Location location)
@@ -393,30 +470,47 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable
         throw new NotImplementedException();
     }
 
-    #region 未实现
+#region 未实现
 #warning 未实现。
-    public abstract bool Equals(ISymbolInternal? other, TypeCompareKind compareKind);
     public abstract IReference GetCciAdapter();
     #endregion
+
+    // 防止其他人继承此类。
+    internal Symbol() { }
 
     #region ISymbolInternal
 #nullable disable
     ISymbolInternal ISymbolInternal.ContainingSymbol => this.ContainingSymbol;
+    INamespaceSymbolInternal ISymbolInternal.ContainingNamespace => this.ContainingNamespace;
     INamedTypeSymbolInternal ISymbolInternal.ContainingType => this.ContainingType;
     IModuleSymbolInternal ISymbolInternal.ContainingModule => this.ContainingModule;
     IAssemblySymbolInternal ISymbolInternal.ContainingAssembly => this.ContainingAssembly;
     Compilation ISymbolInternal.DeclaringCompilation => this.DeclaringCompilation;
     ISymbol ISymbolInternal.GetISymbol() => this.ISymbol;
 #nullable enable
-    #endregion
+#endregion
 
-    #region IFormattable
-    public sealed override string ToString()
-    {
-#warning 未实现。
-        throw new NotImplementedException();
-    }
+#region IFormattable
+    public sealed override string ToString() => this.ToDisplayString();
+
+    public string ToDisplayString(SymbolDisplayFormat? format = null) =>
+        SymbolDisplay.ToDisplayString(this.ISymbol, format);
+
+    public ImmutableArray<SymbolDisplayPart> ToDisplayParts(SymbolDisplayFormat? format = null) =>
+        SymbolDisplay.ToDisplayParts(this.ISymbol, format);
+
+    public string ToMinimalDisplayString(
+        SemanticModel semanticModel,
+        int position,
+        SymbolDisplayFormat? format = null) =>
+        SymbolDisplay.ToMinimalDisplayString(this.ISymbol, semanticModel, position, format);
+
+    public ImmutableArray<SymbolDisplayPart> ToMinimalDisplayParts(
+        SemanticModel semanticModel,
+        int position,
+        SymbolDisplayFormat? format = null) =>
+        SymbolDisplay.ToMinimalDisplayParts(this.ISymbol, semanticModel, position, format);
 
     string IFormattable.ToString(string? format, IFormatProvider? formatProvider) => this.ToString();
-    #endregion
+#endregion
 }

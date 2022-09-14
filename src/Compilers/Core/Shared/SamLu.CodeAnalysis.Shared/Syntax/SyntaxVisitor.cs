@@ -25,7 +25,7 @@ public abstract partial class
     /// </summary>
     /// <param name="node">要进行处理的节点。</param>
     /// <returns>产生的结果。</returns>
-    public virtual TResult? Visit(ThisSyntaxNode node)
+    public virtual TResult? Visit(ThisSyntaxNode? node)
     {
         if (node is null) return default;
 
@@ -54,7 +54,7 @@ public abstract partial class
     /// 处理这个节点。
     /// </summary>
     /// <param name="node">要进行处理的节点。</param>
-    public virtual void Visit(ThisSyntaxNode node)
+    public virtual void Visit(ThisSyntaxNode? node)
     {
         if (node is null) return;
 

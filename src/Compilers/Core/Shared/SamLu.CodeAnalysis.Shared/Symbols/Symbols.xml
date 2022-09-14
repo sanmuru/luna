@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Model>
+  
+  <PredefinedSymbol Name="Symbol"/>
+
+  <AbstractSymbol Name="AssemblySymbol" Base="Symbol"/>
+  <Symbol Name="SourceAssemblySymbol" Base="AssemblySymbol"/>
+  <Symbol Name="NonSourceAssemblySymbol" Base="AssemblySymbol"/>
+  
+  <Symbol Name="ModuleSymbol" Base="Symbol"/>
+  
+  <AbstractSymbol Name="NamespaceOrTypeSymbol" Base="Symbol"/>
+  <Symbol Name="NamespaceSymbol" Base="NamespaceOrTypeSymbol"/>
+  
+  <AbstractSymbol Name="TypeSymbol" Base="NamespaceOrTypeSymbol"/>
+  
+  <AbstractSymbol Name="NamedTypeSymbol" Base="TypeSymbol"/>
+  <Symbol Name="NonErrorNamedTypeSymbol" Base="NamedTypeSymbol"/>
+  
+  <AbstractSymbol Name="DynamicTypeSymbol" Base="TypeSymbol"/>
+  
+  <Symbol Name="FieldSymbol" Base="Symbol"/>
+
+  <Symbol Name="LabelSymbol" Base="Symbol"/>
+
+  <Symbol Name="LocalSymbol" Base="Symbol"/>
+  
+</Model>
