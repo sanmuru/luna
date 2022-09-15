@@ -10,7 +10,7 @@ namespace SamLu.CodeAnalysis.Lua.Symbols;
 namespace SamLu.CodeAnalysis.MoonScript.Symbols;
 #endif
 
-internal abstract class AssemblySymbol : Symbol, IAssemblySymbolInternal
+internal abstract partial class AssemblySymbol : IAssemblySymbolInternal
 {
     internal abstract bool IsMissing { get; }
 

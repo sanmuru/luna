@@ -12,6 +12,6 @@ namespace SamLu.CodeAnalysis.MoonScript;
 
 using Symbols;
 
-internal abstract partial class TypeSymbol : NamespaceOrTypeSymbol, ITypeSymbolInternal
+internal abstract partial class TypeSymbol : ITypeSymbolInternal
 {
 }

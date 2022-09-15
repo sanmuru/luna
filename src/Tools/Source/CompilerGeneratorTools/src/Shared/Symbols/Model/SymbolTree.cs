@@ -6,7 +6,7 @@ namespace Luna.Compilers.Generators.Symbols.Model;
 
 #pragma warning disable CS8618
 [XmlRoot(ElementName = "Tree")]
-internal class SymbolTree : ITree<SymbolTreeType, ITreeTypeChild>
+public class SymbolTree : ITree<SymbolTreeType, ITreeTypeChild>
 {
     [XmlAttribute]
     public string Root;

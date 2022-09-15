@@ -10,6 +10,6 @@ namespace SamLu.CodeAnalysis.Lua.Symbols;
 namespace SamLu.CodeAnalysis.MoonScript.Symbols;
 #endif
 
-internal abstract class ModuleSymbol : Symbol, IModuleSymbolInternal
+internal abstract partial class ModuleSymbol : IModuleSymbolInternal
 {
 }

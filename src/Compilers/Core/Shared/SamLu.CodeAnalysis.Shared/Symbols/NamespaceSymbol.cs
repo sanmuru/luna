@@ -8,7 +8,7 @@ namespace SamLu.CodeAnalysis.Lua.Symbols;
 namespace SamLu.CodeAnalysis.MoonScript.Symbols;
 #endif
 
-internal abstract partial class NamespaceSymbol : NamespaceOrTypeSymbol, INamespaceSymbolInternal
+internal abstract partial class NamespaceSymbol : INamespaceSymbolInternal
 {
     public virtual ImmutableArray<NamespaceSymbol> ConstituentNamespaces => ImmutableArray.Create(this);
 

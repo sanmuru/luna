@@ -6,6 +6,6 @@ namespace SamLu.CodeAnalysis.Lua.Symbols;
 namespace SamLu.CodeAnalysis.MoonScript.Symbols;
 #endif
 
-internal abstract class NamespaceOrTypeSymbol : Symbol, INamespaceOrTypeSymbolInternal
+internal abstract partial class NamespaceOrTypeSymbol : INamespaceOrTypeSymbolInternal
 {
 }

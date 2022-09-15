@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Model\PredefinedSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Model\Symbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\SymbolsFileWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\SymbolsGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\SymbolsSourceWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxFileWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachingSourceGenerator.cs" />

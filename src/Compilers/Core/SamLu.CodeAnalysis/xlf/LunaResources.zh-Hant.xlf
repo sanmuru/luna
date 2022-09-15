@@ -27,6 +27,11 @@
         <target state="new">'{0}' must not be empty.</target>
         <note>{0} is the name of an argument.</note>
       </trans-unit>
+      <trans-unit id="LocationIsNotInSyntaxTree">
+        <source>Location is not in a syntax tree.</source>
+        <target state="new">Location is not in a syntax tree.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissingListItem">
         <source>The item specified is not the element of a list.</source>
         <target state="new">The item specified is not the element of a list.</target>
@@ -36,6 +41,11 @@
         <source>Syntax node type '{0}' must be derived from '{1}'</source>
         <target state="new">Syntax node type '{0}' must be derived from '{1}'</target>
         <note>{0} is a description of the syntax node type that derived from {2} which also a description of a certain syntax node type.</note>
+      </trans-unit>
+      <trans-unit id="SyntaxTokenIsNotInSyntaxTree">
+        <source>Syntax token is not in a syntax tree.</source>
+        <target state="new">Syntax token is not in a syntax tree.</target>
+        <note />
       </trans-unit>
       <trans-unit id="ThisMethodCanOnlyBeUsedToCreateTokens">
         <source>This method can only be used to create tokens - {0} is not a token kind.</source>
