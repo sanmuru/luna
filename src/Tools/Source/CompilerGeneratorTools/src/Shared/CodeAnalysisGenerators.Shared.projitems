@@ -11,24 +11,35 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\..\..\..\Shared\IndentWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\..\..\..\Shared\StringBuilderReader.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AbstractFileWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\ITree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\ITreeType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\ITreeTypeChild.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\Model\AbstractSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\Model\SymbolTree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\Model\SymbolTreeType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\Model\PredefinedSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\Model\Symbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\SymbolsFileWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\SymbolsSourceWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxFileWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CachingSourceGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ErrorFactsGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GreenNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Errors\ErrorFactsGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\GreenNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InternalErrorCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IsExternalInit.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\AbstractNode.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\Comment.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\TreeTypeChild.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\Kind.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\Node.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\PredefinedNode.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\Tree.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\TreeType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\Model\AbstractNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\Model\Comment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\Model\TreeTypeChild.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\Model\Kind.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\Model\Node.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\Model\PredefinedNode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\Model\Tree.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\Model\TreeType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SourceTextReader.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyntaxGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SourceWriter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\TreeFlattening.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxSourceWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Syntax\Model\TreeFlattening.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TreeFileWriter`2.cs" />
   </ItemGroup>
   <ItemGroup>
     <!-- Make sure to reference the same version of Microsoft.CodeAnalysis.Analyzers as the rest of the build -->
@@ -38,5 +49,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Errors\" />
   </ItemGroup>
 </Project>

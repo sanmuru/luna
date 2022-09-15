@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Model>
+<Tree Root="Symbol">
   
-  <PredefinedSymbol Name="Symbol"/>
-
   <AbstractSymbol Name="AssemblySymbol" Base="Symbol"/>
   <Symbol Name="SourceAssemblySymbol" Base="AssemblySymbol"/>
   <Symbol Name="NonSourceAssemblySymbol" Base="AssemblySymbol"/>
@@ -25,4 +23,4 @@
 
   <Symbol Name="LocalSymbol" Base="Symbol"/>
   
-</Model>
+</Tree>

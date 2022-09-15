@@ -2,11 +2,18 @@
 
 namespace Luna.Compilers.Generators;
 
+/// <summary>
+/// 表示可以读取字符串构造器的读取器。
+/// </summary>
 internal sealed class StringBuilderReader : TextReader
 {
     private readonly StringBuilder _stringBuilder;
     private int _position;
 
+    /// <summary>
+    /// 使用指定的字符串构造器初始化<see cref="StringBuilderReader"/>的新实例。
+    /// </summary>
+    /// <param name="stringBuilder">要读取的字符串构造器。</param>
     public StringBuilderReader(StringBuilder stringBuilder)
     {
         _stringBuilder = stringBuilder;

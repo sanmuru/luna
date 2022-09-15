@@ -459,7 +459,7 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
 #elif LANG_MOONSCRIPT
         MoonScriptSymbolVisitor
 #endif
-        <TArgument, TResult> visitor, TArgument a);
+        <TArgument, TResult> visitor, TArgument argument);
     #endregion
 
     internal virtual UseSiteInfo<AssemblySymbol> GetUseSiteInfo() => default;

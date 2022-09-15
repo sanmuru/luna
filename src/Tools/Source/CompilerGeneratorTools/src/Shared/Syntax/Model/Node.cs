@@ -1,9 +1,9 @@
 ﻿using System.Xml.Serialization;
 
-namespace Luna.Compilers.Generators.Model;
+namespace Luna.Compilers.Generators.Syntax.Model;
 
 #pragma warning disable CS8618
-public class Node : TreeType
+public sealed class Node : TreeType
 {
     [XmlAttribute]
     public string? Root;

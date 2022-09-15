@@ -1,10 +1,10 @@
 ﻿using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
-using Luna.Compilers.Generators.Model;
+using Luna.Compilers.Generators.Syntax;
+using Luna.Compilers.Generators.Syntax.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
@@ -108,9 +108,9 @@ public sealed class SyntaxGenerator : CachingSourceGenerator
         TreeFlattening.FlattenChildren(tree);
 
         var sourcesBuilder = ImmutableArray.CreateBuilder<(string hintName, SourceText sourceText)>();
-        addResult(writer => SourceWriter.WriteMain(writer, tree, cancellationToken), "Syntax.xml.Main.Generated.cs");
-        addResult(writer => SourceWriter.WriteInternal(writer, tree, cancellationToken), "Syntax.xml.Internal.Generated.cs");
-        addResult(writer => SourceWriter.WriteSyntax(writer, tree, cancellationToken), "Syntax.xml.Syntax.Generated.cs");
+        addResult(writer => SyntaxSourceWriter.WriteMain(writer, tree, cancellationToken), "Syntax.xml.Main.Generated.cs");
+        addResult(writer => SyntaxSourceWriter.WriteInternal(writer, tree, cancellationToken), "Syntax.xml.Internal.Generated.cs");
+        addResult(writer => SyntaxSourceWriter.WriteSyntax(writer, tree, cancellationToken), "Syntax.xml.Syntax.Generated.cs");
 
         sources = sourcesBuilder.ToImmutable();
         diagnostics = ImmutableArray<Diagnostic>.Empty;

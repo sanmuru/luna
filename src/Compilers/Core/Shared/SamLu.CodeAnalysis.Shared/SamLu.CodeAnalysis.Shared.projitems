@@ -96,7 +96,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_PREPROCESS_.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="$(MSBuildThisFileDirectory)Symbols\Symbols.xml" />
-  </ItemGroup>
 </Project>

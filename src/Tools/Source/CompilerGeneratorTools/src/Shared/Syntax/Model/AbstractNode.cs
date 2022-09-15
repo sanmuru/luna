@@ -1,7 +1,7 @@
-﻿namespace Luna.Compilers.Generators.Model;
+﻿namespace Luna.Compilers.Generators.Syntax.Model;
 
 #pragma warning disable CS8618
-public class AbstractNode : TreeType
+public sealed class AbstractNode : TreeType
 {
     public readonly List<Field> Fields = new();
 }

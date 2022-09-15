@@ -1,4 +1,4 @@
-﻿namespace Luna.Compilers.Generators.Model;
+﻿namespace Luna.Compilers.Generators.Syntax.Model;
 
 public static class TreeFlattening
 {
@@ -26,7 +26,7 @@ public static class TreeFlattening
             switch (fieldOrChoice)
             {
                 case Field field:
-                    if (makeOptional && !AbstractFileWriter.IsAnyNodeList(field.Type))
+                    if (makeOptional && !SyntaxFileWriter.IsAnyNodeList(field.Type))
                     {
                         field.Optional = "true";
                     }

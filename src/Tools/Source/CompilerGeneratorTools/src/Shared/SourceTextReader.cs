@@ -2,11 +2,18 @@
 
 namespace Luna.Compilers.Generators;
 
+/// <summary>
+/// 表示可以读取源代码文本的读取器。
+/// </summary>
 internal sealed class SourceTextReader : TextReader
 {
     private readonly SourceText _sourceText;
     private int _position;
 
+    /// <summary>
+    /// 使用指定的源代码文本初始化<see cref="SourceTextReader"/>的新实例。
+    /// </summary>
+    /// <param name="sourceText">要读取的源代码文本。</param>
     public SourceTextReader(SourceText sourceText)
     {
         _sourceText = sourceText;
@@ -16,9 +23,7 @@ internal sealed class SourceTextReader : TextReader
     public override int Peek()
     {
         if (_position == _sourceText.Length)
-        {
             return -1;
-        }
 
         return _sourceText[_position];
     }

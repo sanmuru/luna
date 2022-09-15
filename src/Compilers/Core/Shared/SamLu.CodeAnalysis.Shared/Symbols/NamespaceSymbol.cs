@@ -19,5 +19,20 @@ internal abstract partial class NamespaceSymbol : NamespaceOrTypeSymbol, INamesp
     public abstract override AssemblySymbol ContainingAssembly { get; }
 
     public abstract bool IsGlobalNamespace { get; }
+
+    public override void Accept(LuaSymbolVisitor visitor)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override TResult? Accept<TResult>(LuaSymbolVisitor<TResult> visitor) where TResult : default
+    {
+        throw new NotImplementedException();
+    }
+
+    internal override TResult? Accept<TArgument, TResult>(LuaSymbolVisitor<TArgument, TResult> visitor, TArgument argument) where TResult : default
+    {
+        return base.Accept(visitor, argument);
+    }
     #endregion
 }

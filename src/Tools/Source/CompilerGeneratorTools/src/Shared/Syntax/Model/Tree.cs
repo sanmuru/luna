@@ -1,10 +1,12 @@
-﻿using System.Xml.Serialization;
+﻿using System.Collections.Immutable;
+using System.Xml.Serialization;
+using Luna.Compilers.Generators.Model;
 
-namespace Luna.Compilers.Generators.Model;
+namespace Luna.Compilers.Generators.Syntax.Model;
 
 #pragma warning disable CS8618
 [XmlRoot]
-public class Tree
+public class Tree : ITree<TreeType, TreeTypeChild>
 {
     [XmlAttribute]
     public string Root;
@@ -13,5 +15,8 @@ public class Tree
     [XmlElement(ElementName = "AbstractNode", Type = typeof(AbstractNode))]
     [XmlElement(ElementName = "PredefinedNode", Type = typeof(PredefinedNode))]
     public List<TreeType> Types;
+
+    string ITree<TreeType, TreeTypeChild>.Root => this.Root;
+    ImmutableList<TreeType> ITree<TreeType, TreeTypeChild>.Types => this.Types.ToImmutableList();
 }
 #pragma warning restore CS8618

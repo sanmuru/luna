@@ -1,29 +1,30 @@
 ﻿using System.Diagnostics;
 using System.Xml;
-using Luna.Compilers.Generators.Model;
 using SamLu.CodeAnalysis;
 
-namespace Luna.Compilers.Generators;
+namespace Luna.Compilers.Generators.Syntax;
 
-internal class SourceWriter : AbstractFileWriter
+using Model;
+
+internal class SyntaxSourceWriter : SyntaxFileWriter
 {
-    private SourceWriter(TextWriter writer, Tree tree, CancellationToken cancellationToken = default)
+    private SyntaxSourceWriter(TextWriter writer, Tree tree, CancellationToken cancellationToken = default)
         : base(writer, tree, cancellationToken) { }
 
     /// <summary>
     /// 写入红树节点的访问、重写和工厂方法。
     /// </summary>
-    public static void WriteMain(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) => new SourceWriter(writer, tree, cancellationToken).WriteMain();
+    public static void WriteMain(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) => new SyntaxSourceWriter(writer, tree, cancellationToken).WriteMain();
 
     /// <summary>
     /// 写入绿树节点的类型定义及访问、重写和上下文、静态工厂方法。
     /// </summary>
-    public static void WriteInternal(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) => new SourceWriter(writer, tree, cancellationToken).WriteInternal();
+    public static void WriteInternal(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) => new SyntaxSourceWriter(writer, tree, cancellationToken).WriteInternal();
 
     /// <summary>
     /// 写入红树节点的类型定义。
     /// </summary>
-    public static void WriteSyntax(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) => new SourceWriter(writer, tree, cancellationToken).WriteSyntax();
+    public static void WriteSyntax(TextWriter writer, Tree tree, CancellationToken cancellationToken = default) => new SyntaxSourceWriter(writer, tree, cancellationToken).WriteSyntax();
 
     private void WriteFileHeader()
     {
@@ -58,10 +59,8 @@ internal class SourceWriter : AbstractFileWriter
     private void WriteInternal()
     {
         WriteFileHeader();
-
         WriteLine($"namespace SamLu.CodeAnalysis.{LanguageNames.This}.Syntax.InternalSyntax");
         OpenBlock();
-        WriteLine();
         this.WriteGreenTypes();
         this.WriteGreenVisitors();
         this.WriteGreenAccumulator();

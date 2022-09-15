@@ -1,9 +1,10 @@
 ﻿using System.Xml.Serialization;
+using Luna.Compilers.Generators.Model;
 
-namespace Luna.Compilers.Generators.Model;
+namespace Luna.Compilers.Generators.Syntax.Model;
 
 #pragma warning disable CS8618
-public abstract class TreeTypeChild { }
+public abstract class TreeTypeChild : ITreeTypeChild { }
 
 public class Choice : TreeTypeChild
 {
