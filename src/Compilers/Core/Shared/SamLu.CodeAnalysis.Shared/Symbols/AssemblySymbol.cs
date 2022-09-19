@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -12,7 +13,7 @@ namespace SamLu.CodeAnalysis.Lua.Symbols;
 namespace SamLu.CodeAnalysis.MoonScript.Symbols;
 #endif
 
-partial class AssemblySymbol : Symbol, IAssemblySymbolInternal
+partial class AssemblySymbol : IAssemblySymbolInternal
 {
     /// <inheritdoc cref="Symbol.Symbol()"/>
     internal AssemblySymbol() { }
@@ -33,6 +34,11 @@ partial class AssemblySymbol : Symbol, IAssemblySymbolInternal
     /// <value>返回<see langword="null"/>。</value>
     /// <inheritdoc/>
     public sealed override Symbol? ContainingSymbol => null;
+
+    /// <remarks>程序集必定不被另一个模块包含。</remarks>
+    /// <value>返回<see langword="null"/>。</value>
+    /// <inheritdoc/>
+    internal sealed override NetModuleSymbol? ContainingNetModule => null;
 
     /// <remarks>程序集必定不被另一个程序集包含。</remarks>
     /// <value>返回<see langword="null"/>。</value>
@@ -69,7 +75,7 @@ partial class AssemblySymbol : Symbol, IAssemblySymbolInternal
     /// <para>返回值至少包含一个项。</para>
     /// <para>返回值第一项表示此程序集中包含清单的主模块。</para>
     /// </value>
-    public abstract ImmutableArray<ModuleSymbol> Modules { get; }
+    public abstract ImmutableArray<NetModuleSymbol> NetModules { get; }
 
     /// <summary>
     /// 获取此程序集符号的目标机器架构。
@@ -77,10 +83,10 @@ partial class AssemblySymbol : Symbol, IAssemblySymbolInternal
     /// <value>
     /// 此程序集符号的目标机器架构。
     /// </value>
-    internal Machine Machine => this.Modules[0].Machine;
+    internal Machine Machine => this.NetModules[0].Machine;
 
-    /// <inheritdoc cref="ModuleSymbol.Bit32Required"/>
-    internal bool Bit32Required => this.Modules[0].Bit32Required;
+    /// <inheritdoc cref="NetModuleSymbol.Bit32Required"/>
+    internal bool Bit32Required => this.NetModules[0].Bit32Required;
 
     /// <summary>
     /// 获取一个值，指示此程序集是否缺失。
@@ -119,8 +125,26 @@ partial class AssemblySymbol : Symbol, IAssemblySymbolInternal
 
     public override ImmutableArray<SyntaxReference> DeclaringSyntaxReferences => ImmutableArray<SyntaxReference>.Empty;
 
-    #region 未实现
-#warning 未实现。
-    public abstract IAssemblySymbolInternal CorLibrary { get; }
+    #region 核心库
+    private AssemblySymbol? _corLibrary;
+
+    [MemberNotNull(nameof(_corLibrary))]
+    internal AssemblySymbol CorLibrary
+    {
+        get
+        {
+            Debug.Assert(this._corLibrary is not null);
+            return this._corLibrary;
+        }
+    }
+
+    [MemberNotNull(nameof(_corLibrary))]
+    internal void SetCorLibrary(AssemblySymbol corLibrary)
+    {
+        Debug.Assert(this._corLibrary is null);
+        this._corLibrary = corLibrary;
+    }
+
+    IAssemblySymbolInternal IAssemblySymbolInternal.CorLibrary => this.CorLibrary;
     #endregion
 }

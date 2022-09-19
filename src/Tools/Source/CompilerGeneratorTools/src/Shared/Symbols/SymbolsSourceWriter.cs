@@ -23,6 +23,7 @@ internal class SymbolsSourceWriter : SymbolsFileWriter
         WriteLine("using Microsoft.CodeAnalysis;");
         WriteLine("using Microsoft.CodeAnalysis.Symbols;");
         WriteLine($"using SamLu.CodeAnalysis.{LanguageNames.This};");
+        WriteLine($"using SamLu.CodeAnalysis.{LanguageNames.This}.Symbols;");
         WriteLine("using Roslyn.Utilities;");
         WriteLine();
     }
@@ -34,6 +35,11 @@ internal class SymbolsSourceWriter : SymbolsFileWriter
         WriteLine($"namespace SamLu.CodeAnalysis.{LanguageNames.This}.Symbols");
         OpenBlock();
         this.WriteInternalSymbols();
+        CloseBlock();
+
+        WriteLine();
+        WriteLine($"namespace SamLu.CodeAnalysis.{LanguageNames.This}");
+        OpenBlock();
         this.WriteInternalVisitors();
         CloseBlock();
     }
@@ -83,7 +89,7 @@ internal class SymbolsSourceWriter : SymbolsFileWriter
         var symbols = Tree.Types.Where(n => n is not PredefinedSymbol).ToList();
 
         WriteLine();
-        WriteLine($"partial class {LanguageNames.This}SymbolVisitor" + (withResult ? "<TResult>" : (withArgument ? "<TArgument, TResult>" : "")));
+        WriteLine($"partial class {LanguageNames.This}SymbolVisitor{(withResult ? (withArgument ? "<TArgument, TResult>" : "<TResult>") : "")}");
         OpenBlock();
         foreach (var symbol in symbols.OfType<Symbol>())
         {
@@ -99,8 +105,8 @@ internal class SymbolsSourceWriter : SymbolsFileWriter
         WriteFileHeader();
         WriteLine($"namespace SamLu.CodeAnalysis.{LanguageNames.This}.Symbols.PublicModel");
         OpenBlock();
-        this.WritePublicSymbols();
-        this.WritePublicVisitors();
+        //this.WritePublicSymbols();
+        //this.WritePublicVisitors();
         CloseBlock();
     }
 
@@ -154,7 +160,7 @@ internal class SymbolsSourceWriter : SymbolsFileWriter
         var symbols = Tree.Types.Where(n => n is not PredefinedSymbol).ToList();
 
         WriteLine();
-        WriteLine($"partial class {LanguageNames.This}SymbolVisitor{(withResult ? "<TResult>" : (withArgument ? "<TArgument, TResult>" : ""))} : SymbolVisitor{(withResult ? "<TResult>" : (withArgument ? "<TArgument, TResult>" : ""))}");
+        WriteLine($"partial class {LanguageNames.This}SymbolVisitor{(withResult ? "<TResult>" : (withArgument ? "<TArgument, TResult>" : ""))} : SymbolVisitor{(withResult ? (withArgument ? "<TArgument, TResult>" : "<TResult>") : "")}");
         OpenBlock();
         foreach (var symbol in symbols.OfType<Symbol>())
         {

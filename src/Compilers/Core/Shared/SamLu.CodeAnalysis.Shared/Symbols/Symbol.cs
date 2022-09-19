@@ -70,26 +70,26 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
     public abstract Symbol? ContainingSymbol { get; }
 
     /// <summary>
-    /// 获取逻辑上包含了此符号的有名称类型符号。
-    /// </summary>
-    /// <value>
-    /// 逻辑上包含了此符号的有名称类型符号。
-    /// 若此符号不属于任何有名称类型符号，则返回<see langword="null"/>。
-    /// </value>
-    public virtual NamedTypeSymbol? ContainingType =>
-        // 注：此基类仅提供了基础的递归获取逻辑，子类应尽可能提供更高效率的实现以重写此逻辑。
-        this.GetContainingSymbolHelper<NamedTypeSymbol>();
-
-    /// <summary>
     /// 获取逻辑上包含了此符号的模块符号。
     /// </summary>
     /// <value>
     /// 逻辑上包含了此符号的模块符号。
-    /// 若此符号不属于任何模块，或在多个模块间共享，则返回<see langword="null"/>。
+    /// 若此符号不属于任何模块符号，则返回<see langword="null"/>。
     /// </value>
-    internal virtual ModuleSymbol? ContainingModule =>
+    public virtual ModuleSymbol? ContainingModule =>
         // 注：此基类仅提供了基础的递归获取逻辑，子类应尽可能提供更高效率的实现以重写此逻辑。
-        this.ContainingSymbol?.ContainingModule;
+        this.GetContainingSymbolHelper<ModuleSymbol>();
+
+    /// <summary>
+    /// 获取逻辑上包含了此符号的.NET模块符号。
+    /// </summary>
+    /// <value>
+    /// 逻辑上包含了此符号的.NET模块符号。
+    /// 若此符号不属于任何.NET模块，或在多个.NET模块间共享，则返回<see langword="null"/>。
+    /// </value>
+    internal virtual NetModuleSymbol? ContainingNetModule =>
+        // 注：此基类仅提供了基础的递归获取逻辑，子类应尽可能提供更高效率的实现以重写此逻辑。
+        this.ContainingSymbol?.ContainingNetModule;
 
     /// <summary>
     /// 获取逻辑上包含了此符号的程序集符号。
@@ -214,7 +214,7 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
                     return null;
             }
 
-            switch (this.ContainingModule)
+            switch (this.ContainingNetModule)
             {
                 case SourceModuleSymbol sourceModuleSymbol:
                     return sourceModuleSymbol.DeclaringCompilation;
@@ -374,14 +374,6 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
     /// </remarks>
     public virtual bool IsImplicitlyDeclared => false;
 
-    /// <summary>
-    /// Perform additional checks after the member has been
-    /// added to the member list of the containing type.
-    /// </summary>
-    internal virtual void AfterAddingTypeMembersChecks(ConversionsBase conversions, BindingDiagnosticBag diagnostics)
-    {
-    }
-
     #region 相等项
     public static bool operator ==(Symbol? left, Symbol? right) => Symbol.Equals(left, right, SymbolEqualityComparer.Default.CompareKind);
 
@@ -468,16 +460,17 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
     #region ISymbolInternal
 #nullable disable
     ISymbolInternal ISymbolInternal.ContainingSymbol => this.ContainingSymbol;
-    INamespaceSymbolInternal ISymbolInternal.ContainingNamespace => this.ContainingNamespace;
+    INamespaceSymbolInternal ISymbolInternal.ContainingNamespace => null;
     INamedTypeSymbolInternal ISymbolInternal.ContainingType => this.ContainingType;
-    IModuleSymbolInternal ISymbolInternal.ContainingModule => this.ContainingModule;
+    IModuleSymbolInternal ISymbolInternal.ContainingModule => this.ContainingNetModule;
     IAssemblySymbolInternal ISymbolInternal.ContainingAssembly => this.ContainingAssembly;
     Compilation ISymbolInternal.DeclaringCompilation => this.DeclaringCompilation;
     ISymbol ISymbolInternal.GetISymbol() => this.ISymbol;
 #nullable enable
-#endregion
+    #endregion
 
 #region IFormattable
+    /*
     public sealed override string ToString() => this.ToDisplayString();
 
     public string ToDisplayString(SymbolDisplayFormat? format = null) =>
@@ -497,7 +490,7 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
         int position,
         SymbolDisplayFormat? format = null) =>
         SymbolDisplay.ToMinimalDisplayParts(this.ISymbol, semanticModel, position, format);
-
+    */
     string IFormattable.ToString(string? format, IFormatProvider? formatProvider) => this.ToString();
 #endregion
 }

@@ -36,7 +36,7 @@ partial class Symbol
                     throw ExceptionUtilities.UnexpectedValue(this.Kind);
             }
 
-            return SyntaxFacts.IsValidIdentifier(this.Name) && !SyntaxFacts.ContainsDroppedIdentifierCharacters(this.Name);
+            return SyntaxFacts.IsValidIdentifier(this.Name);
         }
     }
 }

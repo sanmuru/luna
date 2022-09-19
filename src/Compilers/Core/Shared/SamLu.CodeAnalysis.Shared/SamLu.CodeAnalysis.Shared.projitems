@@ -43,12 +43,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)SymbolDisplay\SymbolDisplay.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\AssemblySymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\LexicalSortKey.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Symbols\ModuleSymbol.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamedTypeSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\NetModuleSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamedModuleSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\ReferenceManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\Source\SourceAssemblySymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\Source\SourceModuleSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\SymbolVisitor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Symbols\TypeSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\ModuleSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\ContextAwareSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\IdentifierNameSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\StructuredTriviaSyntax.cs" />
@@ -93,5 +95,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxTreeDiagnosticEnumerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\SyntaxVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)_PREPROCESS_.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Symbols\Source\" />
   </ItemGroup>
 </Project>

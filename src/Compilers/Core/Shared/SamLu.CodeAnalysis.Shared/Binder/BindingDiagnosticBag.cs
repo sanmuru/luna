@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.PooledObjects;
 
@@ -65,29 +64,6 @@ internal sealed class BindingDiagnosticBag : BindingDiagnosticBag<AssemblySymbol
         symbol is not null ?
             this.Add(symbol.GetUseSiteInfo(), location) :
             false;
-
-    internal void AddAssembliesUsedByNamespaceReference(NamespaceSymbol ns)
-    {
-        if (this.DependenciesBag is null) return;
-
-        impl(ns);
-
-        void impl(NamespaceSymbol ns)
-        {
-            if (ns.Extent.Kind == NamespaceKind.Compilation)
-            {
-                foreach (var constituent in ns.ConstituentNamespaces)
-                    impl(constituent);
-            }
-            else
-            {
-                AssemblySymbol? containingAssembly = ns.ContainingAssembly;
-
-                if (containingAssembly?.IsMissing == false)
-                    this.DependenciesBag.Add(containingAssembly);
-            }
-        }
-    }
 
     protected override bool ReportUseSiteDiagnostic(DiagnosticInfo diagnosticInfo, DiagnosticBag diagnosticBag, Location location) =>
         Symbol.ReportUseSiteDiagnostic(diagnosticInfo, diagnosticBag, location);
