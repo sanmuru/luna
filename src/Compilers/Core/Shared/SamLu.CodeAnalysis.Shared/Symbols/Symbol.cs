@@ -1,7 +1,5 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
 using Microsoft.Cci;
 using Microsoft.CodeAnalysis;
@@ -72,17 +70,6 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
     public abstract Symbol? ContainingSymbol { get; }
 
     /// <summary>
-    /// 获取逻辑上包含了此符号的命名空间符号。
-    /// </summary>
-    /// <value>
-    /// 逻辑上包含了此符号的命名空间符号。
-    /// 若此符号不属于任何命名空间符号，则返回<see langword="null"/>。
-    /// </value>
-    public virtual NamespaceSymbol? ContainingNamespace =>
-        // 注：此基类仅提供了基础的递归获取逻辑，子类应尽可能提供更高效率的实现以重写此逻辑。
-        this.GetContainingSymbolHelper<NamespaceSymbol>();
-
-    /// <summary>
     /// 获取逻辑上包含了此符号的有名称类型符号。
     /// </summary>
     /// <value>
@@ -100,7 +87,7 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
     /// 逻辑上包含了此符号的模块符号。
     /// 若此符号不属于任何模块，或在多个模块间共享，则返回<see langword="null"/>。
     /// </value>
-    public virtual ModuleSymbol? ContainingModule =>
+    internal virtual ModuleSymbol? ContainingModule =>
         // 注：此基类仅提供了基础的递归获取逻辑，子类应尽可能提供更高效率的实现以重写此逻辑。
         this.ContainingSymbol?.ContainingModule;
 
@@ -475,7 +462,7 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
     public abstract IReference GetCciAdapter();
     #endregion
 
-    // 防止其他人继承此类。
+    /// <remarks>防止除编译器外创建实例。</remarks>
     internal Symbol() { }
 
     #region ISymbolInternal

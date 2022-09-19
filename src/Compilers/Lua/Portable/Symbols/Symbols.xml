@@ -7,10 +7,7 @@
   
   <Symbol Name="ModuleSymbol" Base="Symbol"/>
   
-  <AbstractSymbol Name="NamespaceOrTypeSymbol" Base="Symbol"/>
-  <Symbol Name="NamespaceSymbol" Base="NamespaceOrTypeSymbol"/>
-  
-  <AbstractSymbol Name="TypeSymbol" Base="NamespaceOrTypeSymbol"/>
+  <AbstractSymbol Name="TypeSymbol" Base="Symbol"/>
   
   <AbstractSymbol Name="NamedTypeSymbol" Base="TypeSymbol"/>
   <Symbol Name="NonErrorNamedTypeSymbol" Base="NamedTypeSymbol"/>

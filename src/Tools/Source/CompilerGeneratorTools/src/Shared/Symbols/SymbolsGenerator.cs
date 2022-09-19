@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Luna.Compilers.Generators.Symbols.Model;
 using Luna.Compilers.Generators.Symbols;
+using System.Diagnostics;
 
 namespace Luna.Compilers.Generators;
 

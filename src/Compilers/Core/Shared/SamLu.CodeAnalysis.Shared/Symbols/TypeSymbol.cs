@@ -1,8 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Diagnostics;
-using Microsoft.Cci;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Symbols;
+﻿using Microsoft.CodeAnalysis.Symbols;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
@@ -10,8 +6,8 @@ namespace SamLu.CodeAnalysis.Lua;
 namespace SamLu.CodeAnalysis.MoonScript;
 #endif
 
-using Symbols;
 
-internal abstract partial class TypeSymbol : ITypeSymbolInternal
+partial class TypeSymbol : Symbol, ITypeSymbolInternal
 {
+
 }

@@ -45,9 +45,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\LexicalSortKey.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\ModuleSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamedTypeSymbol.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamespaceExtent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamespaceOrTypeSymbol.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamespaceSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\ReferenceManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\SymbolVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\TypeSymbol.cs" />
