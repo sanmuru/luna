@@ -4,6 +4,6 @@ namespace SamLu.CodeAnalysis.Lua.Symbols;
 namespace SamLu.CodeAnalysis.MoonScript.Symbols;
 #endif
 
-internal abstract class SourceModuleSymbol : NetModuleSymbol
+internal abstract class SourceNetModuleSymbol : NetModuleSymbol
 {
 }

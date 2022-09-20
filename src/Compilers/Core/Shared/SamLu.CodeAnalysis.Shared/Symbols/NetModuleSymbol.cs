@@ -20,12 +20,22 @@ using ThisReferenceManager = MoonScriptCompilation.ReferenceManager;
 
 partial class NetModuleSymbol : IModuleSymbolInternal
 {
-    /// <inheritdoc cref="Symbol.Symbol()"/>
+    /// <inheritdoc cref="Symbol()"/>
     internal NetModuleSymbol() { }
 
     /// <value>返回<see cref="SymbolKind.NetModule"/>。</value>
     /// <inheritdoc/>
     public sealed override SymbolKind Kind => SymbolKind.NetModule;
+
+    /// <remarks>.NET模块符号必定不被另一个名称类型符号包含。</remarks>
+    /// <value>返回<see langword="null"/>。</value>
+    /// <inheritdoc/>
+    public sealed override NamedTypeSymbol? ContainingType => null;
+
+    /// <remarks>.NET模块符号必定不被另一个模块符号包含。</remarks>
+    /// <value>返回<see langword="null"/>。</value>
+    /// <inheritdoc/>
+    public sealed override ModuleSymbol? ContainingModule => null;
 
     /// <remarks>模块必定被程序集包含。</remarks>
     /// <inheritdoc/>

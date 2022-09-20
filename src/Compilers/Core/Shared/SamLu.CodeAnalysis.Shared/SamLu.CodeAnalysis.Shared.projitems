@@ -12,6 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Binder\BindingDiagnosticBag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Compilation\Compilation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Compilation\CompilationExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompilationOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Compilation\SemanticModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Errors\Diagnostic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Errors\DiagnosticBagExtensions.cs" />
@@ -43,14 +44,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)SymbolDisplay\SymbolDisplay.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\AssemblySymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\LexicalSortKey.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\MemberSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamespaceSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\NetModuleSymbol.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamedModuleSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\NamedTypeSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\ReferenceManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Source\SourceAssemblySymbol.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Symbols\Source\SourceModuleSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\Source\SourceNetModuleSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\Symbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\SymbolVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Symbols\ModuleSymbol.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Symbols\TypeSymbol.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\ContextAwareSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\IdentifierNameSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Syntax\InternalSyntax\StructuredTriviaSyntax.cs" />

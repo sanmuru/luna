@@ -23,7 +23,7 @@ using ThisSemanticModel = MoonScriptSemanticModel;
 using Symbols;
 
 [DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatable<Symbol>
+internal abstract partial class Symbol : ISymbolInternal, IFormattable
 {
     private ISymbol? _lazyISymbol;
 
@@ -68,6 +68,17 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
     /// 若此符号不属于任何符号，则返回<see langword="null"/>。
     /// </value>
     public abstract Symbol? ContainingSymbol { get; }
+
+    /// <summary>
+    /// 获取逻辑上包含了此符号的名称类型符号。
+    /// </summary>
+    /// <value>
+    /// 逻辑上包含了此符号的名称类型符号。
+    /// 若此符号不属于任何名称类型符号，则返回<see langword="null"/>。
+    /// </value>
+    public virtual NamedTypeSymbol? ContainingType =>
+        // 注：此基类仅提供了基础的递归获取逻辑，子类应尽可能提供更高效率的实现以重写此逻辑。
+        this.GetContainingSymbolHelper<NamedTypeSymbol>();
 
     /// <summary>
     /// 获取逻辑上包含了此符号的模块符号。
@@ -210,13 +221,13 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
                     Debug.Assert(this is not SourceAssemblySymbol, "SourceAssemblySymbol must override DeclaringCompilation");
                     return null;
                 case SymbolKind.NetModule:
-                    Debug.Assert(this is not SourceModuleSymbol, "SourceModuleSymbol must override DeclaringCompilation");
+                    Debug.Assert(this is not SourceNetModuleSymbol, "SourceModuleSymbol must override DeclaringCompilation");
                     return null;
             }
 
             switch (this.ContainingNetModule)
             {
-                case SourceModuleSymbol sourceModuleSymbol:
+                case SourceNetModuleSymbol sourceModuleSymbol:
                     return sourceModuleSymbol.DeclaringCompilation;
             }
 
@@ -374,7 +385,7 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
     /// </remarks>
     public virtual bool IsImplicitlyDeclared => false;
 
-    #region 相等项
+    #region 相等性
     public static bool operator ==(Symbol? left, Symbol? right) => Symbol.Equals(left, right, SymbolEqualityComparer.Default.CompareKind);
 
     public static bool operator !=(Symbol? left, Symbol? right) => !(left == right);
@@ -449,7 +460,7 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
         throw new NotImplementedException();
     }
 
-#region 未实现
+    #region 未实现
 #warning 未实现。
     public abstract IReference GetCciAdapter();
     #endregion
@@ -469,7 +480,7 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
 #nullable enable
     #endregion
 
-#region IFormattable
+    #region IFormattable
     /*
     public sealed override string ToString() => this.ToDisplayString();
 
@@ -492,5 +503,5 @@ internal abstract partial class Symbol : ISymbolInternal, IFormattable, IEquatab
         SymbolDisplay.ToMinimalDisplayParts(this.ISymbol, semanticModel, position, format);
     */
     string IFormattable.ToString(string? format, IFormatProvider? formatProvider) => this.ToString();
-#endregion
+    #endregion
 }

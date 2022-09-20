@@ -9,8 +9,12 @@ using Microsoft.CodeAnalysis.Symbols;
 
 #if LANG_LUA
 namespace SamLu.CodeAnalysis.Lua;
+
+using ThisCompilationOptions = LuaCompilationOptions;
 #elif LANG_MOONSCRIPT
 namespace SamLu.CodeAnalysis.MoonScript;
+
+using ThisCompilationOptions = MoonScriptCompilationOptions;
 #endif
 
 #warning 未实现。
@@ -22,7 +26,15 @@ public sealed partial class
 #endif
     : Compilation
 {
+    private readonly ThisCompilationOptions _options;
+
+    public new ThisCompilationOptions Options => this._options;
+
+    protected override CompilationOptions CommonOptions => this._options;
+
     public new ImmutableArray<SyntaxTree> SyntaxTrees => throw new NotImplementedException();
+
+
 
     public LanguageVersion LanguageVersion { get; }
 
@@ -34,15 +46,9 @@ public sealed partial class
 #endif
         () : base(null, default, null, false, null, null) { }
 
-    public override bool IsCaseSensitive => throw new NotImplementedException();
-
-    public override string Language => throw new NotImplementedException();
-
     public override ImmutableArray<MetadataReference> DirectiveReferences => throw new NotImplementedException();
 
     public override IEnumerable<AssemblyIdentity> ReferencedAssemblyNames => throw new NotImplementedException();
-
-    protected override CompilationOptions CommonOptions => throw new NotImplementedException();
 
     protected internal override ImmutableArray<SyntaxTree> CommonSyntaxTrees => throw new NotImplementedException();
 

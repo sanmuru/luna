@@ -2,23 +2,20 @@
 <Tree Root="Symbol">
   
   <AbstractSymbol Name="AssemblySymbol" Base="Symbol"/>
-  
+
   <Symbol Name="NetModuleSymbol" Base="Symbol"/>
-  
+
   <AbstractSymbol Name="ModuleSymbol" Base="Symbol"/>
-  <Symbol Name="NamedModuleSymbol" Base="ModuleSymbol"/>
+
+  <Symbol Name="NamespaceSymbol" Base="ModuleSymbol"/>
+  
+  <AbstractSymbol Name="TypeSymbol" Base="ModuleSymbol"/>
+  <AbstractSymbol Name="NamedTypeSymbol" Base="TypeSymbol"/>
 
   <AbstractSymbol Name="MemberSymbol" Base="Symbol"/>
-  <!--
-  <Symbol Name="NonErrorNamedTypeSymbol" Base="NamedTypeSymbol"/>
   
-  <AbstractSymbol Name="DynamicTypeSymbol" Base="TypeSymbol"/>
-  
-  <Symbol Name="FieldSymbol" Base="Symbol"/>
-
   <Symbol Name="LabelSymbol" Base="Symbol"/>
 
   <Symbol Name="LocalSymbol" Base="Symbol"/>
-  -->
   
 </Tree>

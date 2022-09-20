@@ -15,7 +15,7 @@ namespace SamLu.CodeAnalysis.MoonScript.Symbols;
 
 partial class AssemblySymbol : IAssemblySymbolInternal
 {
-    /// <inheritdoc cref="Symbol.Symbol()"/>
+    /// <inheritdoc cref="Symbol()"/>
     internal AssemblySymbol() { }
 
     /// <summary>
@@ -35,7 +35,17 @@ partial class AssemblySymbol : IAssemblySymbolInternal
     /// <inheritdoc/>
     public sealed override Symbol? ContainingSymbol => null;
 
-    /// <remarks>程序集必定不被另一个模块包含。</remarks>
+    /// <remarks>程序集符号必定不被另一个名称类型符号包含。</remarks>
+    /// <value>返回<see langword="null"/>。</value>
+    /// <inheritdoc/>
+    public sealed override NamedTypeSymbol? ContainingType => null;
+
+    /// <remarks>程序集符号必定不被另一个模块符号包含。</remarks>
+    /// <value>返回<see langword="null"/>。</value>
+    /// <inheritdoc/>
+    public sealed override ModuleSymbol? ContainingModule => null;
+
+    /// <remarks>程序集必定不被另一个.NET模块包含。</remarks>
     /// <value>返回<see langword="null"/>。</value>
     /// <inheritdoc/>
     internal sealed override NetModuleSymbol? ContainingNetModule => null;
@@ -111,6 +121,7 @@ partial class AssemblySymbol : IAssemblySymbolInternal
     /// <value>返回<see langword="false"/>。</value>
     /// <inheritdoc/>
     public sealed override bool IsOverride => false;
+
     /// <value>返回<see langword="false"/>。</value>
     /// <inheritdoc/>
     public sealed override bool IsSealed => false;
