@@ -34,7 +34,7 @@ public sealed partial class
 
     public new ImmutableArray<SyntaxTree> SyntaxTrees => throw new NotImplementedException();
 
-
+    public SemanticModel GetSemanticModel(SyntaxTree syntaxTree, bool ignoreAccessibility) => throw new NotImplementedException();
 
     public LanguageVersion LanguageVersion { get; }
 

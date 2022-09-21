@@ -82,6 +82,7 @@ public sealed partial class
         throw new NotImplementedException();
     }
 
+    [Obsolete]
     protected override CompilationOptions CommonWithFeatures(ImmutableArray<string> features)
     {
         throw new NotImplementedException();

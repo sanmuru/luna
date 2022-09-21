@@ -27,6 +27,11 @@
         <target state="new">'{0}' must not be empty.</target>
         <note>{0} is the name of an argument.</note>
       </trans-unit>
+      <trans-unit id="ChainingSpeculativeModelIsNotSupported">
+        <source>Chaining speculative semantic model is not supported. You should create a speculative model from the non-speculative ParentModel.</source>
+        <target state="new">Chaining speculative semantic model is not supported. You should create a speculative model from the non-speculative ParentModel.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="LocationIsNotInSyntaxTree">
         <source>Location is not in a syntax tree.</source>
         <target state="new">Location is not in a syntax tree.</target>
@@ -37,9 +42,24 @@
         <target state="new">The item specified is not the element of a list.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PositionIsNotWithinSyntax">
+        <source>Position is not within syntax tree with full span {0}.</source>
+        <target state="new">Position is not within syntax tree with full span {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpeculatedSyntaxNodeCannotBelongToCurrentCompilation">
+        <source>Syntax node to be speculated cannot belong to a syntax tree from the current compilation.</source>
+        <target state="new">Syntax node to be speculated cannot belong to a syntax tree from the current compilation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SyntaxNodeIsNotWithinSyntaxTree">
+        <source>Syntax node is not within syntax tree.</source>
+        <target state="new">Syntax node is not within syntax tree.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SyntaxNodeTypeMustBeDerivedFromCertainType">
-        <source>Syntax node type '{0}' must be derived from '{1}'</source>
-        <target state="new">Syntax node type '{0}' must be derived from '{1}'</target>
+        <source>Syntax node type '{0}' must be derived from '{1}'.</source>
+        <target state="new">Syntax node type '{0}' must be derived from '{1}'.</target>
         <note>{0} is a description of the syntax node type that derived from {2} which also a description of a certain syntax node type.</note>
       </trans-unit>
       <trans-unit id="SyntaxTokenIsNotInSyntaxTree">

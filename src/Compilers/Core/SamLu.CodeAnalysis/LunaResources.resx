@@ -137,14 +137,26 @@
     <value>'{0}' must not be empty.</value>
     <comment>{0} is the name of an argument.</comment>
   </data>
+  <data name="ChainingSpeculativeModelIsNotSupported" xml:space="preserve">
+    <value>Chaining speculative semantic model is not supported. You should create a speculative model from the non-speculative ParentModel.</value>
+  </data>
   <data name="LocationIsNotInSyntaxTree" xml:space="preserve">
     <value>Location is not in a syntax tree.</value>
   </data>
   <data name="MissingListItem" xml:space="preserve">
     <value>The item specified is not the element of a list.</value>
   </data>
+  <data name="PositionIsNotWithinSyntax" xml:space="preserve">
+    <value>Position is not within syntax tree with full span {0}.</value>
+  </data>
+  <data name="SpeculatedSyntaxNodeCannotBelongToCurrentCompilation" xml:space="preserve">
+    <value>Syntax node to be speculated cannot belong to a syntax tree from the current compilation.</value>
+  </data>
+  <data name="SyntaxNodeIsNotWithinSyntaxTree" xml:space="preserve">
+    <value>Syntax node is not within syntax tree.</value>
+  </data>
   <data name="SyntaxNodeTypeMustBeDerivedFromCertainType" xml:space="preserve">
-    <value>Syntax node type '{0}' must be derived from '{1}'</value>
+    <value>Syntax node type '{0}' must be derived from '{1}'.</value>
     <comment>{0} is a description of the syntax node type that derived from {2} which also a description of a certain syntax node type.</comment>
   </data>
   <data name="SyntaxTokenIsNotInSyntaxTree" xml:space="preserve">
