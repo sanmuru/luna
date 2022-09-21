@@ -43,8 +43,8 @@ public abstract partial class
     /// <summary>
     /// 获取此语法节点所在的语法树。
     /// </summary>
-    internal new SyntaxTree SyntaxTree =>
-        this._syntaxTree ?? ThisSyntaxNode.ComputeSyntaxTree(this);
+    internal new ThisSyntaxTree SyntaxTree =>
+        (this._syntaxTree as ThisSyntaxTree) ?? ThisSyntaxNode.ComputeSyntaxTree(this);
 
     /// <summary>
     /// 获取此语法节点的父节点。若父节点不存在，则返回<see langword="null"/>。
@@ -94,7 +94,7 @@ public abstract partial class
         MoonScriptSyntaxNode
 #endif
 #pragma warning disable CS8604
-          (InternalSyntaxNode green, int position, SyntaxTree? syntaxTree) : base(green, position, syntaxTree) { }
+          (InternalSyntaxNode green, int position, ThisSyntaxTree? syntaxTree) : base(green, position, syntaxTree) { }
 #pragma warning restore CS8604
 
     /// <summary>
@@ -105,22 +105,22 @@ public abstract partial class
     /// <param name="node">要复制的语法节点。</param>
     /// <param name="syntaxTree">语法节点所在的语法树。</param>
     /// <returns><paramref name="node"/>的副本。</returns>
-    internal static new T CloneNodeAsRoot<T>(T node, SyntaxTree syntaxTree) where T : ThisSyntaxNode => SyntaxNode.CloneNodeAsRoot(node, syntaxTree);
+    internal static new T CloneNodeAsRoot<T>(T node, ThisSyntaxTree syntaxTree) where T : ThisSyntaxNode => SyntaxNode.CloneNodeAsRoot(node, syntaxTree);
 
     /// <summary>
     /// 计算得到一个语法树对象，这个语法树对象以指定的语法节点为根节点。
     /// </summary>
     /// <param name="node">要设置为根节点的语法节点。</param>
     /// <returns>以<paramref name="node"/>为根语法节点创建的新语法树对象。</returns>
-    private static SyntaxTree ComputeSyntaxTree(ThisSyntaxNode node)
+    private static ThisSyntaxTree ComputeSyntaxTree(ThisSyntaxNode node)
     {
         ArrayBuilder<ThisSyntaxNode>? nodes = null;
-        SyntaxTree? tree;
+        ThisSyntaxTree? tree;
 
         // 查找最近的具有非空语法树的父节点。
         while (true)
         {
-            tree = node._syntaxTree;
+            tree = node._syntaxTree as ThisSyntaxTree;
             if (tree is not null) break; // 节点自身的语法树非空。
 
             var parent = node.Parent;
@@ -128,11 +128,11 @@ public abstract partial class
             {
                 // 原子操作设置语法树到根节点。
                 Interlocked.Exchange(ref node._syntaxTree, ThisSyntaxTree.CreateWithoutClone(node));
-                tree = node._syntaxTree;
+                tree = node._syntaxTree as ThisSyntaxTree;
                 break;
             }
 
-            tree = parent._syntaxTree;
+            tree = parent._syntaxTree as ThisSyntaxTree;
             if (tree is not null)
             {
                 // 将父节点的语法树设置到节点自身上。
