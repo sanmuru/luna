@@ -3,7 +3,7 @@
   
   <AbstractSymbol Name="AssemblySymbol" Base="Symbol"/>
 
-  <Symbol Name="NetModuleSymbol" Base="Symbol"/>
+  <Symbol Name="NetModuleSymbol" Base="Symbol" Implement="ModuleSymbol"/>
 
   <AbstractSymbol Name="ModuleSymbol" Base="Symbol"/>
 
@@ -17,5 +17,7 @@
   <Symbol Name="LabelSymbol" Base="Symbol"/>
 
   <Symbol Name="LocalSymbol" Base="Symbol"/>
+
+  <Symbol Name="ParameterSymbol" Base="Symbol"/>
   
 </Tree>

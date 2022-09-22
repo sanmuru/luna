@@ -1,3 +1,9 @@
-﻿namespace Luna.Compilers.Generators.Symbols.Model;
+﻿using System.Xml.Serialization;
 
-public sealed class Symbol : SymbolTreeType { }
+namespace Luna.Compilers.Generators.Symbols.Model;
+
+public sealed class Symbol : SymbolTreeType
+{
+    [XmlAttribute]
+    public string? Implement;
+}

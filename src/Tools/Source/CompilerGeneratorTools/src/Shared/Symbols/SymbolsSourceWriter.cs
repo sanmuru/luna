@@ -105,7 +105,7 @@ internal class SymbolsSourceWriter : SymbolsFileWriter
         WriteFileHeader();
         WriteLine($"namespace SamLu.CodeAnalysis.{LanguageNames.This}.Symbols.PublicModel");
         OpenBlock();
-        //this.WritePublicSymbols();
+        this.WritePublicSymbols();
         //this.WritePublicVisitors();
         CloseBlock();
     }
@@ -133,7 +133,7 @@ internal class SymbolsSourceWriter : SymbolsFileWriter
         else return;
         OpenBlock();
 
-        this.WritePublicAcceptMethods(symbol);
+        //this.WritePublicAcceptMethods(symbol);
 
         CloseBlock();
     }

@@ -22,5 +22,8 @@ internal abstract class SymbolsFileWriter : TreeFileWriter<SymbolTree, SymbolTre
 
     protected Symbol? GetSymbol(string? typeName)
         => typeName is not null && _symbolMap.TryGetValue(typeName, out var node) ? node : null;
+
+    protected IEnumerable<string> GetImplement(Symbol symbol) =>
+        symbol.Implement is null ? Enumerable.Empty<string>() : symbol.Implement.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
     #endregion
 }
